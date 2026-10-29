@@ -1,7 +1,7 @@
 # Economics
 
-A Civilization VII mod. In development: version 0.1.0 loads with the setup options in place and the loan model ported;
-nothing moves Gold yet. The design is [docs/DESIGN.md](docs/DESIGN.md).
+A Civilization VII mod. In development: version 0.1.0 carries the setup options and the ported loan model, and
+Gold doesn't move yet. The in-game load check hasn't run. The design is [docs/DESIGN.md](docs/DESIGN.md).
 
 ## What it does
 

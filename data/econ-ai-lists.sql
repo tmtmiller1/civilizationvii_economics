@@ -3,4 +3,4 @@
 -- borrowing and lending setup option on (economics.modinfo, criteria ai-on). Lists are read at game creation only,
 -- so a change here reaches new games.
 -- Every row goes in as INSERT ... SELECT through its parent table, so a missing card or list skips the row instead of
--- stopping game creation. Empty until prompt 4 writes the rows.
+-- stopping game creation. Empty until the rows are written.

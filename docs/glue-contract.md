@@ -1,6 +1,6 @@
 # The glue contract: what the engine side owes the loan model, per civ, every turn
 
-Written 2026-10-29 from `ui/debt-plan.js`, `debt-turn.js`, `debt-requests.js`, `debt-stages.js`, `debt-state.js` and
+Written 2026-10-29 from `ui/econ-plan.js`, `econ-turn.js`, `econ-requests.js`, `econ-stages.js`, `econ-state.js` and
 DESIGN 3, 4.14 and 6, for prompt 4's engine glue. The model is plain data in, transfers out; it never reads the engine.
 Whatever the glue leaves out, the model treats as zero or closed, and the civ it leaves out of is the one that then
 plays a poorer game. That is how the AI emergency loan lost its upkeep term once (NOTES choice 35), so the first rule
@@ -70,7 +70,7 @@ Each refused request comes back as an event `{ kind: "refused", request, reason 
 ```
 
 - `transfers`: `{ loanId, turn, from, to, cents, reason, parts }`; the glue never sends these one by one.
-- The grants to send are `grantsFor(transfers)` netted per civ (`debt-conservation.js`): one `Players.grantYield(pid,
+- The grants to send are `grantsFor(transfers)` netted per civ (`econ-conservation.js`): one `Players.grantYield(pid,
   YIELD_GOLD, cents / 100)` per civ, plus one Influence and one celebration grant per civ from `influence` and
   `celebration`. World accounts (`bond`, `temple`, `tax`) never reach `grantYield`; invariant `alive-target` fails if a
   string id gets that far.
@@ -79,7 +79,7 @@ Each refused request comes back as an event `{ kind: "refused", request, reason 
 - `relationships`: `{ a, b, delta }` → `changeRelationshipLevel`.
 - `notices`: for the human only; compose at `TurnBegin`, send at the local `PlayerTurnActivated` (engine-closed).
 - `batch`: `{ id, turn, civs: [{ pid, snapshot, net, influence, celebration }] }`, already in `ledger.lastBatch`.
-  On load, `batchStatus` (debt-batch.js) tells a landed batch from a lost one from each civ's balance against its
+  On load, `batchStatus` (econ-batch.js) tells a landed batch from a lost one from each civ's balance against its
   snapshot plus net; a lost batch's nets are re-sent (DESIGN 4.14; P15 decides whether the window exists).
 - `skipped`: `"loans-off"` or `"already-planned"` (the same turn twice: a reload after the write); send nothing.
 

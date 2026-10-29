@@ -1,7 +1,7 @@
 # Economics: model notes
 
 Status: engine-free model built 2026-10-06 and brought up to the revised design on 2026-10-29, tested offline under
-Node (`npm run verify`, 172 tests). No game launched, no probe run; every engine-facing number here is still behind
+Node (`npm run verify`). No game launched, no probe run; every engine-facing number here is still behind
 DESIGN section 10. This file records where DESIGN left a choice open, the choice the model makes, and the test that
 pins it. Test names are quoted; files are under `../tests/`. The 2026-10-24 revision settled or replaced some of the
 2026-10-06 choices; those rows say so, with the DESIGN section that now holds the rule.

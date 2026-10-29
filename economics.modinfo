@@ -143,7 +143,7 @@
                 </ImportFiles>
             </Actions>
         </ActionGroup>
-        <!-- Level 1 gameplay rows, one group per setup option (DESIGN section 9). Empty until prompt 4 writes them. -->
+        <!-- Level 1 gameplay rows, one group per setup option (DESIGN section 9). Empty until the rows are written. -->
         <ActionGroup id="economics-tax-cards" scope="game" criteria="taxes-on">
             <Properties>
                 <LoadOrder>110</LoadOrder>

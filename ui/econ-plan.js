@@ -14,9 +14,9 @@ import { applyGrants, grantsFor } from "./econ-conservation.js";
 import { addCelebration, addInfluence, commitBatch, funds, projected } from "./econ-batch.js";
 import { aiTaxLevel, canChangeTax, taxFlow } from "./econ-tax.js";
 import { cloneLedger, emptyLedger, prune } from "./econ-state.js";
-import { alive, closeLoan, emit, event, notice, replaceLoan, turnContext } from "./econ-turn.js";
+import { isAlive, closeLoan, emit, event, notice, replaceLoan, turnContext } from "./econ-turn.js";
 import { runRequests } from "./econ-requests.js";
-import { aiBorrow, aiRepudiate, aiRestructure, guardFor, insolvent } from "./econ-shortfall.js";
+import { aiBorrow, aiRepudiate, aiRestructure, guardFor, isInsolventCiv } from "./econ-shortfall.js";
 
 /** @type {PlanOptions} */
 export const DEFAULT_OPTIONS = { loans: true, guard: true, ai: true, rates: "standard", stages: true,
@@ -115,7 +115,7 @@ function trackIncome(ctx) {
     if (row) row.turns = turns; else rows.push({ pid: civ.id, turns });
     if (turns === EMERGENCY.insolventTurns && civ.human === true) notice(ctx, civ.id, { kind: "insolvent", turns });
   }
-  ctx.ledger.lowIncome = rows.filter((row) => alive(ctx, row.pid));
+  ctx.ledger.lowIncome = rows.filter((row) => isAlive(ctx, row.pid));
 }
 
 /**
@@ -125,7 +125,7 @@ function trackIncome(ctx) {
 function writeOffs(ctx) {
   for (const loan of ctx.ledger.loans) {
     if (!isOpen(loan)) continue;
-    const gone = !alive(ctx, loan.lender) ? "lender" : !alive(ctx, loan.borrower) ? "borrower" : null;
+    const gone = !isAlive(ctx, loan.lender) ? "lender" : !isAlive(ctx, loan.borrower) ? "borrower" : null;
     if (!gone) continue;
     replaceLoan(ctx, { ...loan, state: "closed", closedTurn: ctx.turn, writtenOff: loan.outstanding, outstanding: 0 });
     event(ctx, { kind: "writeoff", loanId: loan.id, gone, cents: loan.outstanding });
@@ -152,7 +152,7 @@ function aiTaxRow(ctx, civ) {
   let row = rows.find((tax) => tax.pid === civ.id);
   if (!canChangeTax(row?.changedTurn, ctx.turn)) return row;
   const level = aiTaxLevel({ balanceCents: civ.balanceCents, incomeCents: civ.incomeCents,
-    falling: balanceFalling(ctx, civ), insolvent: insolvent(ctx, civ.id), atWar: civ.atWar === true });
+    falling: balanceFalling(ctx, civ), insolvent: isInsolventCiv(ctx, civ.id), atWar: civ.atWar === true });
   if (!row) { row = { pid: civ.id, level, changedTurn: ctx.turn }; rows.push(row); }
   else if (row.level !== level) Object.assign(row, { level, changedTurn: ctx.turn });
   return row;
@@ -249,7 +249,7 @@ function finishTurn(ctx) {
   ledger.misses = ledger.misses.filter((row) => turn - row.turn < STANDING.windowTurns);
   ledger.repudiations = ledger.repudiations.filter((row) => turn - row.turn < STANDING.repudiationWindowTurns);
   ledger.blocks = ledger.blocks.filter((block) => block.untilTurn === null || turn < block.untilTurn);
-  ledger.capHits = ledger.capHits.filter((row) => turn - row.turn <= 1 && alive(ctx, row.pid));
+  ledger.capHits = ledger.capHits.filter((row) => turn - row.turn <= 1 && isAlive(ctx, row.pid));
   ledger.lastTurn = turn;
   ledger.batchSeq += 1;
   ledger.lastBatch = commitBatch(ctx.batch, { id: `B${ledger.batchSeq}`, turn, civs: ctx.civs });

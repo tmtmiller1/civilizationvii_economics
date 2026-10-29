@@ -10,7 +10,7 @@ import { aiAccepts, aiShortfall } from "./econ-ai.js";
 import { funds, projected } from "./econ-batch.js";
 import { repudiate } from "./econ-repudiation.js";
 import { canChangeTax, isTaxLevel } from "./econ-tax.js";
-import { alive, event, incomeOf, isHuman, lendersFor, notice, offerQuery, openLoan, replaceLoan, standing }
+import { isAlive, event, incomeOf, isHuman, lendersFor, notice, offerQuery, openLoan, replaceLoan, standing }
   from "./econ-turn.js";
 
 // A request as the glue hands it over: the fields each kind carries are read where the kind is handled.
@@ -20,7 +20,7 @@ import { alive, event, incomeOf, isHuman, lendersFor, notice, offerQuery, openLo
  * @param {TurnContext} ctx
  * @param {number} pid
  */
-export function atLimit(ctx, pid) {
+export function isAtLoanLimit(ctx, pid) {
   return ctx.ledger.loans.filter((loan) => loan.borrower === pid && isOpen(loan)).length >= LIMITS.openPerBorrower;
 }
 
@@ -51,7 +51,7 @@ export function limitRefusal(ctx, pid, { principal, ratePpm, term }) {
  * @param {unknown} term
  * @param {unknown} principal
  */
-const badTerms = (term, principal) => !TERMS.includes(/** @type {number} */ (term)) || !Number.isInteger(principal)
+const hasBadTerms = (term, principal) => !TERMS.includes(/** @type {number} */ (term)) || !Number.isInteger(principal)
   || /** @type {number} */ (principal) <= 0;
 
 /**
@@ -81,10 +81,10 @@ function addExtra(ctx, extras, request) {
  * @param {Request} request
  */
 function borrowRefusal(ctx, { borrower, lender, principal, term }) {
-  if (!alive(ctx, borrower) || isWorldAccount(borrower)) return "borrower";
-  if (badTerms(term, principal)) return "terms";
-  if (atLimit(ctx, borrower)) return "loan-limit";
-  if (lender !== BOND && !alive(ctx, lender)) return "lender";
+  if (!isAlive(ctx, borrower) || isWorldAccount(borrower)) return "borrower";
+  if (hasBadTerms(term, principal)) return "terms";
+  if (isAtLoanLimit(ctx, borrower)) return "loan-limit";
+  if (lender !== BOND && !isAlive(ctx, lender)) return "lender";
   const lenders = lendersFor(ctx, borrower, (civ) => civ.id === lender);
   const query = offerQuery(ctx, borrower, { principal, term, lenders });
   const offer = offersFor(query).find((row) => row.lender === lender);
@@ -114,7 +114,7 @@ function noOfferReason(ctx, query, lender) {
  * @param {Request} request
  */
 function lendPartiesRefusal(ctx, { lender, borrower }) {
-  if (!isHuman(ctx, lender) || !alive(ctx, lender) || !alive(ctx, borrower) || isHuman(ctx, borrower)) {
+  if (!isHuman(ctx, lender) || !isAlive(ctx, lender) || !isAlive(ctx, borrower) || isHuman(ctx, borrower)) {
     return "parties";
   }
   return ctx.options.ai ? null : "ai-off";
@@ -125,9 +125,9 @@ function lendPartiesRefusal(ctx, { lender, borrower }) {
  * @param {Request} request
  */
 function lendTermsRefusal(ctx, { lender, borrower, principal, ratePpm, term }) {
-  if (badTerms(term, principal) || !Number.isInteger(ratePpm) || ratePpm <= 0) return "terms";
+  if (hasBadTerms(term, principal) || !Number.isInteger(ratePpm) || ratePpm <= 0) return "terms";
   if (funds(ctx.batch, lender) < principal) return "balance";
-  if (atLimit(ctx, borrower)) return "loan-limit";
+  if (isAtLoanLimit(ctx, borrower)) return "loan-limit";
   const level = relationLevel(ctx.relations, lender, borrower);
   const base = { ledger: ctx.ledger, lender, borrower, principal: 0, balanceCents: 0, level, turn: ctx.turn };
   return civLenderRefusal(base) || termRefusal({ ledger: ctx.ledger, borrower, borrowerCiv: ctx.civ.get(borrower),
@@ -186,8 +186,8 @@ export function repudiateFor(ctx, borrower, lender) {
   /** @type {Set<number>} */
   const met = new Set();
   for (const row of ctx.relations) {
-    if (row.a === borrower && alive(ctx, row.b)) met.add(row.b);
-    if (row.b === borrower && alive(ctx, row.a)) met.add(row.a);
+    if (row.a === borrower && isAlive(ctx, row.b)) met.add(row.b);
+    if (row.b === borrower && isAlive(ctx, row.a)) met.add(row.a);
   }
   const result = repudiate({ ledger: ctx.ledger, turn: ctx.turn, borrower, lender,
     lenderIncomeCents: incomeOf(ctx, lender), atWar: level === "war", witnesses: [...met] });
@@ -208,8 +208,8 @@ export function repudiateFor(ctx, borrower, lender) {
  * @param {Request} request
  */
 function repudiateRefusal(ctx, { borrower, lender }) {
-  if (!isHuman(ctx, borrower) || !alive(ctx, borrower)) return "parties";
-  if (!isWorldAccount(lender) && !alive(ctx, lender)) return "lender";
+  if (!isHuman(ctx, borrower) || !isAlive(ctx, borrower)) return "parties";
+  if (!isWorldAccount(lender) && !isAlive(ctx, lender)) return "lender";
   return repudiateFor(ctx, borrower, lender);
 }
 
@@ -230,12 +230,12 @@ function taxRefusal(ctx, { pid, level }) {
 
 /** @type {Record<string, (ctx: TurnContext, request: Request) => void>} */
 const HANDLERS = {
-  borrow: (ctx, r) => refuse(ctx, "borrow", { borrower: r.borrower }, borrowRefusal(ctx, r)),
-  lend: (ctx, r) => refuse(ctx, "lend", { lender: r.lender }, lendRefusal(ctx, r)),
-  restructure: (ctx, r) => refuse(ctx, "restructure", { loanId: r.loanId },
-    restructureLoan(ctx, ctx.ledger.loans.find((loan) => loan.id === r.loanId), r.pid)),
-  repudiate: (ctx, r) => refuse(ctx, "repudiate", { borrower: r.borrower }, repudiateRefusal(ctx, r)),
-  tax: (ctx, r) => refuse(ctx, "tax", { pid: r.pid }, taxRefusal(ctx, r)),
+  borrow: (ctx, request) => refuse(ctx, "borrow", { borrower: request.borrower }, borrowRefusal(ctx, request)),
+  lend: (ctx, request) => refuse(ctx, "lend", { lender: request.lender }, lendRefusal(ctx, request)),
+  restructure: (ctx, request) => refuse(ctx, "restructure", { loanId: request.loanId },
+    restructureLoan(ctx, ctx.ledger.loans.find((loan) => loan.id === request.loanId), request.pid)),
+  repudiate: (ctx, request) => refuse(ctx, "repudiate", { borrower: request.borrower }, repudiateRefusal(ctx, request)),
+  tax: (ctx, request) => refuse(ctx, "tax", { pid: request.pid }, taxRefusal(ctx, request)),
 };
 
 /**

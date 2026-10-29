@@ -1,7 +1,7 @@
 # Translating Economics (`text/`)
 
 Every string a player sees in Economics is a `LOC_*` tag defined here and looked up by the game at run time. The
-scripts set no display text of their own, so a translation needs no code change.
+scripts don't carry display text of their own, so a translation is a text change only.
 
 ## Files
 
@@ -12,7 +12,7 @@ scripts set no display text of their own, so a translation needs no code change.
 All eleven other languages ship as translations that use the game's own words for its terms. Until the translation
 pass (prompt 5 of the plan) they hold the English text as placeholders. To correct one, edit its `<Text>`; to change
 the English, edit the English and update every language. `tests/i18n.test.mjs` checks that every language holds
-exactly the English tags, under the right `Language`, with the same `{placeholders}`.
+the same tags as English, under the right `Language`, with the same `{placeholders}`.
 
 ## Two file shapes
 
@@ -36,7 +36,7 @@ Every other language uses a `LocalizedText` block with `Replace` and a `Language
 </Database>
 ```
 
-**The `Language` value is not the folder name.** Use these exactly (note `zh_cn`):
+**The `Language` value is not the folder name.** Use these values (note `zh_cn`):
 
 | Folder | `Language=` | Folder | `Language=` |
 | --- | --- | --- | --- |

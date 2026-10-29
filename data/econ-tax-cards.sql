@@ -4,4 +4,4 @@
 -- Every row goes in as INSERT ... SELECT through its parent table (Traditions, ProgressionTreeNodes, Types), so a
 -- node a DLC or an update has renamed skips the row instead of stopping game creation. Cards go in the game's own
 -- policy slots, never a slot of the mod's, and a card never grants a slot (a card that did crashed the AI turn).
--- Empty until prompt 4 writes the rows after probe P17.
+-- Empty until the rows are written, after probe P17.

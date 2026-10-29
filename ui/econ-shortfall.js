@@ -13,7 +13,7 @@ import { aiRepudiationTarget, aiRestructures, aiShortfall } from "./econ-ai.js";
 import { emergencyCap, guardDecision, isInsolvent } from "./econ-guard.js";
 import { projected } from "./econ-batch.js";
 import { aiLendersFor, event, incomeOf, isHuman, notice, offerQuery, openLoan } from "./econ-turn.js";
-import { atLimit, limitRefusal, repudiateFor, restructureLoan } from "./econ-requests.js";
+import { isAtLoanLimit, limitRefusal, repudiateFor, restructureLoan } from "./econ-requests.js";
 
 /**
  * @param {TurnContext} ctx
@@ -24,7 +24,7 @@ const lowIncomeTurns = (ctx, pid) => ctx.ledger.lowIncome.find((row) => row.pid 
  * @param {TurnContext} ctx
  * @param {number} pid
  */
-export const insolvent = (ctx, pid) => isInsolvent(lowIncomeTurns(ctx, pid));
+export const isInsolventCiv = (ctx, pid) => isInsolvent(lowIncomeTurns(ctx, pid));
 /**
  * @param {TurnContext} ctx
  * @param {number} pid
@@ -37,7 +37,7 @@ const lastCapHit = (ctx, pid) => ctx.ledger.capHits.find((row) => row.pid === pi
  * @param {number} pid
  */
 function emergencyLenders(ctx, pid) {
-  return insolvent(ctx, pid) ? [] : aiLendersFor(ctx, pid);
+  return isInsolventCiv(ctx, pid) ? [] : aiLendersFor(ctx, pid);
 }
 
 /**
@@ -51,7 +51,7 @@ function noteCap(ctx, pid, principal) {
   if (row) row.turn = ctx.turn; else ctx.ledger.capHits.push({ pid, turn: ctx.turn });
   if (last === ctx.turn - 1) return;
   const fields = { kind: "guard-cap", pid, cents: principal, deficit: Math.max(0, -projected(ctx.batch, pid)),
-    cap: emergencyCap(incomeOf(ctx, pid)), insolvent: insolvent(ctx, pid) ? 1 : 0,
+    cap: emergencyCap(incomeOf(ctx, pid)), insolvent: isInsolventCiv(ctx, pid) ? 1 : 0,
     disbandLineCents: ctx.params.disbandLineCents ?? null };
   event(ctx, fields);
   notice(ctx, pid, fields);
@@ -65,13 +65,13 @@ function noteCap(ctx, pid, principal) {
  * @param {LoanSource} source
  */
 function openEmergency(ctx, pid, principal, source) {
-  if (atLimit(ctx, pid)) { event(ctx, { kind: "guard-limit", pid }); return false; }
+  if (isAtLoanLimit(ctx, pid)) { event(ctx, { kind: "guard-limit", pid }); return false; }
   const offer = emergencyOffersFor(offerQuery(ctx, pid, { principal, lenders: emergencyLenders(ctx, pid) }))[0];
   if (!offer) { event(ctx, { kind: "guard-blocked", pid }); return false; }
   const loan = openLoan(ctx, { lender: offer.lender, borrower: pid, principal, ratePpm: offer.ratePpm,
     term: SHORT_TERM, source, emergency: true });
   const fields = { kind: "guard", pid, loanId: loan.id, cents: principal, lender: offer.lender,
-    insolvent: insolvent(ctx, pid) ? 1 : 0 };
+    insolvent: isInsolventCiv(ctx, pid) ? 1 : 0 };
   event(ctx, fields);
   notice(ctx, pid, fields);
   return true;
@@ -100,8 +100,8 @@ export function guardFor(ctx, civ) {
  */
 export function aiBorrow(ctx, civ) {
   const need = aiShortfall(projected(ctx.batch, civ.id), ctx.params.amenityLineCents);
-  if (!need || atLimit(ctx, civ.id)) return;
-  if (!insolvent(ctx, civ.id) && civ.incomeCents > 0) {
+  if (!need || isAtLoanLimit(ctx, civ.id)) return;
+  if (!isInsolventCiv(ctx, civ.id) && civ.incomeCents > 0) {
     const query = offerQuery(ctx, civ.id, { principal: need, term: SHORT_TERM, lenders: aiLendersFor(ctx, civ.id) });
     const best = offersFor(query)[0];
     if (best && !limitRefusal(ctx, civ.id, { principal: need, ratePpm: best.ratePpm, term: SHORT_TERM })) {
@@ -159,7 +159,7 @@ export function aiRepudiate(ctx, civ) {
   if (outstandingOf(ctx.ledger, civ.id) <= 0) return;
   const last = ctx.ledger.repudiations.filter((row) => row.pid === civ.id).map((row) => row.turn)
     .sort((a, b) => b - a)[0];
-  const lender = aiRepudiationTarget({ debts: debtsOf(ctx, civ.id), insolvent: insolvent(ctx, civ.id),
+  const lender = aiRepudiationTarget({ debts: debtsOf(ctx, civ.id), insolvent: isInsolventCiv(ctx, civ.id),
     inDefault: activeDefaults(ctx.ledger, civ.id) > 0, incomeCents: civ.incomeCents,
     atCap: lastCapHit(ctx, civ.id) === ctx.turn - 1, lastRepudiationTurn: last, turn: ctx.turn });
   if (lender === null || lender === undefined) return;

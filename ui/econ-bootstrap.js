@@ -1,5 +1,5 @@
 // econ-bootstrap.js - Economics: the game-scope entry script. In 0.1.0 it only says it loaded, so the load check
-// (Modding.log, UI.log) has a line to find; prompt 4 hangs the turn batch, the ledger and the screens off it.
+// (Modding.log, UI.log) has a line to find; the turn batch, the ledger and the screens hang off it once the glue is in.
 // Every engine read is guarded: a missing global at boot is logged, never thrown.
 
 import { logLine } from "./econ-log.js";
@@ -10,7 +10,7 @@ function announce() {
   const multiplayer = (() => {
     try { return Configuration.getGame().isAnyMultiplayer === true; } catch (_error) { return false; }
   })();
-  // Single-player writes only (DESIGN section 9): in multiplayer the mod says once that it is off and does nothing.
+  // Single-player writes only (DESIGN section 9): in multiplayer the mod says once that it is off and stops there.
   logLine(multiplayer ? `v${VERSION} loaded; multiplayer game, the mod is off` : `v${VERSION} loaded; nothing runs yet`);
 }
 

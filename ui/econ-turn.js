@@ -35,7 +35,7 @@ export function turnContext(input, options, out) {
  * @param {TurnContext} ctx
  * @param {Party} pid
  */
-export const alive = (ctx, pid) => isWorldAccount(pid) || ctx.civ.get(/** @type {number} */ (pid))?.alive === true;
+export const isAlive = (ctx, pid) => isWorldAccount(pid) || ctx.civ.get(/** @type {number} */ (pid))?.alive === true;
 /**
  * @param {TurnContext} ctx
  * @param {Party} pid
@@ -75,13 +75,13 @@ export function notice(ctx, pid, fields) {
  * One loan's movement of Gold this turn.
  * @param {TurnContext} ctx
  * @param {{ id: string }} loan
- * @param {{ from: Party, to: Party, cents: number, reason: string, parts?: Record<string, number> }} t
+ * @param {{ from: Party, to: Party, cents: number, reason: string, parts?: Record<string, number> }} spec
  */
-export function emit(ctx, loan, t) {
-  if (t.cents <= 0) return;
+export function emit(ctx, loan, spec) {
+  if (spec.cents <= 0) return;
   /** @type {Transfer} */
-  const transfer = { loanId: loan.id, turn: ctx.turn, from: t.from, to: t.to, cents: t.cents, reason: t.reason,
-    parts: t.parts || {} };
+  const transfer = { loanId: loan.id, turn: ctx.turn, from: spec.from, to: spec.to, cents: spec.cents,
+    reason: spec.reason, parts: spec.parts || {} };
   ctx.out.transfers.push(transfer);
   record(ctx.batch, transfer);
 }

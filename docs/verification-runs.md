@@ -15,7 +15,7 @@ an error, and `tower-bench check tower_mods_in_dev/economics` passes. Then the s
 
 | Check | Where | Observation |
 | --- | --- | --- |
-| The 1.0 rules (DESIGN 4.1 to 4.6, 4.14) | `tests/econ-*.test.mjs`, 173 tests | pass, 2026-10-29, after the port from `mod_ideas_tested/economics` |
+| The 1.0 rules (DESIGN 4.1 to 4.6, 4.14) | `tests/econ-*.test.mjs`, 152 tests, plus the engine-free scan | pass, 2026-10-29, after the port from `mod_ideas_tested/economics` |
 | Invariants debt-1 to debt-7 and alive-target | `tests/econ-invariants.test.mjs`, `tests/econ-properties.test.mjs` | hold over 500 random economies |
 | Balance rows of DESIGN 10 | `tests/econ-balance.test.mjs`, `reports/balance-1.0.json` | run 2026-10-29 in the research copy; the owner's reading of "Borrowing pays" is open |
 | Mutation | `stryker.config.json`, `docs/NOTES.md` | last run 2026-10-29 in the research copy, before the port |

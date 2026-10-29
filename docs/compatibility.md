@@ -37,4 +37,4 @@ None yet.
 
 - `tower-bench check` will list `globalThis.SettingsKeeper` as a global this mod shares with every other Tower mod
   that carries the Tower Settings Keeper file. That is the keeper's own protocol: the first copy to run installs
-  itself and every later copy finds it and does nothing, the newest build winning.
+  itself and every later copy finds it and leaves it in place, the newest build winning.

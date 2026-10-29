@@ -1,7 +1,7 @@
 // econ-stages.js - Economics: the stage gates loans run behind (DESIGN 4.15; TEST-PLAN 12.6). The glue records the
 // turn each civ reached a stage and passes it in as `civ.stages = { moneylending, publicDebt }`; the model only asks
 // whether a stage is open. With the Economic stages option Off every stage is open from the start. Resolving each
-// stage's anchor node through ProgressionTreeNodeUnlocks is the glue's half (TEST-PLAN 12.1) and comes with prompt 4.
+// stage's anchor node through ProgressionTreeNodeUnlocks is the glue's half (TEST-PLAN 12.1).
 
 import { STAGES } from "./econ-params.js";
 
