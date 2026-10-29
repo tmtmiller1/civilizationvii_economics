@@ -1,6 +1,8 @@
 // econ-guard.js - Economics: the auto-loan guard and the emergency cap (DESIGN 4.6). The guard line is the engine's
 // own amenity-loss line from GlobalParameters (0 on 1.5.0), which also covers the disband line below it (NOTES
-// finding B); with no line it does nothing rather than guess one.
+// finding B); with no line it does nothing rather than guess one. The guard has work only while income is at or
+// below 0: with positive income the engine wipes a negative balance to 0 at the roll and charges nothing (probe P4,
+// 2026-10-29), so a loan taken on such a dip would be Gold the game gives for free.
 
 import { EMERGENCY } from "./econ-params.js";
 
@@ -22,7 +24,7 @@ export function isInsolvent(lowIncomeTurns) {
 
 /**
  * projected: the balance after this turn's resolved flows. Borrows back to the line plus one turn of upkeep, unless
- * that would pass the cap.
+ * that would pass the cap, and only while income is at or below 0 (P4).
  * @param {{ enabled: boolean, projectedCents: number, upkeepCents?: number, lineCents: number | null | undefined,
  *   firedTurn?: number, turn: number, openEmergencyCents?: number, incomeCents?: number }} q
  * @returns {{ fire: boolean, principal: number, reason: string }}
@@ -34,6 +36,7 @@ export function guardDecision({ enabled, projectedCents, upkeepCents = 0, lineCe
   const line = /** @type {number} */ (lineCents);
   if (firedTurn === turn) return { fire: false, principal: 0, reason: "already-fired" };
   if (projectedCents >= line) return { fire: false, principal: 0, reason: "above-line" };
+  if (incomeCents > 0) return { fire: false, principal: 0, reason: "income-positive" };
   const principal = line - projectedCents + Math.max(0, upkeepCents);
   if (openEmergencyCents + principal > emergencyCap(incomeCents)) return { fire: false, principal, reason: "at-cap" };
   return { fire: true, principal, reason: "below-line" };

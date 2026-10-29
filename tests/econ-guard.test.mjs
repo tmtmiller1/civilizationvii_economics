@@ -5,13 +5,19 @@ import { emergencyCap, guardDecision, isInsolvent } from "../ui/econ-guard.js";
 import { ENGINE } from "./_fixtures.mjs";
 
 const at = (over = {}) => guardDecision({ enabled: true, projectedCents: -1500, upkeepCents: 700,
-  lineCents: ENGINE.amenityLineCents, firedTurn: undefined, turn: 9, openEmergencyCents: 0, incomeCents: 1000,
+  lineCents: ENGINE.amenityLineCents, firedTurn: undefined, turn: 9, openEmergencyCents: 0, incomeCents: -1000,
   ...over });
 
 test("the guard fires below the amenity line (0) and borrows back to it plus one turn of upkeep", () => {
   assert.deepEqual(at(), { fire: true, principal: 1500 + 700, reason: "below-line" });
   assert.equal(at({ projectedCents: -1 }).fire, true, "between 0 and the disband line is covered (finding B)");
   assert.equal(at({ projectedCents: 0 }).reason, "above-line");
+});
+
+test("the guard stays out of a dip with positive income: the engine wipes that balance to 0 for free (P4)", () => {
+  assert.deepEqual(at({ incomeCents: 1 }), { fire: false, principal: 0, reason: "income-positive" });
+  assert.equal(at({ incomeCents: 0 }).fire, true, "income at 0 is the penalty's own branch");
+  assert.equal(at({ incomeCents: -1 }).fire, true);
 });
 
 test("the guard is off when disabled, with no line, or after firing this turn", () => {
@@ -26,8 +32,8 @@ test("emergency_cap = max(100 Gold, 10 * |income|); the guard stops where the ne
   assert.equal(emergencyCap(500), 10000);
   assert.equal(emergencyCap(-3000), 30000);
   assert.equal(emergencyCap(3000), 30000);
-  assert.equal(at({ openEmergencyCents: 7800 }).fire, true, "7800 + 2200 = the cap");
-  assert.deepEqual(at({ openEmergencyCents: 7801 }), { fire: false, principal: 2200, reason: "at-cap" });
+  assert.equal(at({ openEmergencyCents: 7800, incomeCents: -1000 }).fire, true, "7800 + 2200 = the cap");
+  assert.deepEqual(at({ openEmergencyCents: 7801, incomeCents: -1000 }), { fire: false, principal: 2200, reason: "at-cap" });
   assert.equal(at({ openEmergencyCents: 20000, incomeCents: -2300 }).fire, true, "the cap grows with |income|");
 });
 

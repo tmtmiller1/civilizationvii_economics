@@ -10,7 +10,7 @@ import { civ, input } from "./_fixtures.mjs";
 const tr = (loanId, from, to, cents, turn = 3) => ({ loanId, turn, from, to, cents, reason: "payment" });
 
 test("a real plan passes every invariant", () => {
-  const civs = [civ(1, { human: true, balanceCents: 100 }), civ(4, { balanceCents: -5000 }),
+  const civs = [civ(1, { human: true, balanceCents: 100 }), civ(4, { balanceCents: -5000, incomeCents: -1000 }),
     civ(8, { balanceCents: 1e6 })];
   const requests = [{ kind: "borrow", borrower: 1, lender: 8, principal: 1000, term: 10 }];
   const plan = planTurn(input({ civs, requests }));

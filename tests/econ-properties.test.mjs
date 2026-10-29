@@ -52,7 +52,9 @@ function requestsFor(g, civs, w) {
       principal: g.int(100, 20000), term: g.pick(TERMS) });
   }
   if (mine.length && g.chance(0.05)) requests.push({ kind: "repay", loanId: g.pick(mine).id, cents: g.int(1, 5000) });
-  if (mine.length && g.chance(0.03)) requests.push({ kind: "restructure", loanId: g.pick(mine).id, pid: me });
+  // Asked while a loan is overdue, as a player would; the model still refuses it with income at or below 0.
+  const overdue = mine.filter((l) => l.missed >= 1);
+  if (overdue.length && g.chance(0.5)) requests.push({ kind: "restructure", loanId: g.pick(overdue).id, pid: me });
   if (mine.length && g.chance(0.01)) requests.push({ kind: "repudiate", borrower: me, lender: g.pick(mine).lender });
   if (civs.length > 1 && g.chance(0.05)) {
     requests.push({ kind: "lend", lender: me, borrower: g.pick(civs.slice(1)).id, principal: g.int(100, 10000),
