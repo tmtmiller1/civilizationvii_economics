@@ -1,9 +1,9 @@
 # Economics: model notes
 
 Status: engine-free model built 2026-10-06 and brought up to the revised design on 2026-10-29, tested offline under
-Node (`npm run verify`). No game launched, no probe run; every engine-facing number here is still behind
-DESIGN section 10. This file records where DESIGN left a choice open, the choice the model makes, and the test that
-pins it. Test names are quoted; files are under `../tests/`. The 2026-10-24 revision settled or replaced some of the
+Node (`npm run verify`); the engine glue and the screens built the same day against prompt 1's probe results (DESIGN
+10), none of it watched in a game yet. This file records where DESIGN left a choice open, the choice the model or the
+glue makes, and the test that pins it. Test names are quoted; files are under `../tests/`. The 2026-10-24 revision settled or replaced some of the
 2026-10-06 choices; those rows say so, with the DESIGN section that now holds the rule.
 
 ## Ambiguities and the choice made
@@ -48,6 +48,23 @@ pins it. Test names are quoted; files are under `../tests/`. The 2026-10-24 revi
 | 36 | Depth in 1.0 | Commerce and Banking roles ship in 1.0 (DESIGN 11); the glue computes `depthTurns` (0 to 12) and `depthFactorPct` per civ from the buildings and passes them in; the model applies them to `credit_cap` and the rates and treats `depthTurns > 0` as "has a Bank" | `econ-credit`: "credit cap: (12 + depth_turns ...)"; `econ-lenders`: "r_L = base / standing * relation_factor ... * depth_factor" |
 | 37 | The tax fallback's "falling" and happiness inputs | The fallback is off unless `options.taxFallback` is set. "Balance falling" means below the balance the last batch snapshotted (`ledger.lastBatch`), and income below 0 on the first turn; the celebration share needs `civ.happinessCents` from the glue. A Light remittance the funds can't cover is missed, not carried | `econ-tax`: "the plan runs taxes only with the fallback flag on..." |
 | 38 | Order of refusals | Credit cap before the debt-service limit; a term gate is named only where the lender would lend at 10 turns, otherwise the refusal is `no-offer` | `econ-plan`: "borrow refusals...", "term refusals name the gate..." |
+| 39 | Where the batch runs | `TurnBegin`, right after the roll: every balance is fresh, nobody has spent, and a negative balance with positive income has just been wiped (P3, P4). The model's "income" in a payer's funds is then the next roll's, so a payment can leave a balance below 0 within the turn by at most that income, and the roll brings it back to 0 or above; the engine's wipe never has anything to erase. The ledger is written before the grants go out | `econ-session`: "a turn writes the ledger before any grant..." |
+| 40 | The guard and positive income | The guard fires only below the line *and* with income at or below 0 (P4: a positive-income dip is wiped free). An AI's emergency loan goes through the same decision. A short AI with positive income still tries a standard loan first (DESIGN 6), though at `TurnBegin` its projected balance can't be below 0 with positive income, so that branch only matters if the engine's wipe ever stops | `econ-guard`: "the guard stays out of a dip with positive income..."; `econ-plan`: "AI borrowing: past the 4.2 limits..." |
+| 41 | How the reload check reads income | At `TurnBegin` the snapshot already holds the roll's income, so `batchStatus` is read with no income term: a balance at the snapshot is a lost batch, at snapshot plus net a landed one, anything else (the player spent) is left alone | `econ-session`: "on load, a batch saved this turn whose grants never landed is re-sent..." |
+| 42 | When a player's request runs | At the next `TurnBegin`, in the order made, as DESIGN 4.14 step 2 says; the Loans tab lists what's queued and lets the player take one back. The queue lives in the glue envelope so a save mid-turn keeps it | `econ-session`: "the glue envelope keeps requests..." |
+| 43 | Stage anchors with no node in this age | The nodes come from this age's `ProgressionTreeNodeUnlocks`. With none, the anchor's own age decides: a building's `Age` row, else the 1.5.0 age of DESIGN 4.15's table held as a constant per stage. An earlier age's stage is open from the age's start, a current or later age's stays closed. A tradition's row names no age, which is why the constant exists | `econ-stage-rules`: "with nodes in this age the civ needs one; without..." |
+| 44 | Depth weights in 1.0 | Every standing building weighs 1 and a damaged one 0; the previous-age fading of DESIGN 4.16 is 1.2's. Banking needs the Bank's own Gold yield read from the data, falling back to 8 when no Bank row exists | `econ-depth`: "depth = sum of Gold / 4..." |
+| 45 | The AI strategy rows' option | Gated on Taxes with the cards, since they only steer the card pass (DESIGN 4.7 says so); `econ-ai-lists.sql` (AI option) holds no rows yet | `econ-data`: "the modinfo loads the effects behind the Taxes option..." |
+| 46 | The top-bar pill | Drawn beside the mod's dock button, through the same `panel-sub-system-dock` decoration Demographics and Emigration use: no Tower mod has a watched top-bar host. Red while any of the player's loans is in default | `econ-bootstrap` `pillSource`; watched: owed |
+| 47 | The relationship level read | `Diplomacy.getRelationshipEnum` against the `DiplomacyPlayerRelationships` enum, war first: hostile and unfriendly read `unfriendly`, friendly, helpful and alliance read `friendly`. A pair that hasn't met (`hasMet`) has no row, so it isn't a witness | `econ-session`: "every major is read with the same fields..." |
+| 48 | Upkeep per civ | Unit upkeep is the `Treasury` getter per distinct unit type the civ fields; building upkeep is the city's per-building Gold maintenance over its constructibles (P2). P2 left the AI's building figure open against the engine's log; the same read is used for every civ until a run settles it | `econ-session`: "every major is read..."; owed 6.8 |
+| 49 | The Fiscal swap | Deactivate the active tax card, wait for `TraditionChanged` (3 s at most), then Activate the new one, only when `canSwapCultureSlot` reads true (P17). With no tax card active, Activate alone; if the engine refuses it the tab says to free a slot | `econ-fiscal`: "a swap with a card active is Deactivate, then after TraditionChanged, Activate..." |
+| 50 | One notification per turn | Composed at `TurnBegin` from the plan's notices, the human's refusals and the batch row, sent at the local `PlayerTurnActivated` (or at once if the turn is already active), one `NOTIFICATION_ECONOMICS_TURN` with the lines joined by `[N]` | `econ-notify`: "held at TurnBegin, sent once at the local turn..." |
+| 51 | Where the card numbers live | `CARD_LEVELS` in `ui/econ-tax-cards.js` is the one place; `scripts/sync-tax-cards.mjs` writes the six `Percent` arguments, the comment above each card and the percentages in each description row (all 12 text files, only a number written right before "Gold" or "Happiness"). The script fallback's `TAX_LEVELS` in `econ-tax.js` stays separate, since it's off and has a Standard level | `econ-data`: "the card numbers live in CARD_LEVELS..." |
+| 52 | The Fiscal forecast | DESIGN 4.7 asks for Gold, Happiness and the next celebration under each card. The base is the settlements' summed `Yields.getYield` for Gold and Happiness, with the active card's percentage taken back out before another's is put in, and the turns counted as the game's policies button counts them (`nextGoldenAgeThreshold` less the lifetime Happiness, over net Happiness a turn, at least 1). Read for the local player only: it's screen text and never reaches the plan | `econ-tax-cards`: "each card against no card..."; "with a card slotted..." |
+| 53 | A save from before its turn's batch | On load, a ledger whose last turn is behind the game's runs this turn's batch once (`load catch-up`); with the local turn already active the notification goes out at once. The plan's "already planned" skip keeps a later `TurnBegin` from repeating it. P15 puts the autosave about 4.7 s after the batch is sent, so this is for a save that beat the batch | `econ-boot`: "a save from before its turn's batch runs that batch once at load..." |
+| 54 | The locale placeholders | `scripts/sync-locales.mjs` keeps a baseline of the English each row was synced from (`scripts/locale-baseline.json`); a row whose English changed gets the new English, so a translation of the old meaning never ships under a new one | by hand: change one English row, run the sync, read the eleven rows |
+| 55 | The mod's file URLs | The screen's CSS and HTML and the dock icon are under `fs://game/tower-economics/` (the mod id), which is where the game serves a mod's files; the folder name is `economics` | owed S.1, S.5 |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 
@@ -80,18 +97,22 @@ rare when the lender must hold 20 turns of income and the borrower must be short
 civ shows up with wars in the loans' lifetime, which the 500-turn run had few of. Whether that's rare enough or too
 rare is the owner's read (DESIGN 10, "Repudiation").
 
+I. **The guard's income condition empties the AI's "short but solvent" branch at `TurnBegin`.** With positive income
+the engine wipes a negative balance at the roll, so at `TurnBegin` a civ with positive income is at or above 0 and
+its projected balance (payments never overdraw) stays there: the standard-loan branch of DESIGN 6 only fires in the
+simulation, where balances are generated. It stays as written in case the engine's wipe is ever found not to hold.
+
 ## Balance run and mutation
 
 - The 1.0 balance rows ran 2026-10-29 in `../tests/econ-balance.test.mjs` (20 seeded 12-civ 500-turn games, On against
   Off); the numbers are in DESIGN 10's dated note and `../reports/balance-1.0.json`.
-- Mutation (Stryker, `npm run mutation`, 2026-10-29, 631 mutants, house bar high 75 / low 60): `econ-conservation.js`
-  98.6 (70 of 71 killed), `econ-credit.js` 97.3 (109 of 112), `econ-payments.js` 90.9 (90 of 99), `econ-plan.js` 78.2
-  (273 of 349). The survivors in `econ-plan.js` are mostly event and notice field values and the order of equivalent
-  branches; `../reports/mutation/mutation.json` lists each.
+- Mutation (Stryker, `npm run mutation`, 2026-10-29, 842 mutants, house bar high 75 / low 60): overall 85.3;
+  `econ-conservation.js` 98.6, `econ-stage-rules.js` 97.5, `econ-credit.js` 97.4, `econ-payments.js` 89.9,
+  `econ-depth.js` 88.4, `econ-tax-cards.js` 88.2, `econ-plan.js` 75.3. The survivors in `econ-plan.js` are mostly
+  event and notice field values and the order of equivalent branches; `../reports/mutation/mutation.json` lists each.
 
 ## Not done here
 
-- Engine glue: reading balances, income, relations, stages and buildings; `grantYield`, `changeNumGrievances` and
-  `changeRelationshipLevel` calls behind `Players.get(pid)?.isAlive`; the screens and notifications.
+- Watching any of it in a game: `docs/verification-runs.md` lists each check under "Owed".
 - P16 (whether the grudge ends in war) can't be modelled offline; the simulation counts repudiations and reads the
   repudiator's later rates only.

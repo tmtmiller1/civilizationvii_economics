@@ -65,8 +65,17 @@ model module, so the boundary stays where it is.
   writes with `console.error`, which does. `DBG` gates the chatty lines and `release.sh` forces it off.
 - Settings live in the `economics` slice of the shared `modSettings` `localStorage` key. Never add a top-level
   `localStorage` key. Read the slice once and cache it: a read costs about 6.5 ms.
-- Every string a player sees is a `LOC_ECONOMICS_` tag in `text/en_us/` and in all eleven other languages.
-  `tests/i18n.test.mjs` checks parity, languages and placeholders; [text/README.md](text/README.md) has the workflow.
+- Every string a player sees is a `LOC_ECONOMICS_` tag in `text/en_us/` and in all eleven other languages. After
+  adding or changing English text run `npm run sync:locales`, which puts the English in as a placeholder everywhere
+  else (a row whose English changed gets the new English, so an old translation can't ship under a new meaning);
+  `tests/i18n.test.mjs` checks parity, languages and placeholders; [text/README.md](text/README.md) has the
+  workflow.
+- The tax cards' percentages are set in one place, `CARD_LEVELS` in `ui/econ-tax-cards.js`. After changing them run
+  `npm run sync:tax`, which writes them into the modifiers in `data/econ-tax-gameeffects.xml` and the cards'
+  description rows; `tests/econ-data.test.mjs` fails while the files and `CARD_LEVELS` disagree.
+- The glue reads every civ with the same calls, human and AI alike ([docs/glue-contract.md](docs/glue-contract.md)),
+  and the model never reads the engine. A module that talks to the engine or the DOM is named in
+  `tests/engine-free.test.mjs`'s list on purpose.
 - Gameplay rows are written by SQL that selects through the parent table, so a missing DLC or a changed tree skips the
   row instead of stopping game creation; each data group is gated by its setup option. Types, tags and ages the
   scripts use are read from `GameInfo` at runtime, never from a list. `GameInfo` tables have no `some`, `every`,
@@ -113,17 +122,33 @@ model module, so the boundary stays where it is.
 economics.modinfo            the manifest: shell group (setup SQL, text), game group (scripts), gated data groups
 config/econ-setup.sql        the setup options (shell scope)
 data/                        the level 1 gameplay rows, one file per setup option that gates them
-ui/econ-bootstrap.js         the game-scope entry script
+ui/econ-bootstrap.js         the game-scope entry script: the session, the turn hook, the screen api, the console
 ui/econ-log.js               [Economics] log lines, the DBG switch
+ui/econ-engine.js            every engine read and write, each guarded (balances, income, upkeep, buildings,
+                             relations, grants, grievances, envelopes)
+ui/econ-session.js           the game-side session: envelopes, the plan input, the turn batch, the reload check,
+                             the request queue, the guard switch
+ui/econ-stage-read.js        the stage anchors' nodes from GameInfo and each civ's unlocks (DESIGN 4.15)
+ui/econ-notify.js            the one turn notification
+ui/econ-fiscal.js            the tax cards, the policy-change door and the forecast's read (DESIGN 4.7)
+ui/econ-tax-cards.js         the cards' percentages and the Fiscal forecast, engine-free
+ui/econ-screen.js, .html, .css   the Economics screen panel; econ-view-{treasury,loans,borrow,fiscal}.js the tabs,
+                             econ-dom.js the pieces, econ-screen-api.js what a tab is given
+ui/econ-dock.js              the dock button and the debt pill
+ui/econ-settings.js          the economics slice of the shared settings
 ui/econ-plan.js              one turn of the ledger; imports the model below
 ui/econ-{money,params,loan,credit,stages,lenders,payments,guard,ai,repudiation,tax,conservation,batch,state,
          invariants,turn,requests,shortfall}.js   the engine-free loan model (DESIGN 4.1 to 4.6, 4.14)
+ui/econ-{format,stage-rules,depth,notice-text,view-model}.js   engine-free helpers the glue and the tabs share
+images/econ-dock-icon.svg    the dock button's silhouette
 text/<locale>/ModText.xml    the strings (12 locales)
 history-corrections/         the Civilopedia History Corrections text every Tower mod carries
 docs/                        DESIGN.md, TEST-PLAN.md, NOTES.md, the glue contract, compatibility, verification runs
 tests/                       the model's tests, the gates, fixtures dumped from the compiled gameplay DB
 types/                       JSDoc types for the model and the engine globals (dev only)
-scripts/                     check-esm, the Steam change-note script, the README PDF build, the fixture dump
+scripts/                     check-esm, the Steam change-note script, the README PDF build, the fixture dump,
+                             sync-locales (English placeholders into the eleven translation files, with its
+                             baseline), sync-tax-cards (the cards' percentages into the data and text)
 devtools/                    development only, never shipped
 ```
 

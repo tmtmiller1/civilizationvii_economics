@@ -35,7 +35,7 @@ input = {
 | `human` | boolean | `player.isHuman` | AI |
 | `balanceCents` | integer cents | `Treasury.goldBalance` × 100, rounded | 0: the civ looks broke |
 | `incomeCents` | integer cents | `Stats.getNetYield(YIELD_GOLD)` × 100 (P2 confirms the top-bar match) | 0: insolvency counter runs, no standard loans |
-| `upkeepCents` | integer cents, ≥ 0 | the `Treasury` maintenance getters (P2 names them), summed | 0: the emergency loan is sized without the upkeep term, for this civ only |
+| `upkeepCents` | integer cents, ≥ 0 | units: `Treasury.getMaintenanceForAllUnitsOfType(type)` per type the civ fields; buildings: `city.Gold.getSpecificBuildingMaintenance(row.$index).value` over each city's constructibles (P2) | 0: the emergency loan is sized without the upkeep term, for this civ only |
 | `stages` | `{ moneylending, publicDebt }`, each the turn the stage was reached or `null` | DESIGN 4.15 anchors through `ProgressionTreeNodeUnlocks`, `Culture.isNodeUnlocked` / `Techs.isNodeUnlocked` per civ (P13), the turn recorded in the glue's own envelope | both closed: no civ loans, no bond market |
 | `depthTurns` | 0 to 12 | Commerce and Banking roles from the civ's buildings (DESIGN 4.13; `city.Constructibles.getIds()` per settlement) | 0: no Bank, no 20/30-turn terms |
 | `depthFactorPct` | integer percent | same | 100 |
