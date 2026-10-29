@@ -1,22 +1,138 @@
-// econ-bootstrap.js - Economics: the game-scope entry script. In 0.1.0 it only says it loaded, so the load check
-// (Modding.log, UI.log) has a line to find; the turn batch, the ledger and the screens hang off it once the glue is in.
-// Every engine read is guarded: a missing global at boot is logged, never thrown.
+// econ-bootstrap.js - Economics: the game-scope entry script. Loads the session from the save, re-sends a batch a
+// save caught in flight, runs the turn batch at TurnBegin (DESIGN 4.14; P3, P4), sends the turn notification at the
+// local player's turn, wires the screen, the dock button and the pill, and exposes the harness global. In a
+// multiplayer game it says once that it's off and does nothing. Every engine read is guarded in econ-engine.js.
 
 import { logLine } from "./econ-log.js";
+import { aliveMajorIds, gameTurn, isMultiplayer, listen, loc, localId, readAtWar, readBuildings, readDepth, safe }
+  from "./econ-engine.js";
+import { buildInput, dropRequest, loadSession, queueRequest, readOptions, resendLostBatch, runTurn, setGuard }
+  from "./econ-session.js";
+import { flushNotice, holdNotice, installClickHandler, nameOf } from "./econ-notify.js";
+import { stageOpenerName } from "./econ-stage-read.js";
+import { canSwap, readCards, readFiscal, swapTo } from "./econ-fiscal.js";
+import { openScreen, rerenderScreen, setScreenApi } from "./econ-screen.js";
+import { installDock, refreshPill } from "./econ-dock.js";
+import { formatGold } from "./econ-format.js";
+import { outstandingOf } from "./econ-credit.js";
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
+const KEY = "__towerEconomics";
+/** @type {Record<string, any>} */
+const G = globalThis;
 
-function announce() {
-  const multiplayer = (() => {
-    try { return Configuration.getGame().isAnyMultiplayer === true; } catch (_error) { return false; }
-  })();
-  // Single-player writes only (DESIGN section 9): in multiplayer the mod says once that it is off and stops there.
-  logLine(multiplayer ? `v${VERSION} loaded; multiplayer game, the mod is off` : `v${VERSION} loaded; nothing runs yet`);
+/** @typedef {import("./econ-session.js").Session} Session */
+
+/** @type {{ session: Session | null, activeTurn: number, multiplayer: boolean }} */
+const state = { session: null, activeTurn: -1, multiplayer: false };
+
+/** The pill: the player's outstanding debt, red while any loan of theirs is in default. */
+function pillSource() {
+  const session = state.session;
+  const me = localId();
+  if (!session || me < 0) return { text: loc("LOC_ECONOMICS_PILL_NONE"), warning: false };
+  const inDefault = session.ledger.loans.some((loan) => loan.borrower === me && loan.state === "default");
+  const owed = outstandingOf(session.ledger, me);
+  if (inDefault) return { text: loc("LOC_ECONOMICS_PILL_DEFAULT"), warning: true };
+  return { text: owed > 0 ? loc("LOC_ECONOMICS_PILL", formatGold(owed)) : loc("LOC_ECONOMICS_PILL_NONE"),
+    warning: false };
+}
+
+/**
+ * @param {Session} session
+ * @returns {import("./econ-screen-api.js").ScreenApi}
+ */
+function screenApi(session) {
+  return {
+    me: localId(),
+    input: () => buildInput(session),
+    loc,
+    nameOf,
+    request: (request) => queueRequest(session, request),
+    dropRequest: (index) => dropRequest(session, index),
+    pending: () => session.glue.requests,
+    setGuard: (on) => setGuard(session, on),
+    guardOn: () => readOptions(session.glue).guard,
+    stageOpener: stageOpenerName,
+    depth: () => ({ buildings: readBuildings(localId()), ...readDepth(localId()) }),
+    cards: () => readCards(localId()),
+    fiscal: () => readFiscal(localId(), readAtWar(localId(), aliveMajorIds())),
+    swapTo,
+    canSwap: () => canSwap(localId()),
+    rerender: () => { rerenderScreen(); refreshPill(); },
+  };
+}
+
+/**
+ * A save requested before this turn's batch ran reloads into a turn whose TurnBegin has already fired, so the batch
+ * runs once at load instead (the plan skips a turn it has already planned, so a later TurnBegin can't repeat it).
+ * @param {Session} session
+ */
+function catchUp(session) {
+  const last = session.ledger.lastTurn;
+  if (!Number.isInteger(last) || /** @type {number} */ (last) >= gameTurn()) return;
+  const plan = safe(() => runTurn(session, `load catch-up from turn ${last}`), null);
+  if (plan) holdNotice(plan, state);
+}
+
+function onTurnBegin() {
+  const session = state.session;
+  if (!session) return;
+  const plan = safe(() => runTurn(session, `TurnBegin ${gameTurn()}`), null);
+  if (plan) holdNotice(plan, state);
+  refreshPill();
+  rerenderScreen();
+}
+
+/** @param {any} data */
+function onPlayerTurnActivated(data) {
+  const pid = data && (data.player ?? data.Player);
+  if (pid !== localId()) return;
+  state.activeTurn = gameTurn();
+  flushNotice();
+}
+
+function installConsole() {
+  G[KEY] = {
+    version: VERSION,
+    get multiplayer() { return state.multiplayer; },
+    session: () => state.session,
+    ledger: () => state.session?.ledger,
+    input: () => (state.session ? buildInput(state.session) : null),
+    runNow: () => (state.session ? runTurn(state.session, "console") : null),
+    request: (/** @type {PlanRequest} */ request) => (state.session ? queueRequest(state.session, request) : false),
+    guard: (/** @type {boolean | null} */ on) => (state.session ? setGuard(state.session, on) : null),
+    cards: () => readCards(localId()),
+    swapTo,
+    open: () => openScreen(),
+    pill: pillSource,
+  };
+}
+
+function boot() {
+  state.multiplayer = isMultiplayer();
+  installConsole();
+  if (state.multiplayer) { logLine(`v${VERSION} loaded; multiplayer game, the mod is off`); return; }
+  const session = loadSession();
+  state.session = session;
+  const lost = resendLostBatch(session);
+  // A loaded game opens on the local player's own turn, and no PlayerTurnActivated follows for it.
+  if (safe(() => Players.get(localId()).isTurnActive === true, false)) state.activeTurn = gameTurn();
+  catchUp(session);
+  setScreenApi(screenApi(session));
+  installDock(pillSource);
+  installClickHandler(() => openScreen());
+  listen("TurnBegin", onTurnBegin);
+  listen("PlayerTurnActivated", onPlayerTurnActivated);
+  logLine(`v${VERSION} loaded; turn ${gameTurn()}, ${session.ledger.loans.length} loan record(s), `
+    + `${lost.length} re-sent, options ${JSON.stringify(readOptions(session.glue))}`);
 }
 
 try {
-  if (typeof engine !== "undefined" && engine.whenReady) engine.whenReady.then(announce);
-  else announce();
+  if (!G[KEY]) {
+    if (typeof engine !== "undefined" && engine.whenReady) engine.whenReady.then(boot);
+    else boot();
+  }
 } catch (error) {
   logLine(`boot failed: ${error instanceof Error ? error.message : String(error)}`);
 }

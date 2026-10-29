@@ -1,6 +1,6 @@
 {
   "name": "economics-mod-dev",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Type check, lint, syntax and ESM checks, unit tests and coverage for the Economics Civ VII mod. Not shipped.",
   "type": "module",
@@ -16,7 +16,9 @@
     "release:gate": "npm run verify && npm run coverage",
     "mutation": "stryker run",
     "readme:pdf": "bash scripts/build_readme_pdf.sh",
-    "steam-changelog": "node scripts/steam-changelog.mjs sync"
+    "steam-changelog": "node scripts/steam-changelog.mjs sync",
+    "sync:locales": "node scripts/sync-locales.mjs",
+    "sync:tax": "node scripts/sync-tax-cards.mjs"
   },
   "devDependencies": {
     "@stryker-mutator/core": "^9.6.1",

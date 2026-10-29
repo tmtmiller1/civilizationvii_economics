@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Economics: the tax policy cards for AGE_ANTIQUITY (DESIGN 4.7). Loaded only in this age's database, with the Taxes setup
+     option on; the unlock rows come from data/econ-tax-cards.sql, which selects this age's root civic from the tree
+     tables. One card per level per age, in the game's own policy slot type, open to every civilization. The game's
+     AI picks and values these cards itself (DESIGN section 1, "Native first", level 1). -->
+<Database>
+    <Kinds>
+        <InsertOrIgnore Kind="KIND_TRADITION"/>
+    </Kinds>
+    <Types>
+        <Row Type="TRADITION_ECONOMICS_LIGHT_AQ" Kind="KIND_TRADITION"/>
+        <Row Type="TRADITION_ECONOMICS_HEAVY_AQ" Kind="KIND_TRADITION"/>
+        <Row Type="TRADITION_ECONOMICS_WAR_LEVY_AQ" Kind="KIND_TRADITION"/>
+    </Types>
+    <Traditions>
+        <Row TraditionType="TRADITION_ECONOMICS_LIGHT_AQ" Name="LOC_ECONOMICS_CARD_LIGHT_NAME" Description="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION" AgeType="AGE_ANTIQUITY" CultureSlotType="POLICY_CULTURE_SLOT"/>
+        <Row TraditionType="TRADITION_ECONOMICS_HEAVY_AQ" Name="LOC_ECONOMICS_CARD_HEAVY_NAME" Description="LOC_ECONOMICS_CARD_HEAVY_DESCRIPTION" AgeType="AGE_ANTIQUITY" CultureSlotType="POLICY_CULTURE_SLOT"/>
+        <Row TraditionType="TRADITION_ECONOMICS_WAR_LEVY_AQ" Name="LOC_ECONOMICS_CARD_WAR_LEVY_NAME" Description="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION" AgeType="AGE_ANTIQUITY" CultureSlotType="POLICY_CULTURE_SLOT"/>
+    </Traditions>
+    <TraditionModifiers>
+        <Row TraditionType="TRADITION_ECONOMICS_LIGHT_AQ" ModifierId="MOD_ECONOMICS_LIGHT_GOLD"/>
+        <Row TraditionType="TRADITION_ECONOMICS_LIGHT_AQ" ModifierId="MOD_ECONOMICS_LIGHT_HAPPINESS"/>
+        <Row TraditionType="TRADITION_ECONOMICS_HEAVY_AQ" ModifierId="MOD_ECONOMICS_HEAVY_GOLD"/>
+        <Row TraditionType="TRADITION_ECONOMICS_HEAVY_AQ" ModifierId="MOD_ECONOMICS_HEAVY_HAPPINESS"/>
+        <Row TraditionType="TRADITION_ECONOMICS_WAR_LEVY_AQ" ModifierId="MOD_ECONOMICS_WAR_LEVY_GOLD"/>
+        <Row TraditionType="TRADITION_ECONOMICS_WAR_LEVY_AQ" ModifierId="MOD_ECONOMICS_WAR_LEVY_HAPPINESS"/>
+    </TraditionModifiers>
+</Database>

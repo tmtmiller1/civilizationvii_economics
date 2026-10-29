@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The one notification type ui/econ-notify.js raises in the game's train: the turn's Economics summary for the
+     local player (DESIGN 9, "one per turn"). The engine keeps one live notification of a type at a time, so every
+     line of a turn goes into the one notification. It ends with the turn and never holds it up. The script composes
+     the text and passes it with the send; the Message and Summary tags here are the fallback. -->
+<Database>
+    <Types>
+        <Row Type="NOTIFICATION_ECONOMICS_TURN" Kind="KIND_NOTIFICATION"/>
+    </Types>
+    <Notifications>
+        <Row NotificationType="NOTIFICATION_ECONOMICS_TURN" SeverityType="MID" ExpiresEndOfTurn="True" AutoNotify="False" Message="LOC_ECONOMICS_NOTIFY_TITLE" Summary="LOC_ECONOMICS_NOTIFY_FALLBACK" Priority="2"/>
+    </Notifications>
+    <NotificationSounds>
+        <Row NotificationType="NOTIFICATION_ECONOMICS_TURN" Context="Add" Audio="notif-GenericNeutral"/>
+    </NotificationSounds>
+</Database>

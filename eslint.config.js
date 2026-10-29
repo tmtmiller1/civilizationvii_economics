@@ -20,7 +20,12 @@ const ENGINE_GLOBALS = {
   UI: "readonly",
   YieldTypes: "readonly",
   DiplomacyPlayerRelationships: "readonly",
-  ProgressionTreeNodeState: "readonly"
+  ProgressionTreeNodeState: "readonly",
+  Units: "readonly",
+  Constructibles: "readonly",
+  PlayerOperationTypes: "readonly",
+  PlayerOperationParameters: "readonly",
+  CultureSlotTypes: "readonly"
 };
 
 const BROWSER_GLOBALS = {

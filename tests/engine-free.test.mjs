@@ -5,8 +5,10 @@ import { readdirSync, readFileSync } from "node:fs";
 // The model modules must run under Node with no game: no engine global, no DOM, no storage, and imports only of
 // sibling econ- modules. Comments and string literals are stripped before the scan so prose cannot trip it. The two
 // glue files that do talk to the engine are listed here by name; a new engine-facing module joins this list on
-// purpose, never by accident.
-const GLUE = new Set(["econ-bootstrap.js", "econ-log.js"]);
+// purpose, never by accident. The views are glue too: they draw with the DOM.
+const GLUE = new Set(["econ-bootstrap.js", "econ-log.js", "econ-engine.js", "econ-stage-read.js", "econ-session.js",
+  "econ-notify.js", "econ-fiscal.js", "econ-settings.js", "econ-dom.js", "econ-screen.js", "econ-screen-api.js",
+  "econ-dock.js", "econ-view-treasury.js", "econ-view-loans.js", "econ-view-borrow.js", "econ-view-fiscal.js"]);
 const BANNED = ["Game", "GameContext", "Players", "GameplayMap", "GameInfo", "WorldBuilder", "Units", "Cities",
   "engine", "UI", "localStorage", "sessionStorage", "Configuration", "Network", "document", "window", "Controls",
   "ContextManager", "YieldTypes", "Database"];

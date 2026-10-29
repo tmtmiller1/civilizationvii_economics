@@ -1,6 +1,6 @@
--- Economics: the AI weighting lists for the parts the game's AI plays itself (DESIGN section 6, "Native first"
--- level 1): how much each AI values the tax cards and, later, the other level 1 rows. Loaded only with the AI
--- borrowing and lending setup option on (economics.modinfo, criteria ai-on). Lists are read at game creation only,
--- so a change here reaches new games.
--- Every row goes in as INSERT ... SELECT through its parent table, so a missing card or list skips the row instead of
--- stopping game creation. Empty until the rows are written.
+-- Economics: AI weighting lists for the parts the game's AI plays itself (DESIGN section 6, "Native first" level 1),
+-- loaded only with the AI borrowing and lending setup option on (economics.modinfo, criteria ai-on). The tax cards'
+-- own steering rows live with the cards in data/econ-tax-cards.sql, since they belong to the Taxes option; this file
+-- holds the rows for later level 1 parts. Lists are read at game creation only, so a change here reaches new games.
+-- Every row goes in as INSERT ... SELECT through its parent table, so a missing item skips the row instead of
+-- stopping game creation. No rows yet.

@@ -1,0 +1,242 @@
+/* econ-screen.css: the Economics screen (screen-economics). GameFace rules (engine-closed.md, "UI runtime"): flexbox
+   only, no grid, no italic, no clamp(), no var() in shorthands, border colours as literals. Sizes in rem; the frame
+   is a near-fullscreen modal like the Demographics and Emigration screens. */
+
+.econ-screen-root {
+    width: 100vw;
+    height: 100vh;
+    pointer-events: auto;
+}
+
+.econ-screen-frame {
+    width: 90vw;
+    height: 92vh;
+    max-width: 90vw;
+    max-height: 92vh;
+    min-height: 0;
+}
+
+.econ-screen-title {
+    margin-bottom: 0.5rem;
+}
+
+.econ-screen-body {
+    padding: 0 1.4rem 1.4rem 1.4rem;
+    min-height: 0;
+}
+
+.econ-tab-host {
+    margin-bottom: 0.6rem;
+}
+
+.econ-screen-host {
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.econ-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    padding: 0.6rem 0.9rem;
+    background-color: rgba(20, 22, 28, 0.55);
+    border-top: 1px solid rgba(168, 132, 90, 0.35);
+    border-bottom: 1px solid rgba(168, 132, 90, 0.35);
+    border-left: 1px solid rgba(168, 132, 90, 0.35);
+    border-right: 1px solid rgba(168, 132, 90, 0.35);
+}
+
+.econ-section-title {
+    color: #e5d2ac;
+    margin-bottom: 0.4rem;
+}
+
+.econ-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 1.6rem;
+    padding: 0.1rem 0;
+}
+
+.econ-row-label {
+    color: #cfc3a4;
+}
+
+.econ-row-value {
+    color: #f3e9cf;
+}
+
+.econ-negative {
+    color: #ff8a73;
+}
+
+.econ-muted {
+    color: #9a927f;
+}
+
+.econ-note {
+    color: #b9ae92;
+    margin-top: 0.3rem;
+}
+
+.econ-line {
+    color: #e5d2ac;
+    padding: 0.1rem 0;
+}
+
+.econ-card {
+    display: flex;
+    flex-direction: column;
+    margin: 0.35rem 0;
+    padding: 0.45rem 0.6rem;
+    background-color: rgba(35, 37, 43, 0.7);
+    border-top: 1px solid #53565d;
+    border-bottom: 1px solid #53565d;
+    border-left: 1px solid #53565d;
+    border-right: 1px solid #53565d;
+}
+
+.econ-card-head {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.econ-card-title {
+    color: #f3e9cf;
+}
+
+.econ-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 0.3rem;
+}
+
+.econ-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.9rem;
+    padding: 0.2rem 0.9rem;
+    margin: 0.15rem 0.4rem 0.15rem 0;
+    color: #f3e9cf;
+    background-color: #3a3326;
+    border-top: 1px solid #a8845a;
+    border-bottom: 1px solid #a8845a;
+    border-left: 1px solid #a8845a;
+    border-right: 1px solid #a8845a;
+    pointer-events: auto;
+}
+
+.econ-button--small {
+    min-height: 1.5rem;
+    padding: 0.1rem 0.5rem;
+}
+
+.econ-button--warning {
+    background-color: #5a1f1a;
+    border-top: 1px solid #ff7a66;
+    border-bottom: 1px solid #ff7a66;
+    border-left: 1px solid #ff7a66;
+    border-right: 1px solid #ff7a66;
+}
+
+.econ-button--disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.econ-chips {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0.2rem 0;
+}
+
+.econ-chip {
+    padding: 0.15rem 0.7rem;
+    margin: 0.1rem 0.3rem 0.1rem 0;
+    color: #cfc3a4;
+    background-color: #23252b;
+    border-top: 1px solid #53565d;
+    border-bottom: 1px solid #53565d;
+    border-left: 1px solid #53565d;
+    border-right: 1px solid #53565d;
+    pointer-events: auto;
+}
+
+.econ-chip--on {
+    color: #1b1711;
+    background-color: #e5d2ac;
+}
+
+.econ-pill {
+    padding: 0.05rem 0.75rem;
+    min-height: 1.5rem;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.econ-stepper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.econ-stepper-value {
+    min-width: 5rem;
+    text-align: center;
+    color: #f3e9cf;
+}
+
+.econ-confirm {
+    margin-top: 0.4rem;
+    padding: 0.4rem 0.6rem;
+    background-color: rgba(90, 31, 26, 0.35);
+}
+
+.econ-chart {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    height: 6rem;
+    margin: 0.3rem 0;
+}
+
+.econ-bar-pair {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    flex: 1 1 0;
+    height: 100%;
+    margin-right: 0.15rem;
+}
+
+.econ-bar {
+    flex: 1 1 0;
+    min-height: 2px;
+}
+
+.econ-bar--with {
+    background-color: #e5d2ac;
+    margin-right: 1px;
+}
+
+.econ-bar--without {
+    background-color: #7a6a4a;
+}
+
+.econ-dock-pill {
+    margin-left: 0.3rem;
+    align-self: center;
+}

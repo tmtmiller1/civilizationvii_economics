@@ -24,6 +24,9 @@ declare global {
     ProgressionTreeNodeUnlocks: GameInfoTable<{ ProgressionTreeNodeType: string; TargetType: string;
       [key: string]: any }>;
     Traditions: GameInfoTable<{ TraditionType: string; [key: string]: any }>;
+    Ages: GameInfoTable<{ AgeType: string; ChronologyIndex: number; [key: string]: any }>;
+    Constructible_YieldChanges: GameInfoTable<{ ConstructibleType: string; YieldType: string; YieldChange: number }>;
+    Constructible_Advisories: GameInfoTable<{ ConstructibleType: string; AdvisoryClassType: string }>;
     [key: string]: any;
   };
 
@@ -89,4 +92,12 @@ declare global {
   const YieldTypes: { YIELD_GOLD: number; YIELD_DIPLOMACY: number; YIELD_HAPPINESS: number; [key: string]: any };
   const DiplomacyPlayerRelationships: { [key: string]: any };
   const ProgressionTreeNodeState: { [key: string]: any };
+  /** Unit instances by id (`player.Units.getUnitIds()` gives the ids). */
+  const Units: { get(id: unknown): EngineHandle; [key: string]: any };
+  /** Constructible instances by component id (`city.Constructibles.getIds()` gives the ids). */
+  const Constructibles: { getByComponentID(id: unknown): EngineHandle; [key: string]: any };
+  /** Player operations the local player can send (`Game.PlayerOperations.sendRequest`). */
+  const PlayerOperationTypes: { CHANGE_TRADITION: number; [key: string]: any };
+  const PlayerOperationParameters: { Activate: number; Deactivate: number; [key: string]: any };
+  const CultureSlotTypes: { POLICY_CULTURE_SLOT: number; [key: string]: any };
 }

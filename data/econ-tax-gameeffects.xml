@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Economics: the tax cards' modifiers and the tax slot (DESIGN 4.7). Modifiers carry no age key, so this file loads
+  in every age; the cards themselves are in data/econ-tax-cards-<age>.xml and the unlocks in data/econ-tax-cards.sql.
+  Loaded only with the Taxes setup option on (economics.modinfo, criteria taxes-on-*).
+
+  Each card changes every settlement's Gold and Happiness by a percentage, in the shape of the base game's
+  TRADITION_MAR_BANE (EFFECT_CITY_ADJUST_YIELD on COLLECTION_PLAYER_CITIES, Percent and YieldType). The Tooltip
+  argument is what the yield breakdown names. War Levy's modifiers hold only while the owner has a formal war
+  (REQUIREMENT_PLAYER_HAS_X_WARS), the closest the requirement table comes to "at war with a major civ".
+
+  The tax slot is one extra policy slot, granted by each age's root civic through ProgressionTreeNodeUnlocks
+  (data/econ-tax-cards.sql), in the shape of the base MOD_TOT_TRADITION_SLOT. It is never attached to a card: a card
+  that grants the slot it sits in crashed the AI turn (engine-closed.md, 2026-10-17).
+-->
+<GameEffects xmlns="GameEffects">
+    <!-- Light Taxation: Gold -15%, Happiness +20% -->
+    <Modifier id="MOD_ECONOMICS_LIGHT_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Percent">-15</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_CARD_LIGHT_NAME</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_LIGHT_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Percent">20</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_CARD_LIGHT_NAME</Argument>
+    </Modifier>
+    <!-- Heavy Taxation: Gold +15%, Happiness -20% -->
+    <Modifier id="MOD_ECONOMICS_HEAVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Percent">15</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_CARD_HEAVY_NAME</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_HEAVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Percent">-20</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_CARD_HEAVY_NAME</Argument>
+    </Modifier>
+    <!-- War Levy: while the owner has a formal war, Gold +30%, Happiness -40% -->
+    <Modifier id="MOD_ECONOMICS_WAR_LEVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
+                <Argument name="WarType">FORMAL_WAR</Argument>
+                <Argument name="Amount">1</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Percent">30</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_CARD_WAR_LEVY_NAME</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
+                <Argument name="WarType">FORMAL_WAR</Argument>
+                <Argument name="Amount">1</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Percent">-40</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_CARD_WAR_LEVY_NAME</Argument>
+    </Modifier>
+
+    <!-- The tax slot, unlocked by a civic (never by a card). -->
+    <Modifier id="MOD_ECONOMICS_TAX_SLOT" collection="COLLECTION_OWNER" effect="EFFECT_PLAYER_GRANT_TRADITION_SLOTS">
+        <Argument name="Amount">1</Argument>
+        <Argument name="SlotType">POLICY_CULTURE_SLOT</Argument>
+        <String context="Description">LOC_ECONOMICS_TAX_SLOT_DESCRIPTION</String>
+    </Modifier>
+</GameEffects>

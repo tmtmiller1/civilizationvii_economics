@@ -85,6 +85,8 @@ echo "==> Zipping $ZIP_PATH"
 echo "==> Verifying zip contents against allow-list"
 ALLOW="^$MOD/($MOD\\.modinfo|README\\.md|LICENSE|CHANGELOG\\.md)\$"
 ALLOW="$ALLOW"'|^'"$MOD"'/ui/(econ-[a-z-]+|settings-keeper)\.js$'
+ALLOW="$ALLOW"'|^'"$MOD"'/ui/econ-[a-z-]+\.(css|html)$'
+ALLOW="$ALLOW"'|^'"$MOD"'/images/econ-[a-z-]+\.svg$'
 ALLOW="$ALLOW"'|^'"$MOD"'/text/[a-z_]+/(ModText|PediaText)\.xml$'
 ALLOW="$ALLOW"'|^'"$MOD"'/history-corrections/[a-z-]+-text\.xml$'
 ALLOW="$ALLOW"'|^'"$MOD"'/config/econ-[a-z-]+\.sql$'

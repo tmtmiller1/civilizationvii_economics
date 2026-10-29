@@ -43,5 +43,191 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_OFF_DESCRIPTION" Language="de_DE"><Text>Every part is open from the start of its age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON" Language="de_DE"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON_DESCRIPTION" Language="de_DE"><Text>A part opens for a civilization when it reaches the stage's tech or civic. With the option off everything is open from the start of its age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_NAME" Language="de_DE"><Text>Light Taxation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION" Language="de_DE"><Text>-15% Gold and +20% Happiness in all settlements.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_HEAVY_NAME" Language="de_DE"><Text>Heavy Taxation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_HEAVY_DESCRIPTION" Language="de_DE"><Text>+15% Gold and -20% Happiness in all settlements.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_WAR_LEVY_NAME" Language="de_DE"><Text>War Levy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION" Language="de_DE"><Text>While you're at war: +30% Gold and -40% Happiness in all settlements. Pays nothing in peacetime.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TAX_SLOT_DESCRIPTION" Language="de_DE"><Text>+1 Policy slot, for a tax card or any other.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPEN" Language="de_DE"><Text>Economics</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TAB_TREASURY" Language="de_DE"><Text>Treasury</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TAB_LOANS" Language="de_DE"><Text>Loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TAB_FISCAL" Language="de_DE"><Text>Fiscal</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TAB_FAILED" Language="de_DE"><Text>This tab couldn't be drawn. The log has the reason.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GOLD_AMOUNT" Language="de_DE"><Text>{1_Amount} Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TURNS" Language="de_DE"><Text>{1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_ON" Language="de_DE"><Text>On</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFF" Language="de_DE"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CONFIRM" Language="de_DE"><Text>Confirm</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CANCEL" Language="de_DE"><Text>Cancel</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PRINCIPAL" Language="de_DE"><Text>Principal</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TERM" Language="de_DE"><Text>Term</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RATE" Language="de_DE"><Text>Rate per turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_BOND" Language="de_DE"><Text>the bond market</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_TEMPLE" Language="de_DE"><Text>the temple treasuries</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_TAX" Language="de_DE"><Text>taxes</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL" Language="de_DE"><Text>Debt {1_Amount}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL_DEFAULT" Language="de_DE"><Text>In default</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL_NONE" Language="de_DE"><Text>No debt</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_NOW" Language="de_DE"><Text>Your treasury</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_BALANCE" Language="de_DE"><Text>Balance</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_INCOME" Language="de_DE"><Text>Income per turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_UPKEEP" Language="de_DE"><Text>Upkeep per turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OUTSTANDING" Language="de_DE"><Text>Owed on loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_DUE_NEXT" Language="de_DE"><Text>Loan payments due next turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_SERVICE_SHARE" Language="de_DE"><Text>Share of income going to loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_INSOLVENT" Language="de_DE"><Text>Your income has been at or below 0 for five turns or more. Emergency loans only cover a short spell; cut upkeep or raise Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION" Language="de_DE"><Text>Next 20 turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_WITH" Language="de_DE"><Text>Balance in 20 turns with your loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_WITHOUT" Language="de_DE"><Text>Balance in 20 turns without them</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_NOTE" Language="de_DE"><Text>Income held flat; light bars are with your loans, dark bars without. Hover a bar for the figure.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_FLOWS" Language="de_DE"><Text>What moved, and why</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_NO_FLOWS" Language="de_DE"><Text>Loans haven't moved any of your Gold yet.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_FLOWS_NOTE" Language="de_DE"><Text>The newest lines first; the last batch ran on turn {1_Turn}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_BUILDINGS" Language="de_DE"><Text>Buildings and financial depth</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_ROLE_COMMERCE" Language="de_DE"><Text>Commerce buildings</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_ROLE_BANKING" Language="de_DE"><Text>Banking buildings</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_DEPTH_TURNS" Language="de_DE"><Text>Extra turns of income on your credit limit</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_DEPTH_FACTOR" Language="de_DE"><Text>Rate factor from depth</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_LIMITS" Language="de_DE"><Text>Your limits</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_CREDIT_ROOM" Language="de_DE"><Text>You can still borrow up to</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE" Language="de_DE"><Text>Payments per turn, of the limit</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE_OF" Language="de_DE"><Text>{1_Used} of {2_Cap} Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_STANDING" Language="de_DE"><Text>Standing (1.00 is clean)</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_STAGES" Language="de_DE"><Text>What's open to you</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_STAGES_ALL_OPEN" Language="de_DE"><Text>Every lender of this age is open to you.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_STAGE_CLOSED" Language="de_DE"><Text>{1_Part} opens with {2_Node}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_STAGE_NEXT_AGE" Language="de_DE"><Text>the next age</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_CIV_LOANS" Language="de_DE"><Text>Loans from other civilizations</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_BOND" Language="de_DE"><Text>The bond market and longer terms</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW" Language="de_DE"><Text>Borrow</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_NO_OFFERS" Language="de_DE"><Text>Nobody will lend you this amount on these terms right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_OVER_ROOM" Language="de_DE"><Text>That's more than your credit limit allows.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFFER_SERVICE" Language="de_DE"><Text>With this loan, your payments would take {1_Percent}% of your income.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFFER_ROW" Language="de_DE"><Text>{1_Lender}: {2_Rate} a turn, about {3_Payment} Gold a turn, {4_Interest} Gold of interest in all</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_MINE" Language="de_DE"><Text>Your loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_NONE" Language="de_DE"><Text>You don't owe anyone anything.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_ROW" Language="de_DE"><Text>{1_Loan}: {2_Owed} Gold owed to {3_Lender} at {4_Rate} a turn, {5_Turns} payments left</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_PAYMENT" Language="de_DE"><Text>Next payment</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_ACTIVE" Language="de_DE"><Text>On schedule</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_OVERDUE" Language="de_DE"><Text>Overdue, {1_Count} missed</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_DEFAULT" Language="de_DE"><Text>In default</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_EMERGENCY" Language="de_DE"><Text>Emergency loan</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_REPAY_ALL" Language="de_DE"><Text>Repay all next turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_REPAY_HALF" Language="de_DE"><Text>Repay half next turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_RESTRUCTURE" Language="de_DE"><Text>Restructure</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_REPUDIATE_LENDER" Language="de_DE"><Text>Repudiate what you owe {1_Lender}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESTRUCTURE_PREVIEW" Language="de_DE"><Text>What's left, {1_Owed} Gold, spreads over 10 new turns at the current {2_Rate}: about {3_Payment} Gold a turn. Your standing takes one more miss, and this loan can't be restructured again.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REPUDIATE_PREVIEW" Language="de_DE"><Text>You keep {1_Kept} Gold and stop paying. {2_Lender} books a grudge of {3_Grudge} grievances against you; {4_Count} civilizations you've met each move {5_Delta} in relationship; your standing falls to {6_Standing}; {7_Lender} closes to you for {8_For}; your credit limit loses {9_Turns} turns of income and terms stay at 10 turns for 40 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REPUDIATE_AT_WAR" Language="de_DE"><Text>You're at war with this lender, so the world expects it: the witness and standing costs are halved.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CLOSED_TURNS" Language="de_DE"><Text>{1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CLOSED_AGES" Language="de_DE"><Text>the rest of this age and the whole of the next</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_LENT" Language="de_DE"><Text>What you've lent</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENT_ROW" Language="de_DE"><Text>{1_Loan}: {2_Owed} Gold owed to you by {3_Borrower} at {4_Rate} a turn, {5_Turns} payments left</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_ALLOW_RESTRUCTURE" Language="de_DE"><Text>Let them restructure</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND" Language="de_DE"><Text>Lend</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND_NOBODY" Language="de_DE"><Text>There's no civilization to lend to.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND_BOND_RATE" Language="de_DE"><Text>Their bond rate is {1_Rate}; they accept up to 1.2 times it</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND_RISK" Language="de_DE"><Text>Repudiation risk: {1_Text}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND_RULE" Language="de_DE"><Text>They accept while they're short of Gold, their income is positive and the payments fit their limits. If they default or repudiate, the loss is yours.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RISK_LOW" Language="de_DE"><Text>low. They repudiate a debt to an enemy at war, or to a civilization they dislike while insolvent or in default.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RISK_WAR" Language="de_DE"><Text>high: you're at war with them, and they repudiate debts to enemies.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RISK_INSOLVENT" Language="de_DE"><Text>they've had no income for {1_Turns} turns; they can't take your loan and may repudiate what they owe.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RISK_NO_INCOME" Language="de_DE"><Text>their income is at or below 0, so they won't accept.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RISK_DEFAULT" Language="de_DE"><Text>they're in default on another loan.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RISK_UNFRIENDLY" Language="de_DE"><Text>they dislike you: a debt over {1_Amount} Gold is one they'd repudiate while in trouble.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD" Language="de_DE"><Text>Auto-loan guard</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD_STATE" Language="de_DE"><Text>The guard is</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD_ALLOWANCE" Language="de_DE"><Text>Emergency allowance left</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD_SWITCH_ON" Language="de_DE"><Text>Switch the guard on</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD_SWITCH_OFF" Language="de_DE"><Text>Switch the guard off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD_NOTE" Language="de_DE"><Text>The guard borrows for you when your balance would go below 0 while your income is at or below 0, which is when the game disbands units. A dip with positive income costs nothing, so it leaves that alone.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_PENDING" Language="de_DE"><Text>Queued for next turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_PENDING_NONE" Language="de_DE"><Text>Nothing queued.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_PENDING_NOTE" Language="de_DE"><Text>Requests run at the start of the next turn, in this order. The turn's notice says what was refused and why.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_CARDS" Language="de_DE"><Text>Tax cards</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_TAXES_OFF" Language="de_DE"><Text>The Taxes option is off for this game, so there are no tax cards.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_ACTIVE" Language="de_DE"><Text>Slotted</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_LOCKED" Language="de_DE"><Text>Not unlocked yet</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_LOCKED_BY" Language="de_DE"><Text>Opens with {1_Node}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_NOW" Language="de_DE"><Text>Your settlements now</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_GOLD_NOW" Language="de_DE"><Text>Gold a turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_HAPPINESS_NOW" Language="de_DE"><Text>Happiness a turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION" Language="de_DE"><Text>Next celebration</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS" Language="de_DE"><Text>in {1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_NEVER" Language="de_DE"><Text>not until your Happiness rises</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATING" Language="de_DE"><Text>you're celebrating now</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_NO_CARD" Language="de_DE"><Text>No tax card</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_EFFECT" Language="de_DE"><Text>Effect in every settlement</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_EFFECT_ROW" Language="de_DE"><Text>Gold {1_Gold}, Happiness {2_Happiness}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST" Language="de_DE"><Text>Change for you, about</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST_ROW" Language="de_DE"><Text>{1_Gold} Gold and {2_Happiness} Happiness a turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_LEVY_PEACE" Language="de_DE"><Text>nothing until you're at war</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_SLOT" Language="de_DE"><Text>Slot this card</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_CLEAR" Language="de_DE"><Text>Clear the tax card</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_NO_SWAP" Language="de_DE"><Text>The game isn't allowing a policy change right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_NOTE" Language="de_DE"><Text>These are ordinary policy cards: the policy menu shows them too, and the computer players pick them the way they pick any card.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_VERDICT_SENT" Language="de_DE"><Text>Done. The card is in your slot.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_VERDICT_CLEARED" Language="de_DE"><Text>Done. The slot is free.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_VERDICT_NO_SWAP" Language="de_DE"><Text>The game refused the change.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_VERDICT_NO_SLOT" Language="de_DE"><Text>Every policy slot is full. Free one in the policy menu first.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_VERDICT_UNKNOWN" Language="de_DE"><Text>That card isn't in this age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_VERDICT_SAME" Language="de_DE"><Text>That card is already slotted.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTIFY_TITLE" Language="de_DE"><Text>Economics</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTIFY_FALLBACK" Language="de_DE"><Text>Your treasury moved this turn. Open the Economics screen for the details.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_NET" Language="de_DE"><Text>Loans moved your treasury by {1_Amount} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INFLUENCE" Language="de_DE"><Text>Missed payments cost you {1_Amount} Influence.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_CELEBRATION" Language="de_DE"><Text>Taxes moved your celebration meter by {1_Amount}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OPEN" Language="de_DE"><Text>A loan of {1_Amount} Gold from {2_Lender} has landed, at {3_Rate} a turn over {4_Turns} turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_LENT" Language="de_DE"><Text>Your loan of {1_Amount} Gold to {2_Borrower} has gone out.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_MISS" Language="de_DE"><Text>You missed a payment on loan {1_Loan} ({2_Count} in a row). The interest joins the debt and the rate rises; three in a row is default.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_DEFAULT" Language="de_DE"><Text>Loan {1_Loan} is in default. The lender takes what it can each turn and won't lend to you again this age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_DEFAULTED_ON" Language="de_DE"><Text>{1_Borrower} has defaulted on your loan {2_Loan}. You collect what you can each turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD" Language="de_DE"><Text>The guard borrowed {1_Amount} Gold from {2_Lender} to keep you above 0.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD_INSOLVENT" Language="de_DE"><Text>The guard borrowed {1_Amount} Gold from {2_Lender}. Your income has been at or below 0 for five turns: this covers a spell, not a deficit.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD_CAP" Language="de_DE"><Text>The guard has reached its cap of {1_Cap} Gold and stops. You're {2_Deficit} Gold short this turn; the game's own penalties now apply below 0 Gold, and units disband below {3_Line}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INSOLVENT" Language="de_DE"><Text>Your income has been at or below 0 for {1_Turns} turns. Emergency loans cover a short spell only; cut upkeep or raise Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_RESTRUCTURE" Language="de_DE"><Text>Loan {1_Loan} was restructured over 10 new turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_RESTRUCTURE_ASK" Language="de_DE"><Text>{1_Borrower} asks to restructure loan {2_Loan}. You can allow it on the Loans tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_REPUDIATED" Language="de_DE"><Text>You repudiated {1_Amount} Gold owed to {2_Lender}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_REPUDIATED_BY" Language="de_DE"><Text>{1_Borrower} repudiated {2_Amount} Gold it owed you. Its grievance against you is booked, and the civilizations it has met think less of it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED" Language="de_DE"><Text>Your {1_Request} was refused: {2_Reason}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_BORROW" Language="de_DE"><Text>borrow request</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_LEND" Language="de_DE"><Text>loan offer</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_REPAY" Language="de_DE"><Text>early repayment</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_RESTRUCTURE" Language="de_DE"><Text>restructure request</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_REPUDIATE" Language="de_DE"><Text>repudiation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_TAX" Language="de_DE"><Text>tax change</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_UNKNOWN" Language="de_DE"><Text>request</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_CREDIT_CAP" Language="de_DE"><Text>it's over your credit limit.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_SERVICE_CAP" Language="de_DE"><Text>the payments would take more than 35 percent of your income.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TERMS" Language="de_DE"><Text>the amount or term isn't one the lender takes.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_LOAN_LIMIT" Language="de_DE"><Text>six loans are open already.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_LENDER" Language="de_DE"><Text>that lender is gone.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_BORROWER" Language="de_DE"><Text>that borrower is gone.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NO_OFFER" Language="de_DE"><Text>the lender won't lend to you right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TERM_STAGE" Language="de_DE"><Text>terms beyond 10 turns need Public debt.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TERM_BANKING" Language="de_DE"><Text>a civilization lends beyond 10 turns only with a bank.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TERM_REPUDIATION" Language="de_DE"><Text>while a repudiation counts against you, terms stay at 10 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_PARTIES" Language="de_DE"><Text>that isn't something you can ask of them.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_AI_OFF" Language="de_DE"><Text>the computer players aren't borrowing or lending in this game.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_BALANCE" Language="de_DE"><Text>you don't hold that much Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_DECLINED" Language="de_DE"><Text>they declined: the rate is too high, they aren't short, or the payments don't fit their limits.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NOT_OVERDUE" Language="de_DE"><Text>only an overdue loan can be restructured, and only once.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_INCOME" Language="de_DE"><Text>a civilization with income at or below 0 can't restructure.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NOTHING_OWED" Language="de_DE"><Text>nothing is owed to that lender.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TAXES_NATIVE" Language="de_DE"><Text>taxes are policy cards in this game; use the Fiscal tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TOO_SOON" Language="de_DE"><Text>the tax level changed in the last five turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_UNKNOWN" Language="de_DE"><Text>the request couldn't be carried out.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_OPEN" Language="de_DE"><Text>Loan {1_Loan} opened: {2_Amount} Gold from {3_Lender} to {4_Borrower}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_MISS" Language="de_DE"><Text>Payment missed on {1_Loan} ({2_Count} in a row).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_DEFAULT" Language="de_DE"><Text>{1_Loan} went into default ({2_Borrower}).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_CLOSED" Language="de_DE"><Text>{1_Loan} paid off.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_RESTRUCTURE" Language="de_DE"><Text>{1_Loan} restructured with {2_Amount} Gold left.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_REPUDIATION" Language="de_DE"><Text>{1_Borrower} repudiated {2_Amount} Gold owed to {3_Lender} ({4_Grudge} grievances).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_WRITEOFF" Language="de_DE"><Text>{1_Loan} written off: {2_Amount} Gold, a party is gone.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_GUARD" Language="de_DE"><Text>The guard borrowed {1_Amount} Gold from {2_Lender}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_GUARD_CAP" Language="de_DE"><Text>The guard stopped at its cap of {1_Cap} Gold.</Text></Replace>
     </LocalizedText>
 </Database>

@@ -1,0 +1,65 @@
+// _fake-dom.mjs - the little of the DOM the tab views use (createElement, appendChild, classList, style, listeners),
+// so the views render under Node and a test can count what they drew and click what they offered.
+
+class FakeElement {
+  constructor(tag) {
+    this.tagName = tag.toUpperCase();
+    this.children = [];
+    this.parentElement = null;
+    this.textContent = "";
+    this.style = {};
+    this.attributes = {};
+    this.listeners = {};
+    this._classes = new Set();
+    const self = this;
+    this.classList = {
+      add: (...names) => names.forEach((n) => self._classes.add(n)),
+      remove: (...names) => names.forEach((n) => self._classes.delete(n)),
+      toggle: (name, force) => { if (force === undefined ? !self._classes.has(name) : force) self._classes.add(name); else self._classes.delete(name); },
+      contains: (name) => self._classes.has(name),
+    };
+  }
+  get className() { return [...this._classes].join(" "); }
+  set className(value) { this._classes = new Set(String(value).split(/\s+/).filter(Boolean)); }
+  get firstChild() { return this.children[0] ?? null; }
+  appendChild(child) { child.parentElement = this; this.children.push(child); return child; }
+  removeChild(child) { this.children = this.children.filter((c) => c !== child); return child; }
+  replaceWith(other) { const p = this.parentElement; if (p) { p.children[p.children.indexOf(this)] = other; other.parentElement = p; } }
+  setAttribute(name, value) { this.attributes[name] = String(value); }
+  getAttribute(name) { return this.attributes[name] ?? null; }
+  addEventListener(name, fn) { (this.listeners[name] ||= []).push(fn); }
+  click() { for (const fn of this.listeners.click || []) fn({}); }
+  querySelector(selector) { return this.all().find((node) => matches(node, selector)) ?? null; }
+  all() { return this.children.flatMap((c) => [c, ...c.all()]); }
+}
+
+function matches(node, selector) {
+  if (selector.startsWith(".")) return node.classList.contains(selector.slice(1));
+  return node.tagName === selector.toUpperCase();
+}
+
+export function installFakeDom() {
+  const head = new FakeElement("head");
+  globalThis.document = {
+    createElement: (tag) => new FakeElement(tag),
+    getElementById: () => null,
+    head,
+  };
+  globalThis.localStorage = { store: {}, getItem(k) { return this.store[k] ?? null; }, setItem(k, v) { this.store[k] = v; } };
+  return { FakeElement, head };
+}
+
+export function removeFakeDom() {
+  delete globalThis.document;
+  delete globalThis.localStorage;
+}
+
+/** Every element under `root` (itself included) whose class list holds `name`. */
+export function byClass(root, name) {
+  return [root, ...root.all()].filter((node) => node.classList.contains(name));
+}
+
+/** The text of every element under `root`, joined, for "does it say" checks. */
+export function textOf(root) {
+  return [root, ...root.all()].map((node) => node.textContent).filter(Boolean).join(" | ");
+}

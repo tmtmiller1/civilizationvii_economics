@@ -4,15 +4,27 @@
     "Mutation testing on the rule modules TEST-PLAN section 1 names (house bar: high 75, low 60). The command runner",
     "re-runs the suite per mutant; coverageAnalysis is off because the command runner has no per-test hooks. The perf",
     "and balance tests are left out (a timing failure would kill mutants for the wrong reason, and the balance run is",
-    "slow), and so are the source scanners (engine-free, no-empty-catch, modinfo), which read the instrumented source."
+    "slow), and so are the source scanners (engine-free, no-empty-catch, modinfo), which read the instrumented source.",
+    "The glue tests (session, views, notify, fiscal, settings, data, boot) are left out too: they install fake globals and don't touch the mutated modules."
   ],
   "testRunner": "command",
   "commandRunner": {
-    "command": "NODE_OPTIONS=--max-old-space-size=2048 node --test $(ls tests/*.test.mjs | grep -v -E 'perf|engine-free|balance|modinfo|no-empty-catch|i18n|core-imports|pedia')"
+    "command": "NODE_OPTIONS=--max-old-space-size=2048 node --test $(ls tests/*.test.mjs | grep -v -E 'perf|engine-free|balance|modinfo|no-empty-catch|i18n|core-imports|pedia|econ-data|econ-views|econ-session|econ-notify|econ-fiscal|econ-settings|econ-boot')"
   },
   "coverageAnalysis": "off",
-  "mutate": ["ui/econ-payments.js", "ui/econ-credit.js", "ui/econ-conservation.js", "ui/econ-plan.js"],
-  "reporters": ["clear-text", "json"],
+  "mutate": [
+    "ui/econ-payments.js",
+    "ui/econ-credit.js",
+    "ui/econ-conservation.js",
+    "ui/econ-plan.js",
+    "ui/econ-depth.js",
+    "ui/econ-stage-rules.js",
+    "ui/econ-tax-cards.js"
+  ],
+  "reporters": [
+    "clear-text",
+    "json"
+  ],
   "jsonReporter": {
     "fileName": "reports/mutation/mutation.json"
   },

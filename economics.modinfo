@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Economics, a Civilization VII mod: loans between civilizations and from a bond market, an auto-loan guard, taxes
-  as policy cards, and the economic stages that open each part (docs/DESIGN.md). In development: this version ships
-  the engine-free loan model and the setup options only; nothing moves Gold yet.
+  as policy cards, and the economic stages that open each part (docs/DESIGN.md). In development: the 1.0 Finance
+  mechanics are built and gated offline; the in-game checks are owed (docs/verification-runs.md).
   Groups: the setup options and the text at the main menu; the scripts and the text in every game; the level 1
   gameplay rows (DESIGN section 1, "Native first") in their own groups, each gated on the setup option that owns it;
   and the four Civilopedia History Corrections groups every Tower mod carries.
@@ -15,7 +15,7 @@
         <Package>Economics</Package>
         <PackageSortIndex>1000</PackageSortIndex>
         <ShowInBrowser>1</ShowInBrowser>
-        <Version>0.1.0</Version>
+        <Version>0.2.0</Version>
         <!-- The ledger (every loan, block, miss and repudiation) lives in the save, and the setup options are fixed
              when the game is created, so a save made with the mod needs it to load the same game. -->
         <AffectsSavedGames>1</AffectsSavedGames>
@@ -34,6 +34,32 @@
                 <ConfigurationId>ECONOMICS_TAXES</ConfigurationId>
                 <Value>ECONOMICS_TAXES_ON</Value>
             </ConfigurationValueMatches>
+        </Criteria>
+        <!-- The tax cards live in each age's own database (a civic node exists only in its age), so one group per
+             age, each needing the Taxes option as well. -->
+        <Criteria id="taxes-on-antiquity">
+            <ConfigurationValueMatches>
+                <Group>Game</Group>
+                <ConfigurationId>ECONOMICS_TAXES</ConfigurationId>
+                <Value>ECONOMICS_TAXES_ON</Value>
+            </ConfigurationValueMatches>
+            <AgeInUse>AGE_ANTIQUITY</AgeInUse>
+        </Criteria>
+        <Criteria id="taxes-on-exploration">
+            <ConfigurationValueMatches>
+                <Group>Game</Group>
+                <ConfigurationId>ECONOMICS_TAXES</ConfigurationId>
+                <Value>ECONOMICS_TAXES_ON</Value>
+            </ConfigurationValueMatches>
+            <AgeInUse>AGE_EXPLORATION</AgeInUse>
+        </Criteria>
+        <Criteria id="taxes-on-modern">
+            <ConfigurationValueMatches>
+                <Group>Game</Group>
+                <ConfigurationId>ECONOMICS_TAXES</ConfigurationId>
+                <Value>ECONOMICS_TAXES_ON</Value>
+            </ConfigurationValueMatches>
+            <AgeInUse>AGE_MODERN</AgeInUse>
         </Criteria>
         <Criteria id="ai-on">
             <ConfigurationValueMatches>
@@ -99,6 +125,10 @@
                 <LoadOrder>100</LoadOrder>
             </Properties>
             <Actions>
+                <UpdateDatabase>
+                    <!-- The turn notification's type (ui/econ-notify.js). -->
+                    <Item>data/econ-notifications.xml</Item>
+                </UpdateDatabase>
                 <UpdateText>
                     <Item>text/en_us/ModText.xml</Item>
                     <Item locale="de_DE">text/de_de/ModText.xml</Item>
@@ -116,6 +146,8 @@
                 <UIScripts>
                     <!-- Tower Settings Keeper: listed first, imports nothing, so it runs before anything reads storage. -->
                     <Item>ui/settings-keeper.js</Item>
+                    <!-- The screen's Controls.define has to run at load (a later define never initialises), so the
+                         bootstrap imports econ-screen.js statically. -->
                     <Item>ui/econ-bootstrap.js</Item>
                 </UIScripts>
                 <ImportFiles>
@@ -124,32 +156,89 @@
                     <Item>ui/econ-bootstrap.js</Item>
                     <Item>ui/econ-conservation.js</Item>
                     <Item>ui/econ-credit.js</Item>
+                    <Item>ui/econ-depth.js</Item>
+                    <Item>ui/econ-dock.js</Item>
+                    <Item>ui/econ-dom.js</Item>
+                    <Item>ui/econ-engine.js</Item>
+                    <Item>ui/econ-fiscal.js</Item>
+                    <Item>ui/econ-format.js</Item>
                     <Item>ui/econ-guard.js</Item>
                     <Item>ui/econ-invariants.js</Item>
                     <Item>ui/econ-lenders.js</Item>
                     <Item>ui/econ-loan.js</Item>
                     <Item>ui/econ-log.js</Item>
                     <Item>ui/econ-money.js</Item>
+                    <Item>ui/econ-notice-text.js</Item>
+                    <Item>ui/econ-notify.js</Item>
                     <Item>ui/econ-params.js</Item>
                     <Item>ui/econ-payments.js</Item>
                     <Item>ui/econ-plan.js</Item>
                     <Item>ui/econ-repudiation.js</Item>
                     <Item>ui/econ-requests.js</Item>
+                    <Item>ui/econ-screen-api.js</Item>
+                    <Item>ui/econ-screen.css</Item>
+                    <Item>ui/econ-screen.html</Item>
+                    <Item>ui/econ-screen.js</Item>
+                    <Item>ui/econ-session.js</Item>
+                    <Item>ui/econ-settings.js</Item>
                     <Item>ui/econ-shortfall.js</Item>
+                    <Item>ui/econ-stage-read.js</Item>
+                    <Item>ui/econ-stage-rules.js</Item>
                     <Item>ui/econ-stages.js</Item>
                     <Item>ui/econ-state.js</Item>
                     <Item>ui/econ-tax.js</Item>
+                    <Item>ui/econ-tax-cards.js</Item>
                     <Item>ui/econ-turn.js</Item>
+                    <Item>ui/econ-view-borrow.js</Item>
+                    <Item>ui/econ-view-fiscal.js</Item>
+                    <Item>ui/econ-view-loans.js</Item>
+                    <Item>ui/econ-view-model.js</Item>
+                    <Item>ui/econ-view-treasury.js</Item>
+                    <Item>images/econ-dock-icon.svg</Item>
                 </ImportFiles>
             </Actions>
         </ActionGroup>
-        <!-- Level 1 gameplay rows, one group per setup option (DESIGN section 9). Empty until the rows are written. -->
-        <ActionGroup id="economics-tax-cards" scope="game" criteria="taxes-on">
+        <!-- Level 1 gameplay rows (DESIGN section 9): the tax cards' modifiers in every age, the cards and their
+             unlocks per age, all behind the Taxes option. -->
+        <ActionGroup id="economics-tax-effects" scope="game" criteria="taxes-on">
             <Properties>
                 <LoadOrder>110</LoadOrder>
             </Properties>
             <Actions>
                 <UpdateDatabase>
+                    <Item>data/econ-tax-gameeffects.xml</Item>
+                </UpdateDatabase>
+            </Actions>
+        </ActionGroup>
+        <ActionGroup id="economics-tax-cards-antiquity" scope="game" criteria="taxes-on-antiquity">
+            <Properties>
+                <LoadOrder>111</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateDatabase>
+                    <Item>data/econ-tax-cards-antiquity.xml</Item>
+                    <Item>data/econ-tax-cards.sql</Item>
+                </UpdateDatabase>
+            </Actions>
+        </ActionGroup>
+        <ActionGroup id="economics-tax-cards-exploration" scope="game" criteria="taxes-on-exploration">
+            <Properties>
+                <LoadOrder>111</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateDatabase>
+                    <Item>data/econ-tax-cards-exploration.xml</Item>
+                    <Item>data/econ-tax-cards.sql</Item>
+                </UpdateDatabase>
+            </Actions>
+        </ActionGroup>
+        <ActionGroup id="economics-tax-cards-modern" scope="game" criteria="taxes-on-modern">
+            <Properties>
+                <LoadOrder>111</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateDatabase>
+                    <Item>data/econ-tax-cards-modern.xml</Item>
                     <Item>data/econ-tax-cards.sql</Item>
                 </UpdateDatabase>
             </Actions>
