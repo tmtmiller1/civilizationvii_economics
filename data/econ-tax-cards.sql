@@ -1,0 +1,7 @@
+-- Economics: the tax policy cards (DESIGN 4.7) and their unlocks on the game's own techs and civics (4.15). Level 1
+-- data (DESIGN section 1, "Native first"): the game's AI picks and values these cards itself. Loaded only with the
+-- Taxes setup option on (economics.modinfo, criteria taxes-on).
+-- Every row goes in as INSERT ... SELECT through its parent table (Traditions, ProgressionTreeNodes, Types), so a
+-- node a DLC or an update has renamed skips the row instead of stopping game creation. Cards go in the game's own
+-- policy slots, never a slot of the mod's, and a card never grants a slot (a card that did crashed the AI turn).
+-- Empty until prompt 4 writes the rows after probe P17.

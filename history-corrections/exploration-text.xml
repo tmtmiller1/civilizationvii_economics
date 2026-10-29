@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Oirat / Dzungar (INDEPENDENT_EXPLORATION_18), second paragraph only. -->
+<Database>
+    <EnglishText>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_EXPLORATION_18_CHAPTER_HISTORY_PARA_2">
+            <Text>Dzungaria, the basin between the Altai Mountains and the Tianshan, was the homeland of the Dzungars, the leading Oirat people of the 17th and 18th centuries. Under rulers such as Galdan Boshugtu and Tsewang Rabtan their khanate made war on the Qing empire, the Russians and the Kazakh hordes, and at times held the Tarim Basin, Tibet and much of western Mongolia. The Qing destroyed it in 1755–1757. The Qianlong Emperor ordered the Dzungars exterminated, and Qing troops, smallpox and starvation killed most of a people of perhaps 600,000, while survivors fled to Russia or the Kazakh steppe; many historians call this a genocide. The emptied land was resettled with soldiers and farmers from elsewhere in the empire, and Central Asia was redrawn for good.</Text>
+        </Replace>
+    </EnglishText>
+    <LocalizedText>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_EXPLORATION_18_CHAPTER_HISTORY_PARA_2" Language="zh_Hans_CN">
+            <Text>准噶尔盆地介于阿尔泰山与天山之间，是准噶尔人的故乡；准噶尔部是17至18世纪卫拉特蒙古中最强盛的一支。在噶尔丹·博硕克图与策妄阿拉布坦等统治者治下，准噶尔汗国与清朝、俄国及哈萨克人连年交战，一度占据塔里木盆地、西藏及蒙古西部大片地区。1755至1757年，清朝将其彻底摧毁。乾隆帝下令剿灭准噶尔人，清军的屠戮、天花与饥荒夺去了这个约六十万人的民族中大多数人的性命，幸存者逃往俄国或哈萨克草原；许多历史学家称之为种族灭绝。人口空虚的土地随后由帝国各地迁来的兵丁与农户重新充实，中亚的版图从此彻底改变。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_EXPLORATION_18_CHAPTER_HISTORY_PARA_2" Language="zh_Hant_HK">
+            <Text>準噶爾盆地介於阿爾泰山與天山之間，是準噶爾人的故鄉；準噶爾部是17至18世紀衛拉特蒙古中最強盛的一支。在噶爾丹·博碩克圖與策妄阿拉布坦等統治者治下，準噶爾汗國與清朝、俄國及哈薩克人連年交戰，一度佔據塔里木盆地、西藏及蒙古西部大片地區。1755至1757年，清朝將其徹底摧毀。乾隆帝下令剿滅準噶爾人，清軍的屠戮、天花與饑荒奪去了這個約六十萬人的民族中大多數人的性命，倖存者逃往俄國或哈薩克草原；許多歷史學家稱之為種族滅絕。人口空虛的土地隨後由帝國各地遷來的兵丁與農戶重新充實，中亞的版圖從此徹底改變。</Text>
+        </Replace>
+    </LocalizedText>
+</Database>

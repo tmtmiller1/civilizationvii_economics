@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ryukyu from the Sengoku DLC (INDEPENDENT_EXPLORATION_13), first paragraph only. -->
+<Database>
+    <EnglishText>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_EXPLORATION_13_CHAPTER_HISTORY_PARA_1">
+            <Text>Ryukyu, Liuqiu to the Chinese, is the chain of islands between Kyushu and Taiwan, and from the 15th century to the 19th it was a seafaring kingdom in its own right. The kings of Chuzan at Shuri united Okinawa in 1429, and Ryukyuan junks were soon carrying Chinese silk and porcelain to Japan and Korea and coming back from Siam and Malacca with spices and dyewood. Ryukyu paid tribute first to the Ming and then to the Qing, and after Satsuma's invasion of 1609 it answered to Japanese lords as well, surviving by managing both. Its court poets and musicians drew on Chinese models, while the islands kept their own language, religion and arts.</Text>
+        </Replace>
+    </EnglishText>
+    <LocalizedText>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_EXPLORATION_13_CHAPTER_HISTORY_PARA_1" Language="zh_Hans_CN">
+            <Text>琉球诸岛自九州以南连绵延伸至台湾以北，自15世纪至19世纪，曾是一个独立的海上王国。1429年，以首里为根据地的中山王统一冲绳，此后琉球的帆船便往来各地，将中国的丝绸与瓷器运往日本与朝鲜，又从暹罗、满剌加载回香料与染料木材。琉球先后向明、清两朝朝贡；1609年萨摩入侵之后，又须听命于日本领主，在两强之间周旋求存。其宫廷诗人与乐师以中国为典范，而各岛依然保有自己的语言、信仰与技艺。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_EXPLORATION_13_CHAPTER_HISTORY_PARA_1" Language="zh_Hant_HK">
+            <Text>琉球諸島自九州以南連綿延伸至台灣以北，自15世紀至19世紀，曾是一個獨立的海上王國。1429年，以首里為根據地的中山王統一沖繩，此後琉球的帆船便往來各地，將中國的絲綢與瓷器運往日本與朝鮮，又從暹羅、滿剌加載回香料與染料木材。琉球先後向明、清兩朝朝貢；1609年薩摩入侵之後，又須聽命於日本領主，在兩強之間周旋求存。其宮廷詩人與樂師以中國為典範，而各島依然保有自己的語言、信仰與技藝。</Text>
+        </Replace>
+    </LocalizedText>
+</Database>

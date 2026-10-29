@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- City-States Expanded pages: Ryukyu (ML_EXPLORATION_3), Nanzhao (ML_EXPLORATION_6), Balhae (ML_EXPLORATION_31). -->
+<Database>
+    <EnglishText>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_3_CHAPTER_HISTORY_PARA_1">
+            <Text>The Ryukyu Islands run in a long arc from Kyushu to Taiwan, and Okinawa, the largest of them, was the heart of the kingdom. In the 14th century the island was split among three rival states, Hokuzan in the north, Chuzan in the middle and Nanzan in the south, and from the 1370s and 1380s each sent its own missions to the Ming court. Sho Hashi of Chuzan brought all three under one throne in 1429 and governed from Shuri Castle. Later kings pushed their rule north to the Amami Islands and south to Miyako and Yaeyama. A bronze bell hung at Shuri in 1458 boasts that Ryukyu's ships linked it to ten thousand lands, a fair description of a kingdom that lived by carrying other countries' goods.</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_3_CHAPTER_HISTORY_PARA_2">
+            <Text>Chinese envoys sailed to Shuri to invest each new king, and Ryukyuan ships went on to Japan, Korea, Siam, Malacca and Java, trading Chinese silk and porcelain for southern spices and sappanwood. The red halls of Shuri Castle mixed Chinese and Japanese building styles with local ones. In 1609 the Shimazu lords of Satsuma invaded and made the king their vassal, but they let the missions to China go on for the profit they brought and kept their own hold out of sight whenever Chinese envoys came. Meiji Japan made the kingdom a domain in 1872 and annexed it as Okinawa Prefecture in 1879. The Qing objected, and talks went nowhere before the question was overtaken by the war of 1894–1895.</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_6_CHAPTER_HISTORY_PARA_1">
+            <Text>Nanzhao grew up in the lake country around Erhai in what is now Yunnan. Six small principalities, or zhao, shared the region until Piluoge of Mengshe, the southernmost, absorbed the other five in the 730s with Tang encouragement and was named Prince of Yunnan in 738. The ruling Meng clan came from the people Chinese sources call the Wuman, while leading Baiman families, ancestors of today's Bai, filled the court and its offices. The capital moved to Taihe in 739 and to Yangjumie, at present-day Dali, in 779. When Tang turned against it, Nanzhao destroyed the armies sent in 751 and 754 and allied with Tibet, then broke with Tibet and swore loyalty to Tang again in 794. Scholars in China describe Nanzhao as a regional ethnic regime of the Tang period; most historians elsewhere count it as an independent kingdom.</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_6_CHAPTER_HISTORY_PARA_2">
+            <Text>Roads from Sichuan to Burma and India ran through Nanzhao, and its rulers grew rich on horses, salt and metalwork as well as the rice of the Erhai plain. Its armies reached far beyond Yunnan, sacking the Pyu capital in 832 and raiding Chengdu and Tang-held Annam. Buddhism flourished at court; the tallest of the Three Pagodas at Chongsheng Temple, outside Dali, went up under Nanzhao's kings in the 9th century. In 902 a minister, Zheng Maisi, killed the royal family and took the throne. Three brief dynasties followed until Duan Siping founded the Kingdom of Dali in 937, which lasted until Mongol armies under Kublai took it in 1253. The Yuan made Yunnan a province in 1274, and it has been under Chinese rule ever since.</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_31_CHAPTER_HISTORY_PARA_1">
+            <Text>Balhae, Bohai in Chinese, began in 698, when Dae Jo-yeong led a mixed following of former Goguryeo subjects and Mohe tribesmen out of Tang-held Liaodong and founded a state in the upper Mudan River valley. The two Tang dynastic histories disagree about him: the older one calls him a man of a separate Goguryeo lineage, the newer one a Sumo Mohe who had been subject to Goguryeo. The kingdom first used the name Jin and became Balhae after Tang recognized Dae Jo-yeong as prince of Bohai Commandery in 713. At its widest it reached across much of Manchuria, the northeast of the Korean peninsula and the coast of today's Russian Primorye. In letters to the Japanese court its kings presented their state as Goguryeo restored. The Upper Capital near modern Ning'an was laid out on the grid of Tang Chang'an, and Chinese writers praised Balhae as the "flourishing country east of the sea."</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_31_CHAPTER_HISTORY_PARA_2">
+            <Text>Balhae's government followed the Tang pattern of three departments and six ministries, and its kings patronized Buddhism and sent students to Chang'an. Its underfloor heating and stone-chambered tombs, on the other hand, carry on Goguryeo practice. Balhae envoys crossed the sea to Japan more than thirty times, and goods and diplomats moved between it, Tang and Silla. In 926 the Khitan ruler Abaoji took the Balhae capital and turned the conquered country into Dongdan, a client kingdom under his eldest son. Much of the Balhae nobility, the crown prince Dae Gwang-hyeon among them, went over to Goryeo, while those who stayed behind blended over the centuries into the Khitan, Jurchen and Han populations. Both Koreas teach Balhae as part of Korean history, China classes it as a regional ethnic regime of the Tang, and the two countries still argue over it.</Text>
+        </Replace>
+    </EnglishText>
+    <LocalizedText>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_3_CHAPTER_HISTORY_PARA_1" Language="zh_Hans_CN">
+            <Text>琉球群岛自九州向台湾延伸成一道长弧，其中最大的冲绳岛是琉球王国的中心。14世纪时，冲绳岛分裂为三个相互对立的政权：北部的北山、中部的中山与南部的南山，三国自1370至1380年代起各自向明朝遣使朝贡。1429年，中山王尚巴志将三国统归一王，以首里城为王府。其后历代国王向北将统治扩展至奄美群岛，向南及于宫古、八重山。1458年悬于首里的一口铜钟铭文自夸琉球舟船通达万国，这对一个以转运他国货物为生的王国而言，可谓恰如其分。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_3_CHAPTER_HISTORY_PARA_2" Language="zh_Hans_CN">
+            <Text>明清两代均遣册封使渡海至首里册封新王，琉球船只则远航日本、朝鲜、暹罗、满剌加与爪哇，以中国的丝绸瓷器换取南洋的香料与苏木。首里城朱红的殿宇融合了中国、日本与琉球本地的建筑风格。1609年，萨摩藩岛津氏出兵入侵，使琉球国王沦为其附庸，但为谋取朝贡贸易之利，萨摩容许琉球继续向中国朝贡，并在中国使节到访时将自身的控制隐藏起来。明治政府于1872年将琉球改为藩，1879年吞并并设置冲绳县。清朝提出抗议，交涉未有结果，此事随后被1894至1895年的甲午战争所淹没。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_6_CHAPTER_HISTORY_PARA_1" Language="zh_Hans_CN">
+            <Text>南诏兴起于今云南洱海周边的湖区。当地原有六个小国，称为“六诏”；位于最南的蒙舍诏首领皮逻阁在唐朝支持下，于730年代兼并其余五诏，并于738年受封云南王。王室蒙氏出自汉文史籍所称的“乌蛮”，而“白蛮”大姓——今日白族的先民——则充任朝廷要职。739年迁都太和城，779年再迁至今大理一带的阳苴咩城。唐朝转而与南诏为敌后，南诏先后于751年和754年大败唐军，转投吐蕃；其后又与吐蕃决裂，于794年重新归附唐朝。中国学者将南诏视为唐代的地方民族政权，其他国家的多数史学家则视之为独立王国。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_6_CHAPTER_HISTORY_PARA_2" Language="zh_Hans_CN">
+            <Text>从四川通往缅甸和印度的商路贯穿南诏，其统治者借马匹、盐和金属器物以及洱海平原的稻米积聚财富。南诏军队的兵锋远及云南之外，832年攻破骠国都城，又曾进犯成都及唐朝的安南都护府。佛教在宫廷中十分兴盛，大理城外崇圣寺三塔中最高的千寻塔，便建于九世纪南诏诸王治下。902年，权臣郑买嗣杀尽王族，篡夺政权。此后三个短命王朝相继更迭，直至937年段思平建立大理国；大理国延续到1253年，为忽必烈率领的蒙古大军所灭。元朝于1274年设立云南行省，此后云南一直处于中国统治之下。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_31_CHAPTER_HISTORY_PARA_1" Language="zh_Hans_CN">
+            <Text>渤海（朝鲜语读作Balhae）始于698年。当年，大祚荣率领高句丽遗民与靺鞨部众组成的队伍，脱离唐朝控制下的辽东，在牡丹江上游谷地建国。两部唐史对他的记载并不一致：《旧唐书》称其为“高丽别种”，《新唐书》则称其“本粟末靺鞨附高丽者”。该国初号“震”，713年唐朝册封大祚荣为渤海郡王后改称渤海。其疆域最盛时囊括今中国东北大部、朝鲜半岛东北部以及今俄罗斯滨海边疆区沿海一带。渤海国王在致日本朝廷的国书中，以复兴高句丽自居。上京龙泉府位于今黑龙江宁安附近，仿照唐长安城的棋盘格局营建，中原史家誉之为“海东盛国”。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_31_CHAPTER_HISTORY_PARA_2" Language="zh_Hans_CN">
+            <Text>渤海的官制仿照唐朝的三省六部，历代国王崇奉佛教，并派遣学生前往长安求学；而其火炕取暖与石室墓葬，则延续了高句丽的传统。渤海使节渡海出使日本三十余次，与唐朝、新罗之间亦有使臣与商旅往来。926年，契丹首领耶律阿保机攻陷渤海都城，将其故地改建为东丹国，由长子统治，作为契丹的附属国。渤海贵族多有投奔高丽者，世子大光显即在其中；留居故地之人则在此后数百年间逐渐融入契丹、女真与汉族之中。韩国与朝鲜都将渤海作为本国历史的一部分讲授，中国则将其归为唐代的地方民族政权，两国至今争论不休。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_3_CHAPTER_HISTORY_PARA_1" Language="zh_Hant_HK">
+            <Text>琉球群島自九州向台灣延伸成一道長弧，其中最大的沖繩島是琉球王國的中心。14世紀時，沖繩島分裂為三個相互對立的政權：北部的北山、中部的中山與南部的南山，三國自1370至1380年代起各自向明朝遣使朝貢。1429年，中山王尚巴志將三國統歸一王，以首里城為王府。其後歷代國王向北將統治擴展至奄美群島，向南及於宮古、八重山。1458年懸於首里的一口銅鐘銘文自誇琉球舟船通達萬國，這對一個以轉運他國貨物為生的王國而言，可謂恰如其分。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_3_CHAPTER_HISTORY_PARA_2" Language="zh_Hant_HK">
+            <Text>明清兩代均遣冊封使渡海至首里冊封新王，琉球船隻則遠航日本、朝鮮、暹羅、滿剌加與爪哇，以中國的絲綢瓷器換取南洋的香料與蘇木。首里城朱紅的殿宇融合了中國、日本與琉球本地的建築風格。1609年，薩摩藩島津氏出兵入侵，使琉球國王淪為其附庸，但為謀取朝貢貿易之利，薩摩容許琉球繼續向中國朝貢，並在中國使節到訪時將自身的控制隱藏起來。明治政府於1872年將琉球改為藩，1879年吞併並設置沖繩縣。清朝提出抗議，交涉未有結果，此事隨後被1894至1895年的甲午戰爭所淹沒。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_6_CHAPTER_HISTORY_PARA_1" Language="zh_Hant_HK">
+            <Text>南詔興起於今雲南洱海周邊的湖區。當地原有六個小國，稱為「六詔」；位於最南的蒙舍詔首領皮邏閣在唐朝支持下，於730年代兼併其餘五詔，並於738年受封雲南王。王室蒙氏出自漢文史籍所稱的「烏蠻」，而「白蠻」大姓——今日白族的先民——則充任朝廷要職。739年遷都太和城，779年再遷至今大理一帶的陽苴咩城。唐朝轉而與南詔為敵後，南詔先後於751年和754年大敗唐軍，轉投吐蕃；其後又與吐蕃決裂，於794年重新歸附唐朝。中國學者將南詔視為唐代的地方民族政權，其他國家的多數史學家則視之為獨立王國。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_6_CHAPTER_HISTORY_PARA_2" Language="zh_Hant_HK">
+            <Text>從四川通往緬甸和印度的商路貫穿南詔，其統治者藉馬匹、鹽和金屬器物以及洱海平原的稻米積聚財富。南詔軍隊的兵鋒遠及雲南之外，832年攻破驃國都城，又曾進犯成都及唐朝的安南都護府。佛教在宮廷中十分興盛，大理城外崇聖寺三塔中最高的千尋塔，便建於九世紀南詔諸王治下。902年，權臣鄭買嗣殺盡王族，篡奪政權。此後三個短命王朝相繼更迭，直至937年段思平建立大理國；大理國延續到1253年，為忽必烈率領的蒙古大軍所滅。元朝於1274年設立雲南行省，此後雲南一直處於中國統治之下。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_31_CHAPTER_HISTORY_PARA_1" Language="zh_Hant_HK">
+            <Text>渤海（韓語讀作Balhae）始於698年。當年，大祚榮率領高句麗遺民與靺鞨部眾組成的隊伍，脫離唐朝控制下的遼東，在牡丹江上游谷地建國。兩部唐史對他的記載並不一致：《舊唐書》稱其為「高麗別種」，《新唐書》則稱其「本粟末靺鞨附高麗者」。該國初號「震」，713年唐朝冊封大祚榮為渤海郡王後改稱渤海。其疆域最盛時囊括今中國東北大部、朝鮮半島東北部以及今俄羅斯濱海邊疆區沿海一帶。渤海國王在致日本朝廷的國書中，以復興高句麗自居。上京龍泉府位於今黑龍江寧安附近，仿照唐長安城的棋盤格局營建，中原史家譽之為「海東盛國」。</Text>
+        </Replace>
+        <Replace Tag="LOC_PEDIA_PAGE_INDEPENDENT_ML_EXPLORATION_31_CHAPTER_HISTORY_PARA_2" Language="zh_Hant_HK">
+            <Text>渤海的官制仿照唐朝的三省六部，歷代國王崇奉佛教，並派遣學生前往長安求學；而其火炕取暖與石室墓葬，則延續了高句麗的傳統。渤海使節渡海出使日本三十餘次，與唐朝、新羅之間亦有使臣與商旅往來。926年，契丹首領耶律阿保機攻陷渤海都城，將其故地改建為東丹國，由長子統治，作為契丹的附屬國。渤海貴族多有投奔高麗者，世子大光顯即在其中；留居故地之人則在此後數百年間逐漸融入契丹、女真與漢族之中。南北韓都將渤海作為本國歷史的一部分講授，中國則將其歸為唐代的地方民族政權，兩國至今爭論不休。</Text>
+        </Replace>
+    </LocalizedText>
+</Database>

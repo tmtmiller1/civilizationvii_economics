@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- pt_BR: English placeholders until the translation pass (prompt 5). Every tag in text/en_us/ModText.xml
+     appears here once, under this Language, with the same placeholders. -->
+<Database>
+    <LocalizedText>
+        <Replace Tag="LOC_ECONOMICS_MOD_NAME" Language="pt_BR"><Text>Economics</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MOD_DESCRIPTION" Language="pt_BR"><Text>Borrow from other civilizations or a bond market and pay it back from what the Gold brings in, lend to a neighbour in trouble, pick a tax level as a policy card, and watch an auto-loan guard keep you clear of the game's negative-balance penalties. Missed payments cost you, default costs more, and repudiating a debt keeps the Gold at the price of your name. Single-player.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_NAME" Language="pt_BR"><Text>Loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_DESCRIPTION" Language="pt_BR"><Text>Whether civilizations can borrow from each other and, later, from a bond market, within a limit set by income. Off turns the whole loan system off: no Gold moves and the Economics screen shows balances only.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_OFF" Language="pt_BR"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_OFF_DESCRIPTION" Language="pt_BR"><Text>Nobody borrows or lends. The Economics screen shows balances only.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_ON" Language="pt_BR"><Text>On</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_ON_DESCRIPTION" Language="pt_BR"><Text>Loans between civilizations open with Moneylending, the bond market with Public debt.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_NAME" Language="pt_BR"><Text>Auto-loan guard</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_DESCRIPTION" Language="pt_BR"><Text>When your treasury is about to fall below the line where the game starts taking amenities, the guard takes out an emergency loan for you, up to a cap of ten turns of your income. You can also switch it on the Loans tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_OFF" Language="pt_BR"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_OFF_DESCRIPTION" Language="pt_BR"><Text>You borrow only when you ask to. The game's penalties for a negative balance apply as usual.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_ON" Language="pt_BR"><Text>On</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_ON_DESCRIPTION" Language="pt_BR"><Text>An emergency loan covers a shortfall before the game's penalties start, until the cap is reached. You're told once when it is.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_AI_NAME" Language="pt_BR"><Text>AI borrowing and lending</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_AI_DESCRIPTION" Language="pt_BR"><Text>Whether the computer players take part: borrowing when they run short, lending when they're flush, restructuring an overdue loan, and now and then repudiating a debt to an enemy.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_AI_OFF" Language="pt_BR"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_AI_OFF_DESCRIPTION" Language="pt_BR"><Text>Only you borrow and lend. The computer players keep their treasuries as the base game runs them.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_AI_ON" Language="pt_BR"><Text>On</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_AI_ON_DESCRIPTION" Language="pt_BR"><Text>Computer players borrow, lend, restructure and repudiate by the same rules you play under.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_NAME" Language="pt_BR"><Text>Rates</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_DESCRIPTION" Language="pt_BR"><Text>Scales every interest rate in the game, the rate cap included. Standard is 3 percent a turn in Antiquity, 2 in Exploration and 1.5 in Modern before standing and relationship adjust it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_LOW" Language="pt_BR"><Text>Low</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_LOW_DESCRIPTION" Language="pt_BR"><Text>Three quarters of the standard rates. Borrowing is cheap and lending pays less.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_STANDARD" Language="pt_BR"><Text>Standard</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_STANDARD_DESCRIPTION" Language="pt_BR"><Text>The rates the mod is balanced around.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_HIGH" Language="pt_BR"><Text>High</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_HIGH_DESCRIPTION" Language="pt_BR"><Text>A quarter above the standard rates. Debt bites sooner and lending pays more.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_NAME" Language="pt_BR"><Text>Taxes</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_DESCRIPTION" Language="pt_BR"><Text>Adds the tax policy cards: Light Taxation, Heavy Taxation and War Levy. Each trades Gold against happiness in one of your ordinary policy slots, and the computer players choose among them as they do any card.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_OFF" Language="pt_BR"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_OFF_DESCRIPTION" Language="pt_BR"><Text>The tax cards aren't in the game.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_ON" Language="pt_BR"><Text>On</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_ON_DESCRIPTION" Language="pt_BR"><Text>The three tax cards appear in the policy list as their civics unlock them.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_NAME" Language="pt_BR"><Text>Economic stages</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_DESCRIPTION" Language="pt_BR"><Text>Whether each part opens with the tech or civic that historically brought it in: loans between civilizations with Moneylending, the bond market and longer terms with Public debt.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_OFF" Language="pt_BR"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_OFF_DESCRIPTION" Language="pt_BR"><Text>Every part is open from the start of its age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON" Language="pt_BR"><Text>On</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON_DESCRIPTION" Language="pt_BR"><Text>A part opens for a civilization when it reaches the stage's tech or civic. With the option off everything is open from the start of its age.</Text></Replace>
+    </LocalizedText>
+</Database>
