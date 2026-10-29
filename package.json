@@ -1,0 +1,27 @@
+{
+  "name": "economics-mod-dev",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Type check, lint, syntax and ESM checks, unit tests and coverage for the Economics Civ VII mod. Not shipped.",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint ui tests scripts",
+    "check:types": "tsc --noEmit",
+    "check:syntax": "for f in ui/*.js scripts/*.mjs; do node --check \"$f\" || exit 1; done",
+    "check:esm": "node ./scripts/check-esm.mjs",
+    "check": "npm run check:types && npm run check:syntax && npm run check:esm",
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "coverage": "c8 npm run test",
+    "verify": "npm run lint && npm run check && npm run test",
+    "release:gate": "npm run verify && npm run coverage",
+    "mutation": "stryker run",
+    "readme:pdf": "bash scripts/build_readme_pdf.sh",
+    "steam-changelog": "node scripts/steam-changelog.mjs sync"
+  },
+  "devDependencies": {
+    "@stryker-mutator/core": "^9.6.1",
+    "c8": "^11.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.4.0"
+  }
+}

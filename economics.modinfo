@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Economics, a Civilization VII mod: loans between civilizations and from a bond market, an auto-loan guard, taxes
+  as policy cards, and the economic stages that open each part (docs/DESIGN.md). In development: this version ships
+  the engine-free loan model and the setup options only; nothing moves Gold yet.
+  Groups: the setup options and the text at the main menu; the scripts and the text in every game; the level 1
+  gameplay rows (DESIGN section 1, "Native first") in their own groups, each gated on the setup option that owns it;
+  and the four Civilopedia History Corrections groups every Tower mod carries.
+-->
+<Mod id="tower-economics" version="1" xmlns="ModInfo">
+    <Properties>
+        <Name>LOC_ECONOMICS_MOD_NAME</Name>
+        <Description>LOC_ECONOMICS_MOD_DESCRIPTION</Description>
+        <Authors>Tower</Authors>
+        <Package>Economics</Package>
+        <PackageSortIndex>1000</PackageSortIndex>
+        <ShowInBrowser>1</ShowInBrowser>
+        <Version>0.1.0</Version>
+        <!-- The ledger (every loan, block, miss and repudiation) lives in the save, and the setup options are fixed
+             when the game is created, so a save made with the mod needs it to load the same game. -->
+        <AffectsSavedGames>1</AffectsSavedGames>
+    </Properties>
+    <Dependencies>
+        <Mod id="base-standard" title="LOC_MODULE_BASE_STANDARD_NAME"/>
+    </Dependencies>
+    <ActionCriteria>
+        <Criteria id="always">
+            <AlwaysMet></AlwaysMet>
+        </Criteria>
+        <!-- Each level 1 data group loads only when its setup option is on (DESIGN section 9). -->
+        <Criteria id="taxes-on">
+            <ConfigurationValueMatches>
+                <Group>Game</Group>
+                <ConfigurationId>ECONOMICS_TAXES</ConfigurationId>
+                <Value>ECONOMICS_TAXES_ON</Value>
+            </ConfigurationValueMatches>
+        </Criteria>
+        <Criteria id="ai-on">
+            <ConfigurationValueMatches>
+                <Group>Game</Group>
+                <ConfigurationId>ECONOMICS_AI</ConfigurationId>
+                <Value>ECONOMICS_AI_ON</Value>
+            </ConfigurationValueMatches>
+        </Criteria>
+        <!-- Civilopedia History Corrections: the history text on six independent-power pages from Civilopedia
+             Expanded: Independents. Each group needs that mod in use, so without it the game's pages are left as
+             they are. The text in history-corrections/ is a copy kept in step with the standalone mod. -->
+        <Criteria id="history-corrections-antiquity">
+            <ModInUse>maple-leaves-civilopedia-expanded</ModInUse>
+            <AgeInUse>AGE_ANTIQUITY</AgeInUse>
+        </Criteria>
+        <Criteria id="history-corrections-exploration">
+            <ModInUse>maple-leaves-civilopedia-expanded</ModInUse>
+            <AgeInUse>AGE_EXPLORATION</AgeInUse>
+        </Criteria>
+        <Criteria id="history-corrections-exploration-sengoku">
+            <ModInUse>maple-leaves-civilopedia-expanded</ModInUse>
+            <AgeInUse>AGE_EXPLORATION</AgeInUse>
+            <ModInUse>sengoku</ModInUse>
+        </Criteria>
+        <Criteria id="history-corrections-exploration-mlcs">
+            <ModInUse>maple-leaves-civilopedia-expanded</ModInUse>
+            <AgeInUse>AGE_EXPLORATION</AgeInUse>
+            <ModInUse>ml-city-states-expanded</ModInUse>
+        </Criteria>
+    </ActionCriteria>
+    <ActionGroups>
+        <!-- Shell scope: the setup options, and the name and description for the Additional Content browser. -->
+        <ActionGroup id="economics-shell" scope="shell" criteria="always">
+            <Properties>
+                <LoadOrder>100</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateDatabase>
+                    <Item>config/econ-setup.sql</Item>
+                </UpdateDatabase>
+                <UpdateText>
+                    <Item>text/en_us/ModText.xml</Item>
+                    <Item locale="de_DE">text/de_de/ModText.xml</Item>
+                    <Item locale="es_ES">text/es_es/ModText.xml</Item>
+                    <Item locale="fr_FR">text/fr_fr/ModText.xml</Item>
+                    <Item locale="it_IT">text/it_it/ModText.xml</Item>
+                    <Item locale="ja_JP">text/ja_jp/ModText.xml</Item>
+                    <Item locale="ko_KR">text/ko_kr/ModText.xml</Item>
+                    <Item locale="pl_PL">text/pl_pl/ModText.xml</Item>
+                    <Item locale="pt_BR">text/pt_br/ModText.xml</Item>
+                    <Item locale="ru_RU">text/ru_ru/ModText.xml</Item>
+                    <Item locale="zh_Hans_CN">text/zh_cn/ModText.xml</Item>
+                    <Item locale="zh_Hant_HK">text/zh_hk/ModText.xml</Item>
+                </UpdateText>
+                <UIScripts>
+                    <!-- Tower Settings Keeper: listed first, imports nothing, so it runs before anything reads storage. -->
+                    <Item>ui/settings-keeper.js</Item>
+                </UIScripts>
+            </Actions>
+        </ActionGroup>
+        <ActionGroup id="economics-game" scope="game" criteria="always">
+            <Properties>
+                <LoadOrder>100</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateText>
+                    <Item>text/en_us/ModText.xml</Item>
+                    <Item locale="de_DE">text/de_de/ModText.xml</Item>
+                    <Item locale="es_ES">text/es_es/ModText.xml</Item>
+                    <Item locale="fr_FR">text/fr_fr/ModText.xml</Item>
+                    <Item locale="it_IT">text/it_it/ModText.xml</Item>
+                    <Item locale="ja_JP">text/ja_jp/ModText.xml</Item>
+                    <Item locale="ko_KR">text/ko_kr/ModText.xml</Item>
+                    <Item locale="pl_PL">text/pl_pl/ModText.xml</Item>
+                    <Item locale="pt_BR">text/pt_br/ModText.xml</Item>
+                    <Item locale="ru_RU">text/ru_ru/ModText.xml</Item>
+                    <Item locale="zh_Hans_CN">text/zh_cn/ModText.xml</Item>
+                    <Item locale="zh_Hant_HK">text/zh_hk/ModText.xml</Item>
+                </UpdateText>
+                <UIScripts>
+                    <!-- Tower Settings Keeper: listed first, imports nothing, so it runs before anything reads storage. -->
+                    <Item>ui/settings-keeper.js</Item>
+                    <Item>ui/econ-bootstrap.js</Item>
+                </UIScripts>
+                <ImportFiles>
+                    <Item>ui/econ-ai.js</Item>
+                    <Item>ui/econ-batch.js</Item>
+                    <Item>ui/econ-bootstrap.js</Item>
+                    <Item>ui/econ-conservation.js</Item>
+                    <Item>ui/econ-credit.js</Item>
+                    <Item>ui/econ-guard.js</Item>
+                    <Item>ui/econ-invariants.js</Item>
+                    <Item>ui/econ-lenders.js</Item>
+                    <Item>ui/econ-loan.js</Item>
+                    <Item>ui/econ-log.js</Item>
+                    <Item>ui/econ-money.js</Item>
+                    <Item>ui/econ-params.js</Item>
+                    <Item>ui/econ-payments.js</Item>
+                    <Item>ui/econ-plan.js</Item>
+                    <Item>ui/econ-repudiation.js</Item>
+                    <Item>ui/econ-requests.js</Item>
+                    <Item>ui/econ-shortfall.js</Item>
+                    <Item>ui/econ-stages.js</Item>
+                    <Item>ui/econ-state.js</Item>
+                    <Item>ui/econ-tax.js</Item>
+                    <Item>ui/econ-turn.js</Item>
+                </ImportFiles>
+            </Actions>
+        </ActionGroup>
+        <!-- Level 1 gameplay rows, one group per setup option (DESIGN section 9). Empty until prompt 4 writes them. -->
+        <ActionGroup id="economics-tax-cards" scope="game" criteria="taxes-on">
+            <Properties>
+                <LoadOrder>110</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateDatabase>
+                    <Item>data/econ-tax-cards.sql</Item>
+                </UpdateDatabase>
+            </Actions>
+        </ActionGroup>
+        <ActionGroup id="economics-ai-lists" scope="game" criteria="ai-on">
+            <Properties>
+                <LoadOrder>110</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateDatabase>
+                    <Item>data/econ-ai-lists.sql</Item>
+                </UpdateDatabase>
+            </Actions>
+        </ActionGroup>
+        <!-- Civilopedia History Corrections, loaded at 1000 to come after Civilopedia Expanded's groups (10, 100
+             and 210). Text only. -->
+        <ActionGroup id="history-corrections-antiquity-text" scope="game" criteria="history-corrections-antiquity">
+            <Properties>
+                <LoadOrder>1000</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateText>
+                    <Item>history-corrections/antiquity-text.xml</Item>
+                </UpdateText>
+            </Actions>
+        </ActionGroup>
+        <ActionGroup id="history-corrections-exploration-text" scope="game" criteria="history-corrections-exploration">
+            <Properties>
+                <LoadOrder>1000</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateText>
+                    <Item>history-corrections/exploration-text.xml</Item>
+                </UpdateText>
+            </Actions>
+        </ActionGroup>
+        <ActionGroup id="history-corrections-exploration-sengoku-text" scope="game" criteria="history-corrections-exploration-sengoku">
+            <Properties>
+                <LoadOrder>1000</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateText>
+                    <Item>history-corrections/exploration-sengoku-text.xml</Item>
+                </UpdateText>
+            </Actions>
+        </ActionGroup>
+        <ActionGroup id="history-corrections-exploration-mlcs-text" scope="game" criteria="history-corrections-exploration-mlcs">
+            <Properties>
+                <LoadOrder>1000</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateText>
+                    <Item>history-corrections/exploration-mlcs-text.xml</Item>
+                </UpdateText>
+            </Actions>
+        </ActionGroup>
+    </ActionGroups>
+    <LocalizedText>
+        <File>text/en_us/ModText.xml</File>
+    </LocalizedText>
+</Mod>

@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "_comment": [
+    "Mutation testing on the rule modules TEST-PLAN section 1 names (house bar: high 75, low 60). The command runner",
+    "re-runs the suite per mutant; coverageAnalysis is off because the command runner has no per-test hooks. The perf",
+    "and balance tests are left out (a timing failure would kill mutants for the wrong reason, and the balance run is",
+    "slow), and so are the source scanners (engine-free, no-empty-catch, modinfo), which read the instrumented source."
+  ],
+  "testRunner": "command",
+  "commandRunner": {
+    "command": "NODE_OPTIONS=--max-old-space-size=2048 node --test $(ls tests/*.test.mjs | grep -v -E 'perf|engine-free|balance|modinfo|no-empty-catch|i18n|core-imports|pedia')"
+  },
+  "coverageAnalysis": "off",
+  "mutate": ["ui/econ-payments.js", "ui/econ-credit.js", "ui/econ-conservation.js", "ui/econ-plan.js"],
+  "reporters": ["clear-text", "json"],
+  "jsonReporter": {
+    "fileName": "reports/mutation/mutation.json"
+  },
+  "thresholds": {
+    "high": 75,
+    "low": 60,
+    "break": null
+  },
+  "concurrency": 4,
+  "timeoutMS": 60000,
+  "tempDirName": ".stryker-tmp"
+}
