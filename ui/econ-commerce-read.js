@@ -155,8 +155,9 @@ function neededProgress(queue, hash, type) {
   return Math.max(0, Math.round((cost * speed) / 100) - progress);
 }
 
-// How much of a point sent by addProgress lands in a city, in percent (NOTES finding L). 100 until the lab's reading
-// says otherwise; the plan and the AI's build loans divide the points they send by it.
+// How much of a point sent by addProgress lands in a city, in percent; the plan and the AI's build loans divide the
+// points they send by it. 100: the lab found a grant lands times the city's own production multiplier, as its own
+// production does, and the lead kept the price at the purchase rate (NOTES finding L).
 export const PROGRESS_SCALE_PCT = 100;
 
 /**

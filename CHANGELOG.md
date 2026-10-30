@@ -72,6 +72,11 @@ release is generated from the matching section below by `scripts/steam-changelog
 - The business cycle no longer leans to Boom. A trade route that stands and income that grows at its usual pace don't
   move the world any more; only growth faster or slower than usual does, and a long boom wears itself out, so a
   growing world still has slumps.
+- At an age change the turn notice says how much of your Gold the game let you keep ("the age change kept 6,000 of
+  your 11,432 Gold"), and the Treasury history records it for every civilization.
+- The turn notice reads as a sentence: "from trade bills and the business cycle", and two wars declared in one turn
+  read "after 2 wars declared" instead of the same cause twice. The Fiscal tab says "next turn" instead of "in 1
+  turns".
 - The computer players borrow to build: while their credit is cheap, each takes a loan now and then and puts it
   straight into the building it's working on, within the same limits you have. Easy credit in a boom now leads to
   more borrowing, and from Banking a boom carried on too much debt can end in a Panic. World leverage is now counted in

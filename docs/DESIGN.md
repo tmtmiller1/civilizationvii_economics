@@ -416,9 +416,12 @@ bond     = r_bond rises by 50 * pi, at most 25% (4.3)
 Built 2026-10-30 (version 0.4.0, offline only). Members are the living civs past Public debt; `B` is what they owe the
 bond market, `M` the Gold they hold. Erosion goes to the world account `inflation` at step 3 of each member's pass,
 paid from its funds, and the premium enters the bond rate with the system's share and the cycle spread. A Corporatist
-civ erodes at twice the rate and a Planned one not at all (4.17). The M4 transition probe found each civ's Gold carried
-to the cent into the next age; nobody held more than 3,000, so whether `DefaultGoldOnTransition` caps a larger
-treasury is open, and the reserve doesn't lean on it either way. M10 found a negative purchase efficiency raises the
+civ erodes at twice the rate and a Planned one not at all (4.17). The game caps the Gold a civ carries into a new
+age: the lab's 2026-10-30 run found 6,000 into Exploration and 9,000 into Modern, set by the game's age-transition
+script (`capGold`, the transition setting's "keep more", which Play Now always uses) and not by
+`DefaultGoldOnTransition`'s 3,000. Nothing here predicts the cap: the first batch of an age takes the balance the
+engine reports, and records what the change took (NOTES choice 109) as a ledger event and a notice, "the age change
+kept 6,000 of your 11,432 Gold", measured from the start of the last turn. M10 found a negative purchase efficiency raises the
 game's prices by exactly its share: a native price rise is possible wherever the engine's own state can gate it (a
 government, age progress, the crisis), but none of those follows bond debt, so 4.8 stays script. In the 1.2 balance
 run, with a human borrowing four turns of income from the bond market every 15 turns, `pi` stayed between 0.01 and
@@ -614,7 +617,9 @@ started would leave the Gold waiting on a choice the AI can't see.
 - The build is re-read in the same tick as the grant, since `addProgress` lands on whatever is current 3 s later
   (P8). If P8 shows the progress landing on a different item, the return still runs, since the host got the value.
 - `G / 3` is a starting ratio. The balance checks (section 10) compare it with the game's own Gold purchase price for
-  the same build, by age and game speed, and note that `addProgress` is scaled up by the city's production bonuses.
+  the same build, by age and game speed. `addProgress` lands times the city's own production multiplier for the item
+  (NOTES finding L, 2026-10-30): as sent in the human's cities, under the difficulty handicap in an AI's, as the
+  city's own production does, so `G / 3` stays.
 - When the building stands, the city's Economics entry and the chronicle name the investor.
 - Holding Gold for a build the city hasn't started yet (an escrow) is left out of 1.1 and can come back if P8 and
   play show it's wanted.
@@ -898,11 +903,13 @@ Each row lists only the changes from Mixed. Mixed is sections 4.1 to 4.16 as wri
   from GlobalParameters at runtime with other mods' rows applied, 4 when the read fails. Game speed scales a build's
   cost and its purchase price alike, and the glue reads the points a build needs at the game's speed, so the price
   per point is the multiplier alone. What whole points leave over buys points in the biggest cities first. Empty
-  queues are skipped. The Fiscal tab shows the take and where it went. P8 covers AI cities. `addProgress` lands
-  scaled by a city's production bonuses (NOTES finding L), so each city carries a `progressScalePct` from the glue,
-  the share of a sent point that lands there, 100 until the lab reads it; the points sent to a city are divided by
-  it, so a city with strong bonuses isn't sold its production cheap. The plan's production is then worth the Gold it
-  takes at the game's own price, and the balance checks (section 10) measure it against a Mixed civ.
+  queues are skipped. The Fiscal tab shows the take and where it went. P8 covers AI cities. `addProgress` lands as
+  the amount sent times the city's own production multiplier for that kind of item (NOTES finding L): 1.0 in the
+  human's cities, the difficulty handicap in an AI's (0.6 on units and 0.8 on buildings at Settler). A grant then
+  behaves like the city's own production, handicap included, so the price stays the purchase rate: each city
+  carries a `progressScalePct` from the glue that the points sent are divided by, kept at 100 (the lead's decision of
+  2026-10-30). The plan's production is worth the Gold it takes at the game's own price, and the balance checks
+  (section 10) measure it against a Mixed civ.
 - Between systems: bills use the importer's prices. Loans use the lender's terms, so only a Religious lender makes
   partnerships.
 - Changing system (a new government at an age transition, or taking an ideology): each number blends evenly over 10
@@ -1230,14 +1237,14 @@ figures). No game was launched.
 | Cycle shape (1.2 run, cycle fix alone) | Steady 55 to 70% of turns and Boom the rest in every game, no Slump; the peaceful game Boom on 63%; no Depression, no Panic | Slump 14 to 24% of turns and Steady the rest in every game, no Boom; `E` 0.87 to 1.03; the peaceful game Steady throughout (lowest 0.96), with 17 civ-turns of Slump; no Depression, no Panic | Half met: the lean is gone and wars, crises and below-trend income now slump the world, but nothing lifts it into Boom without credit (NOTES finding V); the credit boom comes with the AI's borrowing below |
 | Cycle shape (1.2 run, with the AI's build loans) | as above | Steady 83 to 92% of turns, Slump 6 to 15% and Boom 1 to 5% in every game; `E` 0.85 to 1.08; the peaceful game Steady 87%, Boom 9%, Slump 4% (after its Panic) with 84 civ-turns of Slump; no Depression | Met: both Slump and Boom in all six games, Steady most common, and the peaceful game slumps |
 | Panics a game (1.2 run) | 0 in every game; leverage at most 5% of the Gold held | 1 or 2 in every game, 1 in the peaceful one; leverage up to 3.9 to 4.7 turns of world income; 262 to 277 AI build loans a game, no default | Met: at most twice, and from booms with borrowing |
-| The plan (1.2 run) | 450 Gold into 150 points in 50 turns at 3 Gold a point, worth 600 Gold at the purchase price: 1.33 times the Gold | 400 Gold into 100 points at the game's 4 Gold a point (read from the GlobalParameters fixture), worth 400 Gold: 1.0 times the Gold, with each sent point landing as one | Met on the Gold: the plan buys at the price a player pays. It still keeps its tax cards, and finding L's scaling is the glue's `progressScalePct` for the lead to set |
+| The plan (1.2 run) | 450 Gold into 150 points in 50 turns at 3 Gold a point, worth 600 Gold at the purchase price: 1.33 times the Gold | 400 Gold into 100 points at the game's 4 Gold a point (read from the GlobalParameters fixture), worth 400 Gold: 1.0 times the Gold, with each sent point landing as one | Met on the Gold: the plan buys at the price a player pays, and the lab found a grant lands as the city's own production would (finding L), so `progressScalePct` stays at 100. It still keeps its tax cards |
 | Borrowing pays (1.0 table) | interest at 0.03 / 0.02 / 0.015: Market 59.4 Gold against 30 to 50 of yield, Bazaar 88 against 60 to 80, Bank 125 against 80 to 100 | at 0.015 / 0.01 / 0.0075: Market 29.7 against 30 to 50, Bazaar 44 against 60 to 80, Bank 62.7 against 80 to 100; the Granary pays no Gold | Met on the strict reading in every age, the Market by a hair at its lowest yield |
 | AI solvency (1.0 run, with the new rates and limits) | 175 AIs with positive income in the Off run: 0 defaults, 0 emergency loans | the same 175: 0 defaults, 0 emergency loans; penalty turns On 491 against 2,848 Off (509 before) | Met: 0 games in 20 |
 | AI solvency (1.0 run, with build loans and three cities a civ) | as above | the same 175: 0 defaults, 0 emergency loans, about 290 build loans a game; penalty turns On 1,938 against 2,848 Off. 1,854 of them come from the harness now carrying the markets envelope (NOTES finding W), 84 from the build loans | Met: 0 games in 20 |
 | Inflation (1.2 run) | median 0.01 to 0.04%, worst 0.1% a turn; 30 to 75 Gold eroded a game | median 0.02 to 0.06%, worst 0.36%; 63 to 155 Gold eroded (NOTES finding X) | Met: never at its cap |
 | System diversity (1.2 run) | Corporatist +7.7 Gold of cycle Gold against Mixed's +4.2 | Corporatist -10.5 against Mixed's -14.0: the controlled world's routes no longer lift it, so every system's cycle Gold is a charge; credit and swing as before | Unchanged in shape: Corporatist still ahead on three of four |
 | Lending pays (1.0 run) | +9.4% median return, 8 of 9 lending games positive | +4.8% median, 8 of 9 positive: the player's neutral rate is half what it was | Met |
-| Development loan ratio (1.1 run) | 1.125 times the purchase price on a role building, 0.94 on another | unchanged: it was measured against the purchase rate already, and a development loan's return carries the rest | Met, so `G / 3` stays; finding L applies to it as well, and the plan's `progressScalePct` is the read to use if the lab finds the scaling large |
+| Development loan ratio (1.1 run) | 1.125 times the purchase price on a role building, 0.94 on another | unchanged: it was measured against the purchase rate already, and a development loan's return carries the rest | Met, so `G / 3` stays: the lab found grants aren't scaled up beyond the city's own production (finding L) |
 
 ## 11. Versions
 

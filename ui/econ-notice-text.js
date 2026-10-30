@@ -5,7 +5,8 @@
 import { formatGold, formatRate } from "./econ-format.js";
 import { isWorldAccount } from "./econ-params.js";
 
-/** @typedef {{ key: string, args: (string | number | string[])[] }} Line */
+/** @typedef {{ key: string, args: number[] }} Counted a key composed with its count, in a list */
+/** @typedef {{ key: string, args: (string | number | (string | Counted)[])[] }} Line */
 /** @typedef {{ ledger: Ledger, nameOf: (party: Party) => string }} TextContext */
 
 const PREFIX = "LOC_ECONOMICS_";
@@ -79,16 +80,46 @@ export function cycleEventKey(kind) {
 }
 
 /**
- * The arguments as the game composes them: a LOC key is composed in the game's language first, a list of keys is
- * composed and joined, numbers and text pass through.
- * @param {(string | number | string[])[]} args
- * @param {(key: string) => string} compose
+ * A list as a sentence: "a, b and c", with the joining word in the game's language.
+ * @param {(string | number)[]} items
+ * @param {string} and
+ */
+export function joinList(items, and) {
+  if (items.length < 2) return items.join("");
+  return `${items.slice(0, -1).join(", ")} ${and} ${items[items.length - 1]}`;
+}
+
+/**
+ * The arguments as the game composes them: a LOC key is composed in the game's language first, a list of keys (or of
+ * keys with a count) is composed and joined as a sentence, numbers and text pass through.
+ * @param {Line["args"]} args
+ * @param {(key: string, ...args: (string | number)[]) => string} compose
  * @returns {(string | number)[]}
  */
 export function composeArgs(args, compose) {
-  const one = (/** @type {string | number} */ arg) => (typeof arg === "string" && arg.startsWith(PREFIX)
-    ? compose(arg) : arg);
-  return args.map((arg) => (Array.isArray(arg) ? arg.map(one).join(", ") : one(arg)));
+  const one = (/** @type {string | number | Counted} */ arg) => {
+    if (typeof arg === "object") return compose(arg.key, ...arg.args);
+    return typeof arg === "string" && arg.startsWith(PREFIX) ? compose(arg) : arg;
+  };
+  return args.map((arg) => (Array.isArray(arg) ? joinList(arg.map(one), compose(`${PREFIX}LIST_AND`)) : one(arg)));
+}
+
+/** Cycle events that can come more than once in a turn, with a text for "2 wars declared". */
+const COUNTED_KINDS = new Set(["war-declared", "peace", "capture", "raze", "disaster", "default", "repudiation",
+  "route-new", "route-ended"]);
+
+/**
+ * A phase change's causes, each kind once in the order first seen; a kind seen more than once is named with its
+ * count ("2 wars declared") rather than repeated.
+ * @param {string[]} kinds
+ * @returns {(string | Counted)[]}
+ */
+export function causeItems(kinds) {
+  /** @type {Map<string, number>} */
+  const counts = new Map();
+  for (const kind of kinds) counts.set(kind, (counts.get(kind) || 0) + 1);
+  return [...counts].map(([kind, n]) => (n > 1 && COUNTED_KINDS.has(kind)
+    ? { key: `${cycleEventKey(kind)}_MANY`, args: [n] } : cycleEventKey(kind)));
 }
 
 /** @type {Record<string, (notice: Record<string, unknown>, ctx: TextContext) => Line | null>} */
@@ -134,10 +165,11 @@ const NOTICES = {
     args: [name(ctx, notice.investor), gold(notice.cents)] }),
   system: (notice) => ({ key: `${PREFIX}NOTICE_SYSTEM`, args: [systemKey(notice.to), systemKey(notice.from)] }),
   phase: (notice) => {
-    const causes = String(notice.causes || "").split(",").filter(Boolean).map(cycleEventKey);
+    const causes = causeItems(String(notice.causes || "").split(",").filter(Boolean));
     return { key: `${PREFIX}NOTICE_PHASE${causes.length ? "" : "_QUIET"}`, args: [phaseKey(notice.to), causes] };
   },
   panic: () => ({ key: `${PREFIX}NOTICE_PANIC`, args: [] }),
+  "age-gold": (notice) => ({ key: `${PREFIX}NOTICE_AGE_GOLD`, args: [gold(notice.after), gold(notice.before)] }),
   plan: (notice) => ({ key: `${PREFIX}NOTICE_PLAN`, args: [gold(notice.cents), Number(notice.cities) || 0] }),
 };
 
@@ -243,6 +275,8 @@ const EVENTS = {
   miss: (event) => ({ key: `${PREFIX}EVENT_MISS`, args: [String(event.loanId), Number(event.missed) || 1] }),
   default: (event, who) => ({ key: `${PREFIX}EVENT_DEFAULT`, args: [String(event.loanId), who(event.borrower)] }),
   closed: (event) => ({ key: `${PREFIX}EVENT_CLOSED`, args: [String(event.loanId)] }),
+  "age-gold": (event, who) => ({ key: `${PREFIX}EVENT_AGE_GOLD`, args: [who(event.pid), gold(event.after),
+    gold(event.before)] }),
   restructure: (event) => ({ key: `${PREFIX}EVENT_RESTRUCTURE`, args: [String(event.loanId), gold(event.cents)] }),
   repudiation: (event, who) => ({ key: `${PREFIX}EVENT_REPUDIATION`, args: [who(event.borrower), gold(event.cents),
     who(event.lender), Number(event.grievances) || 0] }),

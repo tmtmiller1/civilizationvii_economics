@@ -178,6 +178,7 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_HAPPINESS_NOW" Language="fr_FR"><Text>Happiness a turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION" Language="fr_FR"><Text>Next celebration</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS" Language="fr_FR"><Text>in {1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_TURN" Language="fr_FR"><Text>next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_NEVER" Language="fr_FR"><Text>not until your Happiness rises</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATING" Language="fr_FR"><Text>you're celebrating now</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_NO_CARD" Language="fr_FR"><Text>No tax card</Text></Replace>
@@ -425,9 +426,21 @@
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_OVERHEATING" Language="fr_FR"><Text>a long boom running out of steam</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CREDIT_GROWTH" Language="fr_FR"><Text>credit growing fast</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_UNKNOWN" Language="fr_FR"><Text>events</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_WAR_DECLARED_MANY" Language="fr_FR"><Text>{1_Count} wars declared</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_PEACE_MANY" Language="fr_FR"><Text>{1_Count} peace treaties</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CAPTURE_MANY" Language="fr_FR"><Text>{1_Count} settlements captured</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_RAZE_MANY" Language="fr_FR"><Text>{1_Count} settlements razed</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_DISASTER_MANY" Language="fr_FR"><Text>{1_Count} disasters</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_DEFAULT_MANY" Language="fr_FR"><Text>{1_Count} defaults</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_REPUDIATION_MANY" Language="fr_FR"><Text>{1_Count} repudiated debts</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_NEW_MANY" Language="fr_FR"><Text>{1_Count} new trade routes</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_ENDED_MANY" Language="fr_FR"><Text>{1_Count} trade routes ending</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LIST_AND" Language="fr_FR"><Text>and</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_SYSTEM" Language="fr_FR"><Text>Your economic system is now the {1_System}. Its numbers move over from the {2_Old} during the next 10 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_PHASE" Language="fr_FR"><Text>Business cycle: {1_Phase}, after {2_Causes}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_PHASE_QUIET" Language="fr_FR"><Text>Business cycle: {1_Phase}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_AGE_GOLD" Language="fr_FR"><Text>The age change kept {1_Kept} of your {2_Held} Gold. The game caps the Gold a civilization carries into a new age, and the figure before it is what you held at the start of the last turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_AGE_GOLD" Language="fr_FR"><Text>The age change kept {2_Kept} of {1_Civ}'s {3_Held} Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_PANIC" Language="fr_FR"><Text>A financial Panic: for 5 turns civilizations stop lending to each other and bond rates jump. A slump usually follows.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_PLAN" Language="fr_FR"><Text>The plan put {1_Amount} Gold into the builds of {2_Count} of your cities.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_SYSTEM" Language="fr_FR"><Text>{1_Civ} changed its economic system to the {2_System}.</Text></Replace>
@@ -473,6 +486,7 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_FROM_IDEOLOGY" Language="fr_FR"><Text>Set by your ideology.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_FROM_NONE" Language="fr_FR"><Text>A mixed economy until you choose a government.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_BLEND" Language="fr_FR"><Text>Moving over from the {1_Old}: {2_Turns} more turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_BLEND_ONE" Language="fr_FR"><Text>Moving over from the {1_Old}: one more turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_PLAN" Language="fr_FR"><Text>The plan this turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_PLAN_NOTE" Language="fr_FR"><Text>A fifth of your Gold income goes into your cities' builds, split by population, at 3 Gold a point of production.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_TAX_NOTE" Language="fr_FR"><Text>Your government's changes to the tax cards show on each city's yields while the card is slotted.</Text></Replace>

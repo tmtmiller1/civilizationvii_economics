@@ -119,6 +119,7 @@ so, with the DESIGN section that now holds the rule.
 | 106 | The AI's build loan (DESIGN 6) | Once per 10 turns per AI (`ledger.buildTurns`, ledger version unchanged: a save without it loads with none), income of 10 Gold or more, solvent, no default, its own phase Boom, Steady or outside the cycle. The cheapest bond or AI lender over 10 turns (its citizens keep their own rule); up to 5 turns of income, capped by what the build still needs at the plan's point price and by the most the 4.2 limits allow. A 10-turn term means about one open at a time; with the longest term the AI took, leverage ran to 7 or 8 turns of world income and inflation sat at its cap for up to 34 turns. The principal goes from the lender straight to the progress account, since Gold from a civ counts in the borrower's funds only the next turn (4.14, debt-6); the city's progress row is shared with a development loan's or the plan's | `econ-build-loan` (all seven) |
 | 107 | Leverage and the Panic line (DESIGN 4.11) | Outstanding debt over the living civs' positive income, in hundredths of a turn (at least 10 Gold of income); the line is 1.7 turns, with 60 turns between Panics. Tuned in the 1.2 run: at 3 turns no Panic came in a boom; at 1.5 to 2 with 20 turns between them, three to five a game | `econ-cycle`: "Panic: from the Banking stage..."; `econ-build-loan`: "leverage is debt in turns..." |
 | 108 | Credit growth's weight (DESIGN 4.11) | +0.015 a turn, from +0.005: with the AI borrowing, +0.005 and +0.01 gave no Boom or at most 6 turns of it a game, +0.02 gave a Panic too many in the peaceful game | `econ-cycle`: "world income against its own trend..." |
+| 109 | What the age change's Gold cap leaves in the ledger (DESIGN 4.8) | The model doesn't predict the cap (the lab found 6,000 into Exploration and 9,000 into Modern, from the game's age-transition script, not `DefaultGoldOnTransition`'s 3,000). On an age's first batch it takes the engine's balance and records an `age-gold` event, with a notice to the player, for any civ 100 Gold or more below its last batch's end balance (snapshot plus the mod's net). That end balance is the start of the last turn, so the last turn's own income and spending are inside the gap, and the notice says so | `econ-plan`: "the age change: the Gold the game cut..."; `econ-notice-text`: "the age change's Gold cut..." |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 
@@ -173,11 +174,15 @@ for the exporter (the engine's Trade Income plus the bill); whether the importer
 If the owner wants the bill to scale with what's traded rather than with income, `TRADE.billPct` or the cap is the
 constant to move.
 
-L. **`addProgress` lands bigger than it's sent.** From the 1.1 probes (C3): a 20-progress grant took Silla's Bazaar
-from 0 to 76.5 progress 3 s later (12% to 30%), and it read 45.9 at the next step. DESIGN 4.12 expected the grant
-"scaled up by the city's production bonuses", but nearly 4 times is more than a bonus, and the two reads disagree.
-Until it's read again, a development loan may buy a host far more than `G / 3` production; the ratio row in the
-balance run is the lower bound. Owed: one grant on a city with no production bonuses, its percent before and after.
+L. **What `addProgress` lands.** Answered by the lab on 2026-10-30
+(`mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-watch-040.md`, section 7): a grant lands as the amount sent
+times the city's own production multiplier for that kind of item, the same one its own production gets each turn,
+which in practice is the AI's difficulty handicap. The human's capital landed 5 for 5 and 10 for 10; AI cities at
+Settler landed 0.60 on units and 0.80 on buildings (`HANDICAP_UNITS_PRODUCTION_SCALING` -40%,
+`HANDICAP_CONSTRUCTIBLE_PRODUCTION_SCALING` -20%). The 1.1 probe's 76.5 was a misread: progress read 0 on a build
+switched that turn while the percent ran ahead. The lead's decision: a grant behaves like the city's own production,
+handicap included, which is consistent, so the plan's per-city `progressScalePct` stays 100 and the point is priced at
+the purchase rate; development loans don't overpay, so `G / 3` stays.
 
 M. **The AI's citizen rule as written can't pass the debt-service limit.** Five turns of income over 10 turns makes
 the first slice alone half a turn of income, past 4.2's 35%. The rule now borrows the most whose first payment fits,
@@ -208,7 +213,7 @@ included.
 R. **The plan buys production cheaply.** At the development loan's 3 Gold a point the plan's production is worth 1.33
 times the Gold it takes at the game's purchase price (4 a point), before production bonuses scale `addProgress` up
 (finding L), and a Planned civ keeps its tax cards (choice 83). Settled 2026-10-30 (choice 103): the plan buys at the game's own purchase rate, and a
-city's `progressScalePct` from the glue divides the points sent once the lab reads finding L.
+city's `progressScalePct` from the glue divides the points sent, kept at 100 once the lab read finding L.
 
 S. **The AI clusters on a few governments, so on a few systems.** In the M-probe transition game every AI took Feudal
 Monarchy or Theocracy in Exploration and Authoritarianism in Modern (Corporatist until an ideology); in Antiquity five

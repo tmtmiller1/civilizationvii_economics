@@ -540,3 +540,16 @@ test("projection: 20 balances per civ, moving by income less each payment", () =
   assert.equal(s[0].balances[19] > s[0].balances[0], true);
   assert.equal(projectBalances(input({ civs }), 3)[0].balances.at(-1), 19000);
 });
+
+test("the age change: the Gold the game cut since the last batch is recorded, from the engine's own balance", () => {
+  const last = { id: "B9", turn: 120, civs: [{ pid: ME, snapshot: 1100000, net: 43200, influence: 0, celebration: 0 },
+    { pid: 6, snapshot: 500000, net: 0, influence: 0, celebration: 0 }] };
+  const ledger = { ...emptyLedger(), age: "AGE_ANTIQUITY", lastTurn: 120, lastBatch: last };
+  const civs = [me({ balanceCents: 600000 }), civ(6, { balanceCents: 495000 })];
+  const plan = planTurn(input({ turn: 121, age: "AGE_EXPLORATION", ledger, civs }));
+  assert.deepEqual(plan.events.filter((e) => e.kind === "age-gold").map((e) => [e.pid, e.before, e.after]),
+    [[ME, 1143200, 600000]], "civ 6's 50 Gold is the turn's own spending, not a cut");
+  assert.deepEqual(plan.notices.filter((n) => n.kind === "age-gold").map((n) => n.pid), [ME]);
+  const same = planTurn(input({ turn: 121, age: "AGE_ANTIQUITY", ledger: { ...ledger }, civs }));
+  assert.equal(same.events.some((e) => e.kind === "age-gold"), false, "only at an age change");
+});

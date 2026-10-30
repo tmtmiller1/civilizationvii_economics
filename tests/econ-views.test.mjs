@@ -243,3 +243,15 @@ test("the Fiscal tab's tariff row: the choice once the stage opens, the wait aft
 });
 
 test.after(() => removeFakeDom());
+
+test("the Fiscal tab says 'next turn' for one turn and 'one more turn' for the last of a system's blend", () => {
+  const api = makeApi({ fiscal: () => ({ goldCents: 2300, happinessCents: 800, netHappinessCents: 600, settlements: 2,
+    celebrationLeftCents: 500, celebrating: false, atWar: false }) });
+  api.state.cards = [{ type: "TRADITION_ECONOMICS_LIGHT_EX", level: "LIGHT", hash: 1, index: 1, active: false,
+    unlocked: true }];
+  const host = document.createElement("div");
+  renderFiscal(host, api);
+  const text = textOf(host);
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURN|1"), text);
+  assert.equal(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|1"), false);
+});

@@ -203,6 +203,7 @@
         <Row Tag="LOC_ECONOMICS_FISCAL_HAPPINESS_NOW"><Text>Happiness a turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_CELEBRATION"><Text>Next celebration</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS"><Text>in {1_Turns} turns</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_TURN"><Text>next turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_NEVER"><Text>not until your Happiness rises</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_CELEBRATING"><Text>you're celebrating now</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_NO_CARD"><Text>No tax card</Text></Row>
@@ -458,9 +459,21 @@
         <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_OVERHEATING"><Text>a long boom running out of steam</Text></Row>
         <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_CREDIT_GROWTH"><Text>credit growing fast</Text></Row>
         <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_UNKNOWN"><Text>events</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_WAR_DECLARED_MANY"><Text>{1_Count} wars declared</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_PEACE_MANY"><Text>{1_Count} peace treaties</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_CAPTURE_MANY"><Text>{1_Count} settlements captured</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_RAZE_MANY"><Text>{1_Count} settlements razed</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_DISASTER_MANY"><Text>{1_Count} disasters</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_DEFAULT_MANY"><Text>{1_Count} defaults</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_REPUDIATION_MANY"><Text>{1_Count} repudiated debts</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_NEW_MANY"><Text>{1_Count} new trade routes</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_ENDED_MANY"><Text>{1_Count} trade routes ending</Text></Row>
+        <Row Tag="LOC_ECONOMICS_LIST_AND"><Text>and</Text></Row>
         <Row Tag="LOC_ECONOMICS_NOTICE_SYSTEM"><Text>Your economic system is now the {1_System}. Its numbers move over from the {2_Old} during the next 10 turns.</Text></Row>
         <Row Tag="LOC_ECONOMICS_NOTICE_PHASE"><Text>Business cycle: {1_Phase}, after {2_Causes}.</Text></Row>
         <Row Tag="LOC_ECONOMICS_NOTICE_PHASE_QUIET"><Text>Business cycle: {1_Phase}.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_NOTICE_AGE_GOLD"><Text>The age change kept {1_Kept} of your {2_Held} Gold. The game caps the Gold a civilization carries into a new age, and the figure before it is what you held at the start of the last turn.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_EVENT_AGE_GOLD"><Text>The age change kept {2_Kept} of {1_Civ}'s {3_Held} Gold.</Text></Row>
         <Row Tag="LOC_ECONOMICS_NOTICE_PANIC"><Text>A financial Panic: for 5 turns civilizations stop lending to each other and bond rates jump. A slump usually follows.</Text></Row>
         <Row Tag="LOC_ECONOMICS_NOTICE_PLAN"><Text>The plan put {1_Amount} Gold into the builds of {2_Count} of your cities.</Text></Row>
         <Row Tag="LOC_ECONOMICS_EVENT_SYSTEM"><Text>{1_Civ} changed its economic system to the {2_System}.</Text></Row>
@@ -506,6 +519,7 @@
         <Row Tag="LOC_ECONOMICS_FISCAL_SYSTEM_FROM_IDEOLOGY"><Text>Set by your ideology.</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_SYSTEM_FROM_NONE"><Text>A mixed economy until you choose a government.</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_SYSTEM_BLEND"><Text>Moving over from the {1_Old}: {2_Turns} more turns.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FISCAL_SYSTEM_BLEND_ONE"><Text>Moving over from the {1_Old}: one more turn.</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_PLAN"><Text>The plan this turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_PLAN_NOTE"><Text>A fifth of your Gold income goes into your cities' builds, split by population, at 3 Gold a point of production.</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_SYSTEM_TAX_NOTE"><Text>Your government's changes to the tax cards show on each city's yields while the card is slotted.</Text></Row>

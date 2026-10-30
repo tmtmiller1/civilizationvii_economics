@@ -1,8 +1,8 @@
 // econ-planned.js - Economics: the plan of a Planned civ (DESIGN 4.17), as plain data. Each turn 20% of positive
 // Gold income goes into the builds of the civ's cities that have something queued, split by population, at the game's
 // own purchase rate (GOLD_PURCHASE_MULTIPLIER Gold a point, read by the glue; 4 when it can't be read). A city's
-// `progressScalePct` says how much of a sent point lands (the glue's figure, 100 until it's read; NOTES finding L), and
-// the points sent are divided by it, so a city with production bonuses isn't sold its points cheap. Empty queues are
+// `progressScalePct` says how much of a sent point lands (the glue's figure, 100; NOTES finding L), and the points sent
+// are divided by it. Empty queues are
 // skipped, and a city takes no more than its build still needs; the Gold a city can't use stays with the civ. No
 // data effect turns Gold into production, so this is level 2: addProgress, which lands on AI builds as well as the
 // player's (DESIGN 10, P8 and M7). Nothing here reads the engine.

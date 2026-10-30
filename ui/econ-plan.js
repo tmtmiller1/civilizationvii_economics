@@ -26,6 +26,9 @@ import { citizenInterest, citizenMiss } from "./econ-citizens.js";
 import { cycleKPct, emptyMacro } from "./econ-macro-state.js";
 import { growthMille } from "./econ-invest.js";
 
+/** The smallest drop across an age change that's recorded as the game's cap, not the turn's own spending. */
+const AGE_GOLD_MIN_CENTS = 10000;
+
 /** @type {PlanOptions} */
 export const DEFAULT_OPTIONS = { loans: true, guard: true, ai: true, rates: "standard", stages: true,
   taxFallback: false, markets: true, tariffs: true, investment: true, inflation: false, cycle: "standard",
@@ -68,7 +71,10 @@ export function planTurn(input) {
 function snapshotStep(ctx, input) {
   const market = input.market;
   const { ledger } = ctx;
-  if (ledger.age !== null && ledger.age !== ctx.age) ledger.blocks = blocksAfterAge(ledger.blocks);
+  if (ledger.age !== null && ledger.age !== ctx.age) {
+    ledger.blocks = blocksAfterAge(ledger.blocks);
+    ageGoldCuts(ctx);
+  }
   ledger.age = ctx.age;
   trackIncome(ctx);
   writeOffs(ctx);
@@ -156,6 +162,26 @@ function aiBorrowers(ctx, ai) {
     .filter((row) => row.need > 0)
     .sort((x, y) => y.need - x.need || x.civ.id - y.civ.id)
     .map((row) => row.civ);
+}
+
+/**
+ * DESIGN 4.8: the game caps the Gold a civ carries into a new age (its own age-transition script, by the transition
+ * setting; 6,000 into Exploration and 9,000 into Modern in the lab's games). The model doesn't predict the cap: on
+ * the first batch of an age it takes the balance the engine reports and records what went missing since the last
+ * batch's end balance (its snapshot plus the mod's net), when that's 100 Gold or more. The last turn's own income and
+ * spending fall inside that gap, so the record says "from the start of the last turn".
+ * @param {TurnContext} ctx
+ */
+function ageGoldCuts(ctx) {
+  for (const row of ctx.ledger.lastBatch?.civs || []) {
+    const civ = ctx.civ.get(row.pid);
+    if (!civ || civ.alive !== true) continue;
+    const before = row.snapshot + row.net;
+    if (before - civ.balanceCents < AGE_GOLD_MIN_CENTS) continue;
+    const fields = { kind: "age-gold", pid: civ.id, before, after: civ.balanceCents };
+    event(ctx, fields);
+    notice(ctx, civ.id, fields);
+  }
 }
 
 /**

@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { describeBatchRow, describeEvent, describeNotice, describeRefusal, describeRefusalMost, eventConcerns, flowKeys, reasonKey, requestKey,
-  worldNameKey } from "../ui/econ-notice-text.js";
+import { causeItems, composeArgs, describeBatchRow, describeEvent, describeNotice, describeRefusal, describeRefusalMost,
+  eventConcerns, flowKeys, joinList, reasonKey, requestKey, worldNameKey } from "../ui/econ-notice-text.js";
 import { emptyLedger } from "../ui/econ-state.js";
 import { makeLoan } from "../ui/econ-loan.js";
 
@@ -99,4 +99,41 @@ test("ledger events give history lines for the kinds a player cares about, and n
   }
   assert.equal(eventConcerns({ turn: 1, kind: "open", lender: 4, borrower: 2 }, 2), true);
   assert.equal(eventConcerns({ turn: 1, kind: "open", lender: 4, borrower: 2 }, 9), false);
+});
+
+test("a list reads as a sentence: the last two joined by the language's 'and'", () => {
+  assert.equal(joinList([], "and"), "");
+  assert.equal(joinList(["trade bills"], "and"), "trade bills");
+  assert.equal(joinList(["trade bills", "the business cycle"], "and"), "trade bills and the business cycle");
+  assert.equal(joinList(["loans", "trade bills", "the plan"], "und"), "loans, trade bills und the plan");
+  const loc = (key, ...args) => ({ LOC_ECONOMICS_LIST_AND: "and", LOC_ECONOMICS_FLOW_TRADE: "trade bills",
+    LOC_ECONOMICS_FLOW_CYCLE: "the business cycle" })[key] ?? [key, ...args].join("|");
+  const [line] = describeBatchRow({ pid: 2, snapshot: 0, net: -10, influence: 0, celebration: 0 },
+    ["LOC_ECONOMICS_FLOW_TRADE", "LOC_ECONOMICS_FLOW_CYCLE"]);
+  assert.deepEqual(composeArgs(line.args, loc), ["-0.1", "trade bills and the business cycle"]);
+  assert.ok(english.has("LOC_ECONOMICS_LIST_AND"));
+});
+
+test("a phase change names a repeated cause once with its count, not twice", () => {
+  assert.deepEqual(causeItems(["war-declared", "war-declared", "disaster"]),
+    [{ key: "LOC_ECONOMICS_CYCLE_EVENT_WAR_DECLARED_MANY", args: [2] }, "LOC_ECONOMICS_CYCLE_EVENT_DISASTER"]);
+  assert.deepEqual(causeItems(["income-up", "income-up"]), ["LOC_ECONOMICS_CYCLE_EVENT_INCOME_UP"],
+    "a kind with no counted text is named once");
+  const line = describeNotice({ pid: 2, kind: "phase", from: "steady", to: "slump",
+    causes: "war-declared,war-declared" }, ctx);
+  const loc = (key, ...args) => (key === "LOC_ECONOMICS_LIST_AND" ? "and" : [key, ...args].join("|"));
+  assert.deepEqual(composeArgs(line.args, loc), ["LOC_ECONOMICS_PHASE_SLUMP", "LOC_ECONOMICS_CYCLE_EVENT_WAR_DECLARED_MANY|2"]);
+  for (const kind of ["war-declared", "peace", "capture", "raze", "disaster", "default", "repudiation", "route-new",
+    "route-ended"]) {
+    const [item] = causeItems([kind, kind]);
+    assert.ok(english.has(item.key), item.key);
+  }
+});
+
+test("the age change's Gold cut: a notice for the player and a line in the history", () => {
+  assert.deepEqual(describeNotice({ pid: 2, kind: "age-gold", before: 1143200, after: 600000 }, ctx),
+    { key: "LOC_ECONOMICS_NOTICE_AGE_GOLD", args: ["6000", "11432"] });
+  assert.deepEqual(describeEvent({ turn: 1, kind: "age-gold", pid: 4, before: 1143200, after: 600000 }, ctx),
+    { key: "LOC_ECONOMICS_EVENT_AGE_GOLD", args: ["Civ 4", "6000", "11432"] });
+  assert.ok(english.has("LOC_ECONOMICS_NOTICE_AGE_GOLD") && english.has("LOC_ECONOMICS_EVENT_AGE_GOLD"));
 });
