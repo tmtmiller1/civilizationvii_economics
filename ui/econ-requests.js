@@ -1,5 +1,6 @@
 // econ-requests.js - Economics: the player's requests for the turn (DESIGN 5): borrow, repay, lend, restructure,
-// repudiate, and the tax level when the script fallback is on. Each runs in step 2 of the batch (DESIGN 4.14) and a
+// repudiate, the tax level when the script fallback is on, and from 1.1 the tariff, investments and aid, and the
+// answer to an AI's investment offer. Each runs in step 2 of the batch (DESIGN 4.14) and a
 // refusal is an event with its reason, never a throw.
 
 import { BOND, LIMITS, SHORT_TERM, TERMS, isWorldAccount } from "./econ-params.js";
@@ -10,6 +11,9 @@ import { aiAccepts, aiShortfall } from "./econ-ai.js";
 import { funds, projected } from "./econ-batch.js";
 import { repudiate } from "./econ-repudiation.js";
 import { canChangeTax, isTaxLevel } from "./econ-tax.js";
+import { canChangeTariff, isTariffLevel, withTariff } from "./econ-trade.js";
+import { hasStage } from "./econ-stages.js";
+import { investRequestRefusal, offerAnswerRefusal } from "./econ-invest-open.js";
 import { isAlive, event, incomeOf, isHuman, lendersFor, notice, offerQuery, openLoan, replaceLoan, standing }
   from "./econ-turn.js";
 
@@ -81,6 +85,7 @@ function addExtra(ctx, extras, request) {
  * @param {Request} request
  */
 function borrowRefusal(ctx, { borrower, lender, principal, term }) {
+  if (!ctx.options.loans) return "loans-off";
   if (!isAlive(ctx, borrower) || isWorldAccount(borrower)) return "borrower";
   if (hasBadTerms(term, principal)) return "terms";
   if (isAtLoanLimit(ctx, borrower)) return "loan-limit";
@@ -140,6 +145,7 @@ function lendTermsRefusal(ctx, { lender, borrower, principal, ratePpm, term }) {
  * @param {Request} request
  */
 function lendRefusal(ctx, request) {
+  if (!ctx.options.loans) return "loans-off";
   const refused = lendPartiesRefusal(ctx, request) || lendTermsRefusal(ctx, request);
   if (refused) return refused;
   const borrower = /** @type {Civ} */ (ctx.civ.get(request.borrower));
@@ -193,7 +199,7 @@ export function repudiateFor(ctx, borrower, lender) {
     lenderIncomeCents: incomeOf(ctx, lender), atWar: level === "war", witnesses: [...met] });
   if (!result) return "nothing-owed";
   Object.assign(ctx.ledger, { loans: result.ledger.loans, blocks: result.ledger.blocks,
-    repudiations: result.ledger.repudiations });
+    repudiations: result.ledger.repudiations, investments: result.ledger.investments });
   ctx.out.grievances.push(...result.grievances);
   ctx.out.relationships.push(...result.relationships);
   event(ctx, { kind: "repudiation", borrower, lender, cents: result.writtenOff, loans: result.loanIds.length,
@@ -228,6 +234,22 @@ function taxRefusal(ctx, { pid, level }) {
   return null;
 }
 
+/**
+ * The player's tariff (DESIGN 4.10): option on, past the Tariffs stage, one change per 5 turns.
+ * @param {TurnContext} ctx
+ * @param {Request} request
+ */
+function tariffRefusal(ctx, { pid, level }) {
+  if (!ctx.options.markets || !ctx.options.tariffs) return "tariffs-off";
+  if (!isHuman(ctx, pid) || !isTariffLevel(level)) return "parties";
+  if (!hasStage(ctx.civ.get(pid), "tariffs", ctx.turn, ctx.options)) return "tariff-stage";
+  const row = ctx.markets.tariffs.find((tariff) => tariff.pid === pid);
+  if (!canChangeTariff(row?.changedTurn, ctx.turn)) return "too-soon";
+  ctx.markets.tariffs = withTariff(ctx.markets.tariffs, pid, level, ctx.turn);
+  event(ctx, { kind: "tariff", pid, level });
+  return null;
+}
+
 /** @type {Record<string, (ctx: TurnContext, request: Request) => void>} */
 const HANDLERS = {
   borrow: (ctx, request) => refuse(ctx, "borrow", { borrower: request.borrower }, borrowRefusal(ctx, request)),
@@ -236,6 +258,12 @@ const HANDLERS = {
     restructureLoan(ctx, ctx.ledger.loans.find((loan) => loan.id === request.loanId), request.pid)),
   repudiate: (ctx, request) => refuse(ctx, "repudiate", { borrower: request.borrower }, repudiateRefusal(ctx, request)),
   tax: (ctx, request) => refuse(ctx, "tax", { pid: request.pid }, taxRefusal(ctx, request)),
+  tariff: (ctx, request) => refuse(ctx, "tariff", { pid: request.pid }, tariffRefusal(ctx, request)),
+  invest: (ctx, request) => refuse(ctx, "invest", { lender: request.investor }, investRequestRefusal(ctx, request)),
+  "accept-offer": (ctx, request) => refuse(ctx, "accept-offer", { offerId: request.offerId },
+    offerAnswerRefusal(ctx, request, true)),
+  "decline-offer": (ctx, request) => refuse(ctx, "decline-offer", { offerId: request.offerId },
+    offerAnswerRefusal(ctx, request, false)),
 };
 
 /**

@@ -8,6 +8,7 @@ import { standingPct } from "./econ-credit.js";
 import { rateCapPpm } from "./econ-lenders.js";
 import { createBatch, lenderBalance, record } from "./econ-batch.js";
 import { aiWillLend } from "./econ-ai.js";
+import { cloneMarkets, emptyMarkets } from "./econ-markets.js";
 
 /**
  * @param {Civ} a
@@ -28,7 +29,8 @@ export function turnContext(input, options, out) {
   const rates = ratesPct(options.rates);
   return { turn, age, civs, relations, requests, params, options, out, ledger: out.ledger, rates,
     capPpm: rateCapPpm(age, rates) ?? Infinity, civ: new Map(civs.map((civ) => [civ.id, civ])),
-    batch: createBatch(civs) };
+    batch: createBatch(civs), routes: Array.isArray(input.routes) ? input.routes : [],
+    markets: input.markets ? cloneMarkets(input.markets) : emptyMarkets(), trade: [], owed: [] };
 }
 
 /**

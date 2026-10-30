@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { aliveTargets, checkPlan, debt1, debt2, debt3, debt4, debt5, debt6, debt7 } from "../ui/econ-invariants.js";
+import { aliveTargets, checkPlan, debt1, debt2, debt3, debt4, debt5, debt6, debt7, econ3 } from "../ui/econ-invariants.js";
 import { grantsFor } from "../ui/econ-conservation.js";
 import { planTurn } from "../ui/econ-plan.js";
 import { emptyLedger } from "../ui/econ-state.js";
@@ -71,4 +71,12 @@ test("alive-target fails on a grant to a dead or unknown player, or to a world a
   assert.equal(aliveTargets([{ pid: 3, cents: 1, key: "k" }], civs).length, 1);
   assert.equal(aliveTargets([{ pid: "bond", cents: 1, key: "k" }], civs).length, 1);
   assert.equal(aliveTargets([{ pid: "temple", cents: 1, key: "k" }], civs).length, 1);
+});
+
+test("econ-3: one progress grant per city per turn", () => {
+  assert.deepEqual(econ3([{ host: 1, cityId: "1:1", amount: 5, investmentId: "I1" },
+    { host: 1, cityId: "1:2", amount: 5, investmentId: "I2" }]), []);
+  assert.deepEqual(econ3([{ host: 1, cityId: "1:1", amount: 5, investmentId: "I1" },
+    { host: 1, cityId: "1:1", amount: 5, investmentId: "A2-1" }]), [{ id: "econ-3", detail: "1:1" }]);
+  assert.deepEqual(econ3(undefined), []);
 });

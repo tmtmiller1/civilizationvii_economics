@@ -154,6 +154,7 @@
                     <Item>ui/econ-ai.js</Item>
                     <Item>ui/econ-batch.js</Item>
                     <Item>ui/econ-bootstrap.js</Item>
+                    <Item>ui/econ-commerce.js</Item>
                     <Item>ui/econ-conservation.js</Item>
                     <Item>ui/econ-credit.js</Item>
                     <Item>ui/econ-depth.js</Item>
@@ -164,15 +165,19 @@
                     <Item>ui/econ-format.js</Item>
                     <Item>ui/econ-guard.js</Item>
                     <Item>ui/econ-invariants.js</Item>
+                    <Item>ui/econ-invest-open.js</Item>
+                    <Item>ui/econ-invest.js</Item>
                     <Item>ui/econ-lenders.js</Item>
                     <Item>ui/econ-loan.js</Item>
                     <Item>ui/econ-log.js</Item>
+                    <Item>ui/econ-markets.js</Item>
                     <Item>ui/econ-money.js</Item>
                     <Item>ui/econ-notice-text.js</Item>
                     <Item>ui/econ-notify.js</Item>
                     <Item>ui/econ-params.js</Item>
                     <Item>ui/econ-payments.js</Item>
                     <Item>ui/econ-plan.js</Item>
+                    <Item>ui/econ-prices.js</Item>
                     <Item>ui/econ-repudiation.js</Item>
                     <Item>ui/econ-requests.js</Item>
                     <Item>ui/econ-screen-api.js</Item>
@@ -186,8 +191,9 @@
                     <Item>ui/econ-stage-rules.js</Item>
                     <Item>ui/econ-stages.js</Item>
                     <Item>ui/econ-state.js</Item>
-                    <Item>ui/econ-tax.js</Item>
                     <Item>ui/econ-tax-cards.js</Item>
+                    <Item>ui/econ-tax.js</Item>
+                    <Item>ui/econ-trade.js</Item>
                     <Item>ui/econ-turn.js</Item>
                     <Item>ui/econ-view-borrow.js</Item>
                     <Item>ui/econ-view-fiscal.js</Item>

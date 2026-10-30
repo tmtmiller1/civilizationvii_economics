@@ -5,7 +5,7 @@ export {};
 
 declare global {
   /** A civ by player id, or one of the world accounts (DESIGN 4.14): the bond market, temple treasuries, tax. */
-  type Party = number | "bond" | "temple" | "tax";
+  type Party = number | "bond" | "temple" | "tax" | "progress";
   type LoanState = "active" | "default" | "closed" | "repudiated";
   /** `project` and `general` are 1.1's investment records; 1.0 only writes `loan`. */
   type LoanKind = "loan" | "project" | "general";
@@ -75,10 +75,110 @@ declare global {
     taxes: TaxRow[];
     events: LedgerEvent[];
     lastBatch: BatchRecord | null;
+    investments: Investment[];
+    offers: InvestOffer[];
+    nextInvestId: number;
   }
 
   /** The turn a civ reached each stage (DESIGN 4.15); null or missing while it hasn't. */
-  interface StageTurns { moneylending?: number | null; publicDebt?: number | null }
+  interface StageTurns {
+    moneylending?: number | null;
+    publicDebt?: number | null;
+    trade?: number | null;
+    guildPatronage?: number | null;
+    charteredCompanies?: number | null;
+    tariffs?: number | null;
+  }
+
+  type InvestKind = "project" | "general";
+  type TariffLevel = "none" | "low" | "high";
+
+  /** A development loan (`project`) or general investment record (DESIGN 4.12), kept beside the loans. */
+  interface Investment {
+    id: string;
+    kind: InvestKind;
+    investor: number;
+    host: number;
+    principal: number;
+    /** The return a turn in thousandths of the principal: 50, 60 or 45. */
+    mille: number;
+    term: number;
+    paid: number;
+    missed: number;
+    state: LoanState;
+    opened: number;
+    closedTurn: number | null;
+    writtenOff: number;
+    /** What's still to come at the base return: (term - paid) * the base dividend. */
+    outstanding: number;
+    /** The city a development loan backs, as the glue's component id key; null for general. */
+    cityId: string | null;
+    /** The host's income when the investment was made, for general investment's growth. */
+    baseIncome: number;
+  }
+
+  /** An AI's investment offered to the human, waiting for an answer (DESIGN 5, 6). */
+  interface InvestOffer {
+    id: string;
+    investor: number;
+    host: number;
+    kind: InvestKind;
+    cents: number;
+    cityId: string | null;
+    turn: number;
+  }
+
+  /** One settlement as the glue reads it for 1.1: its current build and its Trade buildings. */
+  interface CityRead {
+    id: string;
+    /** The type at the head of the queue, or null when the queue is empty. */
+    build: string | null;
+    /** Production still needed to finish the current build. */
+    neededProgress: number;
+    /** The build is a building with a Commerce, Banking, Trade or Industry role (DESIGN 4.13). */
+    roleBuilding?: boolean;
+    tradeBuildings?: number;
+    /** The game's Gold price for the current build, when it's a building and the read answers. */
+    purchaseCents?: number | null;
+  }
+
+  /** One trade route between two major civs: the importer owns it (the merchant's civ). */
+  interface RouteRead {
+    importer: number;
+    exporter: number;
+    resources: string[];
+    importerTradeBuildings?: number;
+    exporterTradeBuildings?: number;
+  }
+
+  /** What the market step reads from GameInfo and the map once a turn (DESIGN 4.9). */
+  interface MarketRead {
+    resources: { type: string; class: string }[];
+    /** Source copies of each resource on land a living major owns, counted at the origin. */
+    copies: Record<string, number>;
+    /** Resources a unit of this age names as its StrategicResource. */
+    strategic: string[];
+    /** Industry buildings standing in the world. */
+    industry: number;
+  }
+
+  interface TariffRow { pid: number; level: TariffLevel; changedTurn: number }
+
+  /** The markets envelope's body (DESIGN 9): prices, their history, tariffs and the income marks AI rules read. */
+  interface MarketsState {
+    lastTurn: number | null;
+    prices: Record<string, number>;
+    history: Record<string, number[]>;
+    tariffs: TariffRow[];
+    incomes: Record<string, number[]>;
+    /** The age each AI last gave aid in, by player id. */
+    aidAge: Record<string, string>;
+    /** The turn each AI last invested or made an offer, by player id (once per 10 turns, DESIGN 6). */
+    investTurn: Record<string, number>;
+  }
+
+  /** Build progress the glue lands with `addProgress` on the city's current build (DESIGN 4.12). */
+  interface ProgressRow { host: number; cityId: string; amount: number; investmentId: string }
 
   /** One major civ as the glue reads it for the turn. */
   interface Civ {
@@ -93,6 +193,9 @@ declare global {
     depthFactorPct?: number;
     happinessCents?: number;
     atWar?: boolean;
+    cities?: CityRead[];
+    /** The native Trade Income the civ's settlements earn a turn (TradeYields), for the Trade tab. */
+    tradeIncomeCents?: number;
   }
 
   interface Relation { a: number; b: number; level: RelationLevel }
@@ -104,6 +207,9 @@ declare global {
     rates: string;
     stages: boolean;
     taxFallback: boolean;
+    markets: boolean;
+    tariffs: boolean;
+    investment: boolean;
   }
 
   /** The engine's negative-balance lines, in cents; null when the GlobalParameters row couldn't be read. */
@@ -120,6 +226,9 @@ declare global {
     requests?: PlanRequest[];
     params?: EngineParams;
     options?: Partial<PlanOptions>;
+    routes?: RouteRead[];
+    market?: MarketRead;
+    markets?: MarketsState;
   }
 
   /** One movement of Gold for one loan on one turn; at most one per (loan, turn). */
@@ -151,6 +260,9 @@ declare global {
     notices: Notice[];
     batch: BatchRecord | null;
     skipped: string | null;
+    markets: MarketsState;
+    progress: ProgressRow[];
+    trade: TradeRow[];
   }
 
   /** The turn's Gold bookkeeping (DESIGN 4.14), each Map keyed by player id. */
@@ -201,7 +313,15 @@ declare global {
     capPpm: number;
     civ: Map<number, Civ>;
     batch: Batch;
+    routes: RouteRead[];
+    markets: MarketsState;
+    /** This turn's settlements, netted and capped (DESIGN 4.10), with what each payer actually paid. */
+    trade: TradeRow[];
+    /** What each importer owes each exporter this turn, before netting. */
+    owed: { importer: number; exporter: number; gross: number; owed: number }[];
   }
+
+  interface TradeRow { payer: number; payee: number; owed: number; cents: number; waived: number; paid: number }
 
   interface Violation { id: string; detail: string }
 }

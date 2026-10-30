@@ -6,8 +6,10 @@
 export const BOND = "bond";
 export const TEMPLE = "temple";
 export const TAX = "tax";
+// DESIGN 4.12: a development loan's Gold becomes build progress (addProgress), so it leaves the treasuries for good.
+export const PROGRESS = "progress";
 /** @type {Party[]} */
-export const WORLD_ACCOUNTS = [BOND, TEMPLE, TAX];
+export const WORLD_ACCOUNTS = [BOND, TEMPLE, TAX, PROGRESS];
 
 export const AGE = { ANTIQUITY: "AGE_ANTIQUITY", EXPLORATION: "AGE_EXPLORATION", MODERN: "AGE_MODERN" };
 
@@ -47,7 +49,32 @@ export const AI = { lendIncomeMultiple: 20, acceptRatePct: 120, restructureAt: 2
 // 9 asks for; see docs/NOTES.md choice 25.
 export const LIMITS = { events: 100, closedLoans: 32, envelopeBytes: 65536, openPerBorrower: 6 };
 
-export const STAGES = ["moneylending", "publicDebt"];
+export const STAGES = ["moneylending", "publicDebt", "trade", "guildPatronage", "charteredCompanies", "tariffs"];
+
+// DESIGN 4.9: base price by resource class, in cents; an unknown class is priced as Bonus. Scarcity is
+// sqrt(civs / copies) clamped 0.5 to 3; demand adds 0.25 for a strategic resource this age's units use, 0.25 more
+// while two civs are at war, and 0.02 per Industry building for Factory resources, at most 1.0.
+/** @type {Record<string, number>} */
+export const BASE_PRICE_CENTS = { RESOURCECLASS_BONUS: 200, RESOURCECLASS_CITY: 300, RESOURCECLASS_EMPIRE: 400,
+  RESOURCECLASS_TREASURE: 500, RESOURCECLASS_FACTORY: 600 };
+export const PRICES = { otherCents: 200, scarcityMinPct: 50, scarcityMaxPct: 300, strategicPct: 25, warPct: 25,
+  industryPct: 2, industryMaxPct: 100, smoothingPct: 80, historyTurns: 30 };
+// DESIGN 4.10: the bill is half the summed prices, +10% per Trade building in the exporting city and -10% per one in
+// the importing city (30% at most each side); tariffs hold back 10% or 25%; a payer pays at most 10% of its positive
+// income in all; a tariff changes at most once per 5 turns, and a High one costs 1 relationship with each exporter
+// it bills every 5 turns. The AI matches a High tariff 2 turns after it's set (DESIGN 6).
+/** @type {Record<string, number>} */
+export const TARIFF_PCT = { none: 0, low: 10, high: 25 };
+export const TRADE = { billPct: 50, tradeBuildingPct: 10, tradeBuildingMaxPct: 30, capPct: 10, tariffEveryTurns: 5,
+  highRelationship: -1, aiMatchTurns: 2 };
+// DESIGN 4.12. Development loan: G / 3 Gold per point of progress, ceil(G * 5%) a turn for 25 turns (6% on a role
+// building). General: ceil(G * 4.5% * growth) with growth clamped 0.5 to 2.0. Relationship +1 per 5, 7.5 and 2.5 turns
+// of the host's income (at least 10 Gold a turn) for the development loan, general and aid. The cap of 10 on one
+// gift's relationship gain is ours (NOTES choice 36), so Gold can't buy a whole relationship at once.
+export const INVEST = { goldPerProgress: 3, term: 25, projectMille: 50, roleProjectMille: 60, generalMille: 45,
+  growthMinMille: 500, growthMaxMille: 2000, minHostIncomeCents: 1000, projectTenthsPerPoint: 50,
+  generalTenthsPerPoint: 75, aidTenthsPerPoint: 25, maxRelationship: 10, aiEveryTurns: 10, aiSizeTurns: 5,
+  offerTurns: 3, incomeHistoryTurns: 10 };
 
 /** @param {string | undefined} option */
 export function ratesPct(option) {

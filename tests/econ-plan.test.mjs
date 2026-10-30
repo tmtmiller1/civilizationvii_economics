@@ -487,11 +487,18 @@ test("lender eliminated mid-loan, mid-simulation: payments stop the turn it dies
   assert.equal(next.balances.get(6), before);
 });
 
-test("Loans Off: no write of any kind", () => {
-  const plan = planTurn(input({ options: { loans: false }, ledger: ledgerWith([loan("L1")]),
-    civs: [me({ balanceCents: -1e6 })] }));
-  assert.equal(plan.skipped, "loans-off");
+test("every part Off: no write of any kind; Loans Off alone: no loan rule runs", () => {
+  const off = { loans: false, markets: false, investment: false };
+  const plan = planTurn(input({ options: off, ledger: ledgerWith([loan("L1")]), civs: [me({ balanceCents: -1e6 })] }));
+  assert.equal(plan.skipped, "all-off");
   assert.deepEqual(plan.transfers, []);
+  const loansOff = planTurn(input({ options: { loans: false }, ledger: ledgerWith([loan("L1")]),
+    civs: [me({ balanceCents: -1e6, incomeCents: -500 })] }));
+  assert.equal(loansOff.skipped, null);
+  assert.deepEqual(loansOff.transfers, [], "no payment, no guard loan");
+  const refused = planTurn(input({ options: { loans: false }, civs: [me()],
+    requests: [{ kind: "borrow", borrower: ME, lender: "bond", principal: 100, term: 10 }] }));
+  assert.equal(refused.events.find((e) => e.kind === "refused")?.reason, "loans-off");
 });
 
 test("a turn already planned is not planned again (no double charge on a stale re-run or a reload)", () => {

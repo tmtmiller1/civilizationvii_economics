@@ -1,7 +1,8 @@
 // econ-depth.js - Economics: financial depth from a civ's buildings (DESIGN 4.13), as plain data. The glue reads each
 // building's tags, base Gold yield and state from GameInfo and the city; this module gives it a role and sums the
-// civ's depth, which the model applies to credit_cap (depth_turns) and the rates (depth_factor). Only the Commerce
-// and Banking roles ship in 1.0 (DESIGN 11); the other roles belong to 1.1 and 1.2. Nothing here reads the engine.
+// civ's depth, which the model applies to credit_cap (depth_turns) and the rates (depth_factor). Commerce and Banking
+// set depth (1.0); Trade moves the bills and Industry the Factory resources' demand (1.1); Warehouse is read now and
+// acts with the business cycle in 1.2. Nothing here reads the engine.
 
 export const DEPTH = { goldPerDepth: 4, factorPerDepthPct: 2, factorCapPct: 30, bankingTurns: 2, maxTurns: 12,
   wonderPct: 5, wonderCapPct: 15, bankGoldFallback: 8 };
@@ -9,25 +10,63 @@ export const DEPTH = { goldPerDepth: 4, factorPerDepthPct: 2, factorCapPct: 30, 
 export const BANKING_EXCLUDED_TAGS = ["WATER", "BRIDGE", "RAIL_CONNECTION"];
 export const COMMERCE_TAG = "GOLD";
 export const ECONOMIC_ADVISORY = "ADVISORY_CLASS_ECONOMIC";
+export const TRADE_TAG = "TRADE";
+export const TRADE_ADVISORY = "ADVISORY_CLASS_TRADE";
+export const WAREHOUSE_TAG = "WAREHOUSE";
+export const PRODUCTION_TAG = "PRODUCTION";
 
 /**
  * @typedef {{ tags: string[], goldYield: number, isWonder: boolean, advisories: string[] }} BuildingData
- * @typedef {{ commerce: boolean, banking: boolean, economicWonder: boolean }} BuildingRoles
+ * @typedef {{ commerce: boolean, banking: boolean, economicWonder: boolean, trade: boolean, warehouse: boolean,
+ *   industry: boolean }} BuildingRoles
  */
 
 /**
- * The 1.0 roles of one building type. `bankGold` is the Bank's base Gold yield, read from the same data.
+ * The roles of one building type (DESIGN 4.13); a building can have several. `bankGold` is the Bank's base Gold
+ * yield, read from the same data. Wonders take only the economic-wonder role.
  * @param {BuildingData} row
  * @param {number} bankGold
  * @returns {BuildingRoles}
  */
 export function rolesOf(row, bankGold) {
   const tags = row.tags || [];
+  const advisories = row.advisories || [];
+  if (row.isWonder === true) {
+    return { commerce: false, banking: false, economicWonder: advisories.includes(ECONOMIC_ADVISORY), trade: false,
+      warehouse: false, industry: false };
+  }
   const gold = Number.isFinite(row.goldYield) ? row.goldYield : 0;
-  const commerce = tags.includes(COMMERCE_TAG) && !row.isWonder;
+  const commerce = tags.includes(COMMERCE_TAG);
   const banking = commerce && gold >= bankGold && !tags.some((tag) => BANKING_EXCLUDED_TAGS.includes(tag));
-  const economicWonder = row.isWonder === true && (row.advisories || []).includes(ECONOMIC_ADVISORY);
-  return { commerce, banking, economicWonder };
+  return { commerce, banking, economicWonder: false,
+    trade: tags.includes(TRADE_TAG) || advisories.includes(TRADE_ADVISORY), warehouse: tags.includes(WAREHOUSE_TAG),
+    industry: tags.includes(PRODUCTION_TAG) && advisories.includes(ECONOMIC_ADVISORY) };
+}
+
+/**
+ * Whether a development loan on this building pays the higher return (DESIGN 4.12): Commerce, Banking, Trade or
+ * Industry.
+ * @param {BuildingRoles} roles
+ */
+export function isRoleBuilding(roles) {
+  return roles.commerce || roles.banking || roles.trade || roles.industry;
+}
+
+/**
+ * The counts the 1.1 rules read: Trade buildings (the bills) and Industry buildings (Factory demand), each weighted.
+ * @param {{ roles: BuildingRoles, weight: number }[]} buildings
+ */
+export function countRoles(buildings) {
+  let trade = 0;
+  let industry = 0;
+  let warehouse = 0;
+  for (const building of buildings) {
+    const w = Math.max(0, Number(building.weight) || 0);
+    if (building.roles.trade) trade += w;
+    if (building.roles.industry) industry += w;
+    if (building.roles.warehouse) warehouse += w;
+  }
+  return { trade, industry, warehouse };
 }
 
 /**

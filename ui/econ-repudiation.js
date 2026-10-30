@@ -7,6 +7,7 @@ import { divRound } from "./econ-money.js";
 import { isOpen } from "./econ-loan.js";
 import { blockFor } from "./econ-lenders.js";
 import { withBlock } from "./econ-payments.js";
+import { repudiateInvestments } from "./econ-invest.js";
 
 /**
  * clamp(5 * loss_turns, 10, 40), loss_turns = written-off Gold / max(10 Gold, the lender's income).
@@ -29,7 +30,8 @@ export function witnessDelta({ worldLender, atWar }) {
 }
 
 /**
- * Closes every open record between the pair as `repudiated` and sizes the reputation cost.
+ * Closes every open record between the pair as `repudiated`, the investments the repudiator hosts from that lender
+ * included (DESIGN 4.12), and sizes the reputation cost.
  * witnesses: the other major civs the repudiator has met (the lender is left out; it gets the grudge).
  * Returns null when nothing is owed.
  * @param {{ ledger: Ledger, turn: number, borrower: number, lender: Party, lenderIncomeCents?: number,
@@ -37,9 +39,10 @@ export function witnessDelta({ worldLender, atWar }) {
  */
 export function repudiate({ ledger, turn, borrower, lender, lenderIncomeCents = 0, atWar = false, witnesses = [] }) {
   const mine = ledger.loans.filter((loan) => loan.borrower === borrower && loan.lender === lender && isOpen(loan));
-  if (!mine.length) return null;
+  const held = repudiateInvestments(ledger.investments || [], { host: borrower, investor: lender, turn });
+  if (!mine.length && !held.ids.length) return null;
   const ids = new Set(mine.map((loan) => loan.id));
-  const writtenOff = mine.reduce((sum, loan) => sum + loan.outstanding, 0);
+  const writtenOff = mine.reduce((sum, loan) => sum + loan.outstanding, 0) + held.writtenOff;
   /** @type {Loan[]} */
   const loans = ledger.loans.map((loan) => (ids.has(loan.id)
     ? { ...loan, state: "repudiated", closedTurn: turn, writtenOff: loan.outstanding, outstanding: 0 } : loan));
@@ -55,6 +58,6 @@ export function repudiate({ ledger, turn, borrower, lender, lenderIncomeCents = 
     amount: grudgeFor(writtenOff, lenderIncomeCents) }];
   const blocks = withBlock(ledger.blocks, blockFor({ lender, borrower, reason: "repudiation", turn }));
   /** @type {Ledger} */
-  const next = { ...ledger, loans, blocks, repudiations: [...ledger.repudiations, record] };
-  return { ledger: next, writtenOff, loanIds: [...ids], grievances, relationships, record };
+  const next = { ...ledger, loans, blocks, repudiations: [...ledger.repudiations, record], investments: held.records };
+  return { ledger: next, writtenOff, loanIds: [...ids, ...held.ids], grievances, relationships, record };
 }

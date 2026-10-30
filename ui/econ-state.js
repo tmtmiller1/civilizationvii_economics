@@ -1,18 +1,21 @@
 // econ-state.js - Economics: the saved envelope. One versioned object holds the loan list, blocks, recent misses and
-// repudiations, guard turns, insolvency counters, the last batch and the event log; load refuses anything that is
-// not ours without throwing, and save(load(x)) is a fixed point because sanitize rebuilds every record with a fixed
-// key order.
+// repudiations, guard turns, insolvency counters, the last batch, the event log, and from version 3 the investment
+// records and the AI's open investment offers (DESIGN 4.12); a version 2 ledger loads with none of those; load refuses
+// anything that is not ours without throwing, and save(load(x)) is a fixed point because sanitize rebuilds every record
+// with a fixed key order.
 
 import { LIMITS, isWorldAccount } from "./econ-params.js";
 import { LOAN_KINDS, LOAN_SOURCES, LOAN_STATES, loanSeq } from "./econ-loan.js";
+import { INVEST_KINDS, investSeq } from "./econ-invest.js";
 
 export const MOD_ID = "tower-economics";
-export const VERSION = 2;
+export const VERSION = 3;
 
 /** @returns {Ledger} */
 export function emptyLedger() {
   return { age: null, nextId: 1, lastTurn: null, batchSeq: 0, loans: [], blocks: [], misses: [], repudiations: [],
-    guardTurns: [], capHits: [], lowIncome: [], taxes: [], events: [], lastBatch: null };
+    guardTurns: [], capHits: [], lowIncome: [], taxes: [], events: [], lastBatch: null, investments: [], offers: [],
+    nextInvestId: 1 };
 }
 
 /**
@@ -34,6 +37,8 @@ export function cloneLedger(ledger) {
     capHits: copyRows(ledger.capHits), lowIncome: copyRows(ledger.lowIncome), taxes: copyRows(ledger.taxes),
     events: copyRows(ledger.events),
     lastBatch: ledger.lastBatch ? { ...ledger.lastBatch, civs: copyRows(ledger.lastBatch.civs) } : null,
+    investments: copyRows(ledger.investments || []), offers: copyRows(ledger.offers || []),
+    nextInvestId: ledger.nextInvestId || 1,
   };
 }
 
@@ -209,6 +214,70 @@ function cleanBatch(raw) {
   return { id: raw.id, turn: raw.turn, civs };
 }
 
+// Each check is one rule a stored investment must pass; a record failing any of them is dropped whole.
+/** @type {((row: Raw) => boolean)[]} */
+const INVESTMENT_CHECKS = [
+  (row) => investSeq(row.id) > 0 && INVEST_KINDS.includes(row.kind) && isPid(row.investor) && isPid(row.host),
+  (row) => row.investor !== row.host && atLeast(row.principal, 1) && atLeast(row.outstanding, 0),
+  (row) => atLeast(row.mille, 1) && atLeast(row.term, 1) && atLeast(row.paid, 0) && row.paid <= row.term,
+  (row) => atLeast(row.missed, 0) && row.missed <= 3 && LOAN_STATES.includes(row.state) && isTurn(row.opened),
+];
+
+/**
+ * @param {Raw} row
+ * @returns {Investment | null}
+ */
+function cleanInvestment(row) {
+  if (!row || typeof row !== "object" || !INVESTMENT_CHECKS.every((check) => check(row))) return null;
+  const cityId = typeof row.cityId === "string" && row.cityId.length <= 32 ? row.cityId : null;
+  return { id: row.id, kind: row.kind, investor: row.investor, host: row.host, principal: row.principal,
+    mille: row.mille, term: row.term, paid: row.paid, missed: row.missed, state: row.state, opened: row.opened,
+    closedTurn: isTurn(row.closedTurn) ? row.closedTurn : null,
+    writtenOff: atLeast(row.writtenOff, 1) ? row.writtenOff : 0, outstanding: row.outstanding, cityId: row.kind === "project" ? cityId : null,
+    baseIncome: isInt(row.baseIncome) ? row.baseIncome : 0 };
+}
+
+/** @param {unknown} raw */
+function cleanInvestments(raw) {
+  /** @type {Investment[]} */
+  const out = [];
+  for (const row of list(raw)) {
+    const record = cleanInvestment(row);
+    if (record && !out.some((x) => x.id === record.id)) out.push(record);
+  }
+  return out;
+}
+
+/** @param {Raw} row */
+function isOfferRow(row) {
+  return !!row && typeof row.id === "string" && row.id.length <= 16 && isPid(row.investor) && isPid(row.host)
+    && INVEST_KINDS.includes(row.kind) && atLeast(row.cents, 1) && isTurn(row.turn);
+}
+
+/** @param {unknown} raw */
+function cleanOffers(raw) {
+  /** @type {InvestOffer[]} */
+  const out = [];
+  for (const row of list(raw)) {
+    if (!isOfferRow(row) || out.some((x) => x.id === row.id)) continue;
+    out.push({ id: row.id, investor: row.investor, host: row.host, kind: row.kind, cents: row.cents,
+      cityId: typeof row.cityId === "string" && row.cityId.length <= 32 ? row.cityId : null, turn: row.turn });
+  }
+  return out;
+}
+
+/**
+ * @param {unknown} raw
+ * @param {Investment[]} investments
+ * @param {InvestOffer[]} offers
+ */
+function nextInvestIdFor(raw, investments, offers) {
+  let max = 0;
+  for (const record of investments) max = Math.max(max, investSeq(record.id));
+  for (const offer of offers) max = Math.max(max, investSeq(offer.id));
+  return Math.max(atLeast(raw, 1) ? /** @type {number} */ (raw) : 1, max + 1);
+}
+
 /**
  * @param {unknown} raw
  * @param {Loan[]} loans
@@ -216,6 +285,28 @@ function cleanBatch(raw) {
 function nextIdFor(raw, loans) {
   const maxSeq = loans.reduce((max, loan) => Math.max(max, loanSeq(loan.id)), 0);
   return Math.max(atLeast(raw, 1) ? /** @type {number} */ (raw) : 1, maxSeq + 1);
+}
+
+/**
+ * The per-civ counters: guard turns, cap hits, turns of low income.
+ * @param {Ledger} ledger
+ * @param {Raw} raw
+ */
+function cleanCounters(ledger, raw) {
+  ledger.guardTurns = /** @type {TurnRow[]} */ (cleanPidRows(raw.guardTurns, "turn", true));
+  ledger.capHits = /** @type {TurnRow[]} */ (cleanPidRows(raw.capHits, "turn", true));
+  ledger.lowIncome = /** @type {LowIncomeRow[]} */ (cleanPidRows(raw.lowIncome, "turns", true));
+}
+
+/**
+ * The 1.1 records (DESIGN 4.12): investments, open offers and the id counter they share.
+ * @param {Ledger} ledger
+ * @param {Raw} raw
+ */
+function cleanCommerce(ledger, raw) {
+  ledger.investments = cleanInvestments(raw.investments);
+  ledger.offers = cleanOffers(raw.offers);
+  ledger.nextInvestId = nextInvestIdFor(raw.nextInvestId, ledger.investments, ledger.offers);
 }
 
 /**
@@ -234,12 +325,11 @@ export function sanitizeLedger(input) {
   ledger.blocks = cleanBlocks(raw.blocks);
   ledger.misses = cleanMisses(raw.misses);
   ledger.repudiations = cleanRepudiations(raw.repudiations);
-  ledger.guardTurns = /** @type {TurnRow[]} */ (cleanPidRows(raw.guardTurns, "turn", true));
-  ledger.capHits = /** @type {TurnRow[]} */ (cleanPidRows(raw.capHits, "turn", true));
-  ledger.lowIncome = /** @type {LowIncomeRow[]} */ (cleanPidRows(raw.lowIncome, "turns", true));
+  cleanCounters(ledger, raw);
   ledger.taxes = cleanTaxes(raw.taxes);
   ledger.events = /** @type {LedgerEvent[]} */ (list(raw.events).map(cleanEvent).filter(Boolean));
   ledger.lastBatch = cleanBatch(raw.lastBatch);
+  cleanCommerce(ledger, raw);
   return prune(ledger);
 }
 
@@ -256,6 +346,12 @@ export function prune(ledger) {
   if (settled.length > LIMITS.closedLoans) {
     const drop = new Set(settled.slice(0, settled.length - LIMITS.closedLoans).map((loan) => loan.id));
     ledger.loans = ledger.loans.filter((loan) => !drop.has(loan.id));
+  }
+  const records = ledger.investments || [];
+  const done = records.filter((record) => record.state === "closed" || record.state === "repudiated");
+  if (done.length > LIMITS.closedLoans) {
+    const drop = new Set(done.slice(0, done.length - LIMITS.closedLoans).map((record) => record.id));
+    ledger.investments = records.filter((record) => !drop.has(record.id));
   }
   return ledger;
 }
@@ -274,6 +370,19 @@ export function utf8Bytes(text) {
 }
 
 /**
+ * Drops the oldest settled loan, then the oldest settled investment; false when there is none left to drop.
+ * @param {Ledger} ledger
+ */
+function dropSettled(ledger) {
+  const at = ledger.loans.findIndex(isSettled);
+  if (at >= 0) { ledger.loans.splice(at, 1); return true; }
+  const done = ledger.investments.findIndex((record) => record.state === "closed" || record.state === "repudiated");
+  if (done < 0) return false;
+  ledger.investments.splice(done, 1);
+  return true;
+}
+
+/**
  * The envelope text; if it would pass 64 KB, the oldest events and then the oldest settled loans go first.
  * @param {Ledger} ledger
  */
@@ -282,11 +391,7 @@ export function save(ledger) {
   let text = JSON.stringify({ mod: MOD_ID, v: VERSION, ledger: clean });
   while (utf8Bytes(text) > LIMITS.envelopeBytes) {
     if (clean.events.length) clean.events.shift();
-    else {
-      const at = clean.loans.findIndex(isSettled);
-      if (at < 0) break;
-      clean.loans.splice(at, 1);
-    }
+    else if (!dropSettled(clean)) break;
     text = JSON.stringify({ mod: MOD_ID, v: VERSION, ledger: clean });
   }
   return text;

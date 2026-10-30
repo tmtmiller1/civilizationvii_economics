@@ -30,8 +30,10 @@ test("every major is read with the same fields, human and AI alike; stages come 
   }
   assert.deepEqual(input.civs.map((c) => [c.balanceCents, c.incomeCents, c.human, c.atWar]),
     [[5000, 1200, true, false], [40000, 1200, false, true], [1000, 300, false, true]]);
-  assert.deepEqual(input.civs.map((c) => c.stages), [{ moneylending: 10, publicDebt: null }, { moneylending: 10, publicDebt: 10 },
-    { moneylending: 10, publicDebt: null }], "Moneylending is Antiquity's, open in Exploration; Public debt needs the civic");
+  const later = { guildPatronage: null, charteredCompanies: null, tariffs: null };
+  assert.deepEqual(input.civs.map((c) => c.stages), [{ moneylending: 10, publicDebt: null, trade: 10, ...later },
+    { moneylending: 10, publicDebt: 10, trade: 10, ...later }, { moneylending: 10, publicDebt: null, trade: 10, ...later }],
+    "Moneylending and Trade are Antiquity's, open in Exploration; Public debt needs the civic");
   assert.deepEqual([input.civs[1].depthTurns, input.civs[1].depthFactorPct], [2, 96], "one Bank");
   assert.equal(input.civs[1].upkeepCents, 200, "one unit type at 1 Gold plus one building at 1 Gold");
   assert.deepEqual(input.relations.map((r) => [r.a, r.b, r.level]), [[0, 3, "neutral"], [0, 5, "neutral"], [3, 5, "war"]]);
@@ -44,7 +46,8 @@ test("options map from the setup keys, the guard switch overrides, and a dead ci
   fresh({ config: { ECONOMICS_LOANS: "ECONOMICS_LOANS_ON", ECONOMICS_GUARD: "ECONOMICS_GUARD_OFF", ECONOMICS_RATES: "ECONOMICS_RATES_HIGH",
     ECONOMICS_AI: "ECONOMICS_AI_OFF" } });
   const glue = emptyGlue();
-  assert.deepEqual(readOptions(glue), { loans: true, guard: false, ai: false, rates: "high", stages: true, taxFallback: false });
+  assert.deepEqual(readOptions(glue), { loans: true, guard: false, ai: false, rates: "high", stages: true, taxFallback: false,
+    markets: true, tariffs: true, investment: true });
   const session = loadSession();
   assert.equal(setGuard(session, true), true);
   assert.equal(setGuard(session, null), false, "null follows the setup option again");

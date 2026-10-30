@@ -105,9 +105,10 @@ export function writeLedger(session) {
 export function readOptions(glue) {
   const on = (/** @type {string} */ key) => readConfig(key) !== `${key}_OFF`;
   const rates = String(readConfig("ECONOMICS_RATES") || "").replace("ECONOMICS_RATES_", "").toLowerCase();
+  const markets = on("ECONOMICS_MARKETS");
   return { loans: on("ECONOMICS_LOANS"), guard: glue.guardOn ?? on("ECONOMICS_GUARD"), ai: on("ECONOMICS_AI"),
     rates: ["low", "standard", "high"].includes(rates) ? rates : "standard", stages: on("ECONOMICS_STAGES"),
-    taxFallback: false };
+    taxFallback: false, markets, tariffs: markets && on("ECONOMICS_TARIFFS"), investment: on("ECONOMICS_INVESTMENT") };
 }
 
 /**

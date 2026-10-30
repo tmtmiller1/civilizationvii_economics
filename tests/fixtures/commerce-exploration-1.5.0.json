@@ -1,0 +1,988 @@
+{
+ "source": "gameplay-copy.sqlite",
+ "age": "exploration",
+ "game": "1.5.0",
+ "resources": [
+  {
+   "type": "RESOURCE_CAMELS",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_CITRUS",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_CLAY",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_CLOVES",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_COAL",
+   "class": "RESOURCECLASS_EMPIRE"
+  },
+  {
+   "type": "RESOURCE_COCOA",
+   "class": "RESOURCECLASS_TREASURE"
+  },
+  {
+   "type": "RESOURCE_COFFEE",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_COTTON",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_COWRIE",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_CRABS",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_DATES",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_DYES",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_FISH",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_FLAX",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_FURS",
+   "class": "RESOURCECLASS_TREASURE"
+  },
+  {
+   "type": "RESOURCE_GOLD",
+   "class": "RESOURCECLASS_TREASURE"
+  },
+  {
+   "type": "RESOURCE_GOLD_DISTANT_LANDS",
+   "class": "RESOURCECLASS_TREASURE"
+  },
+  {
+   "type": "RESOURCE_GYPSUM",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_HARDWOOD",
+   "class": "RESOURCECLASS_EMPIRE"
+  },
+  {
+   "type": "RESOURCE_HIDES",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_HORSES",
+   "class": "RESOURCECLASS_TREASURE"
+  },
+  {
+   "type": "RESOURCE_INCENSE",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_IRON",
+   "class": "RESOURCECLASS_EMPIRE"
+  },
+  {
+   "type": "RESOURCE_IVORY",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_JADE",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_KAOLIN",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_LAPIS_LAZULI",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_LIMESTONE",
+   "class": "RESOURCECLASS_EMPIRE"
+  },
+  {
+   "type": "RESOURCE_LLAMAS",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_MANGOS",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_MARBLE",
+   "class": "RESOURCECLASS_EMPIRE"
+  },
+  {
+   "type": "RESOURCE_NICKEL",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_NITER",
+   "class": "RESOURCECLASS_EMPIRE"
+  },
+  {
+   "type": "RESOURCE_OIL",
+   "class": "RESOURCECLASS_EMPIRE"
+  },
+  {
+   "type": "RESOURCE_PEARLS",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_PITCH",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_QUININE",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_RICE",
+   "class": "RESOURCECLASS_EMPIRE"
+  },
+  {
+   "type": "RESOURCE_RUBBER",
+   "class": "RESOURCECLASS_EMPIRE"
+  },
+  {
+   "type": "RESOURCE_RUBIES",
+   "class": "RESOURCECLASS_TREASURE"
+  },
+  {
+   "type": "RESOURCE_SALT",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_SILK",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_SILVER",
+   "class": "RESOURCECLASS_TREASURE"
+  },
+  {
+   "type": "RESOURCE_SILVER_DISTANT_LANDS",
+   "class": "RESOURCECLASS_TREASURE"
+  },
+  {
+   "type": "RESOURCE_SPICES",
+   "class": "RESOURCECLASS_TREASURE"
+  },
+  {
+   "type": "RESOURCE_SUGAR",
+   "class": "RESOURCECLASS_TREASURE"
+  },
+  {
+   "type": "RESOURCE_TEA",
+   "class": "RESOURCECLASS_TREASURE"
+  },
+  {
+   "type": "RESOURCE_TIN",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_TOBACCO",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_TRUFFLES",
+   "class": "RESOURCECLASS_CITY"
+  },
+  {
+   "type": "RESOURCE_TURTLES",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_WHALES",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_WILD_GAME",
+   "class": "RESOURCECLASS_BONUS"
+  },
+  {
+   "type": "RESOURCE_WINE",
+   "class": "RESOURCECLASS_EMPIRE"
+  },
+  {
+   "type": "RESOURCE_WOOL",
+   "class": "RESOURCECLASS_BONUS"
+  }
+ ],
+ "tradeYields": [
+  {
+   "Domain": "DOMAIN_LAND",
+   "ResourceCount": 1,
+   "Amount": 3,
+   "YieldType": "YIELD_GOLD"
+  },
+  {
+   "Domain": "DOMAIN_LAND",
+   "ResourceCount": 2,
+   "Amount": 6,
+   "YieldType": "YIELD_GOLD"
+  },
+  {
+   "Domain": "DOMAIN_LAND",
+   "ResourceCount": 3,
+   "Amount": 9,
+   "YieldType": "YIELD_GOLD"
+  },
+  {
+   "Domain": "DOMAIN_SEA",
+   "ResourceCount": 1,
+   "Amount": 6,
+   "YieldType": "YIELD_GOLD"
+  },
+  {
+   "Domain": "DOMAIN_SEA",
+   "ResourceCount": 2,
+   "Amount": 12,
+   "YieldType": "YIELD_GOLD"
+  },
+  {
+   "Domain": "DOMAIN_SEA",
+   "ResourceCount": 3,
+   "Amount": 18,
+   "YieldType": "YIELD_GOLD"
+  }
+ ],
+ "gameSpeeds": [
+  {
+   "GameSpeedType": "GAMESPEED_ONLINE",
+   "CostMultiplier": 50
+  },
+  {
+   "GameSpeedType": "GAMESPEED_QUICK",
+   "CostMultiplier": 67
+  },
+  {
+   "GameSpeedType": "GAMESPEED_STANDARD",
+   "CostMultiplier": 100
+  },
+  {
+   "GameSpeedType": "GAMESPEED_EPIC",
+   "CostMultiplier": 150
+  },
+  {
+   "GameSpeedType": "GAMESPEED_MARATHON",
+   "CostMultiplier": 300
+  }
+ ],
+ "goldPurchaseMultiplier": "4",
+ "buildings": [
+  {
+   "type": "BUILDING_ANCIENT_BRIDGE",
+   "class": "BUILDING",
+   "age": "AGE_ANTIQUITY",
+   "cost": 100,
+   "tags": [],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_INFRASTRUCTURE"
+   ],
+   "gold": 4
+  },
+  {
+   "type": "BUILDING_ANJUVANNAM",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 290,
+   "tags": [
+    "AGELESS",
+    "GOLD"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_TRADE"
+   ],
+   "gold": 6
+  },
+  {
+   "type": "BUILDING_ARMORER",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 380,
+   "tags": [
+    "PRODUCTION"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_MILITARY"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_BANK",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 380,
+   "tags": [
+    "GOLD"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_TRADE"
+   ],
+   "gold": 8
+  },
+  {
+   "type": "BUILDING_BASILICA",
+   "class": "BUILDING",
+   "age": "AGE_ANTIQUITY",
+   "cost": 135,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_DIPLOMACY",
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_BAZAAR",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 200,
+   "tags": [
+    "GOLD",
+    "TRADE"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_TRADE"
+   ],
+   "gold": 6
+  },
+  {
+   "type": "BUILDING_BRICKYARD",
+   "class": "BUILDING",
+   "age": null,
+   "cost": 55,
+   "tags": [
+    "AGELESS",
+    "WAREHOUSE"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_MILITARY"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_CASA_DE_CONTRATACION",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 290,
+   "tags": [
+    "AGELESS",
+    "GOLD"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_TRADE"
+   ],
+   "gold": 6
+  },
+  {
+   "type": "BUILDING_CHAPEL",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 280,
+   "tags": [
+    "AGELESS",
+    "GOLD"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_MILITARY"
+   ],
+   "gold": 3
+  },
+  {
+   "type": "BUILDING_CHAPTER_HOUSE",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 240,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_CITADEL",
+   "class": "BUILDING",
+   "age": "AGE_ANTIQUITY",
+   "cost": 135,
+   "tags": [
+    "AGELESS",
+    "PRODUCTION"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_HAPPINESS",
+    "ADVISORY_CLASS_MILITARY"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_COTHON",
+   "class": "BUILDING",
+   "age": "AGE_ANTIQUITY",
+   "cost": 135,
+   "tags": [
+    "AGELESS",
+    "PRODUCTION",
+    "WATER"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_MILITARY"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_DOCKYARD",
+   "class": "BUILDING",
+   "age": "AGE_ANTIQUITY",
+   "cost": 135,
+   "tags": [
+    "AGELESS",
+    "GOLD",
+    "WATER"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_FOOD"
+   ],
+   "gold": 2
+  },
+  {
+   "type": "BUILDING_DUNGEON",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 200,
+   "tags": [
+    "PRODUCTION"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_DIPLOMACY",
+    "ADVISORY_CLASS_MILITARY"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_FISHING_QUAY",
+   "class": "BUILDING",
+   "age": null,
+   "cost": 55,
+   "tags": [
+    "AGELESS",
+    "WAREHOUSE",
+    "WATER"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_FOOD",
+    "ADVISORY_CLASS_SEA"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_GRANARY",
+   "class": "BUILDING",
+   "age": null,
+   "cost": 55,
+   "tags": [
+    "AGELESS",
+    "WAREHOUSE"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_FOOD",
+    "ADVISORY_CLASS_SCIENCE"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_GRISTMILL",
+   "class": "BUILDING",
+   "age": null,
+   "cost": 175,
+   "tags": [
+    "AGELESS",
+    "WAREHOUSE",
+    "WATER"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_FOOD",
+    "ADVISORY_CLASS_SCIENCE"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_GUILDHALL",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 380,
+   "tags": [
+    "GOLD",
+    "TRADE"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_DIPLOMACY",
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_TRADE"
+   ],
+   "gold": 6
+  },
+  {
+   "type": "BUILDING_HARBOR",
+   "class": "BUILDING",
+   "age": null,
+   "cost": 55,
+   "tags": [
+    "AGELESS",
+    "WAREHOUSE",
+    "WATER"
+   ],
+   "advisories": [],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_HOSPITAL",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 380,
+   "tags": [],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_FOOD"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_LECTURE_HALL",
+   "class": "BUILDING",
+   "age": "AGE_ANTIQUITY",
+   "cost": 135,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_CULTURE",
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_LIGHTHOUSE",
+   "class": "BUILDING",
+   "age": "AGE_ANTIQUITY",
+   "cost": 180,
+   "tags": [],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_TRADE"
+   ],
+   "gold": 4
+  },
+  {
+   "type": "BUILDING_MARKET",
+   "class": "BUILDING",
+   "age": "AGE_ANTIQUITY",
+   "cost": 90,
+   "tags": [],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_TRADE"
+   ],
+   "gold": 3
+  },
+  {
+   "type": "BUILDING_MEDIEVAL_BRIDGE",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 200,
+   "tags": [
+    "BRIDGE",
+    "WATER"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_INFRASTRUCTURE"
+   ],
+   "gold": 4
+  },
+  {
+   "type": "BUILDING_MERU",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 290,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_HAPPINESS"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_MORTUARY_TEMPLE",
+   "class": "BUILDING",
+   "age": "AGE_ANTIQUITY",
+   "cost": 135,
+   "tags": [
+    "AGELESS",
+    "GOLD"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": 3
+  },
+  {
+   "type": "BUILDING_NAVAL_ARSENAL",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 240,
+   "tags": [
+    "AGELESS",
+    "GOLD",
+    "WATER"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": 4
+  },
+  {
+   "type": "BUILDING_NAVAL_STATION",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 280,
+   "tags": [
+    "AGELESS",
+    "PRODUCTION",
+    "WATER"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_MILITARY"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_NEMETON",
+   "class": "BUILDING",
+   "age": "AGE_ANTIQUITY",
+   "cost": 135,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_CULTURE",
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_SAWMILL",
+   "class": "BUILDING",
+   "age": null,
+   "cost": 175,
+   "tags": [
+    "AGELESS",
+    "WAREHOUSE"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_MILITARY"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_SAW_PIT",
+   "class": "BUILDING",
+   "age": null,
+   "cost": 55,
+   "tags": [
+    "AGELESS",
+    "WAREHOUSE"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_MILITARY"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_SHIPYARD",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 380,
+   "tags": [
+    "PRODUCTION",
+    "WATER"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_MILITARY",
+    "ADVISORY_CLASS_SEA"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_STONECUTTER",
+   "class": "BUILDING",
+   "age": null,
+   "cost": 175,
+   "tags": [
+    "AGELESS",
+    "WAREHOUSE"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_MILITARY"
+   ],
+   "gold": null
+  },
+  {
+   "type": "BUILDING_WHARF",
+   "class": "BUILDING",
+   "age": "AGE_EXPLORATION",
+   "cost": 200,
+   "tags": [
+    "TRADE",
+    "WATER"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_FOOD",
+    "ADVISORY_CLASS_SCIENCE",
+    "ADVISORY_CLASS_SEA"
+   ],
+   "gold": null
+  },
+  {
+   "type": "WONDER_BRIHADEESWARAR_TEMPLE",
+   "class": "WONDER",
+   "age": "AGE_EXPLORATION",
+   "cost": 600,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_DIPLOMACY",
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": null
+  },
+  {
+   "type": "WONDER_BYRSA",
+   "class": "WONDER",
+   "age": "AGE_ANTIQUITY",
+   "cost": 375,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_DEFENSE",
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": 2
+  },
+  {
+   "type": "WONDER_COLOSSUS",
+   "class": "WONDER",
+   "age": "AGE_ANTIQUITY",
+   "cost": 375,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": 3
+  },
+  {
+   "type": "WONDER_GLOBE_THEATRE",
+   "class": "WONDER",
+   "age": "AGE_EXPLORATION",
+   "cost": 525,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": null
+  },
+  {
+   "type": "WONDER_GREAT_LIGHTHOUSE",
+   "class": "WONDER",
+   "age": "AGE_ANTIQUITY",
+   "cost": 275,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_FOOD"
+   ],
+   "gold": 3
+  },
+  {
+   "type": "WONDER_GREAT_STELE",
+   "class": "WONDER",
+   "age": "AGE_ANTIQUITY",
+   "cost": 275,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": null
+  },
+  {
+   "type": "WONDER_HAVANA_HARBOR",
+   "class": "WONDER",
+   "age": "AGE_EXPLORATION",
+   "cost": 525,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": 3
+  },
+  {
+   "type": "WONDER_MACHU_PIKCHU",
+   "class": "WONDER",
+   "age": "AGE_EXPLORATION",
+   "cost": 750,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": 4
+  },
+  {
+   "type": "WONDER_MONKS_MOUND",
+   "class": "WONDER",
+   "age": "AGE_ANTIQUITY",
+   "cost": 450,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": null
+  },
+  {
+   "type": "WONDER_PYRAMIDS",
+   "class": "WONDER",
+   "age": "AGE_ANTIQUITY",
+   "cost": 275,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": null
+  },
+  {
+   "type": "WONDER_SANCHI_STUPA",
+   "class": "WONDER",
+   "age": "AGE_ANTIQUITY",
+   "cost": 450,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC",
+    "ADVISORY_CLASS_HAPPINESS"
+   ],
+   "gold": null
+  },
+  {
+   "type": "WONDER_TOMB_OF_ASKIA",
+   "class": "WONDER",
+   "age": "AGE_EXPLORATION",
+   "cost": 525,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": 2
+  },
+  {
+   "type": "WONDER_VIX",
+   "class": "WONDER",
+   "age": "AGE_ANTIQUITY",
+   "cost": 375,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_CULTURE",
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": null
+  },
+  {
+   "type": "WONDER_WEIYANG_PALACE",
+   "class": "WONDER",
+   "age": "AGE_ANTIQUITY",
+   "cost": 375,
+   "tags": [
+    "AGELESS"
+   ],
+   "advisories": [
+    "ADVISORY_CLASS_DIPLOMACY",
+    "ADVISORY_CLASS_ECONOMIC"
+   ],
+   "gold": null
+  }
+ ],
+ "strategicUnits": [],
+ "anchorNodes": [
+  {
+   "node": "NODE_TECH_EX_URBAN_PLANNING",
+   "anchor": "BUILDING_BANK"
+  },
+  {
+   "node": "NODE_TECH_EX_GUILDS",
+   "anchor": "BUILDING_GUILDHALL"
+  },
+  {
+   "node": "NODE_CIVIC_EX_MAIN_COLONIALISM",
+   "anchor": "TRADITION_CHARTERS"
+  },
+  {
+   "node": "NODE_CIVIC_EX_MAIN_ECONOMICS",
+   "anchor": "TRADITION_MARITIME_LAW"
+  },
+  {
+   "node": "NODE_CIVIC_EX_MAIN_IMPERIALISM",
+   "anchor": "TRADITION_TARIFFS"
+  }
+ ]
+}

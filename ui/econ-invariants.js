@@ -4,6 +4,11 @@
 import { LIMITS, MISS, isWorldAccount } from "./econ-params.js";
 import { grantsFor, netGrants, transferKey, unbalancedPairs, worldNet } from "./econ-conservation.js";
 import { utf8Bytes } from "./econ-state.js";
+import { MARKETS_MAX_BYTES } from "./econ-markets.js";
+
+// TEST-PLAN 12.2 for 1.1: econ-1 (civ-to-civ flows sum to 0) is debt-1 over the bills and dividends too, econ-2 (the
+// grants equal the world flows) is debt-7 with the progress account among them, and econ-4 (no grant to a non-major
+// or a world account) is alive-target. econ-3 and econ-5 are below.
 
 /**
  * debt-1: every civ-to-civ transfer's grants sum to zero.
@@ -128,10 +133,36 @@ export function aliveTargets(grants, civs) {
 }
 
 /**
- * @param {{ plan: PlanOutput, civs: Civ[], envelopeText?: string, issued?: Set<string> }} q
+ * econ-3: one progress grant per city per turn, so the glue's addProgress lands once on each build.
+ * @param {ProgressRow[]} progress
  * @returns {Violation[]}
  */
-export function checkPlan({ plan, civs, envelopeText, issued }) {
+export function econ3(progress) {
+  /** @type {Violation[]} */
+  const violations = [];
+  const seen = new Set();
+  for (const row of progress || []) {
+    if (seen.has(row.cityId)) violations.push({ id: "econ-3", detail: row.cityId });
+    seen.add(row.cityId);
+  }
+  return violations;
+}
+
+/**
+ * econ-5: the markets envelope fits in 32 KB.
+ * @param {string} marketsText
+ * @returns {Violation[]}
+ */
+export function econ5(marketsText) {
+  const bytes = utf8Bytes(marketsText);
+  return bytes <= MARKETS_MAX_BYTES ? [] : [{ id: "econ-5", detail: `${bytes} bytes` }];
+}
+
+/**
+ * @param {{ plan: PlanOutput, civs: Civ[], envelopeText?: string, issued?: Set<string>, marketsText?: string }} q
+ * @returns {Violation[]}
+ */
+export function checkPlan({ plan, civs, envelopeText, issued, marketsText }) {
   const grants = grantsFor(plan.transfers);
   return [
     ...debt1(grants, plan.transfers),
@@ -142,5 +173,7 @@ export function checkPlan({ plan, civs, envelopeText, issued }) {
     ...debt6(plan.transfers, civs),
     ...debt7(grants, plan.transfers),
     ...aliveTargets(grants, civs),
+    ...econ3(plan.progress),
+    ...(marketsText === undefined ? [] : econ5(marketsText)),
   ];
 }

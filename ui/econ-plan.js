@@ -2,7 +2,8 @@
 // balances, income, relations and stages, calls planTurn once per turn, and sends each civ's net as grantYield calls
 // (econ-conservation.js). The turn is one batch: snapshot, propose, resolve each payer on its own funds, commit.
 // Civs are handled in id order whatever order they came in, so the result doesn't depend on the glue's listing.
-// TEST-PLAN 12.1 extends this module with the 1.1 and 1.2 steps of 4.14 (bills, erosion, cycle Gold, dividends).
+// The 1.1 steps (prices, trade settlement, dividends, the investment and tariff rules) are in econ-commerce.js; 1.2
+// adds erosion and cycle Gold.
 
 import { EMERGENCY, MISS, STANDING, TAX } from "./econ-params.js";
 import { isOpen } from "./econ-loan.js";
@@ -14,13 +15,16 @@ import { applyGrants, grantsFor } from "./econ-conservation.js";
 import { addCelebration, addInfluence, commitBatch, funds, projected } from "./econ-batch.js";
 import { aiTaxLevel, canChangeTax, taxFlow } from "./econ-tax.js";
 import { cloneLedger, emptyLedger, prune } from "./econ-state.js";
+import { emptyMarkets } from "./econ-markets.js";
 import { isAlive, closeLoan, emit, event, notice, replaceLoan, turnContext } from "./econ-turn.js";
 import { runRequests } from "./econ-requests.js";
 import { aiBorrow, aiRepudiate, aiRestructure, guardFor, isInsolventCiv } from "./econ-shortfall.js";
+import { aiAid, aiInvest, aiTariff, investWriteOffs, marketStep, payDividendsFor, settleTradeFor, tradeNotices,
+  tradeStep } from "./econ-commerce.js";
 
 /** @type {PlanOptions} */
 export const DEFAULT_OPTIONS = { loans: true, guard: true, ai: true, rates: "standard", stages: true,
-  taxFallback: false };
+  taxFallback: false, markets: true, tariffs: true, investment: true };
 
 /**
  * @param {Loan} a
@@ -39,26 +43,29 @@ export function planTurn(input) {
   const ledger = cloneLedger(input.ledger || emptyLedger());
   /** @type {PlanOutput} */
   const out = { ledger, transfers: [], influence: [], celebration: [], grievances: [], relationships: [], events: [],
-    notices: [], batch: null, skipped: null };
+    notices: [], batch: null, skipped: null, markets: input.markets || emptyMarkets(), progress: [], trade: [] };
   const skipped = skipReason(input, options, ledger);
   if (skipped) return { ...out, skipped };
   const ctx = turnContext(input, options, out);
-  snapshotStep(ctx);
+  snapshotStep(ctx, input.market);
   proposeStep(ctx);
   finishTurn(ctx);
   return out;
 }
 
 /**
- * DESIGN 4.14 step 1: the age change, the insolvency counters and the records whose party is gone.
+ * DESIGN 4.14 step 1: the age change, the insolvency counters, the records whose party is gone, and the prices.
  * @param {TurnContext} ctx
+ * @param {MarketRead | undefined} market
  */
-function snapshotStep(ctx) {
+function snapshotStep(ctx, market) {
   const { ledger } = ctx;
   if (ledger.age !== null && ledger.age !== ctx.age) ledger.blocks = blocksAfterAge(ledger.blocks);
   ledger.age = ctx.age;
   trackIncome(ctx);
   writeOffs(ctx);
+  investWriteOffs(ctx);
+  marketStep(ctx, market);
 }
 
 /**
@@ -68,12 +75,46 @@ function snapshotStep(ctx) {
 function proposeStep(ctx) {
   const live = ctx.civs.filter((civ) => civ.alive === true);
   const ai = ctx.options.ai ? live.filter((civ) => civ.human !== true) : [];
-  for (const civ of ai) { aiRepudiate(ctx, civ); aiRestructure(ctx, civ); }
+  if (ctx.options.loans) for (const civ of ai) { aiRepudiate(ctx, civ); aiRestructure(ctx, civ); }
+  tradeStep(ctx);
   const extras = runRequests(ctx);
+  aiCommerce(ctx, ai);
   if (ctx.options.taxFallback) for (const civ of live) taxOne(ctx, civ);
-  for (const civ of live) payerPass(ctx, civ.id, extras);
+  for (const civ of live) payerSteps(ctx, civ.id, extras);
+  tradeNotices(ctx);
+  if (ctx.options.loans) shortfallStep(ctx, live, ai);
+}
+
+/**
+ * Steps 9 and 10 on each civ's projected end balance: the human's guard, then AI shortfall borrowing.
+ * @param {TurnContext} ctx
+ * @param {Civ[]} live
+ * @param {Civ[]} ai
+ */
+function shortfallStep(ctx, live, ai) {
   for (const civ of live) if (civ.human === true) guardFor(ctx, civ);
   for (const civ of aiBorrowers(ctx, ai)) aiBorrow(ctx, civ);
+}
+
+/**
+ * The AI's 1.1 rules (DESIGN 6): tariffs, investment, aid.
+ * @param {TurnContext} ctx
+ * @param {Civ[]} ai
+ */
+function aiCommerce(ctx, ai) {
+  for (const civ of ai) { aiTariff(ctx, civ); aiInvest(ctx, civ); aiAid(ctx, civ); }
+}
+
+/**
+ * One payer's steps 6 to 8 in order: trade settlement, then its loans, then the dividends it owes.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ * @param {Map<string, number>} extras
+ */
+function payerSteps(ctx, pid, extras) {
+  settleTradeFor(ctx, pid);
+  if (ctx.options.loans) payerPass(ctx, pid, extras);
+  payDividendsFor(ctx, pid);
 }
 
 /**
@@ -82,7 +123,7 @@ function proposeStep(ctx) {
  * @param {Ledger} ledger
  */
 function skipReason(input, options, ledger) {
-  if (!options.loans) return "loans-off";
+  if (!options.loans && !options.markets && !options.investment) return "all-off";
   if (Number.isInteger(ledger.lastTurn) && input.turn <= /** @type {number} */ (ledger.lastTurn)) {
     return "already-planned";
   }
@@ -254,6 +295,8 @@ function finishTurn(ctx) {
   ledger.batchSeq += 1;
   ledger.lastBatch = commitBatch(ctx.batch, { id: `B${ledger.batchSeq}`, turn, civs: ctx.civs });
   ctx.out.batch = ledger.lastBatch;
+  ctx.out.markets = ctx.markets;
+  ctx.out.trade = ctx.trade;
   prune(ledger);
 }
 
@@ -269,15 +312,18 @@ export function projectBalances(input, turns = 20) {
   let balances = new Map(input.civs.map((civ) => [civ.id, civ.balanceCents]));
   /** @type {{ id: number, balances: number[] }[]} */
   const series = input.civs.map((civ) => ({ id: civ.id, balances: [] }));
+  let markets = input.markets;
   for (let k = 0; k < turns; k += 1) {
     const civs = input.civs.map((civ) => ({ ...civ, balanceCents: balances.get(civ.id) || 0 }));
-    const plan = planTurn({ ...input, turn: input.turn + k, civs, requests: k === 0 ? input.requests : [], ledger });
+    const plan = planTurn({ ...input, turn: input.turn + k, civs, requests: k === 0 ? input.requests : [], ledger,
+      markets });
     const income = new Map(civs.map((civ) => [civ.id, civ.alive === true ? civ.incomeCents : 0]));
     const earned = new Map([...balances].map(([id, balance]) => [id, balance + (income.get(/** @type {number} */ (id))
       || 0)]));
     balances = applyGrants(earned, grantsFor(plan.transfers));
     for (const row of series) row.balances.push(balances.get(row.id) || 0);
     ledger = plan.ledger;
+    markets = plan.markets;
   }
   return series;
 }

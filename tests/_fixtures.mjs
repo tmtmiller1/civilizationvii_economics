@@ -11,6 +11,8 @@ export const PARAMS = { amenityLineCents: ENGINE.amenityLineCents, disbandLineCe
 
 export const OPEN = { moneylending: 0, publicDebt: 0 };
 export const CLOSED = { moneylending: null, publicDebt: null };
+/** Every stage open, the 1.1 ones included. */
+export const OPEN_ALL = { ...OPEN, trade: 0, guildPatronage: 0, charteredCompanies: 0, tariffs: 0 };
 
 export const civ = (id, over = {}) => ({ id, alive: true, human: false, balanceCents: 50000, incomeCents: 1000,
   upkeepCents: 500, stages: OPEN, depthTurns: 0, depthFactorPct: 100, ...over });
