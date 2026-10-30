@@ -65,7 +65,7 @@
         <Argument name="Amount">1</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_TRIBUTE</Argument>
     </Modifier>
-    <!-- Civic market (Classical Republic): Light Taxation +1 Happiness; Heavy Taxation -1 and War Levy at war -1 Happiness -->
+    <!-- Civic market (Classical Republic): Light Taxation +2 Happiness; Heavy Taxation -1 and War Levy at war -1 Happiness -->
     <Modifier id="MOD_ECONOMICS_SYS_CLASSICAL_REPUBLIC_LIGHT_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
         <SubjectRequirements>
             <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
@@ -78,7 +78,7 @@
             </Requirement>
         </OwnerRequirements>
         <Argument name="YieldType">YIELD_HAPPINESS</Argument>
-        <Argument name="Amount">1</Argument>
+        <Argument name="Amount">2</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CIVIC_MARKET</Argument>
     </Modifier>
     <Modifier id="MOD_ECONOMICS_SYS_CLASSICAL_REPUBLIC_HEAVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
@@ -199,7 +199,7 @@
         <Argument name="Amount">2</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_MANORIAL</Argument>
     </Modifier>
-    <!-- Corporatist: War Levy pays its +8 Gold and -4 Happiness in peace too. The Modern governments' rows stand aside once the civ has an ideology, so the ideology's system takes over; Fascism's come from its branch root -->
+    <!-- Corporatist: War Levy pays its full +8 Gold and -4 Happiness in peace too (the card's own +2 and -1, and these +6 and -3). The Modern governments' rows stand aside once the civ has an ideology, so the ideology's system takes over; Fascism's come from its branch root -->
     <Modifier id="MOD_ECONOMICS_SYS_REV_AUTHORITARIANISM_WAR_LEVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
         <SubjectRequirements>
             <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
@@ -213,7 +213,7 @@
             <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
         </OwnerRequirements>
         <Argument name="YieldType">YIELD_GOLD</Argument>
-        <Argument name="Amount">8</Argument>
+        <Argument name="Amount">6</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
     </Modifier>
     <Modifier id="MOD_ECONOMICS_SYS_REV_AUTHORITARIANISM_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
@@ -229,7 +229,7 @@
             <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
         </OwnerRequirements>
         <Argument name="YieldType">YIELD_HAPPINESS</Argument>
-        <Argument name="Amount">-4</Argument>
+        <Argument name="Amount">-3</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
     </Modifier>
     <Modifier id="MOD_ECONOMICS_SYS_AUTHORITARIANISM_WAR_LEVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
@@ -248,7 +248,7 @@
             <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
         </OwnerRequirements>
         <Argument name="YieldType">YIELD_GOLD</Argument>
-        <Argument name="Amount">8</Argument>
+        <Argument name="Amount">6</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
     </Modifier>
     <Modifier id="MOD_ECONOMICS_SYS_BUREAUCRATIC_MONARCHY_WAR_LEVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
@@ -267,7 +267,7 @@
             <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
         </OwnerRequirements>
         <Argument name="YieldType">YIELD_GOLD</Argument>
-        <Argument name="Amount">8</Argument>
+        <Argument name="Amount">6</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
     </Modifier>
     <Modifier id="MOD_ECONOMICS_SYS_AUTHORITARIANISM_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
@@ -286,7 +286,7 @@
             <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
         </OwnerRequirements>
         <Argument name="YieldType">YIELD_HAPPINESS</Argument>
-        <Argument name="Amount">-4</Argument>
+        <Argument name="Amount">-3</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
     </Modifier>
     <Modifier id="MOD_ECONOMICS_SYS_BUREAUCRATIC_MONARCHY_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
@@ -305,7 +305,7 @@
             <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
         </OwnerRequirements>
         <Argument name="YieldType">YIELD_HAPPINESS</Argument>
-        <Argument name="Amount">-4</Argument>
+        <Argument name="Amount">-3</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
     </Modifier>
     <Modifier id="MOD_ECONOMICS_SYS_FASCISM_WAR_LEVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
@@ -316,7 +316,7 @@
             <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
         </OwnerRequirements>
         <Argument name="YieldType">YIELD_GOLD</Argument>
-        <Argument name="Amount">8</Argument>
+        <Argument name="Amount">6</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
     </Modifier>
     <Modifier id="MOD_ECONOMICS_SYS_FASCISM_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
@@ -327,7 +327,7 @@
             <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
         </OwnerRequirements>
         <Argument name="YieldType">YIELD_HAPPINESS</Argument>
-        <Argument name="Amount">-4</Argument>
+        <Argument name="Amount">-3</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
     </Modifier>
 </GameEffects>

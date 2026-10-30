@@ -5,7 +5,7 @@
     <EnglishText>
         <!-- The mod -->
         <Row Tag="LOC_ECONOMICS_MOD_NAME"><Text>Economics</Text></Row>
-        <Row Tag="LOC_ECONOMICS_MOD_DESCRIPTION"><Text>Borrow from other civilizations or a bond market and pay it back from what the Gold brings in, lend to a neighbour in trouble, pick a tax level as a policy card, and watch an auto-loan guard keep you clear of the game's negative-balance penalties. Missed payments cost you, default costs more, and repudiating a debt keeps the Gold at the price of your name. Single-player.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_MOD_DESCRIPTION"><Text>Gold gets a market. Borrow from other civilizations or a bond market, lend to a neighbour who's short, set your taxes with a policy card, and let an auto-loan guard keep you clear of the game's negative-balance penalties; a missed payment or a repudiated debt costs you your good name. Resources get world prices, trading partners settle what they owe each other every turn, and you can put a tariff on a partner or invest in a neighbour's builds and treasury. Wars, disasters and debt push the world through booms and slumps, inflation can eat into idle Gold, old markets and banks fade across the ages, and your government sets how your economy runs. The computer players play by the same rules. Single-player.</Text></Row>
 
         <!-- Setup: Loans -->
         <Row Tag="LOC_ECONOMICS_SETUP_LOANS_NAME"><Text>Loans</Text></Row>
@@ -79,11 +79,11 @@
 
         <!-- Tax cards (data/econ-tax-cards-*.xml) -->
         <Row Tag="LOC_ECONOMICS_CARD_LIGHT_NAME"><Text>Light Taxation</Text></Row>
-        <Row Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-2 Gold and +4 Happiness in each settlement.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-1 Gold and +6 Happiness in each settlement.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CARD_HEAVY_NAME"><Text>Heavy Taxation</Text></Row>
         <Row Tag="LOC_ECONOMICS_CARD_HEAVY_DESCRIPTION"><Text>+4 Gold and -2 Happiness in each settlement.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CARD_WAR_LEVY_NAME"><Text>War Levy</Text></Row>
-        <Row Tag="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION"><Text>While you're at war: +8 Gold and -4 Happiness in each settlement. In peacetime it doesn't pay or cost anything.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION"><Text>+2 Gold and -1 Happiness in each settlement. While you're at war it's +8 Gold and -4 Happiness instead.</Text></Row>
         <Row Tag="LOC_ECONOMICS_TAX_SLOT_DESCRIPTION"><Text>+1 Policy slot, for a tax card or any other.</Text></Row>
 
         <!-- The screen -->
@@ -211,7 +211,7 @@
         <Row Tag="LOC_ECONOMICS_FISCAL_EFFECT_ROW"><Text>Gold {1_Gold}, Happiness {2_Happiness}</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_FORECAST"><Text>Change for you, about</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_FORECAST_ROW"><Text>{1_Gold} Gold and {2_Happiness} Happiness a turn</Text></Row>
-        <Row Tag="LOC_ECONOMICS_FISCAL_LEVY_PEACE"><Text>only while you're at war</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR"><Text>While you're at war</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_SLOT"><Text>Slot this card</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_CLEAR"><Text>Clear the tax card</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_NO_SWAP"><Text>The game isn't allowing a policy change right now.</Text></Row>
@@ -416,7 +416,7 @@
         <Row Tag="LOC_ECONOMICS_SETUP_CYCLE_STRONG"><Text>Strong</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_CYCLE_STRONG_DESCRIPTION"><Text>Events move the economy half again as much.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_NAME"><Text>Economic systems</Text></Row>
-        <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_DESCRIPTION"><Text>Each civilization's government, or its ideology in the Modern age, sets how its economy runs: Despotism lives on tribute, a Classical Republic borrows from its citizens, Communism plans production, and more. The Fiscal tab shows what yours changes.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_DESCRIPTION"><Text>Each civilization's government, or its ideology in the Modern age, sets how its economy runs: Despotism lives on tribute, a Classical Republic borrows from its citizens, Communism plans production, and more. The Fiscal tab shows what yours changes. Each computer player leans toward a government that suits its civilization, so they spread across the systems.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_OFF"><Text>Off</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_OFF_DESCRIPTION"><Text>Every civilization runs a mixed economy.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_ON"><Text>On</Text></Row>
@@ -431,7 +431,7 @@
         <Row Tag="LOC_ECONOMICS_SYSTEM_RELIGIOUS"><Text>Usury law</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_CORPORATIST"><Text>Corporatist economy</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_PLANNED"><Text>Planned economy</Text></Row>
-        <Row Tag="LOC_ECONOMICS_SYSTEM_MIXED_LINE"><Text>A bit of everything: the rules as written.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SYSTEM_MIXED_LINE"><Text>A bit of everything: standard rates and credit, and the world's booms and slumps reach you at their usual strength.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_MARKET_LINE"><Text>Private capital and price signals: bonds cost 10 percent less and your economy recovers from a slump faster, but a Panic hits you harder.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_TRIBUTE_LINE"><Text>You take wealth to pay for expansion: Heavy Taxation and War Levy bring more Gold, your aid buys twice the goodwill, and you borrow only from other civilizations, at 20 percent more.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_CIVIC_MARKET_LINE"><Text>Your citizens fund the state: you can borrow from them, and the interest comes back as celebration. Light Taxation celebrates more and Heavy Taxation costs more Happiness. Your Trade buildings move bills by 12 percent each and your Commerce buildings count a quarter more.</Text></Row>
@@ -439,7 +439,7 @@
         <Row Tag="LOC_ECONOMICS_SYSTEM_MANORIAL_LINE"><Text>Local stability over money: taxes come in kind, half the Gold and half the Happiness cost. You pay 20 percent less on trade bills, your warehouses shelter twice as much from a slump, the world's swings reach you less, and your credit limit is 4 turns lower.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_MERCANTILE_LINE"><Text>You get rich exporting: you're owed 10 percent more on bills, a High tariff costs relationship half as often, bonds cost 20 percent less, your investments earn a point more, and booms and slumps swing you harder.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_RELIGIOUS_LINE"><Text>Interest is forbidden: what you lend comes back as a share that follows the borrower's income, and your aid buys twice the goodwill.</Text></Row>
-        <Row Tag="LOC_ECONOMICS_SYSTEM_CORPORATIST_LINE"><Text>Capital goes to industry and war: War Levy pays in peace, a war booms your own economy and peace brings it down, your credit limit is half again as large and bonds cost 25 percent less, idle Gold erodes twice as fast, your factories count twice for demand, and you take development loans only.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SYSTEM_CORPORATIST_LINE"><Text>Capital goes to industry and war: War Levy pays its full wartime amount in peace too, a war booms your own economy and peace brings it down, your credit limit is half again as large and bonds cost 25 percent less, idle Gold erodes twice as fast, your factories count twice for demand, and you take development loans only.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_PLANNED_LINE"><Text>The treasury becomes production: a fifth of your Gold income goes into your cities' builds each turn, you buy at fixed prices, the world's booms and slumps pass you by, you borrow only from other civilizations and you take development loans only.</Text></Row>
         <Row Tag="LOC_ECONOMICS_PHASE_DEPRESSION"><Text>Depression</Text></Row>
         <Row Tag="LOC_ECONOMICS_PHASE_SLUMP"><Text>Slump</Text></Row>

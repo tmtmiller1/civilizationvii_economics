@@ -85,6 +85,15 @@
                 <Value>ECONOMICS_TAXES_ON</Value>
             </ConfigurationValueMatches>
         </Criteria>
+        <!-- The government biases (DESIGN 4.17) steer which system a computer player runs, so they need Economic
+             systems alone; they don't touch the tax cards. -->
+        <Criteria id="systems-option-on">
+            <ConfigurationValueMatches>
+                <Group>Game</Group>
+                <ConfigurationId>ECONOMICS_SYSTEMS</ConfigurationId>
+                <Value>ECONOMICS_SYSTEMS_ON</Value>
+            </ConfigurationValueMatches>
+        </Criteria>
         <Criteria id="ai-on">
             <ConfigurationValueMatches>
                 <Group>Game</Group>
@@ -310,6 +319,18 @@
                 <UpdateDatabase>
                     <Item>data/econ-systems-gameeffects.xml</Item>
                     <Item>data/econ-systems.sql</Item>
+                </UpdateDatabase>
+            </Actions>
+        </ActionGroup>
+        <!-- One government bias per civilization (DESIGN 4.17, docs/government-biases.md), in every age's database;
+             each row selects through Traits and Governments, so an age without that government skips it. -->
+        <ActionGroup id="economics-government-biases" scope="game" criteria="systems-option-on">
+            <Properties>
+                <LoadOrder>113</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateDatabase>
+                    <Item>data/econ-government-biases.sql</Item>
                 </UpdateDatabase>
             </Actions>
         </ActionGroup>

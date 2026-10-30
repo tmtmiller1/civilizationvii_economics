@@ -14,8 +14,8 @@ reputation instead. Resources get a world price, and the civilizations you trade
 you import from each other every turn; you can tariff a partner, or put Gold into a neighbour's build or treasury and
 collect a return. Wars, disasters, defaults and trade move the world's economy through booms and slumps, your
 government sets how your own economy runs, and the markets and banks of an earlier age fade as newer ones take over.
-The computer players borrow, lend, restructure, repudiate, tariff and invest under the same rules, and pick the tax
-cards the way they pick any card.
+The computer players borrow, lend, restructure, repudiate, tariff and invest under the same rules, pick the tax cards
+the way they pick any card, and each leans toward a government that suits its civilization.
 
 ## Loans
 
@@ -52,13 +52,13 @@ from the Loans tab.
 
 ## Taxes
 
-Three policy cards, one of each per age: Light Taxation (-2 Gold, +4 Happiness in each settlement), Heavy Taxation
-(+4 Gold, -2 Happiness) and War Levy (+8 Gold, -4 Happiness, only while you're at war). The first
-civic of each age unlocks Light and Heavy and grants one extra policy slot so a tax card doesn't push out a card you
-already hold; War Levy comes with Currency in Antiquity and with the first civic later. They show in the policy menu
-like any card, and the Fiscal tab slots or clears one for you. Under each card it shows how much your Gold and
-Happiness a turn would change and when your next celebration would come; a card you haven't unlocked yet names the
-civic or tech that opens it.
+Three policy cards, one of each per age: Light Taxation (-1 Gold, +6 Happiness in each settlement), Heavy Taxation (+4
+Gold, -2 Happiness) and War Levy (+2 Gold, -1 Happiness in peace, +8 Gold and -4 Happiness while you're at war). The
+first civic of each age unlocks Light and Heavy and grants one extra policy slot so a tax card doesn't push out a card
+you already hold; War Levy comes with Currency in Antiquity and with the first civic later. They show in the policy menu
+like any card, and the Fiscal tab slots or clears one for you. Under each card it shows how much your Gold and Happiness
+a turn would change and when your next celebration would come; a card you haven't unlocked yet names the civic or tech
+that opens it.
 
 ## Markets, trade bills and tariffs
 
@@ -117,6 +117,11 @@ turn and the world's booms and slumps pass you by. Other governments run a mixed
 cities' yields under the system's name, and the Fiscal tab names your system and what it changes. A new system blends
 in over ten turns.
 
+Each computer player leans toward one government in each age, picked to suit its civilization and to spread the
+civilizations of an age across that age's systems: Rome and Greece toward a Classical Republic, Spain toward Plutocracy,
+Prussia toward Authoritarianism, and so on. [docs/government-biases.md](docs/government-biases.md) lists every one. The
+game reads these when a game is created, so they reach new games.
+
 ## Old buildings across the ages
 
 The game lets you build over an earlier age's buildings. Here they fade instead of switching off. A Market keeps its
@@ -150,7 +155,7 @@ option off, everything is open from the start.
 | Foreign investment | On | Development loans, general investment and aid |
 | Inflation | Off | Bond debt erodes idle Gold above the reserve and raises bond rates |
 | Business cycle | Standard | Off, Mild (half), Standard or Strong (half again): how far events move the economy |
-| Economic systems | On | Government and ideology set each civilization's economic system; Off runs everyone mixed |
+| Economic systems | On | Government and ideology set each civilization's economic system, and each computer player leans toward a government that suits its civilization; Off runs everyone mixed |
 
 ## Compatibility
 

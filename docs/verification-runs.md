@@ -65,7 +65,7 @@ Exploration seed 9001 are the probe run's seeds.
 | --- | --- | --- | --- |
 | 5.1 | The tax slot appears when the age's root civic completes (policy slots +1, as P17 saw at Chiefdom), in all three ages (2026-10-30, A: the cards unlock at Chiefdom, but the player's policy slots read 2 at turn 31 where P17 saw 4; read `getNumCultureSlots` before and after Chiefdom) | Antiquity 4242, then an Exploration and a Modern start | `data/econ-tax-cards.sql` (slot row), `data/econ-tax-gameeffects.xml` |
 | 5.2 | The Fiscal tab lists Light, Heavy and War Levy with the forecast under each; Slot sends the change and the card reads slotted; swapping with every slot full goes Deactivate then Activate within the turn; when `canSwapCultureSlot` reads false the buttons grey and the note says so (2026-10-30, A: `swapTo` returned `no-swap` while `canSwapCultureSlot` read false (the Autoplay seat had just chosen cards); owed) | same | `ui/econ-fiscal.js` `swapTo`, `ui/econ-view-fiscal.js` |
-| 5.2a | The forecast reads right: "Your settlements now" shows the summed city Gold and Happiness and the same turns to the next celebration as the policies button's tooltip; after slotting a card, its Gold and Happiness change on the tab match what the settlements then show (within rounding), and the celebration turns move the way the tab said (2026-10-30, A and D: "Your settlements now" read Gold 0 and -1 while the player's net Gold was +5 and +9; check the forecast's starting figure) | same | `ui/econ-fiscal.js` `readFiscal`, `ui/econ-tax-cards.js` `cardForecast` |
+| 5.2a | The forecast reads right: after slotting a card, its Gold and Happiness change on the tab match what the settlements then show (within rounding), and the celebration turns move the way the tab said. The starting Gold line now reads the civ's net and matches the top bar (watched 2026-10-30, 0.4.0, below) | same | `ui/econ-fiscal.js` `readFiscal`, `ui/econ-tax-cards.js` `cardForecast` |
 | 5.3 | The policy menu shows the same card as slotted, and clearing it there clears it on the tab | same | `ui/econ-fiscal.js` `readCards` |
 | 5.4 | Each card shows on a city's yield breakdown under its own name with the right percentage (hover; P17 left this open) | same | `data/econ-tax-gameeffects.xml` (Tooltip argument) |
 | 5.5 | War Levy pays only at war: the breakdown line appears when a formal war starts and goes when peace is made | same, a declared war | `data/econ-tax-gameeffects.xml` (REQUIREMENT_PLAYER_HAS_X_WARS) |
@@ -98,7 +98,7 @@ Exploration seed 9001 are the probe run's seeds.
 | --- | --- | --- | --- |
 | S.1 | The screen opens from the dock button and from a click on the turn notification, draws framed with its own styles at 720p without horizontal scroll (the CSS and HTML load from `fs://game/tower-economics/`), `tower-bench lint` on the live screen passes (no dropped declarations), the tab bar keeps its selection across re-renders (2026-10-30, A: opens full window with its CSS from `fs://game/tower-economics/`, five tabs, no horizontal scroll at 2880 by 1800, `lint` clean for the screen; 720p and the notification click owed) | any, vanilla | `ui/econ-screen.js`, `ui/econ-screen.css` |
 | S.2 | The Treasury tab's projection bars and the flows list read right against the ledger; the buildings block counts the Market and Bank | any | `ui/econ-view-treasury.js` |
-| S.3 | The turn notification shows once per turn with the net Gold line and the notices, in the game's language, and its click opens the screen (2026-10-30: a notice line per turn in `UI.log`; each line starts "Loans moved your treasury" even for trade bills alone, and fired 27 times with "-0.0" or "+0.0 Gold" in Antiquity) | any | `ui/econ-notify.js` |
+| S.3 | The turn notification shows once per turn in the game's language, and its click opens the screen. The wording and the tenth-of-a-Gold floor were watched 2026-10-30 (0.4.0, below); a notice naming loans needs a player loan open | any | `ui/econ-notify.js` |
 | S.4 | The pill's text follows the debt and turns red in default (2026-10-30: reads "No debt" (A, D); the default state owed) | any | `ui/econ-dock.js` `refreshPill` |
 | S.5 | The dock button shows the coin icon (the SVG served from `fs://game/tower-economics/images/`), not a blank square | any | `ui/econ-dock.js` `ICON_URL` |
 
@@ -138,6 +138,26 @@ still for a person.
 | C.1 | The setup screen shows Markets and trade bills, Tariffs and Foreign investment, all On; the boot line `[Economics] v0.3.0 loaded; ...` lists `markets`, `tariffs` and `investment` in its options | any, vanilla, then the usual set | A, D: the boot line lists `markets`, `tariffs` and `investment`, all true, in vanilla and the usual set |
 | C.9 | The bill never passes a tenth of the payer's income; at income 0 or below nothing is paid; anything over the cap shows as waived and isn't owed next turn | same, the player's income pushed low | B at turn 24: Japan owed the player 14.37, paid 5.01, 9.36 waived; the Pirate Republic owed Silla 7.98, paid 3.83 |
 | C.10 | The imports read for AI pairs: an AI importing from another AI shows a bill between them in `__towerEconomics.session().lastPlan.trade`. The 1.1 probes settled the reads underneath (C8: per-route imports for AIs add up; C14: copies count once at the origin); the bill itself is unwatched | same | B: `lastPlan.trade` holds AI pairs (Silla to France paid in full, the Pirate Republic to Silla and to France) |
+
+## Watched 2026-10-30 (0.4.0)
+
+Economics 0.4.0 (`217638b`, the installed `Mods/economics`), two lab games read by script, every reading in
+`mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-watch-040.md`. Runs: `2026-10-30-watch-040-vanilla`
+(Economics alone, Antiquity 4242, 119 turns, the age change, Exploration turns 1 and 2) and
+`2026-10-30-watch-040-usualset` (the owner's usual set, the same seed, 116 turns and the change). Both `--setup fast`
+(Settler difficulty).
+
+| # | What the player sees when it works | Setup | Reading |
+| --- | --- | --- | --- |
+| T.1 (part) | Heavy and War Levy read their flat amounts on each settlement's breakdown | vanilla | Heavy: a "Heavy Taxation" line of 4.00 in Gold income and a 2.00 Happiness deduction in every settlement of Hawaii and Goryeo (t30); War Levy at war: 8.00 and 4.00 in every settlement of Hawaii, Goryeo and Dai Viet (t118). An AI's Gold moves by 3.2, not 4, under Settler's -20% Gold modifier on AI income. Light owed |
+| T.2 | AIs slot Heavy at fresh slots as arm 3 did; Heavy or War Levy more than Light | vanilla, 119 turns | Light never; Heavy by 4 of 5 AIs (Goryeo t27, Hawaii t29, Dai Viet t31, Persia t118), at the fresh slot as in arm 3; War Levy by all 5 (Dai Viet t34, Goryeo 44, Greece 48, Persia 53, Hawaii 87). At war the AIs held War Levy on 85 of 130 civ-turns, otherwise no tax card; at peace War Levy 139 civ-turns, Heavy 26, nothing 255. Strategy rows in `AI_Victories.csv`; Short of Gold left by turn 17 for four AIs |
+| T.4 | A peaceful AI holding War Levy gets nothing from it | vanilla | Greece at t51, War Levy slotted, no war: no levy line on Gold or Happiness in its three settlements |
+| M.4 (part) | The first turn of a new age runs a batch | vanilla and usual set | `turn 121 (load catch-up from turn 120)` at the reload, `turn 121 (TurnBegin 1): skipped, already-planned`, `turn 122 (TurnBegin 2)` with transfers; ledger `lastTurn` 121 then 122. The loan-miss half owed |
+| M.18 | The age change's Gold cap | vanilla, the human at 5,207 and Persia at 11,432 by `grantYield` | The cap is the map script's `capGold` (`age-transition-post-load.js`), 6,000 into Exploration under Play Now's keep-more setting (3,000 under the default setting, not reached in the lab). Persia 11,432 to exactly 6,000 at Exploration t1, the human's 5,207 kept. The ledger snapshot took 6,000 with no event for the cut |
+| S.3 (part) | The notice names what moved the treasury and stays quiet below a tenth | vanilla and usual set | vanilla Antiquity 45 notices (38 "from trade bills, the business cycle", 5 cycle, 1 trade, 1 system change), usual set 22 (cycle and the system change); no "+0.0" or "-0.0"; the smallest ±0.1 |
+| 5.2a (part) | The Fiscal tab's Gold line matches the top bar's net Gold | vanilla and usual set | "Your civilization now, Gold a turn" 3 and 6 against the top bar's +3 and +6 (vanilla t30, t51); 5 and 12 against +5 and +12 (usual set t31, t61) |
+| Finding L | `addProgress` lands at the amount sent times the city's production multiplier for that kind of item | vanilla | human city 5 gave 5.00 and 10 gave 10.00; AI unit 5 gave 3.00 (Settler's -40% unit modifier), AI building 10 gave 8.00 (-20%); the grant held, and the next turn added the city's production times the same factor. The 0-to-76.5 jump is a `currentBuildProgress` of 0 on an item switched to that turn |
+
 
 ## The model (offline)
 
@@ -185,10 +205,8 @@ lines in one game.
 
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
-| T.1 | Each card's line on a settlement's Gold and Happiness breakdown reads the flat amount (Light -2 Gold +4 Happiness, Heavy +4 -2, War Levy +8 -4 at war), not a percentage (hover). Replaces 5.4's "right percentage" | Antiquity 4242, vanilla | `data/econ-tax-gameeffects.xml` |
-| T.2 | Over 80 driven turns on the arms' seed, AIs slot Heavy at fresh slots as arm 3 did, and with the steering bias at 300 the Short of Gold civs take Heavy or War Levy more than Light; the picks per civ and turn against arm 3's table (`probe-runs/2026-10-29-p17-analysis.md`) | Antiquity 4242, vanilla, `AIVerboseLogging 1`, `Game_Gossip.csv` kept | `data/econ-tax-cards.sql` (bias 300) |
+| T.1 | Each card's line on a settlement's Gold and Happiness breakdown reads the flat amount, not a percentage (hover). Heavy (+4, -2) and War Levy at war (+8, -4) were read by script from `getYieldsForType` on 2026-10-30 (0.4.0, below); Light (-2 Gold, +4 Happiness) is owed, since no AI took it, and the hover itself is for a person | Antiquity 4242, vanilla, Light slotted (the player's own swap) | `data/econ-tax-gameeffects.xml` |
 | T.3 | The Fiscal tab's forecast under each card equals the card's amounts times your settlements, and after a swap the settlements' summed Gold and Happiness move by that much | Antiquity 4242 | `ui/econ-tax-cards.js` `cardForecast`, `ui/econ-fiscal.js` `readFiscal` |
-| T.4 | A peaceful AI holding War Levy gets nothing from it (the breakdown shows no levy line), since the card pass slots it on face value | same, an AI at peace with War Levy slotted | `data/econ-tax-gameeffects.xml` requirement |
 
 ### Data and load
 
@@ -284,7 +302,7 @@ M3 and M4 run did. Each line says what the player sees when it works, the setup 
 | M.1 | The three 1.2 options show under Game Options with Inflation Off, Business cycle Standard and Economic systems On; the boot line `[Economics] v0.4.0 loaded` names them in its options | vanilla, shell | `config/econ-setup.sql`, `ui/econ-bootstrap.js` |
 | M.2 | The systems group loads with Economic systems and Taxes on in each age (`Database.log` clean), and is absent with either off; `GovernmentModifiers` holds the age's `MOD_ECONOMICS_SYS_*` rows | Antiquity 4242, then each transition | `data/econ-systems*.{xml,sql}` |
 | M.3 | Against a database with every DLC row removed, `PRAGMA foreign_key_check` lists the same rows before and after the systems SQL | the release check, all three ages | same |
-| M.4 | The first turn of a new age runs a batch (a `turn N` log line with N past the old age's last), and the ledger's windows carry on: a miss from the old age's last turns still counts in standing | transition, a player loan open across it | `ui/econ-turn-count.js`, `ui/econ-session.js` `turnNow` |
+| M.4 | The ledger's windows carry on across an age change: a miss from the old age's last turns still counts in standing (the first-turn batch was watched 2026-10-30, 0.4.0, below) | transition, a player loan open across it | `ui/econ-turn-count.js`, `ui/econ-session.js` `turnNow` |
 | M.5 | A save made after a change in 0.3.0, loaded in 0.4.0, runs its next batch | a 0.3.0 save past an age change, if one exists | `ui/econ-turn-count.js` `countTurn` |
 
 ### The business cycle
@@ -308,7 +326,6 @@ M3 and M4 run did. Each line says what the player sees when it works, the setup 
 | --- | --- | --- | --- |
 | M.16 | Bond debt beside idle Gold: the World tab shows a rate above 0 with its cause; the Treasury tab shows the reserve and next turn's erosion; the balance above the reserve shrinks by that each turn (transfer `IN<pid>`); bond rates rise | Exploration 9001, Inflation On, the player borrowing from the bond market with a large balance | `ui/econ-macro.js` `inflationStep`, `erodeFor` |
 | M.17 | Repaying the bond loan takes the rate back to 0; with the option Off nothing erodes and the World tab says so | same | same |
-| M.18 | Whether `DefaultGoldOnTransition` (3,000) caps a larger treasury at the change (M4 had nobody above 3,000) | transition with a civ holding more than 3,000 | engine fact |
 
 ### Old buildings
 
@@ -354,9 +371,43 @@ M3 and M4 run did. Each line says what the player sees when it works, the setup 
 | The systems' data against the compiled databases | `tests/econ-data.test.mjs` with `CIV7_GAMEPLAY_DB` on 1.5.0 Antiquity, Exploration and Modern copies | each age attaches only its own rows (6, 7 and 4 government rows, 2 on Fascism's root), foreign keys clean; a copy missing a government and two cards skips their rows |
 | The 1.2 balance rows | `tests/econ-balance-macro.test.mjs`, `reports/balance-1.2.json` | the hard rows pass; the cycle-shape, system-diversity and plan rows miss their starting targets (DESIGN 10) |
 
+## Owed: government biases
+
+Each civilization leans toward one government in its own age (DESIGN 4.17, `docs/government-biases.md`,
+`data/econ-government-biases.sql`). Built and checked offline on 2026-10-30; nothing here has been watched in a game.
+The tally reads each AI's pick from `Game_Gossip.csv` (`GOSSIP_CHANGE_GOVERNMENT`) or from the government events the
+probe logs, and the human seat under Autoplay counts like an AI.
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| G.1 | A transition game: on each age's first pick every AI takes the government `docs/government-biases.md` gives its civ, and the tally per age matches the table (for the civs in that game) | Antiquity start through Modern with Economic systems On, AI civs from the table, vanilla | `data/econ-government-biases.sql` |
+| G.2 | The changed picks move: Carthage takes Oligarchy and Maurya Classical Republic in Antiquity; Iceland and Shawnee Theocracy, Spain, Goryeo and the Pirate Republic Plutocracy in Exploration; Great Britain and Meiji Elective Republic, Buganda Authoritarianism in Modern | the same game, or a start in each age with those civs | same |
+| G.3 | Heian takes Classical Republic by its corrected row, and a civ that had no row (Babylon, Gaul, Silla, England, Joseon, Ottomans) takes its new pick rather than the age's first government | Antiquity, Exploration and Modern starts with them | same |
+| G.4 | With Economic systems Off the picks fall back to the game's own (Spain Feudal Monarchy, Meiji Authoritarianism) | one Exploration and one Modern start, Economic systems Off | `economics.modinfo` `systems-option-on` |
+| G.5 | The game starts and the rows load without the DLC civs' parents: `Modding.log` and `Database.log` show the file loaded with no error | a game with a DLC switched off, or the lab's compiled database with a DLC disabled | same |
+| G.6 | A shared `GovernmentBiases` row at 50 on `TRAIT_LEADER_MAJOR_CIV` (the probe's `gov bias` arm) no longer moves any civ off its own pick | Antiquity 4242 with the probe overlay | same |
+| G.7 | Each AI's system in `__towerEconomics.session().macro.systems` follows its pick, three systems in Antiquity and Exploration and at least two in Modern before the ideologies | the G.1 game | `ui/econ-systems.js` |
+
+## Owed: Light and War Levy (arms)
+
+Light Taxation at -1 Gold and +6 Happiness, and War Levy at +2 Gold and -1 Happiness in peace with +6 and -3 more at
+war (DESIGN 4.7, NOTES 101 and finding V). The shapes were watched in the Light arms' probe games on 2026-10-30
+(`mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-light-arms.md`, arm 10 and every arm's War Levy); the built
+mod hasn't been run in a game.
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| L.1 | Some AIs but not all slot Light, each once grown and short of Happiness (arm 10: Hawaii t69, Persia t92, Dai Viet t107); Goryeo and Hawaii still take Heavy at their second slot, and the AIs take War Levy | Antiquity 4242, `--setup fast --quick`, Economics alone, 110 turns of `lab drive` with a per-turn card reading | `ui/econ-tax-cards.js` `CARD_LEVELS`, `data/econ-tax-gameeffects.xml` |
+| L.2 | A civ holding War Levy at peace shows a "War Levy" line of +2 Gold and a "War Levy" deduction of 1 Happiness on each settlement; at war two lines each, +2 and +6 Gold, 1 and 3 Happiness | the L.1 game, `city.Yields.getYieldsForType` | `data/econ-tax-gameeffects.xml` |
+| L.3 | A settlement under Light shows "Light Taxation" at -1 Gold and +6 Happiness | the L.1 game, an AI pick or the player's swap (`__towerEconomics.swapTo`) | same |
+| L.4 | The Fiscal tab's War Levy card reads "Effect in every settlement: Gold +2, Happiness -1" and "While you're at war: Gold +8, Happiness -4", and its forecast in peace is +2 Gold and -1 Happiness times the settlements | any game with Taxes on, the screen's DOM | `ui/econ-view-fiscal.js` |
+| L.5 | A Civic market civ under Light shows a "Civic market" line of +2 Happiness | Antiquity with Economic systems on, a Classical Republic civ holding Light | `data/econ-systems-gameeffects.xml` |
+| L.6 | A Corporatist civ holding War Levy at peace shows War Levy's +2 and -1 and a "Corporatist" line of +6 Gold and -3 Happiness, so +8 and -4 in all | Modern with Authoritarianism or Bureaucratic Monarchy, no ideology, at peace | same |
+| L.7 | The game starts with Taxes on in each age, and `Database.log` has no error from the War Levy rows | Antiquity, Exploration and Modern starts | `data/econ-tax-cards-*.xml` |
+
 ## Owed: model fixes
 
-Built 2026-10-30 on the `model-fixes` branch, offline only (NOTES findings P to V, choices from 101). Nothing here has
+Built 2026-10-30 on the `model-fixes` branch, offline only (NOTES findings P to U and W to Y, choices from 102). Nothing here has
 been seen in a game.
 
 | # | What the player sees when it works | Setup | Source |
