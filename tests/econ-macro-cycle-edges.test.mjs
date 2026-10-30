@@ -54,6 +54,33 @@ test("the World tab's list leaves out what repeats every turn, and the list and 
   assert.equal(declared.macro.cycle.events[0].turn, 1);
 });
 
+test("overheating: a world in Boom counts its turns and pulls harder each one; the World tab lists it every 5th", () => {
+  const civs = [me(), ai(AI)];
+  const first = plan({ civs, macro: macroWith({ e: 11000 }) });
+  assert.equal(first.macro.cycle.boomTurns, 1, "the turn's E is still in Boom");
+  assert.equal(first.macro.cycle.e, 10900, "no pull before a turn in Boom");
+  const later = plan({ civs, macro: macroWith({ e: 11000, boomTurns: 5 }) });
+  assert.equal(later.macro.cycle.boomTurns, 6);
+  assert.equal(later.macro.cycle.e, 10900 - 60, "5 turns at -0.002, at the Public debt stage scale of 0.6");
+  assert.deepEqual(later.macro.cycle.events.map((e) => [e.kind, e.w]), [["overheating", -100]]);
+  const quiet = plan({ civs, macro: macroWith({ e: 11000, boomTurns: 6 }) });
+  assert.deepEqual(quiet.macro.cycle.events, [], "listed every 5th turn only");
+  const over = plan({ civs, macro: macroWith({ e: 10400, boomTurns: 12 }) });
+  assert.equal(over.macro.cycle.boomTurns, 0, "out of Boom it starts again");
+});
+
+test("the income trend: set by the first full read, then moved 4% of the way; growth on trend weighs nothing", () => {
+  const civs = [me({ incomeCents: 10000 }), ai(AI, { incomeCents: 10000 })];
+  const first = plan({ civs, macro: macroWith({ income: Array(10).fill(18000) }) });
+  assert.equal(first.macro.cycle.trend, 1111, "20000 against 18000 ten turns ago");
+  assert.deepEqual(first.macro.cycle.events, [], "no trend to read against yet");
+  const onTrend = plan({ civs, macro: macroWith({ income: Array(10).fill(18000), trend: 1111 }) });
+  assert.deepEqual(onTrend.macro.cycle.events, []);
+  const slow = plan({ civs, macro: macroWith({ income: Array(10).fill(18000), trend: 2200 }) });
+  assert.deepEqual(slow.macro.cycle.events.map((e) => [e.kind, e.w]), [["income-down", -100]]);
+  assert.equal(slow.macro.cycle.trend, 2200 + Math.round((1111 - 2200) * 0.04));
+});
+
 test("Corporatist: +0.01 a turn on its own L at war, -0.03 once when peace comes, and the war state recorded", () => {
   const corporatist = { [AI]: { system: "corporatist", from: "corporatist", since: 0 } };
   const relations = [{ a: ME, b: AI, level: "war" }];

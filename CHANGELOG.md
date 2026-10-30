@@ -69,6 +69,9 @@ release is generated from the matching section below by `scripts/steam-changelog
   Economic systems (On).
 
 ### Changed
+- The business cycle no longer leans to Boom. A trade route that stands and income that grows at its usual pace don't
+  move the world any more; only growth faster or slower than usual does, and a long boom wears itself out, so a
+  growing world still has slumps.
 - The tax cards add flat amounts in each settlement instead of percentages: Light Taxation -2 Gold and +4 Happiness,
   Heavy Taxation +4 Gold and -2 Happiness, War Levy +8 Gold and -4 Happiness while you're at war. The computer
   players took flat cards in test games where they passed over the percentage ones. The two AI strategies that steer

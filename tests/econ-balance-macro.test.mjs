@@ -4,7 +4,6 @@ import { mkdirSync, writeFileSync } from "node:fs";
 
 import { MACRO_TURNS, citizenLoanRow, makeMacroGame, planRow, runMacroGame, systemDiversityRows }
   from "./_balance-macro.mjs";
-import { CYCLE_WEIGHTS } from "../ui/econ-params.js";
 
 // The 1.2 rows of DESIGN 10's balance ladder. The hard rows (Depression never held 30 turns, at most two Panics a
 // game, inflation never 20 turns at its cap, the macro envelope under 32 KB, the turn under 50 ms) are asserted; the
@@ -34,24 +33,6 @@ function phaseShares(e) {
   }
   for (const key of Object.keys(out)) out[key] = Math.round((out[key] * 1000) / e.length) / 1000;
   return out;
-}
-
-/**
- * The same games with the two terms that rise with ordinary growth taken out (each standing route's +0.001 and the
- * world-income trend), for the owner to read against the cycle-shape target. The weights are restored after.
- */
-function driftVariant() {
-  const saved = { ...CYCLE_WEIGHTS };
-  try {
-    Object.assign(CYCLE_WEIGHTS, { routeStanding: 0, incomePer5Pct: 0 });
-    const games = [0, 1, 2].map((i) => runMacroGame(makeMacroGame(4200 + i)));
-    const peaceful = runMacroGame(makeMacroGame(4300, { peaceful: true }));
-    return { games: games.map((f) => ({ worldPhases: phaseShares(f.e), minE: Math.min(...f.e), maxE: Math.max(...f.e),
-      ...civPhaseFacts(f.phases) })), peaceful: { worldPhases: phaseShares(peaceful.e), minE: Math.min(...peaceful.e),
-      ...civPhaseFacts(peaceful.phases) } };
-  } finally {
-    Object.assign(CYCLE_WEIGHTS, saved);
-  }
 }
 
 /** Turns any civ spent in its own Slump or worse, and the longest civ Depression. */
@@ -96,7 +77,6 @@ test(`balance ladder 1.2: ${GAMES} seeded 12-civ ${MACRO_TURNS}-turn games, a pe
   const peaceful = runMacroGame(makeMacroGame(4300, { peaceful: true }));
   report.peaceful = { worldPhases: phaseShares(peaceful.e), minE: Math.min(...peaceful.e),
     ...civPhaseFacts(peaceful.phases) };
-  report.withoutDrift = driftVariant();
   assert.ok(median(times) < 50, `median ${median(times)} ms`);
   assert.ok(maxBytes <= 32768, `${maxBytes} bytes`);
   report.planMs = { median: median(times), max: Math.max(...times) };

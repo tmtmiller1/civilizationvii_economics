@@ -488,8 +488,10 @@ against open question 6.
 ### 4.11 Business cycle
 
 No randomness: game events and the world's own income, trade and lending move it, and it drifts back to Steady
-between them. Peace lets the economy grow but doesn't push it up by itself; a boom comes from rising income, new
-trade and easy credit, and too much credit is what sets up a Panic. A peaceful game can still slump, from defaults,
+between them. Peace lets the economy grow but doesn't push it up by itself; a boom comes from income growing faster
+than usual, new trade and easy credit, and too much credit is what sets up a Panic. Nothing that holds still pushes
+the index: a route that stands, or income that grows at its usual pace, weighs nothing. A long boom wears itself out
+(overheating below), so a growing world still turns over. A peaceful game can still slump, from defaults,
 shrinking trade, falling income, disasters or a crisis. The World tab lists the events behind the current phase. The
 ledger keeps the event list, so a reload replays the same cycle.
 
@@ -498,6 +500,9 @@ E_next  = E + 0.1 * (1 - E) + k * s * clamp(sum of this turn's event weights, -0
           clamped to [0.7, 1.3]; E starts at 1.0
 L_next  = 0.8 * L + k * (weights of events the civ took part in), clamped to [-0.2, 0.2]
           a negative L is cut by the Warehouse share (4.13) plus the legacy cushion (4.16), together at most 35%
+growth  = world income now against 10 turns ago, in percent
+trend   = an average of growth that moves 4% of the way to each turn's reading (about 50 turns); the first reading sets it
+boom_n  = turns in a row the world has spent in Boom; any other phase sets it back to 0
 k       = Business cycle option: Off 0, Mild 0.5, Standard 1.0, Strong 1.5
 s       = world stage scale (4.15): 0.25, 0.6, 1.0; world index only
 lev     = (all outstanding loans) / max(M, 1000)              M: 4.8, over all civs here
@@ -531,8 +536,8 @@ them while it lasts:
 | Peace between civs | +0.01 once | war state vs last turn |
 | New trade route between civs | +0.005 | routes vs last turn (P7) |
 | Route between civs ends | -0.005 | same |
-| Each standing route between civs | +0.001/turn, total at most +0.01 | same |
-| World income: sum of civs' positive income against 10 turns ago | ±0.005 per 5% change, at most ±0.01/turn | ledger history of `income` |
+| World income: `growth` against `trend` | ±0.005 per 5 points above or below the trend, at most ±0.01/turn | ledger history of `income` |
+| Overheating: the world in Boom | -0.002 per turn of `boom_n`, at most -0.03/turn | `E` |
 | Credit growth: all outstanding loans up more than 10% on 10 turns ago | +0.005/turn | ledger; this is the boom a Panic follows |
 
 Effects:
@@ -554,11 +559,16 @@ names Independents); routes from the plan's own routes; captures by combat (`Cit
 fewer people at the next batch than at the one before; M6 and the 1.1 logs found it does in a share of events) are kept
 by the glue until the batch; the crisis stage is polled. Defaults and repudiations weigh the turn after they happen,
 from the ledger's last batch, so the cycle doesn't depend on the order of the steps that make them. A raze weighs on
-the civ holding the settlement it razes, since the one that lost it took the capture's weight. The caps on ongoing
-wars and standing routes apply world-wide and to each civ's own sum. The world stage for Panic is the furthest any
-living civ has reached. A Planned civ has no `L`, no cycle Gold and a spread of 1.0. Cycle Off rests the state at 1.0.
-The 1.2 balance run found the world sitting in Steady or Boom in every game, a peaceful one included: the standing-route
-term and ordinary income growth lift `E` every turn (section 10).
+the civ holding the settlement it razes, since the one that lost it took the capture's weight. The cap on ongoing
+wars applies world-wide and to each civ's own sum. The world stage for Panic is the furthest any living civ has
+reached. A Planned civ has no `L`, no cycle Gold and a spread of 1.0. Cycle Off rests the state at 1.0.
+
+Changed 2026-10-30 (offline only): the first 1.2 balance run found the world in Steady or Boom in every game, a
+peaceful one included, because each standing route added +0.001 a turn and income growth against 10 turns ago is
+positive in nearly every growing game, which held `E` near 1.1. Standing routes now weigh nothing, income counts only
+against its own trend, and overheating pulls a long boom down. The trend and `boom_n` are kept in the macro envelope.
+Overheating is the world's only: a civ's `L` already decays by a fifth a turn, so a civ's own boom fades without it,
+and the World tab lists it every fifth turn of a boom rather than every turn. Section 10 has the new shape.
 
 ### 4.12 Foreign investment
 
@@ -1181,6 +1191,14 @@ figures in `../reports/balance-1.2.json`). No game was launched.
 | The plan | A Planned civ at 50 Gold a turn: 450 Gold into 150 points in 50 turns, worth 600 Gold at the game's purchase price (4 Gold a point) before production bonuses scale `addProgress` up (NOTES finding L) | Missed: worth 1.33 times the Gold it took, and a Planned civ gives up no tax level here. Constant: `PLANNED.goldPerProgress` (3, the development loan's ratio) to 4 or more |
 | Envelope growth | The macro envelope at most 3.2 KB | Met |
 | Turn time | 12 civs, 60 settlements, 40 routes, every part on: median 0.16 ms, worst 2 ms | Met |
+
+Balance run, 2026-10-30, after the model fixes (NOTES findings P to U; the same harnesses and seeds as the runs above,
+so each row reads against its earlier figure; `../reports/balance-1.0.json` to `balance-1.2.json` hold the new
+figures). No game was launched.
+
+| Check | Before | After | Against the target |
+| --- | --- | --- | --- |
+| Cycle shape (1.2 run, cycle fix alone) | Steady 55 to 70% of turns and Boom the rest in every game, no Slump; the peaceful game Boom on 63%; no Depression, no Panic | Slump 14 to 24% of turns and Steady the rest in every game, no Boom; `E` 0.87 to 1.03; the peaceful game Steady throughout (lowest 0.96), with 17 civ-turns of Slump; no Depression, no Panic | Half met: the lean is gone and wars, crises and below-trend income now slump the world, but nothing lifts it into Boom without credit (NOTES finding V); the credit boom comes with the AI's borrowing below |
 
 ## 11. Versions
 

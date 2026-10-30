@@ -415,9 +415,9 @@
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_REPUDIATION" Language="ko_KR"><Text>a repudiated debt</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_NEW" Language="ko_KR"><Text>a new trade route</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_ENDED" Language="ko_KR"><Text>a trade route ending</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_STANDING" Language="ko_KR"><Text>trade routes standing</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_INCOME_UP" Language="ko_KR"><Text>the world's income rising</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_INCOME_DOWN" Language="ko_KR"><Text>the world's income falling</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_INCOME_UP" Language="ko_KR"><Text>the world's income growing faster than usual</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_INCOME_DOWN" Language="ko_KR"><Text>the world's income growing slower than usual</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_OVERHEATING" Language="ko_KR"><Text>a long boom running out of steam</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CREDIT_GROWTH" Language="ko_KR"><Text>credit growing fast</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_UNKNOWN" Language="ko_KR"><Text>events</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_SYSTEM" Language="ko_KR"><Text>Your economic system is now the {1_System}. Its numbers move over from the {2_Old} during the next 10 turns.</Text></Replace>

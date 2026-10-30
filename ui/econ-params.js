@@ -94,11 +94,13 @@ export const CYCLE_RULES = { one: 10000, reversionPct: 10, worldClamp: 1000, eMi
   panicEveryTurns: 20, panicSpreadPct: 50, goldPct: 20, historyTurns: 30, eventsKept: 24, warehouseBp: 300,
   warehouseMaxBp: 3000, cushionMaxBp: 1000, cutMaxBp: 3500, scaleEarlyPct: 25, scalePublicDebtPct: 60,
   scaleCapitalismPct: 100, minLeverCents: 100000 };
-// Event weights in basis points (DESIGN 4.11's table). The caps bound a sum of one kind in a turn.
+// Event weights in basis points (DESIGN 4.11's table). The caps bound a sum of one kind in a turn. World income is
+// read against its own trend, an average of its 10-turn growth that moves 4% of the way to each new read (about 50
+// turns); each turn the world has spent in Boom pulls E down by 0.002 more, up to the cap.
 export const CYCLE_WEIGHTS = { warDeclared: -200, warOngoing: -40, warOngoingCap: -200, capture: -100, raze: -200,
   disaster: -50, disasterPopulation: -100, crisisStart: -200, crisisOngoing: -50, default: -300, repudiation: -300,
-  peace: 100, routeNew: 50, routeEnded: -50, routeStanding: 10, routeStandingCap: 100, incomePer5Pct: 50,
-  incomeCap: 100, creditGrowth: 50, creditGrowthPct: 10, reform: -300, corporatistWar: 100, corporatistPeace: -300 };
+  peace: 100, routeNew: 50, routeEnded: -50, incomePer5Pct: 50, incomeCap: 100, trendPct: 4, overheatPerTurn: -20,
+  overheatCap: -300, creditGrowth: 50, creditGrowthPct: 10, reform: -300, corporatistWar: 100, corporatistPeace: -300 };
 // DESIGN 4.8: pi = min(0.005, 0.02 * B / max(M, 1000)) a turn in ppm; reserve 20 turns of max(income, 10); bond rate
 // up 50 * pi, at most 25%.
 export const INFLATION_RULES = { capPpm: 5000, factorPpm: 20000, minMoneyCents: 100000, reserveTurns: 20,

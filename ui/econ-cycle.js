@@ -2,23 +2,26 @@
 // the world index E and each civ's own L, and both drift back between them. E and L are in basis points (10000 is
 // 1.0). The glue passes what only the engine sees (captures, razes, disasters, the crisis stage); wars, peace and
 // routes are read here from the relations and routes the plan already gets, against last turn's; defaults and
-// repudiations come from the ledger's own events. The cycle is the mod's own state (level 3): only these rules act on
-// it, and they act on every civ alike, felt through cycle Gold and the bond spread. Nothing here reads the engine.
+// repudiations come from the ledger's own events. Nothing pushes the index every turn by itself: income counts only
+// against its own trend, and a long Boom pulls itself down (overheating), so a growing world still turns over. The
+// cycle is the mod's own state (level 3): only these rules act on it, and they act on every civ alike, felt through
+// cycle Gold and the bond spread. Nothing here reads the engine.
 
 import { CYCLE_RULES as R, CYCLE_WEIGHTS as W } from "./econ-params.js";
 
 /**
  * @typedef {{ turn: number, kind: string, a: number | null, b: number | null, w: number }} CycleEvent
  * @typedef {{ e: number, l: Record<string, number>, history: number[], wars: string[], routes: string[],
- *   crisis: number, credit: number[], income: number[], panicUntil: number | null, lastPanic: number | null,
- *   atWar: Record<string, boolean>, events: CycleEvent[], phases: Record<string, string> }} CycleState
+ *   crisis: number, credit: number[], income: number[], trend: number | null, boomTurns: number,
+ *   panicUntil: number | null, lastPanic: number | null, atWar: Record<string, boolean>, events: CycleEvent[],
+ *   phases: Record<string, string> }} CycleState
  * @typedef {{ kind: string, a: number | null, b: number | null, w: number, world: boolean }} Weighted
  */
 
 /** @returns {CycleState} */
 export function emptyCycle() {
-  return { e: R.one, l: {}, history: [], wars: [], routes: [], crisis: -1, credit: [], income: [], panicUntil: null,
-    lastPanic: null, atWar: {}, events: [], phases: {} };
+  return { e: R.one, l: {}, history: [], wars: [], routes: [], crisis: -1, credit: [], income: [], trend: null,
+    boomTurns: 0, panicUntil: null, lastPanic: null, atWar: {}, events: [], phases: {} };
 }
 
 /**
@@ -78,7 +81,8 @@ export function warEvents(before, now) {
 }
 
 /**
- * Routes between civs this turn against last turn's: new, ended and standing.
+ * Routes between civs this turn against last turn's: new and ended. A route that stands weighs nothing, so a world
+ * with many routes doesn't lean to Boom.
  * @param {string[]} before
  * @param {string[]} now
  * @returns {Weighted[]}
@@ -89,9 +93,9 @@ export function routeEvents(before, now) {
   /** @type {Weighted[]} */
   const out = [];
   for (const key of now) {
+    if (was.has(key)) continue;
     const [a, b] = pairOf(key);
-    out.push(was.has(key) ? { kind: "route-standing", a, b, w: W.routeStanding, world: true }
-      : { kind: "route-new", a, b, w: W.routeNew, world: true });
+    out.push({ kind: "route-new", a, b, w: W.routeNew, world: true });
   }
   for (const key of before) {
     if (is.has(key)) continue;
@@ -157,43 +161,84 @@ export function ledgerEvents(events) {
 }
 
 /**
- * World income against 10 turns ago: ±0.005 per 5% change, at most ±0.01 a turn; and credit up more than 10% on 10
- * turns ago: +0.005. Each series holds the last values, oldest first; a short series weighs nothing.
+ * Growth over the series (the last value against the first, 10 turns before it) in basis points; null while the
+ * series is short or the first value isn't positive.
+ * @param {number[]} series
+ */
+export function growthBp(series) {
+  if (series.length <= 10 || !(series[0] > 0)) return null;
+  return Math.trunc(((series[series.length - 1] - series[0]) * R.one) / series[0]);
+}
+
+/**
+ * The income trend: the first growth read sets it, then it moves 4% of the way to each new read (about 50 turns).
+ * @param {number | null} trend
+ * @param {number | null} growth
+ */
+export function nextTrendBp(trend, growth) {
+  if (growth === null) return trend;
+  if (trend === null) return growth;
+  return trend + Math.round(((growth - trend) * W.trendPct) / 100);
+}
+
+/**
+ * World income against its own trend: ±0.005 per 5 points of 10-turn growth above or below the trend, at most ±0.01 a
+ * turn, so only growth faster or slower than usual moves the cycle; and credit up more than 10% on 10 turns ago:
+ * +0.005. Each series holds the last values, oldest first; a short series, or no trend yet, weighs nothing.
  * @param {number[]} income
  * @param {number[]} credit
+ * @param {number | null} trend
  * @returns {Weighted[]}
  */
-export function trendEvents(income, credit) {
+export function trendEvents(income, credit, trend) {
   /** @type {Weighted[]} */
   const out = [];
-  const full = (/** @type {number[]} */ xs) => xs.length > 10;
-  if (full(income) && income[0] > 0) {
-    const pct = ((income[income.length - 1] - income[0]) * 100) / income[0];
-    const w = clamp(Math.trunc(pct / 5) * W.incomePer5Pct, -W.incomeCap, W.incomeCap);
+  const growth = growthBp(income);
+  if (growth !== null && trend !== null) {
+    const steps = Math.trunc((growth - trend) / 500);
+    const w = clamp(steps * W.incomePer5Pct, -W.incomeCap, W.incomeCap);
     if (w !== 0) out.push({ kind: w > 0 ? "income-up" : "income-down", a: null, b: null, w, world: true });
   }
-  if (full(credit) && credit[credit.length - 1] * 100 > credit[0] * (100 + W.creditGrowthPct) && credit[0] > 0) {
+  const full = credit.length > 10;
+  if (full && credit[credit.length - 1] * 100 > credit[0] * (100 + W.creditGrowthPct) && credit[0] > 0) {
     out.push({ kind: "credit-growth", a: null, b: null, w: W.creditGrowth, world: true });
   }
   return out;
 }
 
 /**
- * The world's sum for the turn, with the caps on ongoing wars and standing routes, clamped to ±0.1.
+ * Overheating: each turn the world has spent in Boom so far pulls E down by 0.002 more, up to the cap.
+ * @param {number} boomTurns
+ * @returns {Weighted[]}
+ */
+export function overheatEvents(boomTurns) {
+  if (!(boomTurns > 0)) return [];
+  return [{ kind: "overheating", a: null, b: null, w: Math.max(W.overheatCap, W.overheatPerTurn * boomTurns),
+    world: true }];
+}
+
+/**
+ * Turns in Boom in a row, counted after the index moves; any other phase resets it.
+ * @param {number} boomTurns
+ * @param {number} index
+ */
+export function nextBoomTurns(boomTurns, index) {
+  return phaseOf(index) === "boom" ? boomTurns + 1 : 0;
+}
+
+/**
+ * The world's sum for the turn, with the cap on ongoing wars, clamped to ±0.1.
  * @param {Weighted[]} events
  */
 export function worldSum(events) {
   let wars = 0;
-  let routes = 0;
   let rest = 0;
   for (const row of events) {
     if (!row.world) continue;
     if (row.kind === "war-ongoing") wars += row.w;
-    else if (row.kind === "route-standing") routes += row.w;
     else rest += row.w;
   }
-  return clamp(rest + Math.max(W.warOngoingCap, wars) + Math.min(W.routeStandingCap, routes), -R.worldClamp,
-    R.worldClamp);
+  return clamp(rest + Math.max(W.warOngoingCap, wars), -R.worldClamp, R.worldClamp);
 }
 
 /**

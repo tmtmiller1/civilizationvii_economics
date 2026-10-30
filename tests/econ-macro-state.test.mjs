@@ -40,6 +40,15 @@ test("load refuses what isn't ours without throwing, and drops bad rows", () => 
   assert.deepEqual(sanitizeMacro("junk"), emptyMacro());
 });
 
+test("the income trend and the turns in Boom load back, and a bad one reads as none", () => {
+  const kept = sanitizeMacro({ cycle: { trend: -350, boomTurns: 7 } }).cycle;
+  assert.deepEqual([kept.trend, kept.boomTurns], [-350, 7]);
+  const bad = sanitizeMacro({ cycle: { trend: 1.5, boomTurns: -2 } }).cycle;
+  assert.deepEqual([bad.trend, bad.boomTurns], [null, 0]);
+  assert.equal(sanitizeMacro({ cycle: { trend: 2000000 } }).cycle.trend, null, "past 100 times income is junk");
+  assert.equal(sanitizeMacro({ cycle: { boomTurns: 123456 } }).cycle.boomTurns, 9999);
+});
+
 test("past 32 KB the events go first, then the oldest half of the history", () => {
   const big = full();
   big.cycle.history = Array(30).fill(10000);

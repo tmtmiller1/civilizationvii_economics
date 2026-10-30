@@ -111,6 +111,8 @@ so, with the DESIGN section that now holds the rule.
 | 98 | Engine events between batches | Kept in the glue envelope, at most 32, weighed once at the next batch | `econ-macro-read`: "in game: an event kept between batches..." |
 | 99 | What the Fiscal tab's "now" shows | The civ's net Gold and Happiness a turn (`Stats.getNetYield`, the top bar's figure, P2), not the settlements' summed `Yields.getYield`, which read 0 Gold in the lab while the civ's net was positive (build check 5.2a, 2026-10-30). The card's change is still its flat amount times the settlements | `econ-fiscal`: "the forecast read takes the civ's net Gold and Happiness..." |
 | 100 | "All off" and its log line | The batch skips only when Loans, Markets, Foreign investment, Inflation, Business cycle and Economic systems are all off: the cycle and the systems move Gold on their own. The lab's all-off game (build check C.2, 0.3.0) couldn't set the 1.2 options, which read their defaults (cycle Standard, systems On), so its batch ran as it should; the skip line itself went only to the debug log, so a released copy never showed it. It now goes to the log once a session | `econ-session`: "every option off, the 1.2 ones too..." |
+| 101 | How "income against its own trend" is measured (DESIGN 4.11) | Growth is world income now against 10 turns ago, in basis points; the trend moves 4% of the way to each reading (about 50 turns), and the first full reading sets it, so a game's first growth doesn't read as a boom. ±0.005 per whole 5 points away from the trend, at most ±0.01 | `econ-cycle`: "the income trend...", "world income against its own trend..."; `econ-macro-cycle-edges`: "the income trend: set by the first full read..." |
+| 102 | Overheating's size and where it shows | -0.002 per turn in Boom, counted after the turn's move, at most -0.03, world only (a civ's `L` decays by itself). It's listed on the World tab every 5th turn of a boom, so the list isn't a column of the same line | `econ-cycle`: "overheating: each turn in Boom pulls harder..."; `econ-macro-cycle-edges`: "overheating: a world in Boom counts its turns..." |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 
@@ -186,7 +188,8 @@ across ages (choice 69); a 0.3.0 save made after an age change picks up from its
 P. **The world leans to Boom.** From the 1.2 balance run (DESIGN 10): each standing route's +0.001 a turn and the
 world-income term rise with ordinary growth, so `E` sat in Steady or Boom in every game and a peaceful game never
 slumped. Without the two terms the same games slump on 7 to 20% of turns. The owner reads it against "a peaceful game
-still slumps sometimes".
+still slumps sometimes". Settled 2026-10-30 (choices 101 and 102): standing routes weigh nothing, income counts
+against its own trend, and overheating pulls a long boom down (DESIGN 4.11).
 
 Q. **A Panic needs borrowing the AI doesn't do.** Leverage peaked at 5% of the Gold held in the balance games against
 the 150% a Panic needs: the AI rules borrow only when short, and with positive income at `TurnBegin` an AI is never
@@ -221,6 +224,13 @@ service limit holds it to about 2.5 turns of income at the bond rate (4.8 turns 
 12. Nothing is changed; whether the two limits should meet (a longer term, or `credit_cap` lowered toward what the
 service limit allows) is the owner's call, with "Borrowing pays" and `base_rate`. The owed check 1.1's 300 Gold needs a
 civ with about 120 Gold of income at 10 turns, or a smaller loan, as the lab's 50 Gold one was.
+
+V. **Without credit, nothing lifts the world into Boom.** With the lean taken out (choices 101 and 102), the 1.2 run's
+six games slump on 14 to 24% of turns and never boom, and the peaceful game holds Steady (DESIGN 10, 2026-10-30 after
+the fixes). The simulation's incomes grow at a steady pace with noise, so above-trend growth is short and small, and
+new routes and peace are one-off kicks that reversion takes back within a few turns. Raising the income and route
+weights two or three times over gave at most 6 turns of Boom a game. So in this model a boom is a credit boom, which
+the AI's productive borrowing (DESIGN 6) supplies.
 
 ## Balance run and mutation
 
