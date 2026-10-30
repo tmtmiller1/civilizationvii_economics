@@ -7,7 +7,8 @@ balance ladder have run in the simulation (DESIGN 10, dated note). Section 12 co
 2026-10-30), each 12.1 row with its module's tests (`econ-cycle`, `econ-inflation`, `econ-legacy`, `econ-systems`,
 `econ-citizens`, `econ-macro`, `econ-macro-state`, `econ-macro-read`, `econ-view-macro`, `econ-turn-count`) and the
 1.2 balance rows in `econ-balance-macro`; the tax fallback (12.1) is built as `econ-tax.js`, off by default. The 1.0,
-1.1 and 1.2 probes ran 2026-10-29 and 10-30 (DESIGN 10); every T3 scenario is owed in a game. Each table carries the release that ships the part (DESIGN 11). Common tiers:
+1.1 and 1.2 probes ran 2026-10-29 and 10-30 (DESIGN 10); every T3 scenario is owed in a game. Each table carries
+the release that ships the part (DESIGN 11). Common tiers:
 [test-ladder-2026-10-06.md](../../../mod_ideas_tested/mods_research_and_analysis/test-ladder-2026-10-06.md). Design under test:
 [DESIGN.md](DESIGN.md).
 

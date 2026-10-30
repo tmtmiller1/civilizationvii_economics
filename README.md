@@ -1,8 +1,8 @@
 # Economics
 
 A Civilization VII mod. In development: version 0.4.0 carries the 1.0 Finance, 1.1 Commerce and 1.2 Macro mechanics,
-built and checked offline; none of it has been watched in a game yet
-([docs/verification-runs.md](docs/verification-runs.md) lists what's owed). The design is
+built and checked offline. Part of 1.0 and 1.1 has been watched in test games and the rest is still owed
+([docs/verification-runs.md](docs/verification-runs.md) lists both). The design is
 [docs/DESIGN.md](docs/DESIGN.md).
 
 ## What it does
@@ -46,8 +46,8 @@ On by default. When your balance would go below 0 while your income is at or bel
 disbanding units, the guard takes an emergency loan for the shortfall plus one turn of upkeep and tells you. Before
 Moneylending it borrows from temple treasuries, later from the cheapest civilization or the bond market. It stops at
 a cap of ten turns of your income and says so once; past that the game's own penalties apply. A dip while your income
-is positive costs nothing in the base game, so the guard leaves it alone. You can switch it off and on from the Loans
-tab.
+is positive doesn't cost you anything in the base game, so the guard leaves it alone. You can switch it off and on
+from the Loans tab.
 
 ## Taxes
 
@@ -76,7 +76,7 @@ player you tariff High answers in kind two turns later.
 From the Trade tab you can put Gold into another civilization. A development loan (from Guilds) goes into the build a
 city is working on right now, 3 Gold for each point of production, and comes back at 5 percent a turn for 25 turns,
 6 percent on an economic building. General investment (from Colonialism) goes into the treasury and its return
-follows the host's income. Aid of either kind asks nothing back. Each raises the relationship, in proportion to the
+follows the host's income. Aid of either kind is a gift. Each raises the relationship, in proportion to the
 host's income. Computer players invest in and aid their friends, and their offers to you wait on the Trade tab for an
 answer. With this option on, a civilization that sends Military Aid pays the 2 Gold a turn its target gets.
 
@@ -150,9 +150,9 @@ option off, everything is open from the start.
 
 ## Compatibility
 
-Single-player. In a hotseat or network game the mod says once in the log that it's off and does nothing. Building
-roles, stages and the cards are read from the game's compiled data with every mod applied, so a mod that changes a
-building's tags or moves a civic is followed. [docs/compatibility.md](docs/compatibility.md) has the details.
+Single-player. In a hotseat or network game the mod says once in the log that it's off and leaves the game as it
+is. Building roles, stages and the cards are read from the game's compiled data with every mod applied, so a mod that
+changes a building's tags or moves a civic is followed. [docs/compatibility.md](docs/compatibility.md) has the details.
 
 ## Installing
 

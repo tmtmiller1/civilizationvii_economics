@@ -2,9 +2,9 @@
 
 The first in-game checks are under "Watched 2026-10-30". Version 0.2.0 (2026-10-29) was built and checked offline
 only: `npm run release:gate` (248 tests, tsc, ESLint, check-esm, coverage), Stryker on the rule modules, and the tax
-SQL applied to a copy of the compiled 1.5.0 Exploration database (`tests/econ-data.test.mjs` with `CIV7_GAMEPLAY_DB` set). The reader-facing
-account is the [README](../README.md); this file is the evidence behind it, in the form Canals' `docs/verification-runs.md`
-uses.
+SQL applied to a copy of the compiled 1.5.0 Exploration database (`tests/econ-data.test.mjs` with `CIV7_GAMEPLAY_DB`
+set). The reader-facing account is the [README](../README.md); this file is the evidence behind it, in the form
+Canals' `docs/verification-runs.md` uses.
 
 ## The load check (owed from 0.1.0)
 
@@ -170,8 +170,9 @@ owner's usual mod set, Exploration and Modern, seed 4242, turns 1 to 6. Lines in
 - A bug: `dock button: TypeError: pillNode.replaceWith is not a function` at turn 1. The game's page has no
   `Element.replaceWith` (engine-closed). Fixed in the working copy the same evening (the pill swaps through
   `parentNode.replaceChild`; the fake page in the tests no longer offers `replaceWith`, and a gate test rejects the
-  call in `ui/`). Watched the same evening in a Partisans Modern usual-set game, seed 4242, turns 1 to 8: 9 `[Economics]` lines,
-  no dock error (`modern-seed4242-turns1-8-dockfix.log`). The pill drawing beside the button is still to see on screen.
+  call in `ui/`). Watched the same evening in a Partisans Modern usual-set game, seed 4242, turns 1 to 8: 9
+  `[Economics]` lines, no dock error (`modern-seed4242-turns1-8-dockfix.log`). The pill drawing beside the button is
+  still to see on screen.
 
 ## Owed: 1.1 Commerce and the flat tax cards (0.3.0)
 
