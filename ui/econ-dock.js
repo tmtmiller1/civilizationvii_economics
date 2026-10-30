@@ -34,7 +34,9 @@ export function refreshPill() {
   const { text, warning } = pillSource();
   const fresh = pill(text, warning);
   fresh.classList.add("econ-dock-pill");
-  pillNode.replaceWith(fresh);
+  // The game's page has no Element.replaceWith (engine-closed); swap through the parent.
+  const parent = pillNode.parentNode;
+  if (parent) parent.replaceChild(fresh, pillNode);
   pillNode = fresh;
 }
 

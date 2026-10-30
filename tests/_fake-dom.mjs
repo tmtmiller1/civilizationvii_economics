@@ -22,9 +22,10 @@ class FakeElement {
   get className() { return [...this._classes].join(" "); }
   set className(value) { this._classes = new Set(String(value).split(/\s+/).filter(Boolean)); }
   get firstChild() { return this.children[0] ?? null; }
-  appendChild(child) { child.parentElement = this; this.children.push(child); return child; }
+  appendChild(child) { child.parentElement = this; child.parentNode = this; this.children.push(child); return child; }
   removeChild(child) { this.children = this.children.filter((c) => c !== child); return child; }
-  replaceWith(other) { const p = this.parentElement; if (p) { p.children[p.children.indexOf(this)] = other; other.parentElement = p; } }
+  // The game's page has no replaceWith; parents swap children with replaceChild.
+  replaceChild(next, old) { const i = this.children.indexOf(old); if (i < 0) throw new Error('not a child'); this.children[i] = next; next.parentElement = this; next.parentNode = this; old.parentElement = null; old.parentNode = null; return old; }
   setAttribute(name, value) { this.attributes[name] = String(value); }
   getAttribute(name) { return this.attributes[name] ?? null; }
   addEventListener(name, fn) { (this.listeners[name] ||= []).push(fn); }

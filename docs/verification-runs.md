@@ -139,3 +139,17 @@ Exploration seed 9001 are the probe run's seeds.
 | Run | Question | Observation |
 | --- | --- | --- |
 | | | |
+
+## 2026-10-29 evening: first loads, inside another session's usual-set games
+
+Economics 0.2.0 (the release build, installed by the owner's request) loaded in two Partisans lab games with the
+owner's usual mod set, Exploration and Modern, seed 4242, turns 1 to 6. Lines in
+`mod_ideas_tested/economics/devtools/probe-runs/2026-10-29-partisans-usual-set/`. Watched:
+
+- The mod loads in both ages, reads its six setup options with their defaults, and finds no ledger in a new game.
+- The turn batch runs once at each TurnBegin, 4 to 10 ms, 0 transfers (nothing to do in turns 1 to 6).
+- A bug: `dock button: TypeError: pillNode.replaceWith is not a function` at turn 1. The game's page has no
+  `Element.replaceWith` (engine-closed). Fixed in the working copy the same evening (the pill swaps through
+  `parentNode.replaceChild`; the fake page in the tests no longer offers `replaceWith`, and a gate test rejects the
+  call in `ui/`). Watched the same evening in a Partisans Modern usual-set game, seed 4242, turns 1 to 8: 9 `[Economics]` lines,
+  no dock error (`modern-seed4242-turns1-8-dockfix.log`). The pill drawing beside the button is still to see on screen.
