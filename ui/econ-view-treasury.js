@@ -6,6 +6,7 @@ import { el, note, projectionChart, row, section } from "./econ-dom.js";
 import { formatFactor, formatGold, formatPct } from "./econ-format.js";
 import { composeArgs, describeEvent, eventConcerns } from "./econ-notice-text.js";
 import { treasuryView } from "./econ-view-model.js";
+import { inflationLines } from "./econ-view-macro.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 
@@ -27,10 +28,66 @@ export function renderTreasury(host, api) {
     row(api.loc("LOC_ECONOMICS_TREASURY_SERVICE_SHARE"), formatPct(view.servicePct).replace("+", "")),
   ]);
   if (view.insolvent) now.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_INSOLVENT")));
+  const inflation = inflationLines(input, api.me);
+  if (inflation.member) {
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_RESERVE"), gold(inflation.reserveCents)));
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_EROSION"), gold(inflation.erosionCents),
+      inflation.erosionCents > 0 ? "econ-negative" : ""));
+  }
   host.appendChild(now);
   host.appendChild(projectionSection(view, api));
   host.appendChild(flowsSection(api));
   host.appendChild(depthSection(api));
+  host.appendChild(oldSection(api));
+}
+
+/**
+ * The player's buildings from earlier ages (DESIGN 4.16): each one's weight and what moves it.
+ * @param {ScreenApi} api
+ */
+function oldSection(api) {
+  const old = api.depth().buildings.filter((building) => building.old && building.weights);
+  const block = section(api.loc("LOC_ECONOMICS_TREASURY_OLD"));
+  if (!old.length) { block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_OLD_NONE"))); return block; }
+  for (const building of old.slice(0, 16)) {
+    const weight = averageWeight(building);
+    const name = `${api.buildName(building.type)}, ${api.cityName(building.city)}`;
+    block.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_OLD_ROW", name, weight.toFixed(2)), triggerText(building,
+      weight, api)));
+  }
+  block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_OLD_NOTE")));
+  return block;
+}
+
+/**
+ * An old building's weight averaged over the fading roles it has.
+ * @param {import("./econ-macro-read.js").EconomyBuilding} building
+ */
+function averageWeight(building) {
+  const roles = ["commerce", "trade", "banking"].filter((role) => building.roles[/** @type {"trade"} */ (role)]);
+  if (!roles.length || !building.weights) return 1;
+  let sum = 0;
+  for (const role of roles) sum += building.weights[role];
+  return sum / roles.length;
+}
+
+/**
+ * What holds or moves an old building's weight: a newer building of its role in the city, the stage it waits on, or
+ * its fade.
+ * @param {import("./econ-macro-read.js").EconomyBuilding} building
+ * @param {number} weight
+ * @param {ScreenApi} api
+ */
+function triggerText(building, weight, api) {
+  if (building.replaced.length) return api.loc("LOC_ECONOMICS_TREASURY_OLD_REPLACED");
+  if (building.fadingFrom.length && weight >= 1) {
+    const stage = building.fadingFrom[0];
+    const opener = api.stageOpener(stage);
+    return api.loc("LOC_ECONOMICS_TREASURY_OLD_WAITING",
+      api.loc(opener || `LOC_ECONOMICS_STAGE_NAME_${stage.replace(/([A-Z])/g, "_$1").toUpperCase()}`));
+  }
+  const floor = building.ages >= 2 ? 0.25 : 0.5;
+  return api.loc(weight <= floor ? "LOC_ECONOMICS_TREASURY_OLD_FLOOR" : "LOC_ECONOMICS_TREASURY_OLD_FADING");
 }
 
 /**

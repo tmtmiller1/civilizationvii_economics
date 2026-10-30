@@ -70,6 +70,19 @@
                 <Value>ECONOMICS_INVESTMENT_ON</Value>
             </ConfigurationValueMatches>
         </Criteria>
+        <!-- The systems' tax lines sit on the tax cards, so they need Taxes as well as Economic systems. -->
+        <Criteria id="systems-on">
+            <ConfigurationValueMatches>
+                <Group>Game</Group>
+                <ConfigurationId>ECONOMICS_SYSTEMS</ConfigurationId>
+                <Value>ECONOMICS_SYSTEMS_ON</Value>
+            </ConfigurationValueMatches>
+            <ConfigurationValueMatches>
+                <Group>Game</Group>
+                <ConfigurationId>ECONOMICS_TAXES</ConfigurationId>
+                <Value>ECONOMICS_TAXES_ON</Value>
+            </ConfigurationValueMatches>
+        </Criteria>
         <Criteria id="ai-on">
             <ConfigurationValueMatches>
                 <Group>Game</Group>
@@ -219,10 +232,12 @@
                     <Item>ui/econ-view-commerce.js</Item>
                     <Item>ui/econ-view-fiscal.js</Item>
                     <Item>ui/econ-view-loans.js</Item>
+                    <Item>ui/econ-view-macro.js</Item>
                     <Item>ui/econ-view-markets.js</Item>
                     <Item>ui/econ-view-model.js</Item>
                     <Item>ui/econ-view-trade.js</Item>
                     <Item>ui/econ-view-treasury.js</Item>
+                    <Item>ui/econ-view-world.js</Item>
                     <Item>images/econ-dock-icon.svg</Item>
                 </ImportFiles>
             </Actions>
@@ -281,6 +296,18 @@
                 <UpdateDatabase>
                     <Item>data/econ-investment-gameeffects.xml</Item>
                     <Item>data/econ-investment-diplomacy.sql</Item>
+                </UpdateDatabase>
+            </Actions>
+        </ActionGroup>
+        <!-- The economic systems' tax lines (DESIGN 4.17) on the base governments, after each age's tax cards. -->
+        <ActionGroup id="economics-systems" scope="game" criteria="systems-on">
+            <Properties>
+                <LoadOrder>112</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateDatabase>
+                    <Item>data/econ-systems-gameeffects.xml</Item>
+                    <Item>data/econ-systems.sql</Item>
                 </UpdateDatabase>
             </Actions>
         </ActionGroup>

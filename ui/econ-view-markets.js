@@ -36,22 +36,24 @@ function priceRow(item, api) {
   box.appendChild(row(api.resourceName(item.type), api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(item.priceCents))));
   const change = formatGold(item.changeCents, { signed: true });
   box.appendChild(note(api.loc("LOC_ECONOMICS_MARKETS_ROW", item.holders, change, item.history.length)));
-  if (item.history.length > 1) box.appendChild(sparkline(item.history));
+  if (item.history.length > 1) box.appendChild(sparkline(item.history, (cents) => formatGold(cents)));
   return box;
 }
 
 /**
- * The history as flex bars (no SVG), scaled between its own low and high.
+ * A history as flex bars (no SVG), scaled between its own low and high; each bar's tooltip is `label` of its value.
+ * The World tab draws E's history with it too.
  * @param {number[]} history
+ * @param {(value: number) => string} label
  */
-function sparkline(history) {
+export function sparkline(history, label) {
   const node = el("div", "econ-spark");
   const low = Math.min(...history);
   const span = Math.max(1, Math.max(...history) - low);
   for (const cents of history) {
     const bar = el("div", "econ-spark-bar");
     bar.style.height = `${Math.max(8, Math.round((100 * (cents - low)) / span))}%`;
-    bar.setAttribute("data-tooltip-content", formatGold(cents));
+    bar.setAttribute("data-tooltip-content", label(cents));
     node.appendChild(bar);
   }
   return node;

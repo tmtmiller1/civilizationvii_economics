@@ -14,6 +14,8 @@ import { outOfStep, syncDescriptions, syncEffects } from "../scripts/sync-tax-ca
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
 const AGES = { antiquity: ["AGE_ANTIQUITY", "AQ"], exploration: ["AGE_EXPLORATION", "EX"], modern: ["AGE_MODERN", "MO"] };
+// A compiled database holds every age's trees but only its own age's governments, so the age is read from those.
+const dbAge = (run) => run("SELECT AgeType FROM StartingGovernments LIMIT 1;").trim();
 const effects = read("data/econ-tax-gameeffects.xml");
 const sql = read("data/econ-tax-cards.sql");
 const modinfo = read("economics.modinfo");
@@ -107,7 +109,7 @@ test("against a compiled gameplay database copy, the SQL applies and the touched
   const copy = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "econ-fk-")), "gameplay.sqlite");
   fs.copyFileSync(source, copy);
   const run = (script) => execFileSync("sqlite3", [copy], { input: script, encoding: "utf8" });
-  const age = run("SELECT AgeType FROM Ages WHERE ChronologyIndex = (SELECT MAX(ChronologyIndex) FROM ProgressionTrees pt JOIN Ages a ON a.AgeType = pt.AgeType WHERE pt.SystemType = 'SYSTEM_CULTURE');").trim();
+  const age = dbAge(run);
   const suffix = { AGE_ANTIQUITY: "AQ", AGE_EXPLORATION: "EX", AGE_MODERN: "MO" }[age];
   assert.ok(suffix, `age of the database: ${age}`);
   // The card rows as the XML would compile them (the XML itself needs the game's compiler), then the SQL.
@@ -156,4 +158,46 @@ test("Military Aid's initiator pays: the modifier pays what the target gets, beh
     DELETE FROM DiplomaticActionStages WHERE DiplomacyActionType = 'DIPLOMACY_ACTION_MILITARY_AID'; ${invest}`);
   assert.equal(runWithout("SELECT COUNT(*) FROM EnterStageModifiers WHERE ModifierId LIKE 'MOD_ECONOMICS%';").trim(), "0",
     "no stage, no row, no failure");
+});
+
+test("the systems' tax lines: flat yields on the tax cards, each attached through its parents, behind both options", (t) => {
+  const xml = read("data/econ-systems-gameeffects.xml");
+  const systems = read("data/econ-systems.sql");
+  const ids = [...xml.matchAll(/<Modifier id="([A-Z_]+)"/g)].map((m) => m[1]);
+  assert.equal(ids.length, 19);
+  assert.equal(/name="Percent"/.test(xml), false, "flat amounts, which the AI's card pass reads (P17)");
+  for (const id of ids) {
+    const block = (xml.match(new RegExp(`<Modifier id="${id}"[\\s\\S]*?</Modifier>`)) || [""])[0];
+    assert.match(block, /REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION/, `${id} needs its card slotted`);
+    assert.match(block, /effect="EFFECT_CITY_ADJUST_YIELD"/);
+    assert.ok(systems.includes(`'${id}'`), `${id} is attached`);
+    const card = (block.match(/TRADITION_ECONOMICS_[A-Z_]+/) || [""])[0];
+    assert.ok(/_(AQ|EX|MO)$/.test(card), `${id}: ${card}`);
+  }
+  assert.match(xml, /MOD_ECONOMICS_SYS_AUTHORITARIANISM_WAR_LEVY_GOLD[\s\S]*?HasAnyIdeology/,
+    "a Modern government's rows stand aside once an ideology decides");
+  assert.match(systems, /INSERT OR IGNORE INTO GovernmentModifiers \(GovernmentType, ModifierId\)\s+SELECT/);
+  assert.match(systems, /JOIN Governments g[\s\S]*JOIN Traditions t[\s\S]*JOIN Modifiers m/);
+  assert.match(systems, /WHERE u\.TargetType = 'TRADITION_DIRIGISME'/, "Fascism's root found by what it unlocks");
+  const group = (modinfo.match(/<ActionGroup id="economics-systems"[\s\S]*?<\/ActionGroup>/) || [""])[0];
+  assert.match(group, /criteria="systems-on"[\s\S]*<LoadOrder>112[\s\S]*econ-systems-gameeffects\.xml[\s\S]*econ-systems\.sql/);
+  const criteria = (modinfo.match(/<Criteria id="systems-on">[\s\S]*?<\/Criteria>/) || [""])[0];
+  assert.match(criteria, /ECONOMICS_SYSTEMS_ON[\s\S]*ECONOMICS_TAXES_ON/);
+  const source = process.env.CIV7_GAMEPLAY_DB;
+  if (!source || !fs.existsSync(source)) { t.diagnostic("CIV7_GAMEPLAY_DB not set; the database check didn't run"); return; }
+  const copy = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "econ-sys-")), "gameplay.sqlite");
+  fs.copyFileSync(source, copy);
+  const run = (script) => execFileSync("sqlite3", [copy], { input: script, encoding: "utf8" });
+  const age = dbAge(run);
+  const suffix = { AGE_ANTIQUITY: "AQ", AGE_EXPLORATION: "EX", AGE_MODERN: "MO" }[age];
+  run(`PRAGMA foreign_keys=OFF;
+    ${ids.map((id) => `INSERT INTO Modifiers (ModifierId, ModifierType) SELECT '${id}', ModifierType FROM Modifiers LIMIT 1;`).join("\n")}
+    ${["LIGHT", "HEAVY", "WAR_LEVY"].map((level) => `INSERT INTO Traditions (TraditionType, Name, Description, AgeType, CultureSlotType) VALUES ('TRADITION_ECONOMICS_${level}_${suffix}', 'LOC_X', 'LOC_X', '${age}', 'POLICY_CULTURE_SLOT');`).join("\n")}
+    ${systems}`);
+  const attached = run("SELECT COUNT(*) FROM GovernmentModifiers WHERE ModifierId LIKE 'MOD_ECONOMICS_SYS%';").trim();
+  assert.ok(Number(attached) > 0, `${age}: ${attached}`);
+  for (const table of ["GovernmentModifiers", "ProgressionTreeNodeUnlocks"]) {
+    assert.equal(run(`PRAGMA foreign_key_check(${table});`).trim(), "", table);
+  }
+  t.diagnostic(`applied to a ${age} database copy: ${attached} government rows`);
 });

@@ -20,7 +20,7 @@ const MAX_PENDING = 32;
  * @typedef {import("./econ-engine.js").CityBuilding} CityBuilding
  * @typedef {{ kind: "capture" | "raze" | "disaster", pid: number, city?: string | null, pop?: number | null,
  *   food?: boolean }} PendingCycleEvent
- * @typedef {CityBuilding & { city: string, ageIndex: number | null, old: boolean, legacyBp: number,
+ * @typedef {CityBuilding & { city: string, ageIndex: number | null, old: boolean, ages: number, legacyBp: number,
  *   replaced: string[], fadingFrom: string[] }} EconomyBuilding
  */
 
@@ -135,9 +135,10 @@ function cityEconomy(city, q, currentAgeIndex) {
     const legacyRow = { ageIndex: building.ageIndex, ageless: building.ageless, wonder: building.wonder,
       unique: building.unique, roles: building.roles, cityHasCurrent: here };
     const old = isOld(legacyRow, currentAgeIndex);
-    if (!old) return { ...building, city: key, old, legacyBp: 0, replaced: [], fadingFrom: [] };
+    if (!old) return { ...building, city: key, old, ages: 0, legacyBp: 0, replaced: [], fadingFrom: [] };
     const weights = buildingWeights(legacyRow, civ);
-    return { ...building, city: key, old, weights: toShares(weights), legacyBp: legacyOf(legacyRow, weights),
+    return { ...building, city: key, old, ages: currentAgeIndex - /** @type {number} */ (building.ageIndex),
+      weights: toShares(weights), legacyBp: legacyOf(legacyRow, weights),
       replaced: FADING_ROLES.filter((role) => here[role] && legacyRow.roles[/** @type {"trade"} */ (role)]),
       fadingFrom: fadingStages(building.ageIndex, legacyRow.roles, q.stageTurns) };
   });

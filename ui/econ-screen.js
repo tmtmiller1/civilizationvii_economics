@@ -10,6 +10,7 @@ import { renderLoans } from "./econ-view-loans.js";
 import { renderFiscal } from "./econ-view-fiscal.js";
 import { renderMarkets } from "./econ-view-markets.js";
 import { renderTrade } from "./econ-view-trade.js";
+import { renderWorld } from "./econ-view-world.js";
 import { el } from "./econ-dom.js";
 import { getSetting, setSetting } from "./econ-settings.js";
 import { logLine } from "./econ-log.js";
@@ -23,6 +24,7 @@ const TABS = [
   { key: "LOC_ECONOMICS_TAB_FISCAL", render: renderFiscal },
   { key: "LOC_ECONOMICS_TAB_MARKETS", render: renderMarkets },
   { key: "LOC_ECONOMICS_TAB_TRADE", render: renderTrade },
+  { key: "LOC_ECONOMICS_TAB_WORLD", render: renderWorld },
 ];
 
 /** @type {ScreenApi | null} */
@@ -141,7 +143,7 @@ try {
     // Paths are under the mod id, which is how the game serves a mod's files.
     Controls.define(SCREEN_ID, {
       createInstance: ScreenEconomics,
-      description: "Economics: the Treasury, Loans, Fiscal, Markets and Trade tabs.",
+      description: "Economics: the Treasury, Loans, Fiscal, Markets, Trade and World tabs.",
       styles: ["fs://game/tower-economics/ui/econ-screen.css"],
       content: ["fs://game/tower-economics/ui/econ-screen.html"],
       attributes: [],

@@ -8,6 +8,8 @@ import { canChangeTariff } from "./econ-trade.js";
 import { hasStage } from "./econ-stages.js";
 import { formatGold } from "./econ-format.js";
 import { CARD_LEVELS, cardForecast } from "./econ-tax-cards.js";
+import { systemView } from "./econ-view-macro.js";
+import { systemKey } from "./econ-notice-text.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 /** @typedef {import("./econ-tax-cards.js").FiscalRead} FiscalRead */
@@ -20,9 +22,33 @@ let lastVerdict = null;
  * @param {ScreenApi} api
  */
 export function renderFiscal(host, api) {
+  host.appendChild(systemSection(api));
   renderCards(host, api);
   const tariff = tariffSection(api);
   if (tariff) host.appendChild(tariff);
+}
+
+/**
+ * The economic system (DESIGN 4.17): which one, where it comes from, what it changes, the blend after a change, and
+ * the plan's take for a Planned civ.
+ * @param {ScreenApi} api
+ */
+function systemSection(api) {
+  const view = systemView(api.input(), api.me);
+  const block = section(api.loc("LOC_ECONOMICS_FISCAL_SYSTEM"));
+  if (!view.on) { block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_SYSTEMS_OFF"))); return block; }
+  block.appendChild(el("div", "econ-card-title", api.loc(systemKey(view.system))));
+  block.appendChild(note(api.loc(`LOC_ECONOMICS_FISCAL_SYSTEM_FROM_${view.source.toUpperCase()}`)));
+  block.appendChild(note(api.loc(`${systemKey(view.system)}_LINE`)));
+  if (view.from) {
+    block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_SYSTEM_BLEND", api.loc(systemKey(view.from)), view.blendLeft)));
+  }
+  if (view.planTakeCents > 0) {
+    block.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_PLAN"), formatGold(view.planTakeCents)));
+    block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_PLAN_NOTE")));
+  }
+  block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_SYSTEM_TAX_NOTE")));
+  return block;
 }
 
 /**

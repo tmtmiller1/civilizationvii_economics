@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Economics: the economic systems' tax lines (DESIGN 4.17) as level 1 data. Each modifier adds a flat amount to every
+  settlement's Gold or Happiness while its government holds and its tax card is slotted, in the shape of the tax
+  cards themselves (data/econ-tax-gameeffects.xml): EFFECT_CITY_ADJUST_YIELD on COLLECTION_PLAYER_CITIES, the
+  government as a subject requirement as the base governments' own passives have it, the card
+  (REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION) and any war or peace as owner requirements. The game applies them to every
+  civilization alike and shows them on the yield breakdown under the system's name. The AI's card pass rates a card
+  by its own face value and doesn't price these (P17), so they change what a card pays, not which card an AI picks.
+  data/econ-systems.sql attaches them through Governments, Traditions and Modifiers; modifiers carry no age, so this
+  file loads in every age. Loaded only with Economic systems and Taxes both on.
+-->
+<GameEffects xmlns="GameEffects">
+    <!-- Tribute (Despotism): Heavy Taxation +1 Gold and War Levy +2 Gold and +1 Happiness at war, in each settlement -->
+    <Modifier id="MOD_ECONOMICS_SYS_DESPOTISM_HEAVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_DESPOTISM</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_HEAVY_AQ</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Amount">1</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_TRIBUTE</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_DESPOTISM_WAR_LEVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_DESPOTISM</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_AQ</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
+                <Argument name="WarType">FORMAL_WAR</Argument>
+                <Argument name="Amount">1</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Amount">2</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_TRIBUTE</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_DESPOTISM_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_DESPOTISM</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_AQ</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
+                <Argument name="WarType">FORMAL_WAR</Argument>
+                <Argument name="Amount">1</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">1</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_TRIBUTE</Argument>
+    </Modifier>
+    <!-- Civic market (Classical Republic): Light Taxation +1 Happiness; Heavy Taxation -1 and War Levy at war -1 Happiness -->
+    <Modifier id="MOD_ECONOMICS_SYS_CLASSICAL_REPUBLIC_LIGHT_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_CLASSICAL_REPUBLIC</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_LIGHT_AQ</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">1</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CIVIC_MARKET</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_CLASSICAL_REPUBLIC_HEAVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_CLASSICAL_REPUBLIC</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_HEAVY_AQ</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">-1</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CIVIC_MARKET</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_CLASSICAL_REPUBLIC_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_CLASSICAL_REPUBLIC</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_AQ</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
+                <Argument name="WarType">FORMAL_WAR</Argument>
+                <Argument name="Amount">1</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">-1</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CIVIC_MARKET</Argument>
+    </Modifier>
+    <!-- Manorial (Feudal Monarchy), taxes in kind: Light costs 1 Gold less; Heavy and War Levy bring half the Gold and cost half the Happiness -->
+    <Modifier id="MOD_ECONOMICS_SYS_FEUDAL_MONARCHY_LIGHT_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_FEUDAL_MONARCHY</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_LIGHT_EX</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Amount">1</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_MANORIAL</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_FEUDAL_MONARCHY_HEAVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_FEUDAL_MONARCHY</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_HEAVY_EX</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Amount">-2</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_MANORIAL</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_FEUDAL_MONARCHY_HEAVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_FEUDAL_MONARCHY</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_HEAVY_EX</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">1</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_MANORIAL</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_FEUDAL_MONARCHY_WAR_LEVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_FEUDAL_MONARCHY</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_EX</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
+                <Argument name="WarType">FORMAL_WAR</Argument>
+                <Argument name="Amount">1</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Amount">-4</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_MANORIAL</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_FEUDAL_MONARCHY_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_FEUDAL_MONARCHY</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_EX</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
+                <Argument name="WarType">FORMAL_WAR</Argument>
+                <Argument name="Amount">1</Argument>
+            </Requirement>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">2</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_MANORIAL</Argument>
+    </Modifier>
+    <!-- Corporatist: War Levy pays its +8 Gold and -4 Happiness in peace too. The Modern governments' rows stand aside once the civ has an ideology, so the ideology's system takes over; Fascism's come from its branch root -->
+    <Modifier id="MOD_ECONOMICS_SYS_REV_AUTHORITARIANISM_WAR_LEVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_REVOLUTIONARY_AUTHORITARIANISM</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_EX</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Amount">8</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_REV_AUTHORITARIANISM_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_REVOLUTIONARY_AUTHORITARIANISM</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_EX</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">-4</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_AUTHORITARIANISM_WAR_LEVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_AUTHORITARIANISM</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_IDEOLOGY" inverse="true">
+                <Argument name="HasAnyIdeology">True</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_MO</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Amount">8</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_BUREAUCRATIC_MONARCHY_WAR_LEVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_BUREAUCRATIC_MONARCHY</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_IDEOLOGY" inverse="true">
+                <Argument name="HasAnyIdeology">True</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_MO</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Amount">8</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_AUTHORITARIANISM_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_AUTHORITARIANISM</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_IDEOLOGY" inverse="true">
+                <Argument name="HasAnyIdeology">True</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_MO</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">-4</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_BUREAUCRATIC_MONARCHY_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <SubjectRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_GOVERNMENT">
+                <Argument name="GovernmentType">GOVERNMENT_BUREAUCRATIC_MONARCHY</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_IDEOLOGY" inverse="true">
+                <Argument name="HasAnyIdeology">True</Argument>
+            </Requirement>
+        </SubjectRequirements>
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_MO</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">-4</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_FASCISM_WAR_LEVY_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_MO</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Amount">8</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_SYS_FASCISM_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <OwnerRequirements>
+            <Requirement type="REQUIREMENT_PLAYER_HAS_ACTIVE_TRADITION">
+                <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_MO</Argument>
+            </Requirement>
+            <Requirement type="REQUIREMENT_PLAYER_IS_AT_PEACE_WITH_ALL_MAJORS"/>
+        </OwnerRequirements>
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">-4</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_SYSTEM_CORPORATIST</Argument>
+    </Modifier>
+</GameEffects>
