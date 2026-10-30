@@ -1,7 +1,9 @@
 // econ-markets.js - Economics: the markets envelope (DESIGN 9), saved apart from the ledger: each resource's price and
 // its last 30 turns, every civ's tariff level, the last ten turns of each civ's income (the AI investment rule asks
-// whether a host's income is growing, DESIGN 6) and the age each AI last gave aid in (once per age, DESIGN 6). At most
-// 32 KB; load refuses anything that isn't ours without throwing, and save(load(x)) is a fixed point.
+// whether a host's income is growing, DESIGN 6), the age each AI last gave aid in (once per age, DESIGN 6) and each
+// AI's count of turns at peace with the civs behind its tariff and the civs it has eased off (DESIGN 6). A save from
+// before the count loads with none, so a standing tariff starts its count the first turn after. At most 32 KB; load
+// refuses anything that isn't ours without throwing, and save(load(x)) is a fixed point.
 
 import { INVEST, PRICES } from "./econ-params.js";
 import { isTariffLevel } from "./econ-trade.js";
@@ -13,7 +15,8 @@ export const MARKETS_MAX_BYTES = 32768;
 
 /** @returns {MarketsState} */
 export function emptyMarkets() {
-  return { lastTurn: null, prices: {}, history: {}, tariffs: [], incomes: {}, aidAge: {}, investTurn: {} };
+  return { lastTurn: null, prices: {}, history: {}, tariffs: [], incomes: {}, aidAge: {}, investTurn: {},
+    tariffPeace: {}, tariffEased: {} };
 }
 
 /** @param {unknown} x */
@@ -97,6 +100,37 @@ function cleanTurns(raw) {
   return out;
 }
 
+/** A pair key, "<ai>-<other>". @param {string} key */
+const isPairKey = (key) => /^\d{1,3}-\d{1,3}$/.test(key);
+
+/**
+ * @param {unknown} raw
+ * @returns {Record<string, number>}
+ */
+function cleanPairTurns(raw) {
+  /** @type {Record<string, number>} */
+  const out = {};
+  if (!isRecord(raw)) return out;
+  for (const [key, value] of Object.entries(/** @type {object} */ (raw))) {
+    if (isPairKey(key) && isInt(value)) out[key] = value;
+  }
+  return out;
+}
+
+/**
+ * @param {unknown} raw
+ * @returns {Record<string, TariffLevel>}
+ */
+function cleanPairLevels(raw) {
+  /** @type {Record<string, TariffLevel>} */
+  const out = {};
+  if (!isRecord(raw)) return out;
+  for (const [key, value] of Object.entries(/** @type {object} */ (raw))) {
+    if (isPairKey(key) && isTariffLevel(value)) out[key] = value;
+  }
+  return out;
+}
+
 /**
  * @param {unknown} input
  * @returns {MarketsState}
@@ -112,6 +146,8 @@ export function sanitizeMarkets(input) {
   out.incomes = cleanSeries(raw.incomes, (key) => /^\d{1,3}$/.test(key), INVEST.incomeHistoryTurns);
   out.aidAge = cleanAidAges(raw.aidAge);
   out.investTurn = cleanTurns(raw.investTurn);
+  out.tariffPeace = cleanPairTurns(raw.tariffPeace);
+  out.tariffEased = cleanPairLevels(raw.tariffEased);
   return out;
 }
 

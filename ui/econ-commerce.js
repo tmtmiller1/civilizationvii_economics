@@ -7,7 +7,7 @@
 
 import { INVEST, MISS, STANDING, TRADE } from "./econ-params.js";
 import { anyWar, nextPrices } from "./econ-prices.js";
-import { aiTariffWanted, canChangeTariff, capPayments, highTariffCosts, netPairs, owedByPair, withTariff }
+import { aiTariffStep, canChangeTariff, capPayments, highTariffCosts, netPairs, owedByPair, withTariff }
   from "./econ-trade.js";
 import { investId, isOpenInvestment, lostCityWriteOff, settleDividend, settleInvestmentDefault } from "./econ-invest.js";
 import { isIncomeGrowing, withIncomes } from "./econ-markets.js";
@@ -218,32 +218,49 @@ export function investWriteOffs(ctx) {
 
 /**
  * DESIGN 6 tariffs: option on only; an AI answers a tariff on its exports in kind, sets Low against a partner it pays
- * and isn't Friendly with and High against one it's Unfriendly with, and drops back when the reasons go.
+ * and isn't Friendly with and High against one it's Unfriendly with, and drops back when the reasons go. It eases off
+ * a civ after 20 turns in a row at peace with it while tariffed, or at once when they're Friendly (econ-trade.js
+ * easeTariffs); the count and the easing ride in the markets envelope.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 export function aiTariff(ctx, civ) {
   if (!ctx.options.markets || !ctx.options.tariffs) return;
   if (!hasStage(civ, "tariffs", ctx.turn, ctx.options)) return;
-  const owed = ctx.owed || [];
-  const sales = owed.filter((row) => row.exporter === civ.id && row.gross > 0);
-  const buys = owed.filter((row) => row.importer === civ.id && row.gross > 0);
-  const total = (/** @type {{ gross: number }[]} */ rows) => rows.reduce((sum, row) => sum + row.gross, 0);
-  const share = (/** @type {number} */ gross, /** @type {number} */ all) => (all > 0 ? (gross * 100) / all : 0);
-  const importers = sales.map((row) => row.importer);
-  const partners = buys.map((row) => ({ level: relationLevel(ctx.relations, civ.id, row.exporter),
-    netPayer: ctx.trade.some((pay) => pay.payer === civ.id && pay.payee === row.exporter && pay.owed > 0),
-    sharePct: share(row.gross, total(buys)) }));
-  const importerSharePct = (/** @type {number} */ pid) => share(sales.find((row) => row.importer === pid)?.gross ?? 0,
-    total(sales));
   // A system whose High tariff costs relationship less often (Mercantile) is readier to set it.
   const cheapHigh = termsFor(ctx, civ.id).highTariffEveryTurns > TRADE.tariffEveryTurns;
-  const wanted = aiTariffWanted({ pid: civ.id, tariffs: ctx.markets.tariffs, importers, turn: ctx.turn, partners,
-    cheapHigh, importerSharePct });
+  const step = aiTariffStep({ pid: civ.id, tariffs: ctx.markets.tariffs, turn: ctx.turn, cheapHigh,
+    ...tariffTrade(ctx, civ.id), easing: { peace: ctx.markets.tariffPeace, eased: ctx.markets.tariffEased },
+    relationOf: (other) => relationLevel(ctx.relations, civ.id, other), alive: (other) => isAlive(ctx, other) });
+  if (step.easing) {
+    ctx.markets.tariffPeace = step.easing.peace;
+    ctx.markets.tariffEased = step.easing.eased;
+  }
+  for (const other of step.eased) event(ctx, { kind: "tariff-eased", pid: civ.id, other });
   const row = ctx.markets.tariffs.find((tariff) => tariff.pid === civ.id);
-  if (!wanted || !canChangeTariff(row?.changedTurn, ctx.turn)) return;
-  ctx.markets.tariffs = withTariff(ctx.markets.tariffs, civ.id, wanted, ctx.turn);
-  event(ctx, { kind: "tariff", pid: civ.id, level: wanted });
+  if (!step.wanted || !canChangeTariff(row?.changedTurn, ctx.turn)) return;
+  ctx.markets.tariffs = withTariff(ctx.markets.tariffs, civ.id, step.wanted, ctx.turn);
+  event(ctx, { kind: "tariff", pid: civ.id, level: step.wanted });
+}
+
+/**
+ * Who an AI trades with this turn, as its tariff rule reads it: the civs that import from it with each one's share
+ * of its exports, and the civs it imports from with their relationship, whether it pays them on net and their share.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ */
+function tariffTrade(ctx, pid) {
+  const owed = ctx.owed || [];
+  const sales = owed.filter((row) => row.exporter === pid && row.gross > 0);
+  const buys = owed.filter((row) => row.importer === pid && row.gross > 0);
+  const total = (/** @type {{ gross: number }[]} */ rows) => rows.reduce((sum, row) => sum + row.gross, 0);
+  const share = (/** @type {number} */ gross, /** @type {number} */ all) => (all > 0 ? (gross * 100) / all : 0);
+  const partners = buys.map((row) => ({ pid: row.exporter, level: relationLevel(ctx.relations, pid, row.exporter),
+    netPayer: ctx.trade.some((pay) => pay.payer === pid && pay.payee === row.exporter && pay.owed > 0),
+    sharePct: share(row.gross, total(buys)) }));
+  const importerSharePct = (/** @type {number} */ other) =>
+    share(sales.find((row) => row.importer === other)?.gross ?? 0, total(sales));
+  return { importers: sales.map((row) => row.importer), partners, importerSharePct };
 }
 
 /**

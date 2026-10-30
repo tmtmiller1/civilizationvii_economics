@@ -114,6 +114,23 @@ test("a High tariff costs the importer 1 relationship with each exporter every 5
   assert.deepEqual(noTariffs.relationships, []);
 });
 
+test("the AI eases off a tariff after 20 turns at peace, and the count rides in the markets envelope", () => {
+  const civs = [me(), ai(AI)];
+  const routes = [route(ME, AI, ["RESOURCE_IRON"])];
+  const tariffs = [{ pid: ME, level: "high", changedTurn: 10 }, { pid: AI, level: "high", changedTurn: 12 }];
+  const counting = plan({ civs, routes, turn: 49, markets: markets({ tariffs, tariffPeace: { [`${AI}-${ME}`]: 30 } }) });
+  assert.equal(counting.markets.tariffs.find((t) => t.pid === AI).level, "high", "19 turns");
+  assert.deepEqual(counting.markets.tariffPeace, { [`${AI}-${ME}`]: 30 });
+  const out = plan({ civs, routes, turn: 50, markets: counting.markets });
+  assert.equal(out.markets.tariffs.find((t) => t.pid === AI).level, "none", "20 turns: back to None");
+  assert.deepEqual([out.markets.tariffPeace, out.markets.tariffEased], [{}, { [`${AI}-${ME}`]: "high" }]);
+  assert.ok(out.events.some((e) => e.kind === "tariff-eased" && e.pid === AI && e.other === ME));
+  const next = plan({ civs, routes, turn: 51, markets: out.markets });
+  assert.equal(next.markets.tariffs.find((t) => t.pid === AI).level, "none", "the player's High goes unanswered");
+  const fromOld = plan({ civs, routes, turn: 60, markets: markets({ tariffs }) });
+  assert.deepEqual(fromOld.markets.tariffPeace, { [`${AI}-${ME}`]: 60 }, "a save without the count starts one");
+});
+
 test("a development loan on an AI city's current build: progress, the Gold used, the record and the relationship", () => {
   const civs = [me(), ai(AI, { incomeCents: 2000, cities: [city("6:1", { neededProgress: 40, roleBuilding: true })] })];
   const out = plan({ civs, requests: [{ kind: "invest", investor: ME, host: AI, form: "project", cents: 30000,

@@ -1,9 +1,10 @@
 // Trade settlement and tariffs (DESIGN 4.10; TEST-PLAN 12.1): the bill with its Trade-building terms, owed per pair
 // with the tariff held back, netted, capped at 10% of positive income with several partners scaled evenly, the rest
-// waived; the 5-turn tariff limit, the High tariff's relationship step, and the AI's matching rule.
+// waived; the 5-turn tariff limit, the High tariff's relationship step, the AI's matching rule, and the AI coming back
+// down after 20 turns at peace or at once when Friendly.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { aiOwnTariff, aiTariffWanted, canChangeTariff, capPayments, highTariffCosts, isTariffLevel, netPairs, owedByPair,
+import { aiOwnTariff, aiTariffStep, aiTariffWanted, canChangeTariff, easeTariffs, capPayments, highTariffCosts, isTariffLevel, netPairs, owedByPair,
   routeBillCents, settlementCap, tariffOf, tradeBuildingPct, withTariff } from "../ui/econ-trade.js";
 
 // Prices 20 times a real copy's, so the bills read as round figures at the 2.5% share (DESIGN 4.10).
@@ -149,4 +150,122 @@ test("a tariff falls on all its imports, so the AI weighs only partners worth a 
   assert.equal(aiTariffWanted({ ...q, tariffs: low, importers: [1], importerSharePct: () => 20 }), null,
     "a small buyer's tariff goes unanswered");
   assert.equal(aiTariffWanted({ ...q, tariffs: low, importers: [1], importerSharePct: () => 60 }), "low");
+});
+
+/**
+ * One AI's tariff turn as econ-commerce.js runs it: the step, then the change when the 5-turn limit allows.
+ * @param {{ tariffs: object[], easing: object }} world
+ */
+function aiTurn(world, pid, turn, { relation = () => "neutral", importers = [], partners = [], alive } = {}) {
+  const step = aiTariffStep({ pid, tariffs: world.tariffs, importers, turn, partners, easing: world.easing,
+    relationOf: relation, alive });
+  world.easing = step.easing;
+  const row = world.tariffs.find((r) => r.pid === pid);
+  if (step.wanted && canChangeTariff(row?.changedTurn, turn)) world.tariffs = withTariff(world.tariffs, pid, step.wanted, turn);
+  return step;
+}
+const levelIn = (world, pid) => tariffOf(world.tariffs, pid);
+const fresh = (tariffs) => ({ tariffs, easing: { peace: {}, eased: {} } });
+
+test("an AI answering a High tariff eases off after 20 turns in a row at peace, and doesn't raise again in kind", () => {
+  const world = fresh([{ pid: 1, level: "high", changedTurn: 10 }]);
+  const seen = {};
+  for (let turn = 11; turn <= 60; turn += 1) {
+    const step = aiTurn(world, 5, turn, { importers: [1] });
+    seen[turn] = levelIn(world, 5);
+    if (step.eased.length) seen.easedAt = turn;
+  }
+  assert.equal(seen[12], "high", "answered in kind 2 turns after");
+  assert.equal(world.easing.peace["5-1"], undefined, "the count ends with the easing");
+  assert.equal(seen.easedAt, 33, "counted from turn 13, the first turn it held the tariff");
+  assert.equal(seen[32], "high");
+  assert.equal(seen[33], "none", "drops back the turn it eases off");
+  assert.ok(Object.keys(seen).filter((t) => Number(t) > 33).every((t) => seen[t] === "none"),
+    "the other side still at High is no reason to raise again");
+  assert.deepEqual(world.easing.eased, { "5-1": "high" });
+});
+
+test("war resets the count; Friendly eases off at once", () => {
+  const war = fresh([{ pid: 1, level: "high", changedTurn: 10 }]);
+  let eased = null;
+  for (let turn = 11; turn <= 80 && eased === null; turn += 1) {
+    const step = aiTurn(war, 5, turn, { importers: [1], relation: () => (turn === 25 ? "war" : "neutral") });
+    if (step.eased.length) eased = turn;
+  }
+  assert.equal(eased, 46, "the count starts over the turn after the war");
+  const friends = fresh([{ pid: 1, level: "high", changedTurn: 10 }]);
+  for (let turn = 11; turn <= 19; turn += 1) aiTurn(friends, 5, turn, { importers: [1] });
+  assert.equal(levelIn(friends, 5), "high");
+  const step = aiTurn(friends, 5, 20, { importers: [1], relation: () => "friendly" });
+  assert.deepEqual([step.eased, levelIn(friends, 5)], [[1], "none"]);
+  aiTurn(friends, 5, 21, { importers: [1], relation: () => "neutral" });
+  assert.equal(levelIn(friends, 5), "none", "back to Neutral, the old tariff still goes unanswered");
+  const atWar = fresh([{ pid: 1, level: "high", changedTurn: 10 }, { pid: 5, level: "high", changedTurn: 12 }]);
+  atWar.easing.eased["5-1"] = "high";
+  aiTurn(atWar, 5, 40, { importers: [1], relation: () => "war" });
+  assert.deepEqual(atWar.easing.eased, {}, "a war ends the easing");
+});
+
+test("after easing off, a new raise is answered; a lowering and the old level aren't", () => {
+  const world = fresh([{ pid: 1, level: "high", changedTurn: 10 }, { pid: 5, level: "none", changedTurn: 33 }]);
+  world.easing.eased["5-1"] = "high";
+  world.tariffs = withTariff(world.tariffs, 1, "low", 40);
+  aiTurn(world, 5, 45, { importers: [1] });
+  assert.deepEqual([levelIn(world, 5), world.easing.eased["5-1"]], ["none", "low"], "Low after High isn't a raise");
+  world.tariffs = withTariff(world.tariffs, 1, "high", 50);
+  aiTurn(world, 5, 51, { importers: [1] });
+  assert.equal(levelIn(world, 5), "none", "a raise waits 2 turns as before");
+  assert.equal(world.easing.eased["5-1"], undefined, "but it ends the easing");
+  aiTurn(world, 5, 52, { importers: [1] });
+  assert.equal(levelIn(world, 5), "high");
+});
+
+test("two AIs in a trade war both come back down and stay down", () => {
+  // Unfriendly both ways and each buying from the other: each sets High against the other and answers it in kind.
+  const world = fresh([]);
+  const opts = (other) => ({ importers: [other], partners: [{ pid: other, level: "unfriendly", netPayer: true }],
+    relation: () => "unfriendly" });
+  const both = [];
+  for (let turn = 1; turn <= 120; turn += 1) {
+    aiTurn(world, 1, turn, opts(5));
+    aiTurn(world, 5, turn, opts(1));
+    both.push([levelIn(world, 1), levelIn(world, 5)]);
+  }
+  assert.deepEqual(both[0], ["high", "high"]);
+  assert.deepEqual(both[19], ["high", "high"], "20 turns of High first");
+  const down = both.findIndex(([a, b]) => a === "none" && b === "none");
+  assert.ok(down > 0 && down <= 25, `both at None by turn ${down + 1}`);
+  assert.ok(both.slice(down).every(([a, b]) => a === "none" && b === "none"), "and they stay there");
+  // Without the easing the same pair stays High to the end: the standoff the merged watch saw.
+  let stuck = [];
+  for (let turn = 1; turn <= 120; turn += 1) {
+    for (const [pid, other] of [[1, 5], [5, 1]]) {
+      const wanted = aiTariffWanted({ pid, tariffs: stuck, turn, ...opts(other) });
+      const row = stuck.find((r) => r.pid === pid);
+      if (wanted && canChangeTariff(row?.changedTurn, turn)) stuck = withTariff(stuck, pid, wanted, turn);
+    }
+  }
+  assert.deepEqual([tariffOf(stuck, 1), tariffOf(stuck, 5)], ["high", "high"]);
+});
+
+test("easing off one civ leaves the others' reasons; a gone civ's entries go; an old save starts its count", () => {
+  const world = fresh([{ pid: 1, level: "high", changedTurn: 10 }, { pid: 5, level: "high", changedTurn: 12 }]);
+  world.easing.eased["5-1"] = "high";
+  aiTurn(world, 5, 40, { importers: [1], partners: [{ pid: 2, level: "war", netPayer: false }],
+    relation: (other) => (other === 2 ? "war" : "neutral") });
+  assert.equal(levelIn(world, 5), "high", "still at war with 2");
+  const gone = easeTariffs({ pid: 5, mine: "high", turn: 41, reasons: new Map(), tariffs: [],
+    relationOf: () => "neutral", alive: () => false, easing: { peace: { "5-3": 30, "6-3": 30 }, eased: { "5-1": "low" } } });
+  assert.deepEqual(gone.easing, { peace: { "6-3": 30 }, eased: {} }, "only this AI's entries, and only the gone civs'");
+  // A save from 0.5.0: a standing High from turn 11 and no count. The count starts at the first turn after loading.
+  const old = fresh([{ pid: 2, level: "high", changedTurn: 11 }, { pid: 5, level: "high", changedTurn: 13 }]);
+  let dropped = null;
+  for (let turn = 140; turn <= 200 && dropped === null; turn += 1) {
+    aiTurn(old, 5, turn, { importers: [2] });
+    if (levelIn(old, 5) === "none") dropped = turn;
+  }
+  assert.equal(dropped, 160);
+  const anon = easeTariffs({ pid: 5, mine: "low", turn: 9, reasons: new Map([["partner-0", "low"]]), tariffs: [],
+    relationOf: () => "friendly", easing: { peace: {}, eased: {} } });
+  assert.equal(anon.counted.get("partner-0"), "low", "a partner given without an id is never eased");
 });

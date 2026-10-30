@@ -20,7 +20,8 @@ test(`balance ladder 1.1: ${GAMES} seeded 12-civ trade games, On against Off, an
     routeProfit: { exploration: routeProfitRows("exploration"), modern: routeProfitRows("modern") },
     devLoanRatio: devLoanRatioRows(), wideTall: wideTallRows() };
   const times = [];
-  const tariffs = { none: 0, low: 0, high: 0, highPairTurns: 0, pairTurns: 0, changes: 0, aiGain: [] };
+  const tariffs = { none: 0, low: 0, high: 0, highPairTurns: 0, pairTurns: 0, changes: 0, aiGain: [], eased: 0,
+    lastQuarter: { none: 0, low: 0, high: 0 }, aisTariffedAtEnd: 0, ais: 0 };
   for (let i = 0; i < GAMES; i += 1) {
     const on = runTradeGame(makeTradeGame(9100 + i), { on: true });
     const off = runTradeGame(makeTradeGame(9100 + i), { on: false });
@@ -31,6 +32,13 @@ test(`balance ladder 1.1: ${GAMES} seeded 12-civ trade games, On against Off, an
     tariffs.highPairTurns += ruled.highPairTurns;
     tariffs.pairTurns += ruled.pairTurns;
     tariffs.changes += ruled.tariffChanges;
+    tariffs.eased += ruled.eased;
+    for (const key of ["none", "low", "high"]) tariffs.lastQuarter[key] += ruled.lastQuarter[key];
+    for (const [pid, level] of Object.entries(ruled.endLevels)) {
+      if (Number(pid) === 1) continue;
+      tariffs.ais += 1;
+      if (level !== "none") tariffs.aisTariffedAtEnd += 1;
+    }
     for (const [pid, net] of ruled.netByCiv) {
       if (pid !== 1) tariffs.aiGain.push((net - on.netByCiv.get(pid)) / 200 / 100);
     }
@@ -47,8 +55,14 @@ test(`balance ladder 1.1: ${GAMES} seeded 12-civ trade games, On against Off, an
       offTransfers: [...off.netByCiv.values()].every((v) => v === 0) });
   }
   const civTurns = tariffs.none + tariffs.low + tariffs.high;
+  const quarterTurns = tariffs.lastQuarter.none + tariffs.lastQuarter.low + tariffs.lastQuarter.high;
+  // The AIs ease off a civ after 20 turns at peace (DESIGN 6) and this game has no war, so by the last quarter the
+  // tariffs should be down: the share of AIs still tariffed at the end is the line to read.
   report.tariffs = { shareNone: tariffs.none / civTurns, shareLow: tariffs.low / civTurns,
     shareHigh: tariffs.high / civTurns, pairsBothHighShare: tariffs.highPairTurns / tariffs.pairTurns,
+    lastQuarter: { shareNone: tariffs.lastQuarter.none / quarterTurns, shareLow: tariffs.lastQuarter.low / quarterTurns,
+      shareHigh: tariffs.lastQuarter.high / quarterTurns },
+    aisTariffedAtEndShare: tariffs.aisTariffedAtEnd / tariffs.ais, eased: tariffs.eased,
     changes: tariffs.changes, aiNetGainGoldPerTurn: { mean: tariffs.aiGain.reduce((s, x) => s + x, 0)
       / tariffs.aiGain.length, median: median(tariffs.aiGain), positive: tariffs.aiGain.filter((x) => x > 0).length,
     negative: tariffs.aiGain.filter((x) => x < 0).length, ais: tariffs.aiGain.length } };
@@ -58,6 +72,7 @@ test(`balance ladder 1.1: ${GAMES} seeded 12-civ trade games, On against Off, an
   report.cappedShare = cappedRows / settledRows;
   assert.ok(report.cappedShare < 0.2, `the cap binds on ${report.cappedShare}`);
   assert.ok(report.tariffs.pairsBothHighShare < 0.5, "tariffs don't spiral into every pair at High");
+  assert.ok(report.tariffs.aisTariffedAtEndShare < 0.25, "after long peace most AIs have come back down");
   const max = Math.max(...times);
   assert.ok(median(times) < 50, `median ${median(times)} ms`);
   report.planMs = { median: median(times), max };

@@ -73,7 +73,8 @@ From Imperialism you can set a tariff on the Fiscal tab: Low or High holds back 
 civilizations you import from. A High tariff costs 1 relationship with each of them every five turns. The computer
 players use tariffs too: one that pays a big trading partner more than it's paid sets Low unless they're friends,
 one that's Unfriendly with a big partner sets High, and any of them answers your tariff in kind two turns later and
-drops it when you do.
+drops it when you do. A computer player also lets its tariff go after 20 turns at peace with you, or straight away
+once you're friends; it puts one back if you raise yours again or the two of you go to war.
 
 ## Foreign investment and aid
 

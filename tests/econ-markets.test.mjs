@@ -21,6 +21,11 @@ const full = () => {
     markets.incomes[String(pid)] = Array.from({ length: 10 }, (_, k) => 12345 + k);
     markets.aidAge[String(pid)] = "AGE_MODERN";
     markets.investTurn[String(pid)] = 480;
+    for (let other = 0; other < 12; other += 1) {
+      if (other === pid) continue;
+      markets.tariffPeace[`${pid}-${other}`] = 480;
+      markets.tariffEased[`${pid}-${other}`] = "high";
+    }
   }
   markets.lastTurn = 500;
   return markets;
@@ -43,17 +48,27 @@ test("sanitize keeps only well-formed rows; save(load(x)) is a fixed point", () 
     history: { RESOURCE_A: [1, "x", 2], lower: [1] }, tariffs: [{ pid: 1, level: "high", changedTurn: 3 },
       { pid: 1, level: "low", changedTurn: 4 }, { pid: -1, level: "low", changedTurn: 1 },
       { pid: 2, level: "max", changedTurn: 1 }, null], incomes: { 3: [1, 2], x: [1] },
-    aidAge: { 3: "AGE_EXPLORATION", 4: 7, y: "AGE_MODERN" }, investTurn: { 3: 40, 4: "x" } };
+    aidAge: { 3: "AGE_EXPLORATION", 4: 7, y: "AGE_MODERN" }, investTurn: { 3: 40, 4: "x" },
+    tariffPeace: { "3-5": 12, "3-x": 4, "4-6": 1.5, 5: 3 }, tariffEased: { "3-5": "low", "4-6": "max", "1234-5": "high" } };
   const clean = sanitizeMarkets(raw);
   assert.deepEqual(clean, { lastTurn: 9, prices: { RESOURCE_A: 300 }, history: { RESOURCE_A: [1, 2] },
     tariffs: [{ pid: 1, level: "high", changedTurn: 3 }], incomes: { 3: [1, 2] }, aidAge: { 3: "AGE_EXPLORATION" },
-    investTurn: { 3: 40 } });
+    investTurn: { 3: 40 }, tariffPeace: { "3-5": 12 }, tariffEased: { "3-5": "low" } });
   const text = saveMarkets(clean);
   assert.equal(saveMarkets(loadMarkets(text).markets), text);
   assert.deepEqual(cloneMarkets(clean), clean);
   assert.notEqual(cloneMarkets(clean).prices, clean.prices);
   assert.deepEqual(sanitizeMarkets(null), emptyMarkets());
   assert.deepEqual(sanitizeMarkets([1]), emptyMarkets());
+});
+
+test("a save from before the tariff count loads with none, and keeps its tariffs", () => {
+  const old = { mod: "tower-economics-markets", v: 1, markets: { lastTurn: 140, prices: {}, history: {},
+    tariffs: [{ pid: 2, level: "high", changedTurn: 11 }], incomes: {}, aidAge: {}, investTurn: {} } };
+  const loaded = loadMarkets(JSON.stringify(old));
+  assert.equal(loaded.ok, true);
+  assert.deepEqual([loaded.markets.tariffPeace, loaded.markets.tariffEased], [{}, {}]);
+  assert.deepEqual(loaded.markets.tariffs, [{ pid: 2, level: "high", changedTurn: 11 }]);
 });
 
 test("econ-5: a 12-civ, 60-resource state with full histories fits in 32 KB, and an oversized one is cut to fit", () => {

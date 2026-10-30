@@ -143,7 +143,7 @@ export function runTradeGame(game, { on, turns = 200, ai = false }) {
   let ledger;
   const facts = { netByCiv: new Map(game.civs.map((c) => [c.id, 0])), paidShare: [], waived: 0, capped: 0, rows: 0,
     maxMarketsBytes: 0, planMs: [], tariffTurns: { none: 0, low: 0, high: 0 }, highPairTurns: 0, pairTurns: 0,
-    tariffChanges: 0 };
+    tariffChanges: 0, eased: 0, lastQuarter: { none: 0, low: 0, high: 0 }, endLevels: {} };
   for (let turn = 1; turn <= turns; turn += 1) {
     const civs = game.civs.map((c) => ({ id: c.id, alive: true, human: c.human, balanceCents: balances.get(c.id),
       incomeCents: Math.round((1500 + 10 * turn) * c.factor), upkeepCents: 0, stages: OPEN_ALL,
@@ -152,7 +152,7 @@ export function runTradeGame(game, { on, turns = 200, ai = false }) {
     const plan = planTurn({ turn, age: "AGE_EXPLORATION", civs, relations: game.relations || [], requests: [],
       params: PARAMS, options: { loans: false, investment: false, markets: on, ai, cycle: "off", systems: false },
       ledger, markets, routes: game.routes, market: game.market });
-    readTariffs(facts, plan, game);
+    readTariffs(facts, plan, game, turn > (3 * turns) / 4);
     facts.planMs.push(Number(process.hrtime.bigint() - t0) / 1e6);
     for (const row of plan.trade) {
       facts.netByCiv.set(row.payer, facts.netByCiv.get(row.payer) - row.paid);
@@ -173,11 +173,19 @@ export function runTradeGame(game, { on, turns = 200, ai = false }) {
   return facts;
 }
 
-/** Each civ's tariff this turn, and how many trading pairs stand at High on both sides. */
-function readTariffs(facts, plan, game) {
+/**
+ * Each civ's tariff this turn (and in the last quarter of the game on their own, with the levels at the end), the AIs
+ * that eased off a civ, and how many trading pairs stand at High on both sides.
+ */
+function readTariffs(facts, plan, game, lastQuarter) {
   const level = (pid) => plan.markets.tariffs.find((row) => row.pid === pid)?.level ?? "none";
-  for (const c of game.civs) facts.tariffTurns[level(c.id)] += 1;
+  for (const c of game.civs) {
+    facts.tariffTurns[level(c.id)] += 1;
+    if (lastQuarter) facts.lastQuarter[level(c.id)] += 1;
+    facts.endLevels[c.id] = level(c.id);
+  }
   facts.tariffChanges += plan.events.filter((e) => e.kind === "tariff").length;
+  facts.eased += plan.events.filter((e) => e.kind === "tariff-eased").length;
   const pairs = new Set(game.routes.map((r) => (r.importer < r.exporter ? `${r.importer}:${r.exporter}`
     : `${r.exporter}:${r.importer}`)));
   for (const key of pairs) {

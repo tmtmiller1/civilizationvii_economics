@@ -187,6 +187,10 @@ declare global {
     aidAge: Record<string, string>;
     /** The turn each AI last invested or made an offer, by player id (once per 10 turns, DESIGN 6). */
     investTurn: Record<string, number>;
+    /** By "<ai>-<other>": the turn the AI's count of turns at peace with a civ behind its tariff started (DESIGN 6). */
+    tariffPeace: Record<string, number>;
+    /** By "<ai>-<other>": a civ the AI has eased off, with the lowest tariff that civ has held since (DESIGN 6). */
+    tariffEased: Record<string, TariffLevel>;
   }
 
   /** Build progress the glue lands with `addProgress` on the city's current build (DESIGN 4.12). */
