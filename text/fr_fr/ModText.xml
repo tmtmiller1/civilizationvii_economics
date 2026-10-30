@@ -24,7 +24,7 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_AI_ON" Language="fr_FR"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_AI_ON_DESCRIPTION" Language="fr_FR"><Text>Computer players borrow, lend, restructure and repudiate by the same rules you play under.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_NAME" Language="fr_FR"><Text>Rates</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_DESCRIPTION" Language="fr_FR"><Text>Scales every interest rate in the game, the rate cap included. Standard is 3 percent a turn in Antiquity, 2 in Exploration and 1.5 in Modern before standing and relationship adjust it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_DESCRIPTION" Language="fr_FR"><Text>Scales every interest rate in the game, the rate cap included. Standard is 1.5 percent a turn in Antiquity, 1 in Exploration and 0.75 in Modern before standing and relationship adjust it.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_LOW" Language="fr_FR"><Text>Low</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_LOW_DESCRIPTION" Language="fr_FR"><Text>Three quarters of the standard rates. Borrowing is cheap and lending pays less.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_STANDARD" Language="fr_FR"><Text>Standard</Text></Replace>
@@ -38,7 +38,7 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_ON" Language="fr_FR"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_ON_DESCRIPTION" Language="fr_FR"><Text>The three tax cards appear in the policy list as their civics unlock them.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_NAME" Language="fr_FR"><Text>Economic stages</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_DESCRIPTION" Language="fr_FR"><Text>Whether each part opens with the tech or civic that historically brought it in: loans between civilizations with Moneylending, the bond market and longer terms with Public debt.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_DESCRIPTION" Language="fr_FR"><Text>Whether each part opens with the tech or civic that historically brought it in: loans between civilizations and 20-turn terms with Moneylending, the bond market and 30-turn terms with Public debt.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_OFF" Language="fr_FR"><Text>Off</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_OFF_DESCRIPTION" Language="fr_FR"><Text>Every part is open from the start of its age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON" Language="fr_FR"><Text>On</Text></Replace>
@@ -118,10 +118,13 @@
         <Replace Tag="LOC_ECONOMICS_LOANS_STAGES_ALL_OPEN" Language="fr_FR"><Text>Every lender of this age is open to you.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_STAGE_CLOSED" Language="fr_FR"><Text>{1_Part} opens with {2_Node}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_STAGE_NEXT_AGE" Language="fr_FR"><Text>the next age</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PART_CIV_LOANS" Language="fr_FR"><Text>Loans from other civilizations</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PART_BOND" Language="fr_FR"><Text>The bond market and longer terms</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_CIV_LOANS" Language="fr_FR"><Text>Loans from other civilizations, and 20-turn terms</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_BOND" Language="fr_FR"><Text>The bond market and 30-turn terms</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW" Language="fr_FR"><Text>Borrow</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_NO_OFFERS" Language="fr_FR"><Text>Nobody will lend you this amount on these terms right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_MOST" Language="fr_FR"><Text>The most you can borrow from {1_Lender} over {2_Turns} turns is {3_Amount} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_MOST_NONE" Language="fr_FR"><Text>Your payments already take all your limits allow, so you can't borrow from {1_Lender} over {2_Turns} turns right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_THAT" Language="fr_FR"><Text>Borrow that instead</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_OVER_ROOM" Language="fr_FR"><Text>That's more than your credit limit allows.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OFFER_SERVICE" Language="fr_FR"><Text>With this loan, your payments would take {1_Percent}% of your income.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OFFER_ROW" Language="fr_FR"><Text>{1_Lender}: {2_Rate} a turn, about {3_Payment} Gold a turn, {4_Interest} Gold of interest in all</Text></Replace>
@@ -220,6 +223,8 @@
         <Replace Tag="LOC_ECONOMICS_NOTICE_REPUDIATED" Language="fr_FR"><Text>You repudiated {1_Amount} Gold owed to {2_Lender}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REPUDIATED_BY" Language="fr_FR"><Text>{1_Borrower} repudiated {2_Amount} Gold it owed you. Its grievance against you is booked, and the civilizations it has met think less of it.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED" Language="fr_FR"><Text>Your {1_Request} was refused: {2_Reason}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED_MOST" Language="fr_FR"><Text>The most you can borrow from {1_Lender} over {2_Turns} turns is {3_Amount} Gold. The Loans tab can borrow that instead.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED_NONE" Language="fr_FR"><Text>Your payments already take all your limits allow, so you can't borrow from {1_Lender} over {2_Turns} turns right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_BORROW" Language="fr_FR"><Text>borrow request</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_LEND" Language="fr_FR"><Text>loan offer</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_REPAY" Language="fr_FR"><Text>early repayment</Text></Replace>
@@ -228,14 +233,14 @@
         <Replace Tag="LOC_ECONOMICS_REQUEST_TAX" Language="fr_FR"><Text>tax change</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_UNKNOWN" Language="fr_FR"><Text>request</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_CREDIT_CAP" Language="fr_FR"><Text>it's over your credit limit.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REASON_SERVICE_CAP" Language="fr_FR"><Text>the payments would take more than 35 percent of your income.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_SERVICE_CAP" Language="fr_FR"><Text>the payments would take more than half your income.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_TERMS" Language="fr_FR"><Text>the amount or term isn't one the lender takes.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_LOAN_LIMIT" Language="fr_FR"><Text>six loans are open already.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_LENDER" Language="fr_FR"><Text>that lender is gone.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_BORROWER" Language="fr_FR"><Text>that borrower is gone.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_NO_OFFER" Language="fr_FR"><Text>the lender won't lend to you right now.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REASON_TERM_STAGE" Language="fr_FR"><Text>terms beyond 10 turns need Public debt.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REASON_TERM_BANKING" Language="fr_FR"><Text>a civilization lends beyond 10 turns only with a bank.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TERM_STAGE" Language="fr_FR"><Text>20-turn terms need Moneylending, and 30-turn terms need Public debt.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TERM_BANKING" Language="fr_FR"><Text>a civilization lends over 30 turns only with a bank.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_TERM_REPUDIATION" Language="fr_FR"><Text>while a repudiation counts against you, terms stay at 10 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_PARTIES" Language="fr_FR"><Text>that isn't something you can ask of them.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_AI_OFF" Language="fr_FR"><Text>the computer players aren't borrowing or lending in this game.</Text></Replace>

@@ -16,10 +16,10 @@ test("citizen_cap: 5 turns of max(10, income) per settlement with a Commerce bui
 });
 
 test("the rate is 0.75 of the base rate over standing, by depth and the Rates option, stopped at r_cap", () => {
-  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 100 }), 22500);
-  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 50 }), 45000);
-  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 100, depthFactorPct: 80, rates: 125 }), 22500);
-  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 10 }), 120000, "r_cap");
+  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 100 }), 11250);
+  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 50 }), 22500);
+  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 100, depthFactorPct: 80, rates: 125 }), 11250);
+  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 10 }), 60000, "r_cap");
   assert.equal(citizenRatePpm({ age: "AGE_NONE", standing: 100 }), null);
 });
 

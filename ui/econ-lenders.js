@@ -3,8 +3,8 @@
 // Blocks carry how long they last: a default blocks for the rest of the age, a repudiation of a civ for this age and
 // the next, a repudiation of the bond market or temple treasuries for 30 turns (DESIGN 4.5).
 
-import { BASE_RATE_PPM, BOND, BOND_FACTOR, CITIZENS, LENDER_BALANCE_MULTIPLE, RATE_CAP_MULTIPLE, RELATION_PCT,
-  REPUDIATION, SHORT_TERM, TEMPLE, isWorldAccount } from "./econ-params.js";
+import { BASE_RATE_PPM, BOND, BOND_FACTOR, CITIZENS, LENDER_BALANCE_MULTIPLE, MID_TERM, RATE_CAP_MULTIPLE,
+  RELATION_PCT, REPUDIATION, SHORT_TERM, TEMPLE, isWorldAccount } from "./econ-params.js";
 import { divRound } from "./econ-money.js";
 import { recentRepudiations } from "./econ-credit.js";
 import { hasStage } from "./econ-stages.js";
@@ -137,13 +137,15 @@ export function maxTerm(ledger, borrower, turn) {
 }
 
 /**
- * DESIGN 4.3: 20- and 30-turn terms need the borrower's Public debt stage, and a civ lender a Banking building.
+ * DESIGN 4.3: 20-turn terms need the borrower's Moneylending stage, 30-turn terms its Public debt and, from a civ
+ * lender, a Banking building.
  * @param {{ ledger: Ledger, borrower: number, borrowerCiv?: Civ, lenderCiv?: Civ | LenderView | null, term: number,
  *   turn: number, options?: Partial<PlanOptions> }} q
  */
 export function termRefusal({ ledger, borrower, borrowerCiv, lenderCiv, term, turn, options }) {
   if (term > maxTerm(ledger, borrower, turn)) return "term-repudiation";
   if (term <= SHORT_TERM) return null;
+  if (term <= MID_TERM) return hasStage(borrowerCiv, "moneylending", turn, options) ? null : "term-stage";
   if (!hasStage(borrowerCiv, "publicDebt", turn, options)) return "term-stage";
   if (lenderCiv && !(lenderCiv.depthTurns !== undefined && lenderCiv.depthTurns > 0)) return "term-banking";
   return null;

@@ -16,8 +16,8 @@ test("engine lines: rows as an array read the same; a missing or unreadable line
   assert.deepEqual(engineLines(null), { disbandLineCents: null, amenityLineCents: null });
 });
 
-test("base rates: 0.03 in Antiquity, 0.02 in Exploration, 0.015 in Modern (DESIGN 4.3)", () => {
-  assert.deepEqual(BASE_RATE_PPM, { AGE_ANTIQUITY: 30000, AGE_EXPLORATION: 20000, AGE_MODERN: 15000 });
+test("base rates: 0.015 in Antiquity, 0.01 in Exploration, 0.0075 in Modern (DESIGN 4.3)", () => {
+  assert.deepEqual(BASE_RATE_PPM, { AGE_ANTIQUITY: 15000, AGE_EXPLORATION: 10000, AGE_MODERN: 7500 });
 });
 
 test("world accounts: the named accounts are the only parties that are not a player id", () => {

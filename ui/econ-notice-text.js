@@ -171,6 +171,20 @@ export function describeRefusal(event) {
     reasonKey: reasonKey(event.reason) };
 }
 
+/**
+ * The second line of a borrow refused for a limit: the most that lender would lend over that term, which the Loans
+ * tab can borrow instead; null for any other refusal.
+ * @param {LedgerEvent} event
+ * @param {TextContext} ctx
+ * @returns {Line | null}
+ */
+export function describeRefusalMost(event, ctx) {
+  if (event.request !== "borrow" || !Number.isInteger(event.most) || event.lender === undefined) return null;
+  const most = /** @type {number} */ (event.most);
+  return { key: `${PREFIX}NOTICE_REFUSED_${most > 0 ? "MOST" : "NONE"}`,
+    args: [name(ctx, event.lender), Number(event.term) || 0, gold(most)] };
+}
+
 /** What a transfer's reason moved, for the net line. @type {Record<string, string>} */
 const FLOW_OF = { principal: "LOANS", payment: "LOANS", garnish: "LOANS", trade: "TRADE", invest: "INVESTMENT",
   dividend: "INVESTMENT", cycle: "CYCLE", erosion: "INFLATION", plan: "PLAN", tax: "TAX" };

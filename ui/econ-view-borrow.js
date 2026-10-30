@@ -1,5 +1,6 @@
 // econ-view-borrow.js - Economics: the Borrow and Lend forms of the Loans tab (DESIGN 5). Borrow: pick the principal
-// and term, see each lender's rate, the payment per turn and the total interest, and why a lender would refuse;
+// and term, see each lender's rate, the payment per turn and the total interest, and why a lender would refuse; over
+// a limit, the most that lender would lend over that term, with a button to borrow that instead;
 // the model's own offer and limit functions answer, so the form can't promise what the batch won't do. Lend: pick an
 // AI, the principal, rate and term, see the AI's acceptance rule and its repudiation risk.
 
@@ -60,7 +61,29 @@ function offerRow(offer, api) {
     api.rerender();
   }, { disabled: !!offer.refusal }));
   line.appendChild(actions);
+  if (offer.mostCents !== null && offer.mostCents !== undefined) line.appendChild(mostRow(offer, api));
   return line;
+}
+
+/**
+ * Over a limit: the most this lender would lend over this term, and one click to borrow that instead.
+ * @param {ReturnType<typeof loanOffers>[number]} offer
+ * @param {ScreenApi} api
+ */
+function mostRow(offer, api) {
+  const most = /** @type {number} */ (offer.mostCents);
+  const block = el("div", "econ-actions");
+  if (most <= 0) {
+    block.appendChild(note(api.loc("LOC_ECONOMICS_BORROW_MOST_NONE", api.nameOf(offer.lender), form.term)));
+    return block;
+  }
+  block.appendChild(note(api.loc("LOC_ECONOMICS_BORROW_MOST", api.nameOf(offer.lender), form.term, formatGold(most))));
+  block.appendChild(button(api.loc("LOC_ECONOMICS_BORROW_THAT"), () => {
+    form.principal = most;
+    api.request({ kind: "borrow", borrower: api.me, lender: offer.lender, principal: most, term: form.term });
+    api.rerender();
+  }));
+  return block;
 }
 
 /**

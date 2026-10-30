@@ -114,6 +114,8 @@ so, with the DESIGN section that now holds the rule.
 | 101 | How "income against its own trend" is measured (DESIGN 4.11) | Growth is world income now against 10 turns ago, in basis points; the trend moves 4% of the way to each reading (about 50 turns), and the first full reading sets it, so a game's first growth doesn't read as a boom. ±0.005 per whole 5 points away from the trend, at most ±0.01 | `econ-cycle`: "the income trend...", "world income against its own trend..."; `econ-macro-cycle-edges`: "the income trend: set by the first full read..." |
 | 102 | Overheating's size and where it shows | -0.002 per turn in Boom, counted after the turn's move, at most -0.03, world only (a civ's `L` decays by itself). It's listed on the World tab every 5th turn of a boom, so the list isn't a column of the same line | `econ-cycle`: "overheating: each turn in Boom pulls harder..."; `econ-macro-cycle-edges`: "overheating: a world in Boom counts its turns..." |
 | 103 | The plan's price a point, and finding L (DESIGN 4.17) | `GOLD_PURCHASE_MULTIPLIER` from GlobalParameters in cents, read once a session by the glue with the engine's lines (other mods' rows win); 4 Gold when it's missing or not positive. Game speed isn't read again: it scales a build's cost and its price alike, and the points the glue reads are already at the game's speed. Each city's `progressScalePct` (glue constant `PROGRESS_SCALE_PCT`, 100) multiplies the price, so the points sent are divided by the share that lands. Whole points round down per city; what's left buys points in the biggest cities first, so a small take isn't lost to rounding | `econ-params`: "the purchase rate..."; `econ-citizens`: "the plan takes 20%...", "a city where sent points land bigger..."; `econ-session`: "every major is read..." |
+| 104 | `base_rate`, the debt-service limit and the 20-turn term (DESIGN 4.2, 4.3) | The owner's decision of 2026-10-30, at the lead's recommendation: `base_rate` 0.015 / 0.01 / 0.0075 (half the first rates; a Market, Bazaar and Bank then pay their interest within the term, finding G), `service_cap` half of income, and 20-turn terms from Moneylending with 30-turn terms and the bond market at Public debt. A civ lender needs a Banking building for 30-turn terms only: Antiquity has no Banking building, so the 20-turn tier would otherwise open in name only | `econ-limits` (all six); `econ-lenders`: "terms (DESIGN 4.3)..."; `econ-params`: "base rates..." |
+| 105 | What a refused borrow says | The most that lender would lend over that term, in whole Gold: within `credit_cap`, with the first payment inside the service limit, and from a civ at most half its balance (the 2 * P test). The batch's refusal event carries `most`, `lender` and `term`, the notification adds a line from it, and the Loans tab shows it under the offer with "Borrow that instead". Nothing to offer reads as "your payments already take all your limits allow" | `econ-limits`: "300 Gold at 20 Gold of income..."; `econ-views`: "a borrow over a limit shows the most..."; `econ-notice-text`: "a borrow over a limit adds the most..." |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 
@@ -138,7 +140,8 @@ the player once; the open-loan cap is only an envelope bound (choices 25, 33).
 G. **A Market doesn't pay its own interest within a 10-turn term at the base rate.** New, from the balance run: a
 Market bought for 360 Gold yields 30 to 50 Gold over 10 turns against 59 Gold of interest at 0.03 (DESIGN 10 note,
 "Borrowing pays"). The same holds for a Bazaar at 0.02 and a Bank at 0.015. Borrowing still beats saving when the
-building would otherwise wait 36 turns, so the check's reading decides; the constant to move is `base_rate`.
+building would otherwise wait 36 turns, so the check's reading decides; the constant to move is `base_rate`. Settled 2026-10-30: the owner took the strict reading and halved `base_rate`
+(choice 104).
 
 H. **AI repudiations are all against the bond market or temple treasuries.** From the balance run: with the section 6
 rule, repudiations come only from insolvent civs at the cap; none against a civ lender, because AI-to-AI loans are
@@ -225,7 +228,9 @@ binds long before `credit_cap`. A 10-turn loan's first payment is a tenth of the
 service limit holds it to about 2.5 turns of income at the bond rate (4.8 turns over 30 turns), against `credit_cap`'s
 12. Nothing is changed; whether the two limits should meet (a longer term, or `credit_cap` lowered toward what the
 service limit allows) is the owner's call, with "Borrowing pays" and `base_rate`. The owed check 1.1's 300 Gold needs a
-civ with about 120 Gold of income at 10 turns, or a smaller loan, as the lab's 50 Gold one was.
+civ with about 120 Gold of income at 10 turns, or a smaller loan, as the lab's 50 Gold one was. Settled 2026-10-30 (choices 104 and 105): the
+service limit is half of income, 20-turn terms open with Moneylending, and the refusal names the most that lender would
+lend; at 20 Gold of income the 300 Gold ask is still refused, and the notice offers 83 Gold over 10 turns.
 
 V. **Without credit, nothing lifts the world into Boom.** With the lean taken out (choices 101 and 102), the 1.2 run's
 six games slump on 14 to 24% of turns and never boom, and the peaceful game holds Steady (DESIGN 10, 2026-10-30 after

@@ -25,8 +25,9 @@ the Gold lands at the start of your next turn. Each turn after that the payment 
 slice of the principal.
 
 Your credit limit is set by your income (twelve turns of it, more with Commerce and Banking buildings), and the
-payments on all your loans together can't pass 35 percent of your income, so you can't borrow your way into a hole on
-paper headroom. If a payment comes due and the Gold isn't there, it's missed: the interest joins the debt, the rate
+payments on all your loans together can't pass half your income, so you can't borrow your way into a hole on paper
+headroom. If you ask for more than either limit allows, the Loans tab tells you the most that lender will lend over
+that term, and one click borrows that instead. If a payment comes due and the Gold isn't there, it's missed: the interest joins the debt, the rate
 rises a step, you lose 5 Influence, and your standing with every lender slips for 20 turns. Pay once and the count
 resets; miss three in a row and the loan is in default: the lender takes what it can from you each turn and won't
 lend again this age.
@@ -124,8 +125,8 @@ Treasury tab lists each old building with its weight and what moves it.
 ## Economic stages
 
 Each part opens when a civilization reaches the civic or tech that historically brought it in: loans between
-civilizations with Commerce (Moneylending), the bond market and 20- and 30-turn terms with the Economics civic (Public
-debt), War Levy with Currency (Coinage), trade bills with Code of Laws (Trade), development loans with Guilds (Guild
+civilizations and 20-turn terms with Commerce (Moneylending), the bond market and 30-turn terms with the Economics
+civic (Public debt), War Levy with Currency (Coinage), trade bills with Code of Laws (Trade), development loans with Guilds (Guild
 patronage), general investment with Colonialism (Chartered companies), tariffs with Imperialism, Panics and a deeper
 credit market with Urban Planning (Banking), and wider returns on investment with Capitalism. Until then the Loans
 tab greys the part and names what opens it. A later age opens the stages of the ages before it. With the Economic stages

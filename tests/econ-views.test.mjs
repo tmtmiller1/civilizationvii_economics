@@ -106,6 +106,28 @@ test("the Loans tab lists the loans overdue first, queues repay, restructure and
   assert.ok(textOf(third).includes("LOC_ECONOMICS_LOANS_PENDING"));
 });
 
+test("a borrow over a limit shows the most that lender would lend, and one click borrows that instead", () => {
+  resetConfirmForTests();
+  resetFormForTests();
+  const api = makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: 20000, incomeCents: 1000 }),
+    civ(6, { balanceCents: 1e6 })], ledger: emptyLedger() } });
+  const host = document.createElement("div");
+  renderLoans(host, api);
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_REASON_SERVICE_CAP"), "100 Gold's first payment is over half of 10");
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_BORROW_MOST|Civ 6|10|45"), "45 Gold from civ 6 over 10 turns");
+  const instead = byClass(host, "econ-button").filter((b) => b.textContent === "LOC_ECONOMICS_BORROW_THAT");
+  assert.equal(instead.length, 2, "one for each lender over the limit");
+  instead[0].click();
+  assert.deepEqual(api.requests.at(-1), { kind: "borrow", borrower: ME, lender: 6, principal: 4500, term: 10 });
+  const spoken = makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: 20000, incomeCents: 1000 }),
+    civ(6, { balanceCents: 1e6 })], ledger: { ...emptyLedger(), loans: [makeLoan({ id: "L1", lender: 6, borrower: ME,
+    principal: 4500, ratePpm: 10000, term: 10, turn: 40 })], nextId: 2 } } });
+  const full = document.createElement("div");
+  renderLoans(full, spoken);
+  assert.ok(textOf(full).includes("LOC_ECONOMICS_BORROW_MOST_NONE|Civ 6|10"));
+  assert.equal(byClass(full, "econ-button").some((b) => b.textContent === "LOC_ECONOMICS_BORROW_THAT"), false);
+});
+
 test("stages closed show the node that opens them; the Fiscal tab draws the cards and sends the swap", async () => {
   const closed = makeApi({ planInput: { civs: [civ(ME, { human: true, stages: { moneylending: null, publicDebt: null } })] } });
   const host = document.createElement("div");

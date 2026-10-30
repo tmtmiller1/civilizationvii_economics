@@ -20,9 +20,10 @@ export const WORLD_ACCOUNTS = [BOND, TEMPLE, TAX, PROGRESS, CITIZENS, INFLATION,
 
 export const AGE = { ANTIQUITY: "AGE_ANTIQUITY", EXPLORATION: "AGE_EXPLORATION", MODERN: "AGE_MODERN" };
 
-// DESIGN 4.3: 0.03 per turn before Exploration, 0.02 in Exploration, 0.015 in Modern.
+// DESIGN 4.3: 0.015 per turn before Exploration, 0.01 in Exploration, 0.0075 in Modern (the owner's decision of
+// 2026-10-30: the level at which a Market, Bazaar and Bank pay their own interest within the term).
 /** @type {Record<string, number>} */
-export const BASE_RATE_PPM = { AGE_ANTIQUITY: 30000, AGE_EXPLORATION: 20000, AGE_MODERN: 15000 };
+export const BASE_RATE_PPM = { AGE_ANTIQUITY: 15000, AGE_EXPLORATION: 10000, AGE_MODERN: 7500 };
 export const BOND_FACTOR = 2;
 export const RATE_CAP_MULTIPLE = 4;
 /** @type {Record<string, number>} */
@@ -35,8 +36,8 @@ export const RATES_PCT = { low: 75, standard: 100, high: 125 };
 // per repudiation in the last 40 turns (half for a debt to an enemy at war), floored at 0.1.
 export const STANDING = { full: 100, perDefault: 20, perMiss: 10, perRepudiation: 30, perRepudiationAtWar: 15,
   windowTurns: 20, repudiationWindowTurns: 40, floor: 10 };
-// DESIGN 4.2: credit_cap = (12 + depth_turns - 4 * repudiations) * income - outstanding; service_cap = 0.35 * income.
-export const CREDIT = { baseTurns: 12, perRepudiationTurns: 4, maxDepthTurns: 12, servicePct: 35 };
+// DESIGN 4.2: credit_cap = (12 + depth_turns - 4 * repudiations) * income - outstanding; service_cap = 0.5 * income.
+export const CREDIT = { baseTurns: 12, perRepudiationTurns: 4, maxDepthTurns: 12, servicePct: 50 };
 export const LENDER_BALANCE_MULTIPLE = 2;
 export const MISS = { rateNum: 5, rateDen: 4, influence: -5, defaultAt: 3 };
 export const RESTRUCTURE = { turns: 10 };
@@ -50,6 +51,8 @@ export const REPUDIATION = { grudgePerTurn: 5, grudgeMin: 10, grudgeMax: 40, wit
 export const EMERGENCY = { minCapCents: 10000, incomeMultiple: 10, term: 10, insolventTurns: 5 };
 export const TERMS = [10, 20, 30];
 export const SHORT_TERM = 10;
+// DESIGN 4.3: 20-turn terms open with Moneylending, 30-turn terms with Public debt.
+export const MID_TERM = 20;
 export const AI = { lendIncomeMultiple: 20, acceptRatePct: 120, restructureAt: 2, repudiateEveryTurns: 20,
   repudiateDebtMultiple: 10, minIncomeCents: 1000 };
 // openPerBorrower and closedLoans are not in DESIGN: they bound the saved envelope (debt-5) with the event log DESIGN

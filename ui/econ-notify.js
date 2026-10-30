@@ -3,8 +3,8 @@
 // mod's own type (data/econ-notifications.xml); the engine keeps one live notification per type and player, so every
 // line of the turn goes into it. A click opens the Economics screen.
 
-import { composeArgs, describeBatchRow, describeNotice, describeRefusal, flowKeys, worldNameKey }
-  from "./econ-notice-text.js";
+import { composeArgs, describeBatchRow, describeNotice, describeRefusal, describeRefusalMost, flowKeys,
+  worldNameKey } from "./econ-notice-text.js";
 import { civName, gameTurn, loc, localId, safe } from "./econ-engine.js";
 import { logDebug, logLine } from "./econ-log.js";
 
@@ -45,6 +45,8 @@ export function composeLines(plan, pid) {
     if (event.kind !== "refused" || ![event.pid, event.borrower, event.lender].includes(pid)) continue;
     const line = describeRefusal(event);
     lines.push(loc(line.key, loc(line.requestKey), loc(line.reasonKey)));
+    const most = describeRefusalMost(event, ctx);
+    if (most) lines.push(loc(most.key, ...composeArgs(most.args, (key) => loc(key))));
   }
   return lines;
 }

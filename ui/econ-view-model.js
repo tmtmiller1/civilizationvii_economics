@@ -2,7 +2,7 @@
 // the turn batch gets, so what the player sees is what the next batch will do. Plain data in, plain data out; the
 // screen draws it and the glue supplies names and the engine's reads. Nothing here reads the engine.
 
-import { TERMS } from "./econ-params.js";
+import { MID_TERM, SHORT_TERM, TERMS } from "./econ-params.js";
 import { firstPayment, isOpen, paymentDue, restructure, totalInterest } from "./econ-loan.js";
 import { emergencyOutstandingOf, outstandingOf, recentRepudiations, serviceCap, serviceOf, standingPct }
   from "./econ-credit.js";
@@ -13,7 +13,7 @@ import { aiWillLend, repudiationThreshold } from "./econ-ai.js";
 import { hasStage } from "./econ-stages.js";
 import { DEFAULT_OPTIONS, projectBalances } from "./econ-plan.js";
 import { lendersFor, offerQuery, turnContext } from "./econ-turn.js";
-import { creditRoom, limitRefusal } from "./econ-requests.js";
+import { creditRoom, limitRefusal, mostBorrowCents } from "./econ-requests.js";
 import { STANDING, REPUDIATION } from "./econ-params.js";
 import { emptyLedger } from "./econ-state.js";
 import { emptyMarkets } from "./econ-markets.js";
@@ -92,23 +92,26 @@ export function loanOffers(input, pid, principal, term) {
   const income = ctx.civ.get(pid)?.incomeCents || 0;
   return offers.map((offer) => {
     const paymentCents = firstPayment(principal, offer.ratePpm, term);
+    const refusal = limitRefusal(ctx, pid, { principal, ratePpm: offer.ratePpm, term });
     return { lender: offer.lender, ratePpm: offer.ratePpm, paymentCents,
       interestCents: totalInterest(principal, offer.ratePpm, term),
-      servicePctAfter: servicePct(serviceNow + paymentCents, income),
-      refusal: limitRefusal(ctx, pid, { principal, ratePpm: offer.ratePpm, term }) };
+      servicePctAfter: servicePct(serviceNow + paymentCents, income), refusal,
+      mostCents: refusal ? mostBorrowCents(ctx, pid, { lender: offer.lender, ratePpm: offer.ratePpm, term }) : null };
   });
 }
 
 /**
- * The terms a borrower may take today: 10 always, 20 and 30 with Public debt and while no repudiation counts.
+ * The terms a borrower may take today: 10 always, 20 from Moneylending, 30 from Public debt, and only 10 while a
+ * repudiation counts.
  * @param {PlanInput} input
  * @param {number} pid
  */
 export function termsOpen(input, pid) {
   const ledger = input.ledger || emptyLedger();
   const civ = input.civs.find((row) => row.id === pid);
-  const longest = Math.min(maxTerm(ledger, pid, input.turn),
-    hasStage(civ, "publicDebt", input.turn, input.options) ? Infinity : 10);
+  const staged = hasStage(civ, "publicDebt", input.turn, input.options) ? Infinity
+    : hasStage(civ, "moneylending", input.turn, input.options) ? MID_TERM : SHORT_TERM;
+  const longest = Math.min(maxTerm(ledger, pid, input.turn), staged);
   return TERMS.filter((term) => term <= longest);
 }
 

@@ -36,7 +36,7 @@ test("civ lenders only: no bond offer, and after Public debt the emergency lende
   const ctx = ctxOf({ civs: [me()], macro: macroWith({}, { systems: tribute }) });
   assert.equal(offersFor(offerQuery(ctx, ME, { principal: 1000 })).length, 0);
   assert.deepEqual(emergencyOffersFor(offerQuery(ctx, ME, { principal: 1000 })).map((o) => [o.lender, o.ratePpm]),
-    [["temple", 40000]]);
+    [["temple", 20000]]);
   const mixed = ctxOf({ civs: [me()] });
   assert.deepEqual(emergencyOffersFor(offerQuery(mixed, ME, { principal: 1000 })).map((o) => o.lender), ["bond"]);
   const panic = ctxOf({ civs: [me()], macro: macroWith({ panicUntil: 55 }) });
@@ -51,7 +51,7 @@ test("the citizens: none with Loans off or another system; their room shrinks by
   const owed = { ...emptyLedger(), loans: [makeLoan({ id: "L1", lender: "citizens", borrower: ME, principal: 30000,
     ratePpm: 15000, term: 10, turn: 40 })], nextId: 2 };
   const ctx = ctxOf({ civs, ledger: owed, macro: macroWith({}, { systems: cr }) });
-  assert.deepEqual(citizensFor(ctx, ME), { ratePpm: 15000, roomCents: 70000 });
+  assert.deepEqual(citizensFor(ctx, ME), { ratePpm: 7500, roomCents: 70000 });
   assert.equal(citizensFor(ctxOf({ civs, macro: macroWith({}, { systems: cr }), options: { loans: false } }), ME), null);
   assert.equal(citizensFor(ctxOf({ civs }), ME), null);
   assert.equal(citizensFor(ctx, 77), null);

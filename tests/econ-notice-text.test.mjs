@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { describeBatchRow, describeEvent, describeNotice, describeRefusal, eventConcerns, flowKeys, reasonKey, requestKey,
+import { describeBatchRow, describeEvent, describeNotice, describeRefusal, describeRefusalMost, eventConcerns, flowKeys, reasonKey, requestKey,
   worldNameKey } from "../ui/econ-notice-text.js";
 import { emptyLedger } from "../ui/econ-state.js";
 import { makeLoan } from "../ui/econ-loan.js";
@@ -35,6 +35,21 @@ test("every notice kind the plan emits has a line, with the loan's figures looke
     ctx), { key: "LOC_ECONOMICS_NOTICE_INVESTED_IN_PROJECT", args: ["Civ 4", "300", 100] });
   assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 500, received: 0, waived: 0 }, ctx),
     { key: "LOC_ECONOMICS_NOTICE_TRADE", args: ["5", "0", "0"] });
+});
+
+test("a borrow over a limit adds the most that lender would lend over the term; anything else adds nothing", () => {
+  const ctx = { ledger: emptyLedger(), nameOf: (p) => (p === "bond" ? "the bond market" : `Civ ${p}`) };
+  const event = { turn: 1, kind: "refused", request: "borrow", reason: "service-cap", lender: "bond", term: 20,
+    most: 15300 };
+  assert.deepEqual(describeRefusalMost(event, ctx), { key: "LOC_ECONOMICS_NOTICE_REFUSED_MOST",
+    args: ["the bond market", 20, "153"] });
+  assert.deepEqual(describeRefusalMost({ ...event, lender: 6, most: 0 }, ctx), { key: "LOC_ECONOMICS_NOTICE_REFUSED_NONE",
+    args: ["Civ 6", 20, "0"] });
+  assert.equal(describeRefusalMost({ ...event, most: undefined }, ctx), null);
+  assert.equal(describeRefusalMost({ ...event, request: "lend" }, ctx), null);
+  assert.equal(describeRefusalMost({ ...event, lender: undefined }, ctx), null);
+  for (const key of ["LOC_ECONOMICS_NOTICE_REFUSED_MOST", "LOC_ECONOMICS_NOTICE_REFUSED_NONE", "LOC_ECONOMICS_BORROW_MOST",
+    "LOC_ECONOMICS_BORROW_MOST_NONE", "LOC_ECONOMICS_BORROW_THAT"]) assert.ok(english.has(key), key);
 });
 
 test("refusals name the request and the reason through keys the English text defines", () => {

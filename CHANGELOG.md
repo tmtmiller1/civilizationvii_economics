@@ -72,6 +72,12 @@ release is generated from the matching section below by `scripts/steam-changelog
 - The business cycle no longer leans to Boom. A trade route that stands and income that grows at its usual pace don't
   move the world any more; only growth faster or slower than usual does, and a long boom wears itself out, so a
   growing world still has slumps.
+- Interest rates are half what they were: 1.5 percent a turn in Antiquity, 1 in Exploration and 0.75 in Modern, so a
+  Market, Bazaar or Bank bought with a loan pays its own interest within ten turns. Your payments can take up to half
+  your income instead of 35 percent, and 20-turn loans from other civilizations open with Moneylending; 30-turn loans
+  and the bond market still wait for Public debt.
+- A loan refused for your limits tells you the most that lender will lend over that term, and the Loans tab has a
+  "Borrow that instead" button.
 - The plan buys its production at the game's own Gold price, read from the game's data (4 Gold a point unless
   another mod changes it), instead of 3. What's left after whole points goes into the biggest cities.
 - The tax cards add flat amounts in each settlement instead of percentages: Light Taxation -2 Gold and +4 Happiness,

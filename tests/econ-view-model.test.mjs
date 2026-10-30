@@ -28,13 +28,17 @@ test("loan offers carry the payment, the total interest and the model's refusal;
   const lender = civ(6, { balanceCents: 1e6, incomeCents: 3000 });
   const offers = loanOffers(input({ civs: [me(), lender] }), ME, 10000, 10);
   assert.deepEqual(offers.map((o) => [o.lender, o.refusal]), [[6, null], ["bond", null]]);
-  assert.equal(offers[0].paymentCents, 200 + 1000, "2% on 100 Gold in Exploration plus the first slice");
+  assert.equal(offers[0].paymentCents, 100 + 1000, "1% on 100 Gold in Exploration plus the first slice");
   assert.ok(offers[0].interestCents > 0);
-  assert.equal(offers[0].servicePctAfter, Math.round((100 * 1200) / me().incomeCents), "the share of income with it");
+  assert.equal(offers[0].servicePctAfter, Math.round((100 * 1100) / me().incomeCents), "the share of income with it");
   const tooBig = loanOffers(input({ civs: [me(), lender] }), ME, 2000000, 10);
   assert.equal(tooBig.find((o) => o.lender === "bond")?.refusal, "credit-cap");
+  assert.equal(tooBig.find((o) => o.lender === "bond")?.mostCents, 16600, "the most whose first payment fits 20 Gold");
+  assert.equal(offers[0].mostCents, null, "nothing to suggest when it fits");
   assert.deepEqual(termsOpen(input({ civs: [me()] }), ME), [10, 20, 30]);
-  assert.deepEqual(termsOpen(input({ civs: [me({ stages: { moneylending: 0, publicDebt: null } })] }), ME), [10]);
+  assert.deepEqual(termsOpen(input({ civs: [me({ stages: { moneylending: 0, publicDebt: null } })] }), ME), [10, 20],
+    "Moneylending opens 20 turns");
+  assert.deepEqual(termsOpen(input({ civs: [me({ stages: { moneylending: null, publicDebt: null } })] }), ME), [10]);
   assert.deepEqual(loanOffers(input({ civs: [] }), 99, 1000, 10), []);
 });
 
@@ -48,7 +52,7 @@ test("the Loans tab puts troubled loans first and reads the limits, standing, gu
   assert.equal(view.standingPct, 80, "one active default");
   assert.equal(view.emergencyCapCents, 40000);
   assert.deepEqual(view.stages, { moneylending: true, publicDebt: true });
-  assert.equal(view.serviceCapCents, 1400);
+  assert.equal(view.serviceCapCents, 2000, "half of income");
 });
 
 test("the repudiation preview says what DESIGN 5 asks: Gold kept, grudge, witnesses, standing, how long the lender closes", () => {

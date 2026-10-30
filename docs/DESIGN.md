@@ -161,7 +161,7 @@ income       = net Gold per turn as reported, re-read each turn
 service      = next turn's scheduled interest plus amortisation over the civ's open loans
 credit_cap   = max(0, (12 + depth_turns - 4 * repudiations) * income) - total outstanding
                depth_turns: 4.13, 0 to 12; repudiations: in the last 40 turns (4.5)
-service_cap  = 0.35 * max(0, income)
+service_cap  = 0.5 * max(0, income)
 standing     = 1.0 - 0.2 per active default anywhere - 0.1 per miss in the last 20 turns
                - 0.3 per repudiation in the last 40 turns, half for debt to an enemy at war (floor 0.1)
 ```
@@ -171,6 +171,14 @@ standing     = 1.0 - 0.2 per active default anywhere - 0.1 per miss in the last 
   buildings raise both limits (4.13).
 - Emergency loans (4.6) skip both tests and have their own cap instead. Both tests read 0 for a civ with no positive
   income, which is the civ that needs an emergency loan (NOTES finding A).
+- The two limits meet: a loan's first payment is its rate plus `1 / T` of `P`, so at half of income a 20-turn loan
+  at Antiquity's civ rate reaches about 7.7 turns of income and a 30-turn one at Exploration's about 11.5, where
+  `credit_cap`'s 12 turns takes over as the stock limit. A 10-turn loan stays held by the service limit, at about 4
+  turns of income from the bond market. Before 2026-10-30 the service limit was 35% and every term needed Public debt,
+  so it held loans far below `credit_cap` (NOTES finding U).
+- A refused borrow names the most that lender would lend over that term (the largest whole Gold that passes both
+  tests, and from a civ lender at most half what it holds), and the Loans tab offers it with one click (section 5).
+  The AI's borrowing runs through the same tests and the same sizing (section 6).
 
 ### 4.3 Lenders and rates
 
@@ -180,7 +188,7 @@ to it this age or last (4.5). Civ lenders stop offering during a Panic (4.11).
 
 ```
 r_L             = base_rate / standing * relation_factor * depth_factor
-base_rate       = 0.03 before Exploration, 0.02 Exploration, 0.015 Modern (per turn)
+base_rate       = 0.015 before Exploration, 0.01 Exploration, 0.0075 Modern (per turn)
 relation_factor = 0.8 friendly, 1.0 neutral, 1.3 unfriendly (Diplomacy.getRelationshipLevel)
 depth_factor    = 4.13, about 0.5 to 1.0
 r_bond          = 2 * base_rate / standing * depth_factor * cycle_spread * (1 + 50 * pi)
@@ -188,12 +196,13 @@ r_bond          = 2 * base_rate / standing * depth_factor * cycle_spread * (1 + 
 r_cap           = 4 * base_rate; rates stop there, including after miss steps
 ```
 
-- Opening (4.15): civ loans from Moneylending (10-turn terms only); bond market from Public debt.
-- 20- and 30-turn terms need Public debt. A civ lender also needs a Banking building (4.13).
+- Opening (4.15): civ loans with 10- and 20-turn terms from Moneylending; the bond market and 30-turn terms from
+  Public debt. A civ lender needs a Banking building (4.13) for 30-turn terms.
 - The bond market stands for lenders outside the game.
-- At 0.03 a turn, a 10-turn loan repaid in equal slices costs about 16.5% of `P` in interest; at `r_cap` it's about
-  66%. Whether a loan at the base rate pays for itself is a balance check (section 10), and the rates move to match
-  what borrowed Gold earns in play, not historical rates.
+- At 0.015 a turn, a 10-turn loan repaid in equal slices costs about 8.25% of `P` in interest; at `r_cap` it's about
+  33%. The base rates are the owner's decision of 2026-10-30: half the first ones, the level at which a Market, a
+  Bazaar and a Bank each pay their own interest within a 10-turn term from their Gold yield (section 10, "Borrowing
+  pays", strict reading).
 
 ### 4.4 Term and payments
 
@@ -641,7 +650,7 @@ current-age or `AGELESS` building. Only standing buildings count; a damaged one
 | Role | Data rule | 1.5.0 | Effect |
 | --- | --- | --- | --- |
 | Commerce | tag `GOLD` | Market, Lighthouse, Bazaar, Guildhall, Bank, Port, Rail Station, Stock Exchange; uniques (Dockyard, Casa de Contratación, Anjuvannam, Ginko, Money Shop, Royal Exchange) | depth += base Gold yield / 4 (Market 0.75, Bank 2, Stock Exchange 3) |
-| Banking | tag `GOLD`, base Gold yield >= the Bank's, none of `WATER`, `BRIDGE`, `RAIL_CONNECTION` (our rule, so unique banks count) | Bank, Stock Exchange, Ginko, Money Shop, Royal Exchange | `depth_turns` += 2; a civ lender needs one for 20- and 30-turn terms |
+| Banking | tag `GOLD`, base Gold yield >= the Bank's, none of `WATER`, `BRIDGE`, `RAIL_CONNECTION` (our rule, so unique banks count) | Bank, Stock Exchange, Ginko, Money Shop, Royal Exchange | `depth_turns` += 2; a civ lender needs one for 30-turn terms |
 | Trade | tag `TRADE` or `ADVISORY_CLASS_TRADE` | Market, Lighthouse, Bazaar, Guildhall, Wharf, Bank, Department Store, Modern Bridge; uniques (Casa de Contratación, Manufactory, Royal Exchange) | bill ±10% per building in the exporting or importing city (4.10) |
 | Warehouse | tag `WAREHOUSE` | Granary, Fishing Quay, Saw Pit, Brickyard, Stonecutter, Harbor, Gristmill, Sawmill, Grocer, Ironworks | negative `L` -3% each, at most 30% (4.11); `FOOD_WAREHOUSE` halves disasters in its city |
 | Industry | tag `PRODUCTION` and `ADVISORY_CLASS_ECONOMIC` | Factory, Rail Station; uniques (Manufactory, Steel Mill, Railyard) | Factory-class `demand_r` +0.02 each, world-wide, at most +1.0 (4.9) |
@@ -716,9 +725,9 @@ closed to it, and the Economics screen greys it out and names the tech or civic 
 | Tribute | game start | — | Taxes Light, Standard, Heavy; aid; local cycle effects; the guard, with temple treasuries (4.6); citizen loans for Civic market civs (4.17) |
 | Trade | `UNIT_MERCHANT` | Code of Laws (Antiquity civic) | trade bills; Markets tab |
 | Coinage | `BUILDING_MARKET` | Currency (Antiquity tech) | War Levy; financial depth |
-| Moneylending | `TRADITION_COMMODITIES` | Commerce (Antiquity civic) | civ loans, 10-turn terms, `base_rate` 0.03; AI lending rules |
+| Moneylending | `TRADITION_COMMODITIES` | Commerce (Antiquity civic) | civ loans, 10- and 20-turn terms, `base_rate` 0.015; AI lending rules |
 | Guild patronage | `BUILDING_GUILDHALL` | Guilds (Exploration tech) | development loans |
-| Public debt | `TRADITION_MARITIME_LAW` | Economics (Exploration civic) | bond market, which replaces temple treasuries; inflation, 20- and 30-turn terms, player lending |
+| Public debt | `TRADITION_MARITIME_LAW` | Economics (Exploration civic) | bond market, which replaces temple treasuries; inflation, 30-turn terms, player lending |
 | Chartered companies | `TRADITION_CHARTERS` | Colonialism (Exploration civic) | general investment |
 | Tariffs | `TRADITION_TARIFFS` | Imperialism (Exploration civic) | tariff levels (option permitting) |
 | Banking | `BUILDING_BANK` | Urban Planning (Exploration tech) | Panics possible; depth cap 0.4 |
@@ -922,7 +931,9 @@ plan's production was worth 1.33 times the Gold it took at the game's purchase p
 ## 5. What the player can do
 
 - Borrow: pick lender, principal (up to `credit_cap` and the debt-service limit, 4.2), term 10, 20 or 30 (4.3). See
-  the per-turn payment, total interest and how much of income the loans take first.
+  the per-turn payment, total interest and how much of income the loans take first. Past a limit, the offer says the
+  most that lender would lend over that term, with a "Borrow that instead" button, and a request refused in the
+  batch says the same in the turn notification.
 - Repay early: any amount, no penalty.
 - Restructure an overdue loan once (4.4). See the new schedule first.
 - Repudiate what you owe one lender or the bond market (4.5). See the Gold kept and the reputation and credit cost
@@ -1206,6 +1217,9 @@ figures). No game was launched.
 | --- | --- | --- | --- |
 | Cycle shape (1.2 run, cycle fix alone) | Steady 55 to 70% of turns and Boom the rest in every game, no Slump; the peaceful game Boom on 63%; no Depression, no Panic | Slump 14 to 24% of turns and Steady the rest in every game, no Boom; `E` 0.87 to 1.03; the peaceful game Steady throughout (lowest 0.96), with 17 civ-turns of Slump; no Depression, no Panic | Half met: the lean is gone and wars, crises and below-trend income now slump the world, but nothing lifts it into Boom without credit (NOTES finding V); the credit boom comes with the AI's borrowing below |
 | The plan (1.2 run) | 450 Gold into 150 points in 50 turns at 3 Gold a point, worth 600 Gold at the purchase price: 1.33 times the Gold | 400 Gold into 100 points at the game's 4 Gold a point (read from the GlobalParameters fixture), worth 400 Gold: 1.0 times the Gold, with each sent point landing as one | Met on the Gold: the plan buys at the price a player pays. It still keeps its tax cards, and finding L's scaling is the glue's `progressScalePct` for the lead to set |
+| Borrowing pays (1.0 table) | interest at 0.03 / 0.02 / 0.015: Market 59.4 Gold against 30 to 50 of yield, Bazaar 88 against 60 to 80, Bank 125 against 80 to 100 | at 0.015 / 0.01 / 0.0075: Market 29.7 against 30 to 50, Bazaar 44 against 60 to 80, Bank 62.7 against 80 to 100; the Granary pays no Gold | Met on the strict reading in every age, the Market by a hair at its lowest yield |
+| AI solvency (1.0 run, with the new rates and limits) | 175 AIs with positive income in the Off run: 0 defaults, 0 emergency loans | the same 175: 0 defaults, 0 emergency loans; penalty turns On 491 against 2,848 Off (509 before) | Met: 0 games in 20 |
+| Lending pays (1.0 run) | +9.4% median return, 8 of 9 lending games positive | +4.8% median, 8 of 9 positive: the player's neutral rate is half what it was | Met |
 | Development loan ratio (1.1 run) | 1.125 times the purchase price on a role building, 0.94 on another | unchanged: it was measured against the purchase rate already, and a development loan's return carries the rest | Met, so `G / 3` stays; finding L applies to it as well, and the plan's `progressScalePct` is the read to use if the lab finds the scaling large |
 
 ## 11. Versions
@@ -1244,7 +1258,9 @@ in-game check is owed
 Decided 2026-10-24: the name is Economics, folder included; the guard works from the start of the game (temple
 treasuries before the bond market, 4.6); tariffs keep their name; the repudiation grudge scales with the lender's
 income (4.5); relationship gains from investment scale with the host's income (4.12); Civic market gets citizen loans
-(4.17). `emergency_cap` and the 35% debt-service limit are tuning numbers for the balance ladder (section 10).
+(4.17). `emergency_cap` and the debt-service limit are tuning numbers for the balance ladder (section 10). Decided
+2026-10-30: `base_rate` halved to 0.015 / 0.01 / 0.0075, the debt-service limit at half of income, 20-turn terms from
+Moneylending (4.2, 4.3).
 
 1. Default has no native engine effect available. Is the garnish plus Influence enough? Default: yes.
 2. Civ loans now open in Antiquity (Moneylending) and the bond market at Economics, replacing "loans dormant in
