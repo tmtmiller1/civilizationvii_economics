@@ -107,10 +107,13 @@ export const INFLATION_RULES = { capPpm: 5000, factorPpm: 20000, minMoneyCents: 
   minIncomeCents: 1000, premiumPerPpm: 50, premiumCapPct: 25 };
 // DESIGN 4.17: citizen loans and the plan. Citizens: 5 turns of max(10, income) per settlement with a Commerce
 // building, 0.75 of the base rate, 10 turns, celebration at twice the interest paid; a miss costs 5 turns of the
-// meter's gain, a repudiation 10, the citizens close for 30 turns. The plan: 20% of positive income, 3 Gold a point.
+// meter's gain, a repudiation 10, the citizens close for 30 turns. The plan: 20% of positive income at the game's
+// purchase rate a point.
 export const CITIZEN = { capTurns: 5, minIncomeCents: 1000, ratePct: 75, term: 10, celebrationMultiple: 2,
   missTurns: 5, repudiationTurns: 10, aiBalanceTurns: 10, aiSizeTurns: 5 };
-export const PLANNED = { takePct: 20, goldPerProgress: 3 };
+// The plan buys progress at the game's own purchase rate, GOLD_PURCHASE_MULTIPLIER Gold a point (read at runtime;
+// 4 when the read fails).
+export const PLANNED = { takePct: 20, fallbackGoldPerPoint: 4 };
 // DESIGN 4.17: a change of system blends each number evenly over 10 turns.
 export const SYSTEM_BLEND_TURNS = 10;
 
@@ -122,6 +125,22 @@ export function ratesPct(option) {
 /** @param {unknown} party */
 export function isWorldAccount(party) {
   return WORLD_ACCOUNTS.includes(/** @type {Party} */ (party));
+}
+
+/**
+ * The game's Gold price of a point of production, in cents, from GlobalParameters' GOLD_PURCHASE_MULTIPLIER (rows as
+ * { Name: Value } or [{ Name, Value }]); null when it's missing or not a positive number, and the caller falls back.
+ * Game speed scales a build's cost and its purchase price alike, and the glue reads a build's points at the game's
+ * speed, so the price per point is the multiplier alone.
+ * @param {unknown} rows
+ * @returns {number | null}
+ */
+export function purchasePointCents(rows) {
+  let value;
+  if (Array.isArray(rows)) value = rows.find((row) => row && row.Name === "GOLD_PURCHASE_MULTIPLIER")?.Value;
+  else if (rows && typeof rows === "object") value = /** @type {Record<string, unknown>} */ (rows).GOLD_PURCHASE_MULTIPLIER;
+  const n = Number(value);
+  return value !== undefined && value !== null && Number.isFinite(n) && n > 0 ? Math.round(n * 100) : null;
 }
 
 /**

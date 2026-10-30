@@ -72,6 +72,8 @@ release is generated from the matching section below by `scripts/steam-changelog
 - The business cycle no longer leans to Boom. A trade route that stands and income that grows at its usual pace don't
   move the world any more; only growth faster or slower than usual does, and a long boom wears itself out, so a
   growing world still has slumps.
+- The plan buys its production at the game's own Gold price, read from the game's data (4 Gold a point unless
+  another mod changes it), instead of 3. What's left after whole points goes into the biggest cities.
 - The tax cards add flat amounts in each settlement instead of percentages: Light Taxation -2 Gold and +4 Happiness,
   Heavy Taxation +4 Gold and -2 Happiness, War Levy +8 Gold and -4 Happiness while you're at war. The computer
   players took flat cards in test games where they passed over the percentage ones. The two AI strategies that steer

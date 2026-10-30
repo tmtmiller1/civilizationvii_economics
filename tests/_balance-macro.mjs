@@ -306,8 +306,8 @@ export function citizenLoanRow() {
 
 /**
  * The plan against Mixed (DESIGN 10): a Planned civ's production over 50 turns against the Gold it took, valued at
- * the game's purchase price (GOLD_PURCHASE_MULTIPLIER 4 Gold a point, tests/fixtures/commerce-modern-1.5.0.json)
- * before the city's production bonuses scale addProgress up.
+ * the game's purchase price (GOLD_PURCHASE_MULTIPLIER 4 Gold a point, tests/fixtures/commerce-modern-1.5.0.json; the
+ * plan reads the same row from PARAMS) with each sent point landing as one (the glue's progressScalePct at 100).
  */
 export function planRow() {
   const id = 3;

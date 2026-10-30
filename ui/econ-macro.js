@@ -292,15 +292,15 @@ function erodeFor(ctx, civ) {
 }
 
 /**
- * DESIGN 4.17 the plan: 20% of positive income into the cities' builds, split by population, landed with the
- * development loans' progress (one row per city, econ-3).
+ * DESIGN 4.17 the plan: 20% of positive income into the cities' builds, split by population, at the game's purchase
+ * rate a point, landed with the development loans' progress (one row per city, econ-3).
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 function planFor(ctx, civ) {
   if (!termsFor(ctx, civ.id).plan) return;
   const split = planSplit(Math.min(planTakeCents(civ.incomeCents), Math.max(0, funds(ctx.batch, civ.id))),
-    civ.cities || []);
+    civ.cities || [], ctx.params.goldPerPointCents);
   let cents = 0;
   for (const row of split) {
     cents += row.cents;

@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { aiCitizenPrincipal, citizenCapCents, citizenRatePpm, interestCelebrationCents, missCelebrationCents,
   repudiationCelebrationCents } from "../ui/econ-citizens.js";
-import { planSplit, planTakeCents } from "../ui/econ-planned.js";
+import { planSplit, planTakeCents, pointPriceCents } from "../ui/econ-planned.js";
 
 test("citizen_cap: 5 turns of max(10, income) per settlement with a Commerce building, less what's owed", () => {
   assert.equal(citizenCapCents({ incomeCents: 2000, commerceSettlements: 2, owedCents: 0 }), 20000);
@@ -49,10 +49,31 @@ test("the plan takes 20% of positive income and splits it by population over cit
   const cities = [{ id: "1:1", build: "B", neededProgress: 100, population: 3 },
     { id: "1:2", build: "U", neededProgress: 2, population: 1 }, { id: "1:3", build: null, neededProgress: 0, population: 9 },
     { id: "1:4", build: "C", neededProgress: 50 }];
-  assert.deepEqual(planSplit(6000, cities), [{ cityId: "1:1", progress: 12, cents: 3600 },
-    { cityId: "1:2", progress: 2, cents: 600 }, { cityId: "1:4", progress: 4, cents: 1200 }],
-    "3 Gold a point, an empty queue skipped, a build's need caps it, no population read counts 1");
-  assert.deepEqual(planSplit(0, cities), []);
-  assert.deepEqual(planSplit(6000, []), []);
-  assert.deepEqual(planSplit(200, [{ id: "1:1", build: "B", neededProgress: 9, population: 1 }]), [], "less than a point");
+  assert.deepEqual(planSplit(6000, cities, 400), [{ cityId: "1:1", progress: 10, cents: 4000 },
+    { cityId: "1:2", progress: 2, cents: 800 }, { cityId: "1:4", progress: 3, cents: 1200 }],
+    "4 Gold a point, an empty queue skipped, a build's need caps it, no population read counts 1, and the 4 Gold left"
+    + " over buys the biggest city a point");
+  assert.deepEqual(planSplit(6000, cities, 300).map((row) => row.progress), [14, 2, 4], "another mod's rate wins");
+  assert.deepEqual(planSplit(1000, [{ id: "1:1", build: "B", neededProgress: 9, population: 6 },
+    { id: "1:2", build: "B", neededProgress: 9, population: 3 }], 400), [{ cityId: "1:1", progress: 2, cents: 800 }],
+    "a share too small for a point goes to the biggest city instead of being lost");
+  assert.deepEqual(planSplit(2000, [{ id: "1:1", build: "B", neededProgress: 1, population: 6 },
+    { id: "1:2", build: "B", neededProgress: 9, population: 3 }], 400).map((row) => row.progress), [1, 4],
+    "a full build passes what's left to the next");
+  assert.deepEqual(planSplit(6000, cities), planSplit(6000, cities, 400), "no rate read: 4 Gold a point");
+  assert.deepEqual(planSplit(0, cities, 400), []);
+  assert.deepEqual(planSplit(6000, [], 400), []);
+  assert.deepEqual(planSplit(300, [{ id: "1:1", build: "B", neededProgress: 9, population: 1 }], 400), [],
+    "less than a point");
+});
+
+test("a city where sent points land bigger is sent fewer: the price divides the points by the city's share", () => {
+  const cities = [{ id: "1:1", build: "B", neededProgress: 100, population: 1, progressScalePct: 200 },
+    { id: "1:2", build: "B", neededProgress: 100, population: 1 }];
+  assert.deepEqual(planSplit(8000, cities, 400), [{ cityId: "1:1", progress: 5, cents: 4000 },
+    { cityId: "1:2", progress: 10, cents: 4000 }]);
+  assert.equal(pointPriceCents(400, 150), 600);
+  assert.equal(pointPriceCents(null, undefined), 400);
+  assert.equal(pointPriceCents(0, -5), 400, "a rate or a share that isn't positive reads as the fallback");
+  assert.equal(pointPriceCents(1, 1), 1, "never below a cent");
 });

@@ -193,8 +193,8 @@ test("a Planned importer pays the class price; the plan turns 20% of income into
   assert.equal(out.macro.systems[AI].system, "planned");
   assert.equal(out.trade.find((row) => row.payer === AI).owed, 200, "half of the Empire class price, 400");
   const take = out.transfers.find((t) => t.reason === "plan");
-  assert.deepEqual([take.from, take.to, take.cents], [AI, "plan", 1800]);
-  assert.deepEqual(out.progress, [{ host: AI, cityId: "6:1", amount: 5, investmentId: `PL${AI}` },
+  assert.deepEqual([take.from, take.to, take.cents], [AI, "plan", 2000], "4 Gold a point, the game's purchase rate");
+  assert.deepEqual(out.progress, [{ host: AI, cityId: "6:1", amount: 4, investmentId: `PL${AI}` },
     { host: AI, cityId: "6:2", amount: 1, investmentId: `PL${AI}` }]);
   assert.equal(out.macro.cycle.l[AI], undefined, "outside the world cycle");
   assert.ok(out.notices.length === 0 || out.notices.every((n) => n.pid === ME));

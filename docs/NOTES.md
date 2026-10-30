@@ -113,6 +113,7 @@ so, with the DESIGN section that now holds the rule.
 | 100 | "All off" and its log line | The batch skips only when Loans, Markets, Foreign investment, Inflation, Business cycle and Economic systems are all off: the cycle and the systems move Gold on their own. The lab's all-off game (build check C.2, 0.3.0) couldn't set the 1.2 options, which read their defaults (cycle Standard, systems On), so its batch ran as it should; the skip line itself went only to the debug log, so a released copy never showed it. It now goes to the log once a session | `econ-session`: "every option off, the 1.2 ones too..." |
 | 101 | How "income against its own trend" is measured (DESIGN 4.11) | Growth is world income now against 10 turns ago, in basis points; the trend moves 4% of the way to each reading (about 50 turns), and the first full reading sets it, so a game's first growth doesn't read as a boom. ±0.005 per whole 5 points away from the trend, at most ±0.01 | `econ-cycle`: "the income trend...", "world income against its own trend..."; `econ-macro-cycle-edges`: "the income trend: set by the first full read..." |
 | 102 | Overheating's size and where it shows | -0.002 per turn in Boom, counted after the turn's move, at most -0.03, world only (a civ's `L` decays by itself). It's listed on the World tab every 5th turn of a boom, so the list isn't a column of the same line | `econ-cycle`: "overheating: each turn in Boom pulls harder..."; `econ-macro-cycle-edges`: "overheating: a world in Boom counts its turns..." |
+| 103 | The plan's price a point, and finding L (DESIGN 4.17) | `GOLD_PURCHASE_MULTIPLIER` from GlobalParameters in cents, read once a session by the glue with the engine's lines (other mods' rows win); 4 Gold when it's missing or not positive. Game speed isn't read again: it scales a build's cost and its price alike, and the points the glue reads are already at the game's speed. Each city's `progressScalePct` (glue constant `PROGRESS_SCALE_PCT`, 100) multiplies the price, so the points sent are divided by the share that lands. Whole points round down per city; what's left buys points in the biggest cities first, so a small take isn't lost to rounding | `econ-params`: "the purchase rate..."; `econ-citizens`: "the plan takes 20%...", "a city where sent points land bigger..."; `econ-session`: "every major is read..." |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 
@@ -197,7 +198,8 @@ short (finding I). As written a Panic comes only from a player who borrows heavi
 
 R. **The plan buys production cheaply.** At the development loan's 3 Gold a point the plan's production is worth 1.33
 times the Gold it takes at the game's purchase price (4 a point), before production bonuses scale `addProgress` up
-(finding L), and a Planned civ keeps its tax cards (choice 83).
+(finding L), and a Planned civ keeps its tax cards (choice 83). Settled 2026-10-30 (choice 103): the plan buys at the game's own purchase rate, and a
+city's `progressScalePct` from the glue divides the points sent once the lab reads finding L.
 
 S. **The AI clusters on a few governments, so on a few systems.** In the M-probe transition game every AI took Feudal
 Monarchy or Theocracy in Exploration and Authoritarianism in Modern (Corporatist until an ideology); in Antiquity five

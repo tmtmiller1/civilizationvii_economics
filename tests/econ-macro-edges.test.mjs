@@ -69,11 +69,11 @@ test("the plan's progress joins a development loan's row for the same city, one 
   const out = plan({ civs: [me(), ai(AI, { ideology: "IDEOLOGY_COMMUNISM", cities })], relations,
     requests: [{ kind: "invest", investor: ME, host: AI, form: "project", cents: 3000, cityId: "6:1" }] });
   assert.equal(out.progress.length, 1);
-  assert.equal(out.progress[0].amount, 10 + 6, "10 points of loan and 6 of the plan's 2000");
-  assert.ok(out.transfers.some((t) => t.reason === "plan" && t.cents === 1800));
+  assert.equal(out.progress[0].amount, 10 + 5, "10 points of loan and 5 of the plan's 2000 at the purchase rate");
+  assert.ok(out.transfers.some((t) => t.reason === "plan" && t.cents === 2000));
   assert.ok(out.notices.length === 0 || out.notices.every((n) => n.kind !== "plan"), "the plan's notice is the AI's");
   const mine = plan({ civs: [me({ ideology: "IDEOLOGY_COMMUNISM", cities: [{ id: "3:1", build: "B", neededProgress: 2 }] })] });
-  assert.deepEqual(mine.notices.filter((n) => n.kind === "plan").map((n) => [n.cents, n.cities]), [[600, 1]],
+  assert.deepEqual(mine.notices.filter((n) => n.kind === "plan").map((n) => [n.cents, n.cities]), [[800, 1]],
     "capped by what the build needs");
   const empty = plan({ civs: [me({ ideology: "IDEOLOGY_COMMUNISM", cities: [] })] });
   assert.equal(empty.transfers.some((t) => t.reason === "plan"), false);

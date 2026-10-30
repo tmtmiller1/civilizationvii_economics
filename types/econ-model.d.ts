@@ -148,6 +148,8 @@ declare global {
     purchaseCents?: number | null;
     /** The settlement's population, for the plan's split (DESIGN 4.17). */
     population?: number;
+    /** Percent of a point sent by addProgress that lands in this city (NOTES finding L); 100 until it's read. */
+    progressScalePct?: number;
   }
 
   /** One trade route between two major civs: the importer owns it (the merchant's civ). */
@@ -237,7 +239,12 @@ declare global {
   }
 
   /** The engine's negative-balance lines, in cents; null when the GlobalParameters row couldn't be read. */
-  interface EngineParams { amenityLineCents?: number | null; disbandLineCents?: number | null }
+  interface EngineParams {
+    amenityLineCents?: number | null;
+    disbandLineCents?: number | null;
+    /** GOLD_PURCHASE_MULTIPLIER in cents: the game's Gold price of a point of production (DESIGN 4.17 the plan). */
+    goldPerPointCents?: number | null;
+  }
 
   interface PlanRequest { kind: string; [field: string]: unknown }
 

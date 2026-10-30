@@ -878,10 +878,15 @@ Each row lists only the changes from Mixed. Mixed is sections 4.1 to 4.16 as wri
   - Whether celebration bought through interest beats what the same Gold buys through Light tax is a balance check
     (section 10). It shouldn't be a cheaper way to celebrate than Light tax.
 - The plan: each turn, take 20% of positive Gold income and spend it as `addProgress` across the civ's cities with a
-  queued item, split by population, at the development-loan ratio (`G / 3`, 4.12). Empty queues are skipped. The
-  Fiscal tab shows the take and where it went. P8 covers AI cities. `addProgress` is scaled up by city production
-  bonuses, so a Planned civ with strong bonuses gets more from the same Gold; the balance checks (section 10) measure
-  it against a Mixed civ before the 20% is kept.
+  queued item, split by population, at the game's own purchase price: `GOLD_PURCHASE_MULTIPLIER` Gold a point, read
+  from GlobalParameters at runtime with other mods' rows applied, 4 when the read fails. Game speed scales a build's
+  cost and its purchase price alike, and the glue reads the points a build needs at the game's speed, so the price
+  per point is the multiplier alone. What whole points leave over buys points in the biggest cities first. Empty
+  queues are skipped. The Fiscal tab shows the take and where it went. P8 covers AI cities. `addProgress` lands
+  scaled by a city's production bonuses (NOTES finding L), so each city carries a `progressScalePct` from the glue,
+  the share of a sent point that lands there, 100 until the lab reads it; the points sent to a city are divided by
+  it, so a city with strong bonuses isn't sold its production cheap. The plan's production is then worth the Gold it
+  takes at the game's own price, and the balance checks (section 10) measure it against a Mixed civ.
 - Between systems: bills use the importer's prices. Loans use the lender's terms, so only a Religious lender makes
   partnerships.
 - Changing system (a new government at an age transition, or taking an ideology): each number blends evenly over 10
@@ -911,7 +916,8 @@ borrower's income against its income when the loan opened (0.5 to 2.0). Citizen 
 a standing Commerce building; their AI rule is in section 6; a repudiation of the citizens closes them for 30 turns and
 counts as a repudiation at the 0.15 standing cost. Partisans hardship and the Commons topics wait for Mod Commons. In
 the 1.2 balance run Corporatist came out ahead of Mixed on Gold, credit and swing and level on production, and the
-plan's production was worth 1.33 times the Gold it took at the game's purchase price (section 10).
+plan's production was worth 1.33 times the Gold it took at the game's purchase price; priced at that rate since
+(choice 103), it's worth the Gold it takes (section 10).
 
 ## 5. What the player can do
 
@@ -1199,6 +1205,8 @@ figures). No game was launched.
 | Check | Before | After | Against the target |
 | --- | --- | --- | --- |
 | Cycle shape (1.2 run, cycle fix alone) | Steady 55 to 70% of turns and Boom the rest in every game, no Slump; the peaceful game Boom on 63%; no Depression, no Panic | Slump 14 to 24% of turns and Steady the rest in every game, no Boom; `E` 0.87 to 1.03; the peaceful game Steady throughout (lowest 0.96), with 17 civ-turns of Slump; no Depression, no Panic | Half met: the lean is gone and wars, crises and below-trend income now slump the world, but nothing lifts it into Boom without credit (NOTES finding V); the credit boom comes with the AI's borrowing below |
+| The plan (1.2 run) | 450 Gold into 150 points in 50 turns at 3 Gold a point, worth 600 Gold at the purchase price: 1.33 times the Gold | 400 Gold into 100 points at the game's 4 Gold a point (read from the GlobalParameters fixture), worth 400 Gold: 1.0 times the Gold, with each sent point landing as one | Met on the Gold: the plan buys at the price a player pays. It still keeps its tax cards, and finding L's scaling is the glue's `progressScalePct` for the lead to set |
+| Development loan ratio (1.1 run) | 1.125 times the purchase price on a role building, 0.94 on another | unchanged: it was measured against the purchase rate already, and a development loan's return carries the rest | Met, so `G / 3` stays; finding L applies to it as well, and the plan's `progressScalePct` is the read to use if the lab finds the scaling large |
 
 ## 11. Versions
 

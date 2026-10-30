@@ -9,7 +9,7 @@ import { planTurn } from "./econ-plan.js";
 import { MOD_ID, emptyLedger, load, save } from "./econ-state.js";
 import { batchStatus } from "./econ-batch.js";
 import { grantsFor, netGrants } from "./econ-conservation.js";
-import { engineLines } from "./econ-params.js";
+import { engineLines, purchasePointCents } from "./econ-params.js";
 import { checkPlan } from "./econ-invariants.js";
 import { modelStages } from "./econ-stage-rules.js";
 import { readStageTurns } from "./econ-stage-read.js";
@@ -275,6 +275,16 @@ export function displayTurn(session, turn) {
 }
 
 /**
+ * The engine's lines and the game's purchase rate from GlobalParameters, read once a session, with other mods' rows
+ * applied.
+ * @returns {EngineParams}
+ */
+function readParams() {
+  const rows = readGlobalParameters();
+  return { ...engineLines(rows), goldPerPointCents: purchasePointCents(rows) };
+}
+
+/**
  * The plan input for this turn: every major ever seen, stages carried forward, the engine's lines read once.
  * Updates the glue's seen list and stage turns.
  * @param {Session} session
@@ -286,7 +296,7 @@ export function buildInput(session) {
   const seen = [...new Set([...session.glue.seen, ...majors])].sort((a, b) => a - b);
   session.glue.seen = seen;
   session.glue.stages = readStageTurns(session.glue.stages, majors, turn);
-  if (!session.params) session.params = engineLines(readGlobalParameters());
+  if (!session.params) session.params = readParams();
   const options = readOptions(session.glue);
   const economies = new Map(majors.map((pid) => [pid, economyOf(session, pid, turn, options)]));
   const commerce = options.markets || options.investment
