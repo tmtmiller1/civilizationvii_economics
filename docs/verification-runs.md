@@ -188,6 +188,28 @@ Found: the World tab's event rows and the Loans tab's Lend row show civ names as
 ("LOC_CIVILIZATION_PERSIA_NAME"), since `civName` returns `civilizationName` without `Locale.compose`; the Borrow rows
 show names. Not fixed.
 
+## Watched 2026-10-30 (0.5.1)
+
+The `006c1a8` build (0.5.1) from `dist/economics`, in one lab game: Economics alone, seed 4242, `--setup fast --quick`,
+started straight in Exploration (no Antiquity), `lab drive` through Exploration (117 turns), `lab age-change`, then 51
+Modern turns. Every reading is in `mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-check-051.md`. The boot
+line read `[Economics] v0.5.1 loaded` in both ages.
+
+| # | What the player sees when it works | Setup | Reading |
+| --- | --- | --- | --- |
+| LA.1 (Exploration, Modern) | "Light Taxation" 1 off Gold and +4 Happiness in Exploration, +3 in Modern; the rows read 6, 4 and 3 | the 0.5.1 game | the database rows `_AQ` 6, `_EX` 4, `_MO` 3 read in game; every holder's first settlement +4 in Exploration, +3 in Modern; the card keys `_EX` and `_MO` |
+| LA.2 (count) | How many AIs slot Light at +4 and +3 | same | Exploration 5 of 5, first picks t21 to t39 at 23 to 50 Happiness a turn; Modern 3 of 5 by t51 (Ottomans t16, Russia t27, Mughal t29, at 93 to 177 Happiness). The owner judges |
+| LA.3 | The Fiscal tab's Light card and forecast by age | same, the screen's DOM | Exploration t10 "Gold -1, Happiness +4", "about -3 Gold and +12 Happiness a turn" (3 settlements); Modern t6 "Gold -1, Happiness +3", "about -4 Gold and +12 Happiness a turn" (4) |
+| LA.4 (text) | The Light card's description by age | same | `Locale.compose` of the card keys: "-1 Gold and +6 / +4 / +3 Happiness in each settlement." The policy menu wasn't opened |
+| LA.5 (part) | Each age starts with Taxes on, `Database.log` clean | Exploration, Modern | both ages; only the game's own `StartupErrorMessages.xml` lines |
+| TD.1 | An AI eases off a civ 20 turns into peace, or at once when Friendly | Modern | by peace: Qajar off Siam t24 and Russia t25, Russia off Qajar t25 and Mughal t31, Mughal off Russia t31, each 20 turns after its count began; by friendship: Mughal off the Ottomans t10, the Ottomans off Mughal t11, Russia off Siam t12 |
+| TD.2 | No raise again after easing off | Modern | no raise in the 5 turns after any easing, nor in the 20 turns to t51; Qajar and Russia, High at each other, both ended at None |
+| TD.3 | Most AIs at None by the end | Modern | all five at None from t31 to t51 (Qajar and Siam t25, Ottomans t26, Russia and Mughal t31); `tariffPeace` and `tariffEased` by "ai-other" |
+
+Not reached: LA.1 and LA.2 for Antiquity (this game had none), the policy menu for LA.4, the "Manorial economy" line
+(LA.5), TD.4 (no war between AIs that had eased off each other), TD.5 for the player (the seat never set a tariff) and
+TD.6 (no 0.5.0 save loaded).
+
 ## The model (offline)
 
 | Check | Where | Observation |
@@ -427,6 +449,10 @@ built mod on the same day (L.2 to L.7 under "Watched 2026-10-30 (merged build)")
 | L.1 | Some AIs but not all slot Light, each once grown and short of Happiness (arm 10: Hawaii t69, Persia t92, Dai Viet t107); Goryeo and Hawaii still take Heavy at their second slot, and the AIs take War Levy (merged run 2026-10-30: Antiquity watched, 2 of 5; in Exploration and Modern all five AIs slot Light and keep it, at high Happiness: see "Watched 2026-10-30 (merged build)"; Light by age answers it in 0.5.1, LA.2 below) | Antiquity 4242, `--setup fast --quick`, Economics alone, 110 turns of `lab drive` with a per-turn card reading | `ui/econ-tax-cards.js` `CARD_LEVELS`, `data/econ-tax-gameeffects.xml` |
 
 ## Owed: Light by age and tariffs coming down (0.5.1)
+
+Watched 2026-10-30 in an Exploration-start game (see "Watched 2026-10-30 (0.5.1)"): LA.1 to LA.3 for Exploration
+and Modern, LA.4's text, LA.5's age starts, TD.1 to TD.3. Still owed: the Antiquity half of LA.1 and LA.2, the policy
+menu (LA.4), the "Manorial economy" line (LA.5), TD.4, TD.5 and TD.6.
 
 Built 2026-10-30, offline only (NOTES choices 114 and 115, finding Z). Light Taxation's Happiness is +6 in Antiquity,
 +4 in Exploration and +3 in Modern, Gold -1 in each; an AI eases off a civ behind its tariff after 20 turns in a row at
