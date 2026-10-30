@@ -1,7 +1,9 @@
-// econ-dock.js - Economics: the dock button that opens the Economics screen, and the status pill beside it (DESIGN
-// 9's top-bar pill: outstanding debt, red in default). The subsystem dock is the one HUD host a Tower mod has
-// decorated and watched (Demographics, Emigration: Controls.decorate on panel-sub-system-dock, addButton with a
-// modifier class painted through a CSS mask), so the pill rides the same decoration until a top-bar host is watched.
+// econ-dock.js - Economics: the dock button that opens the Economics screen, and the status pill (DESIGN 9's
+// top-bar pill: outstanding debt, red in default). The button rides the subsystem dock (Demographics, Emigration:
+// Controls.decorate on panel-sub-system-dock, addButton with a modifier class painted through a CSS mask). The pill
+// sits in the resource bar, in the yield banner's own mod slot after the settlement limit
+// (panel-yield-banner.js, #yield-banner-mod-slot). Several views carry their own banner, so each banner gets its own
+// pill and a redraw updates them all.
 // The icon is a shipped SVG file: Coherent's CSS parser drops data: URIs in a background image.
 
 import { openScreen } from "./econ-screen.js";
@@ -14,8 +16,8 @@ const ICON_URL = "fs://game/tower-economics/images/econ-dock-icon.svg";
 const ICON_TINT = "#ecdfbf";
 const STYLE_ID = "econ-dock-icon-style";
 
-/** @type {HTMLElement | null} */
-let pillNode = null;
+/** Each attached banner's slot and the pill in it. @type {Map<HTMLElement, HTMLElement>} */
+const pillNodes = new Map();
 /** @type {(() => { text: string, warning: boolean }) | null} */
 let pillSource = null;
 
@@ -28,16 +30,18 @@ function injectIconStyle() {
   document.head.appendChild(style);
 }
 
-/** Redraws the pill from its source; called after each batch and when the screen acts. */
+/** Redraws every banner's pill from its source; called after each batch and when the screen acts. */
 export function refreshPill() {
-  if (!pillNode || !pillSource) return;
+  if (!pillSource) return;
   const { text, warning } = pillSource();
-  const fresh = pill(text, warning);
-  fresh.classList.add("econ-dock-pill");
-  // The game's page has no Element.replaceWith (engine-closed); swap through the parent.
-  const parent = pillNode.parentNode;
-  if (parent) parent.replaceChild(fresh, pillNode);
-  pillNode = fresh;
+  for (const [slot, old] of [...pillNodes]) {
+    const fresh = pill(text, warning);
+    fresh.classList.add("econ-bar-pill");
+    // The game's page has no Element.replaceWith (engine-closed); swap through the parent.
+    if (old.parentNode === slot) slot.replaceChild(fresh, old);
+    else slot.appendChild(fresh);
+    pillNodes.set(slot, fresh);
+  }
 }
 
 class EconomicsDockDecorator {
@@ -56,26 +60,49 @@ class EconomicsDockDecorator {
       const node = this.panel.addButton({ tooltip: "LOC_ECONOMICS_OPEN", modifierClass: "economics",
         callback: () => openScreen(), class: ["economics-dock-button"], audio: "data-audio-tab-selected",
         focusedAudio: "data-audio-focus-small" });
-      this.mountPill(node);
+      if (!node) logDebug("dock: addButton returned nothing");
     } catch (error) {
       logLine(`dock button: ${error}`);
     }
   }
 
-  /** @param {any} buttonNode */
-  mountPill(buttonNode) {
-    const parent = buttonNode && buttonNode.parentElement;
-    if (!parent || !pillSource) return;
-    pillNode = pill("", false);
-    pillNode.classList.add("econ-dock-pill");
-    parent.appendChild(pillNode);
-    refreshPill();
+  beforeDetach() {}
+
+  afterDetach() {}
+}
+
+class EconomicsBannerDecorator {
+  /** @param {any} panel */
+  constructor(panel) {
+    this.panel = panel;
+    /** @type {HTMLElement | null} */
+    this.slot = null;
+  }
+
+  beforeAttach() {}
+
+  afterAttach() {
+    try {
+      const root = this.panel && this.panel.Root;
+      const slot = root && (root.querySelector("#yield-banner-mod-slot")
+        || root.querySelector(".panel-yield__top-bar-content"));
+      if (!slot) { logDebug("banner: no mod slot"); return; }
+      const node = pill("", false);
+      node.classList.add("econ-bar-pill");
+      slot.appendChild(node);
+      this.slot = slot;
+      pillNodes.set(slot, node);
+      refreshPill();
+    } catch (error) {
+      logLine(`banner pill: ${error}`);
+    }
   }
 
   beforeDetach() {}
 
   afterDetach() {
-    pillNode = null;
+    if (this.slot) pillNodes.delete(this.slot);
+    this.slot = null;
   }
 }
 
@@ -88,7 +115,8 @@ export function installDock(source) {
   try {
     if (typeof Controls !== "undefined" && typeof Controls.decorate === "function") {
       Controls.decorate("panel-sub-system-dock", (/** @type {any} */ panel) => new EconomicsDockDecorator(panel));
-      logDebug("dock decorator registered");
+      Controls.decorate("panel-yield-banner", (/** @type {any} */ panel) => new EconomicsBannerDecorator(panel));
+      logDebug("dock and banner decorators registered");
     }
   } catch (error) {
     logLine(`Controls.decorate failed: ${error}`);
