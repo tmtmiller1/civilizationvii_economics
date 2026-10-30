@@ -336,7 +336,8 @@ lets anyone change it, player or AI (section 3), so taxes use the game's own slo
 
   A script can't change an AI's cards for it: an operation sent for another player is accepted and ignored
   (section 3). So the AI side has no mod rule, only native steering:
-  - War Levy's modifiers require war with a major civ, so it's worth something to the AI only at war.
+  - War Levy pays a small part in peace and the rest only at war with a major civ. The AI's card pass ignores the
+    war requirement and slots it in peace too (P17, the 0.4.0 watch), so the peacetime part gives those turns a return.
   - Two AI strategy rows, in the shape Emigration ships (`emigration-ai-strategy.sql`), gated on the Taxes setup
     parameter: "short of Gold" switches on through the game's `YieldIncome` condition on `YIELD_GOLD` below a
     threshold and raises the AI's Gold priority; "flush" switches on above a higher one and raises Happiness instead.
@@ -348,9 +349,9 @@ lets anyone change it, player or AI (section 3), so taxes use the game's own slo
 
 | Card | Unlocked by | Effect in each settlement | Partisans hardship |
 | --- | --- | --- | --- |
-| Light Taxation | each age's root civic | Gold -2, Happiness +4 | 0 |
+| Light Taxation | each age's root civic | Gold -1, Happiness +6 | 0 |
 | Heavy Taxation | each age's root civic | Gold +4, Happiness -2 | +1 |
-| War Levy | the node that unlocks the Coinage anchor (4.15), and each later age's root civic | while at war with a major civ: Gold +8, Happiness -4 | +2 |
+| War Levy | the node that unlocks the Coinage anchor (4.15), and each later age's root civic | Gold +2, Happiness -1; while at war with a major civ, Gold +8, Happiness -4 | +2 |
 
 Flat amounts, 2026-10-29: the cards were Gold -15% and Happiness +20% (Light), the mirror (Heavy) and +30% / -40% (War
 Levy). They follow the P17 arms now (section 10, and "Arms run" in
@@ -359,9 +360,31 @@ yields at face value, ignores the requirement on a modifier, and prefers flat pe
 cards Heavy took every slot Light had held, and the strategy rows at +50 changed nothing while a Gold bias of 2000
 reached the card pass. So each card adds a flat amount in each settlement in the shape of the base game's Priesthood
 (`EFFECT_CITY_ADJUST_YIELD` with `Amount` on `COLLECTION_PLAYER_CITIES`), and both strategy biases are 300. Taxes stop
-being a share of income: a wide civ gets more from Heavy than a rich one with fewer settlements. War Levy can sit in a
-peaceful AI's slot, where it pays nothing. This is the owner's to confirm; the numbers live in `ui/econ-tax-cards.js`
-(`CARD_LEVELS`) and `scripts/sync-tax-cards.mjs` writes them into the modifiers and the card text.
+being a share of income: a wide civ gets more from Heavy than a rich one with fewer settlements. The numbers live in
+`ui/econ-tax-cards.js` (`CARD_LEVELS`) and `scripts/sync-tax-cards.mjs` writes them into the modifiers and the card
+text.
+
+Light arms, 2026-10-30. The 0.4.0 watch had no AI take Light in 119 turns, four of five take Heavy at their second
+slot, and all five hold War Levy, at peace for nothing on 139 civ-turns. The owner asked for a Light the AI takes in
+some situations but not all. Five lab games (Antiquity 4242, 110 turns, every other mod off; results in
+`mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-light-arms.md`) ran all three cards head to head, Heavy at
++4 / -2 and War Levy in its new two-part shape in each:
+
+| Arm | Light Taxation | AIs taking Light | Heavy | War Levy |
+| --- | --- | --- | --- | --- |
+| 6 | Gold -15%, Happiness +4 | none | 2 (t26, t29) | 5 |
+| 7 | Gold -1, Happiness +4 | 1 (Dai Viet t96) | 2 | 5 |
+| 8 | Gold -2, Happiness +4, Production +1 | 1 (Dai Viet t96) | 2 | 5 |
+| 9 | Gold -2, Happiness +4, Flush at income 15 or low Happiness | none | 3 | 5 |
+| 10 | Gold -1, Happiness +6 | 3 (Hawaii t69, Persia t92, Dai Viet t107) | 2 | 5 |
+
+Arm 10 ships. Every Light pick came from a grown civ (four or five settlements, 45 to 66 Gold a turn) whose Happiness
+had run low (3 to 14 a turn) or whose settlements had gone unhappy, mostly at war; small early civs still take Heavy at
+their second slot. The planner weighs Happiness by need, so the bigger Happiness face reached civs +4 didn't. A
+percentage Gold cost read large on a rich civ's card (-15% of 51 Gold) and lost; a Production line and an earlier Flush
+strategy changed nothing. War Levy's peacetime part shows in the city breakdown as a "War Levy" line of +2 Gold and
+-1 Happiness, and the AIs hold it in peace about as often as before. Watched in the arm games; the built mod hasn't
+been run (`docs/verification-runs.md`, "Owed: Light and War Levy (arms)").
 
 - One card of each per age, as Emigration's stance cards do, unlocked through `ProgressionTreeNodeUnlocks` rows that
   SQL writes by selecting the node through the progression tree tables, so a mod that changes a tree moves the card
@@ -896,20 +919,24 @@ modifiers gated on the slotted card, in each settlement (`data/econ-systems-game
 | System | Light Taxation | Heavy Taxation | War Levy (at war) |
 | --- | --- | --- | --- |
 | Tribute (Despotism) | | +1 Gold | +2 Gold, +1 Happiness |
-| Civic market (Classical Republic) | +1 Happiness | -1 Happiness | -1 Happiness |
+| Civic market (Classical Republic) | +2 Happiness | -1 Happiness | -1 Happiness |
 | Manorial (Feudal Monarchy) | +1 Gold | -2 Gold, +1 Happiness | -4 Gold, +2 Happiness |
-| Corporatist (Revolutionary Authoritarianism, Authoritarianism, Bureaucratic Monarchy, Fascism) | | | in peace too: +8 Gold, -4 Happiness |
+| Corporatist (Revolutionary Authoritarianism, Authoritarianism, Bureaucratic Monarchy, Fascism) | | | in peace, +6 Gold and -3 Happiness on top of the card's +2 and -1 |
 
 Each is DESIGN's percentage of the card's flat amount, rounded to a whole yield (Tribute's 15% cheaper celebration
-rounds to nothing on Heavy's -2). The Modern governments' rows stand aside once a civ has an ideology, and Fascism's
-come from its branch root. A government that reads none (the first turn of an age, M4) keeps the civ's last system.
-A Planned civ keeps the tax cards, since they're the game's own policies and its AI plays them, and the plan runs
-beside them. A Religious lender's loan is a partnership: its interest each turn is the lender's rate times the
-borrower's income against its income when the loan opened (0.5 to 2.0). Citizen loans: the cap counts settlements with
-a standing Commerce building; their AI rule is in section 6; a repudiation of the citizens closes them for 30 turns and
-counts as a repudiation at the 0.15 standing cost. Partisans hardship and the Commons topics wait for Mod Commons. In
-the 1.2 balance run Corporatist came out ahead of Mixed on Gold, credit and swing and level on production, and the
-plan's production was worth 1.33 times the Gold it took at the game's purchase price (section 10).
+rounds to nothing on Heavy's -2). Since the Light arms (2026-10-30): Civic market's 30% of Light's +6 is +2; Manorial's
+half of Light's -1 Gold rounds up to the whole 1, so Light costs a Manorial civ no Gold; War Levy's peacetime +2 and -1
+get no system line (Tribute's 20% and Civic market's 25% round to nothing; Manorial's half was left out to keep the rows
+few, a choice in NOTES); Corporatist's peace rows give the rest of the wartime +8 and -4. The Modern governments' rows
+stand aside once a civ has an ideology, and Fascism's come from its branch root. A government that reads none (the first
+turn of an age, M4) keeps the civ's last system. A Planned civ keeps the tax cards, since they're the game's own
+policies and its AI plays them, and the plan runs beside them. A Religious lender's loan is a partnership: its interest
+each turn is the lender's rate times the borrower's income against its income when the loan opened (0.5 to 2.0). Citizen
+loans: the cap counts settlements with a standing Commerce building; their AI rule is in section 6; a repudiation of the
+citizens closes them for 30 turns and counts as a repudiation at the 0.15 standing cost. Partisans hardship and the
+Commons topics wait for Mod Commons. In the 1.2 balance run Corporatist came out ahead of Mixed on Gold, credit and
+swing and level on production, and the plan's production was worth 1.33 times the Gold it took at the game's purchase
+price (section 10).
 
 ## 5. What the player can do
 
@@ -1186,7 +1213,7 @@ figures in `../reports/balance-1.2.json`). No game was launched.
 | Cycle shape | World phase Steady on 55 to 71% of turns and Boom on the rest in every game; `E` never below 0.95 (lowest 0.952), highest 1.15; the peaceful game Boom on 63% of turns; civ Slumps on 0 to 2 civ-turns a game; no Depression; no Panic (leverage peaked at 5%, against the 150% a Panic needs) | Missed: a peaceful game never slumps, and the world leans to Boom. Two terms rise with ordinary growth: each standing route's +0.001 a turn (the world's +0.01 cap is reached with ten routes) and world income against 10 turns ago (incomes grow every turn). Without them the same games slump on 7 to 20% of turns with no Boom, and the peaceful game holds Steady with 24 civ-turns of Slump. Constants: `CYCLE_WEIGHTS.routeStanding`, `incomePer5Pct`, or measuring income against its own trend. A Panic needs borrowing the AI rules don't do |
 | Inflation | `pi` on 60 to 150 turns a game, median 0.01 to 0.04%, worst 0.1% a turn; 30 to 75 Gold eroded a game | Met: never at its cap |
 | System diversity | Ten civs, one per system, the same world for 100 Exploration turns: Corporatist +7.7 Gold of cycle Gold against Mixed's +4.2, credit 630 against 420, swing (sd of `E + L`) 0.028 against 0.036, production level; Merchant oligarchy credit 540, swing 0.037; Manorial credit 300, swing 0.034; Planned 300 Gold into 100 points of production, outside the cycle; the rest within a few Gold of Mixed | Missed for Corporatist (ahead on three of four, level on the fourth): its war boom paid while the others took the war's hit, and its 1.5x credit is the biggest single number. Constants: `SYSTEM_CHANGES.corporatist.creditPct`, `CYCLE_WEIGHTS.corporatistWar` |
-| Citizen loans | A Classical Republic AI holding 5 turns of income: 563 Gold borrowed in 100 Antiquity turns, 61 Gold of interest, 122 celebration, no default; the other Antiquity AI borrowed nothing | Met: 2 celebration a Gold of interest, as Light Taxation's +4 Happiness for -2 Gold |
+| Citizen loans | A Classical Republic AI holding 5 turns of income: 563 Gold borrowed in 100 Antiquity turns, 61 Gold of interest, 122 celebration, no default; the other Antiquity AI borrowed nothing | Met at 0.4.0's Light (2 a Gold); missed since the Light arms (2026-10-30): Light's +6 Happiness for -1 Gold is 6 a Gold, three times the citizens' 2. The owner's call whether the citizens' return should rise to match |
 | The plan | A Planned civ at 50 Gold a turn: 450 Gold into 150 points in 50 turns, worth 600 Gold at the game's purchase price (4 Gold a point) before production bonuses scale `addProgress` up (NOTES finding L) | Missed: worth 1.33 times the Gold it took, and a Planned civ gives up no tax level here. Constant: `PLANNED.goldPerProgress` (3, the development loan's ratio) to 4 or more |
 | Envelope growth | The macro envelope at most 3.2 KB | Met |
 | Turn time | 12 civs, 60 settlements, 40 routes, every part on: median 0.16 ms, worst 2 ms | Met |

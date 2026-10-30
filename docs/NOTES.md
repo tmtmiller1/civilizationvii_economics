@@ -111,6 +111,7 @@ so, with the DESIGN section that now holds the rule.
 | 98 | Engine events between batches | Kept in the glue envelope, at most 32, weighed once at the next batch | `econ-macro-read`: "in game: an event kept between batches..." |
 | 99 | What the Fiscal tab's "now" shows | The civ's net Gold and Happiness a turn (`Stats.getNetYield`, the top bar's figure, P2), not the settlements' summed `Yields.getYield`, which read 0 Gold in the lab while the civ's net was positive (build check 5.2a, 2026-10-30). The card's change is still its flat amount times the settlements | `econ-fiscal`: "the forecast read takes the civ's net Gold and Happiness..." |
 | 100 | "All off" and its log line | The batch skips only when Loans, Markets, Foreign investment, Inflation, Business cycle and Economic systems are all off: the cycle and the systems move Gold on their own. The lab's all-off game (build check C.2, 0.3.0) couldn't set the 1.2 options, which read their defaults (cycle Standard, systems On), so its batch ran as it should; the skip line itself went only to the debug log, so a released copy never showed it. It now goes to the log once a session | `econ-session`: "every option off, the 1.2 ones too..." |
+| 101 | Which Light Taxation ships, and War Levy's peacetime part | Light at Gold -1, Happiness +6 (the Light arms' arm 10, 2026-10-30, the only arm where some AIs but not all took it); War Levy at Gold +2, Happiness -1 always and Gold +6, Happiness -3 more at war, so its face stays +8 / -4 at war. The systems' lines follow: Civic market's Light line is +2, Corporatist's peace rows +6 / -3, Manorial's Light line stays +1 (half of -1 rounded up, so Light costs a Manorial civ no Gold), and War Levy's peacetime part gets no system line, Manorial's half included, to keep the rows few | `econ-tax-cards`: "the cards' numbers..."; `econ-data`: "the effects file..." |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 
@@ -224,6 +225,18 @@ service limit holds it to about 2.5 turns of income at the bond rate (4.8 turns 
 12. Nothing is changed; whether the two limits should meet (a longer term, or `credit_cap` lowered toward what the
 service limit allows) is the owner's call, with "Borrowing pays" and `base_rate`. The owed check 1.1's 300 Gold needs a
 civ with about 120 Gold of income at 10 turns, or a smaller loan, as the lab's 50 Gold one was.
+
+V. **The AI takes Light when it's grown and short of Happiness, not when it's small or calm.** The Light arms
+(2026-10-30, `mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-light-arms.md`): with Light at -1 / +6, Hawaii
+took it at t69 (4 settlements, 50 Gold a turn, Happiness 2.7, at war), Persia at t92 (5 settlements, 66 Gold, Happiness
+8.9, at peace) and Dai Viet at t107 (4 settlements, 45 Gold, 2 unhappy, at war). The same card at -1 / +4 reached only
+Dai Viet at t96, with 3 of 5 settlements unhappy, while Persia sat on War Levy for 14 turns with all five unhappy. So
+the card pass weighs Happiness by need, and the size of the Happiness face sets how unhappy a civ must get before Light
+wins. A percentage Gold cost read as -8 on a 51 Gold civ's card and lost; a Production line on Light and an earlier
+Flush strategy (income 15, or `HasHappinessLessThan` 5) moved nothing. Early picks didn't change in any arm: Goryeo and
+Hawaii take Heavy at their second slot (t26, t29), and all five AIs take War Levy, still holding it in peace on 113 to
+152 civ-turns a game; its peacetime part now pays them +2 and -1 a settlement, which the breakdown shows. A side
+effect: the citizen-loan balance row (2 celebration a Gold of interest) now trails Light's 6 a Gold (DESIGN 10).
 
 ### Government biases and the description (2026-10-30)
 
