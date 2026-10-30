@@ -172,6 +172,14 @@ test("general investment: a Gold pair, a dividend that moves with the host, refu
   const declined = plan({ civs, ledger: inDefault, requests: [{ kind: "invest", investor: ME, host: AI, form: "general",
     cents: 20000 }] });
   assert.equal(refusal(declined, "invest"), "host-default");
+  const event = declined.events.find((e) => e.kind === "refused");
+  assert.deepEqual([event.host, event.cents, event.project], [AI, 20000, 0], "no build to back: nothing named");
+  assert.deepEqual([declined.transfers, declined.progress, declined.ledger.investments], [[], [], []],
+    "nothing goes in its place");
+  const withBuild = plan({ civs: [me(), ai(AI, { incomeCents: 2000, cities: [city("6:1")] })], ledger: inDefault,
+    requests: [{ kind: "invest", investor: ME, host: AI, form: "general", cents: 20000 }] });
+  assert.equal(withBuild.events.find((e) => e.kind === "refused").project, 1, "a development loan is still open");
+  assert.deepEqual([withBuild.transfers, withBuild.progress], [[], []], "the player still chooses");
 });
 
 test("aid: no record, no return, the relationship at +1 per 2.5 turns of the host's income", () => {

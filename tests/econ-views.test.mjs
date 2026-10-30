@@ -256,3 +256,27 @@ test("the Fiscal tab says 'next turn' for one turn and 'one more turn' for the l
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURN|1"), text);
   assert.equal(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|1"), false);
 });
+
+test("a host in default: general investment shows why, and a button opens its development loan with the same Gold", () => {
+  const inDefault = { ...emptyLedger(), nextId: 2, loans: [{ ...makeLoan({ id: "L1", lender: "bond", borrower: 6,
+    principal: 100, ratePpm: 20000, term: 10, turn: 1 }), state: "default", missed: 3 }] };
+  const api = commerceApi({ ledger: inDefault });
+  const host = document.createElement("div");
+  renderTrade(host, api);
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_REASON_HOST_DEFAULT"));
+  const instead = byClass(host, "econ-button").find((b) => b.textContent === "LOC_ECONOMICS_INVEST_PROJECT_INSTEAD");
+  const before = api.requests.length;
+  instead.click();
+  assert.equal(api.requests.length, before, "opening the form sends nothing");
+  const open = document.createElement("div");
+  renderTrade(open, api);
+  assert.ok(textOf(open).includes("LOC_ECONOMICS_INVEST_PROJECT_FOR|Civ 6|300"));
+  const pick = byClass(open, "econ-button").find((b) => b.textContent.startsWith("LOC_ECONOMICS_INVEST_PROJECT|"));
+  pick.click();
+  assert.deepEqual(api.requests.at(-1), { kind: "invest", investor: ME, host: 6, form: "project", cents: 30000,
+    cityId: "6:1", asAid: false });
+  byClass(open, "econ-button").find((b) => b.textContent === "LOC_ECONOMICS_CLOSE").click();
+  const closed = document.createElement("div");
+  renderTrade(closed, api);
+  assert.equal(textOf(closed).includes("LOC_ECONOMICS_INVEST_PROJECT_FOR|"), false);
+});

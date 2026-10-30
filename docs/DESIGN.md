@@ -630,6 +630,12 @@ started would leave the Gold waiting on a choice the AI can't see.
 Other rules:
 
 - Development loan and general records use the loan rules for misses, default and lender block.
+- A host in default turns general investment down, the player's and an AI's alike, and nothing is sent in its place:
+  the investor chooses again. For the player, the Trade tab shows the refusal before it's asked, with a "Set up a
+  development loan instead" button that opens that host's builds with the same Gold, and a request refused in the
+  batch says in the turn notification that a development loan is still open. The AI's check skips that host this
+  time, and its next check picks by its own rule (section 6). Decided 2026-10-30 at the owner's word: no automatic
+  fallback.
 - A host can repudiate them like a loan (4.5): the investor's remaining return is written off, which is how a
   seizure of foreign holdings plays here, with the same reputation cost.
 - Keep the city component id and re-resolve each turn, never the city object (engine-closed: a stale city object

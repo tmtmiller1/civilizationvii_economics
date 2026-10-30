@@ -217,6 +217,18 @@ export function describeRefusalMost(event, ctx) {
     args: [name(ctx, event.lender), Number(event.term) || 0, gold(most)] };
 }
 
+/**
+ * The second line of a general investment refused by a host in default: the development loan still open to the
+ * player, which it sets up on the Trade tab; null for any other refusal or when none is open.
+ * @param {LedgerEvent} event
+ * @param {TextContext} ctx
+ * @returns {Line | null}
+ */
+export function describeRefusalProject(event, ctx) {
+  if (event.request !== "invest" || event.reason !== "host-default" || event.project !== 1) return null;
+  return { key: `${PREFIX}NOTICE_REFUSED_PROJECT`, args: [name(ctx, event.host), gold(event.cents)] };
+}
+
 /** What a transfer's reason moved, for the net line. @type {Record<string, string>} */
 const FLOW_OF = { principal: "LOANS", payment: "LOANS", garnish: "LOANS", trade: "TRADE", invest: "INVESTMENT",
   dividend: "INVESTMENT", cycle: "CYCLE", erosion: "INFLATION", plan: "PLAN", tax: "TAX" };

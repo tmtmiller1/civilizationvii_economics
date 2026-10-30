@@ -82,6 +82,9 @@ release is generated from the matching section below by `scripts/steam-changelog
 - The computer players set tariffs of their own: Low against a big partner they pay more than they're paid and aren't
   friends with, High against a big partner they're Unfriendly with. They answer your Low with Low and your High with
   High two turns later, and drop back when you do.
+- General investment turned down because the other civilization is in default now says a development loan on one of
+  its builds is still open, and the Trade tab shows the refusal before you ask, with a button that opens that loan
+  with the same Gold. Nothing is sent until you pick a build.
 - The computer players borrow to build: while their credit is cheap, each takes a loan now and then and puts it
   straight into the building it's working on, within the same limits you have. Easy credit in a boom now leads to
   more borrowing, and from Banking a boom carried on too much debt can end in a Panic. World leverage is now counted in

@@ -11,7 +11,7 @@ import { investForecast, investTargets, investmentsView, routePreview, tradeView
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 
-const form = { cents: 30000 };
+const form = { cents: 30000, projectFor: /** @type {number | null} */ (null) };
 
 /**
  * @param {HTMLElement} host
@@ -110,13 +110,37 @@ function investSection(input, api) {
       onChange: (cents) => { form.cents = cents; api.rerender(); } }),
   ]);
   if (input.options?.investment === false) { block.appendChild(note(api.loc("LOC_ECONOMICS_INVEST_OFF"))); return block; }
-  for (const target of investTargets(input, api.me, form.cents)) block.appendChild(targetCard(target, api));
+  const targets = investTargets(input, api.me, form.cents);
+  const chosen = targets.find((target) => target.pid === form.projectFor);
+  if (chosen) block.appendChild(projectCard(chosen, api));
+  for (const target of targets) block.appendChild(targetCard(target, api));
   block.appendChild(note(api.loc("LOC_ECONOMICS_INVEST_NOTE")));
   return block;
 }
 
 /**
- * One civ the player could invest in: general investment and aid, and a development loan on each queued build.
+ * The development loan the player asked to see after general investment was refused: the same Gold, each of the
+ * host's current builds, and nothing sent until the player picks one.
+ * @param {ReturnType<typeof investTargets>[number]} target
+ * @param {ScreenApi} api
+ */
+function projectCard(target, api) {
+  const box = el("div", "econ-card");
+  box.appendChild(el("div", "econ-card-title", api.loc("LOC_ECONOMICS_INVEST_PROJECT_FOR", api.nameOf(target.pid),
+    formatGold(form.cents))));
+  const host = { host: target.pid, hostIncomeCents: target.incomeCents };
+  for (const { city, refusal } of target.cities) {
+    box.appendChild(actionRow(api, { ...host, form: "project", asAid: false, refusal, city,
+      caption: "LOC_ECONOMICS_INVEST_PROJECT" }));
+  }
+  if (!target.cities.length) box.appendChild(note(api.loc("LOC_ECONOMICS_INVEST_PROJECT_NONE")));
+  box.appendChild(button(api.loc("LOC_ECONOMICS_CLOSE"), () => { form.projectFor = null; api.rerender(); }));
+  return box;
+}
+
+/**
+ * One civ the player could invest in: general investment and aid, and a development loan on each queued build. A
+ * host in default refuses general investment; its line says so and offers the development loan instead.
  * @param {ReturnType<typeof investTargets>[number]} target
  * @param {ScreenApi} api
  */
@@ -126,6 +150,12 @@ function targetCard(target, api) {
   const host = { host: target.pid, hostIncomeCents: target.incomeCents };
   box.appendChild(actionRow(api, { ...host, form: "general", asAid: false, refusal: target.general,
     caption: "LOC_ECONOMICS_INVEST_GENERAL" }));
+  if (target.general === "host-default" && target.cities.some((row) => row.refusal === null)) {
+    box.appendChild(button(api.loc("LOC_ECONOMICS_INVEST_PROJECT_INSTEAD"), () => {
+      form.projectFor = target.pid;
+      api.rerender();
+    }));
+  }
   box.appendChild(actionRow(api, { ...host, form: "general", asAid: true, refusal: target.aid,
     caption: "LOC_ECONOMICS_INVEST_AID" }));
   for (const { city, refusal } of target.cities) {

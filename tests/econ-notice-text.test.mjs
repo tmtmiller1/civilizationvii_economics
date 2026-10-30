@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { causeItems, composeArgs, describeBatchRow, describeEvent, describeNotice, describeRefusal, describeRefusalMost,
+import { causeItems, composeArgs, describeBatchRow, describeEvent, describeNotice, describeRefusal, describeRefusalMost, describeRefusalProject,
   eventConcerns, flowKeys, joinList, reasonKey, requestKey, worldNameKey } from "../ui/econ-notice-text.js";
 import { emptyLedger } from "../ui/econ-state.js";
 import { makeLoan } from "../ui/econ-loan.js";
@@ -136,4 +136,15 @@ test("the age change's Gold cut: a notice for the player and a line in the histo
   assert.deepEqual(describeEvent({ turn: 1, kind: "age-gold", pid: 4, before: 1143200, after: 600000 }, ctx),
     { key: "LOC_ECONOMICS_EVENT_AGE_GOLD", args: ["Civ 4", "6000", "11432"] });
   assert.ok(english.has("LOC_ECONOMICS_NOTICE_AGE_GOLD") && english.has("LOC_ECONOMICS_EVENT_AGE_GOLD"));
+});
+
+test("general investment refused for default names the development loan still open, and nothing otherwise", () => {
+  const event = { turn: 1, kind: "refused", request: "invest", reason: "host-default", host: 4, cents: 20000,
+    project: 1 };
+  assert.deepEqual(describeRefusalProject(event, ctx), { key: "LOC_ECONOMICS_NOTICE_REFUSED_PROJECT",
+    args: ["Civ 4", "200"] });
+  assert.equal(describeRefusalProject({ ...event, project: 0 }, ctx), null);
+  assert.equal(describeRefusalProject({ ...event, reason: "relation" }, ctx), null);
+  assert.equal(describeRefusalProject({ ...event, request: "borrow" }, ctx), null);
+  assert.ok(english.has("LOC_ECONOMICS_NOTICE_REFUSED_PROJECT"));
 });
