@@ -18,7 +18,8 @@ const OTHER = 9;
 const city = (id, over = {}) => ({ id, build: "BUILDING_LIBRARY", neededProgress: 200, ...over });
 const me = (over = {}) => civ(ME, { human: true, incomeCents: 10000, balanceCents: 100000, stages: OPEN_ALL, ...over });
 const ai = (id, over = {}) => civ(id, { incomeCents: 10000, balanceCents: 300000, stages: OPEN_ALL, ...over });
-const prices = { RESOURCE_IRON: 1000, RESOURCE_WINE: 600 };
+// Prices 20 times a real copy's, so a route bills whole Gold at the 2.5% share (DESIGN 4.10).
+const prices = { RESOURCE_IRON: 20000, RESOURCE_WINE: 12000 };
 const markets = (over = {}) => ({ ...emptyMarkets(), prices, ...over });
 const route = (importer, exporter, resources) => ({ importer, exporter, resources });
 const refusal = (plan, request) => plan.events.find((e) => e.kind === "refused" && e.request === request)?.reason;

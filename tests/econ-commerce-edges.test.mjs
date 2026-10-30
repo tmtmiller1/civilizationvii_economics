@@ -14,7 +14,8 @@ import { OPEN_ALL, civ, input } from "./_fixtures.mjs";
 const ME = 3;
 const AI = 6;
 const OTHER = 9;
-const prices = { RESOURCE_IRON: 1000, RESOURCE_WINE: 600 };
+// Prices 20 times a real copy's, so a route bills whole Gold at the 2.5% share (DESIGN 4.10).
+const prices = { RESOURCE_IRON: 20000, RESOURCE_WINE: 12000 };
 const me = (over = {}) => civ(ME, { human: true, incomeCents: 10000, balanceCents: 100000, stages: OPEN_ALL, ...over });
 const ai = (id, over = {}) => civ(id, { incomeCents: 10000, balanceCents: 300000, stages: OPEN_ALL, ...over });
 const city = (id, over = {}) => ({ id, build: "BUILDING_LIBRARY", neededProgress: 200, ...over });
@@ -68,9 +69,13 @@ test("the High tariff's notice counts each partner; the AI's tariff event names 
   const noStage = plan({ civs: [me(), ai(AI, { stages: { ...OPEN_ALL, tariffs: null } })], routes,
     markets: { ...emptyMarkets(), prices, tariffs } });
   assert.equal(noStage.events.some((e) => e.kind === "tariff"), false, "an AI past no Tariffs stage stays put");
-  const notImporter = plan({ civs: [me(), ai(AI)], routes: [{ importer: AI, exporter: ME, resources: ["RESOURCE_IRON"] }],
+  const reversed = [{ importer: AI, exporter: ME, resources: ["RESOURCE_IRON"] }];
+  const notImporter = plan({ civs: [me(), ai(AI)], routes: reversed, relations: [{ a: ME, b: AI, level: "friendly" }],
     markets: { ...emptyMarkets(), prices, tariffs } });
   assert.equal(notImporter.events.some((e) => e.kind === "tariff"), false, "only the AIs the tariff falls on answer");
+  const payer = plan({ civs: [me(), ai(AI)], routes: reversed, markets: { ...emptyMarkets(), prices, tariffs } });
+  assert.deepEqual(payer.events.filter((e) => e.kind === "tariff").map((e) => [e.pid, e.level]), [[AI, "low"]],
+    "an AI paying a Neutral partner more than it's paid sets Low of its own");
   const unpriced = plan({ civs: [me(), ai(AI)], routes: [{ importer: ME, exporter: AI, resources: ["RESOURCE_GONE"] }],
     markets: { ...emptyMarkets(), prices, tariffs } });
   assert.equal(unpriced.events.some((e) => e.kind === "tariff"), false, "a route that bills nothing isn't tariffed");

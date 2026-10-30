@@ -3,10 +3,11 @@
 // waived; the 5-turn tariff limit, the High tariff's relationship step, and the AI's matching rule.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { aiTariffWanted, canChangeTariff, capPayments, highTariffCosts, isTariffLevel, netPairs, owedByPair,
+import { aiOwnTariff, aiTariffWanted, canChangeTariff, capPayments, highTariffCosts, isTariffLevel, netPairs, owedByPair,
   routeBillCents, settlementCap, tariffOf, tradeBuildingPct, withTariff } from "../ui/econ-trade.js";
 
-const prices = { RESOURCE_IRON: 1000, RESOURCE_WINE: 600, RESOURCE_SALT: 400 };
+// Prices 20 times a real copy's, so the bills read as round figures at the 2.5% share (DESIGN 4.10).
+const prices = { RESOURCE_IRON: 20000, RESOURCE_WINE: 12000, RESOURCE_SALT: 8000 };
 const route = (importer, exporter, resources, over = {}) => ({ importer, exporter, resources, ...over });
 
 test("tariff levels and every civ starting at None", () => {
@@ -103,7 +104,7 @@ test("a High tariff costs 1 relationship with each exporter it bills, every 5 tu
   assert.deepEqual(highTariffCosts({ tariffs, owed, turn: 21 }), []);
 });
 
-test("the AI matches a High tariff on its exports 2 turns after it's set, and drops back with it", () => {
+test("the AI answers a tariff on its exports in kind 2 turns after it's set, and drops back with it", () => {
   const high = [{ pid: 1, level: "high", changedTurn: 10 }];
   assert.equal(aiTariffWanted({ pid: 5, tariffs: high, importers: [1], turn: 11 }), null, "not yet");
   assert.equal(aiTariffWanted({ pid: 5, tariffs: high, importers: [1], turn: 12 }), "high");
@@ -113,6 +114,39 @@ test("the AI matches a High tariff on its exports 2 turns after it's set, and dr
   const dropped = [{ pid: 1, level: "none", changedTurn: 18 }, { pid: 5, level: "high", changedTurn: 12 }];
   assert.equal(aiTariffWanted({ pid: 5, tariffs: dropped, importers: [1], turn: 19 }), "none");
   const low = [{ pid: 1, level: "low", changedTurn: 0 }];
-  assert.equal(aiTariffWanted({ pid: 5, tariffs: low, importers: [1], turn: 30 }), null, "a Low tariff isn't matched");
+  assert.equal(aiTariffWanted({ pid: 5, tariffs: low, importers: [1], turn: 30 }), "low", "Low is answered with Low");
+  const eased = [{ pid: 1, level: "low", changedTurn: 29 }, { pid: 5, level: "high", changedTurn: 12 }];
+  assert.equal(aiTariffWanted({ pid: 5, tariffs: eased, importers: [1], turn: 30 }), "low",
+    "from High to Low at once when the other side eases");
+  const raised = [{ pid: 1, level: "high", changedTurn: 29 }, { pid: 5, level: "low", changedTurn: 12 }];
+  assert.equal(aiTariffWanted({ pid: 5, tariffs: raised, importers: [1], turn: 30 }), null, "a raise waits 2 turns");
   assert.equal(aiTariffWanted({ pid: 5, tariffs: [], importers: [], turn: 30 }), null);
+});
+
+test("the AI's own tariff: Low against a partner it pays and isn't Friendly with, High against an Unfriendly one", () => {
+  const q = { pid: 5, tariffs: [], importers: [], turn: 30 };
+  assert.equal(aiTariffWanted({ ...q, partners: [{ level: "neutral", netPayer: true }] }), "low");
+  assert.equal(aiTariffWanted({ ...q, partners: [{ level: "neutral", netPayer: false }] }), null, "it's paid more");
+  assert.equal(aiTariffWanted({ ...q, partners: [{ level: "friendly", netPayer: true }] }), null);
+  assert.equal(aiTariffWanted({ ...q, partners: [{ level: "unfriendly", netPayer: false }] }), "high");
+  assert.equal(aiTariffWanted({ ...q, partners: [{ level: "war", netPayer: false }] }), "high");
+  assert.equal(aiTariffWanted({ ...q, partners: [{ level: "neutral", netPayer: true }], cheapHigh: true }), "high",
+    "a Mercantile AI goes to High where another goes to Low");
+  assert.equal(aiTariffWanted({ ...q, partners: [{ level: "friendly", netPayer: true }], cheapHigh: true }), null);
+  assert.equal(aiTariffWanted({ ...q, tariffs: [{ pid: 1, level: "low", changedTurn: 0 }], importers: [1],
+    partners: [{ level: "unfriendly", netPayer: false }] }), "high", "the higher of the answer and its own");
+  const set = [{ pid: 5, level: "low", changedTurn: 20 }];
+  assert.equal(aiTariffWanted({ ...q, tariffs: set, partners: [{ level: "friendly", netPayer: true }] }), "none",
+    "drops back once no reason holds");
+  assert.equal(aiOwnTariff([], false), "none");
+});
+
+test("a tariff falls on all its imports, so the AI weighs only partners worth a third of its trade or more", () => {
+  const q = { pid: 5, tariffs: [], importers: [], turn: 30 };
+  assert.equal(aiTariffWanted({ ...q, partners: [{ level: "unfriendly", netPayer: true, sharePct: 33 }] }), null);
+  assert.equal(aiTariffWanted({ ...q, partners: [{ level: "unfriendly", netPayer: true, sharePct: 34 }] }), "high");
+  const low = [{ pid: 1, level: "low", changedTurn: 0 }];
+  assert.equal(aiTariffWanted({ ...q, tariffs: low, importers: [1], importerSharePct: () => 20 }), null,
+    "a small buyer's tariff goes unanswered");
+  assert.equal(aiTariffWanted({ ...q, tariffs: low, importers: [1], importerSharePct: () => 60 }), "low");
 });

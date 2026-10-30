@@ -50,7 +50,7 @@
  "LOC_ECONOMICS_SETUP_TARIFFS_OFF": "Off",
  "LOC_ECONOMICS_SETUP_TARIFFS_OFF_DESCRIPTION": "Every civilization pays its full bill.",
  "LOC_ECONOMICS_SETUP_TARIFFS_ON": "On",
- "LOC_ECONOMICS_SETUP_TARIFFS_ON_DESCRIPTION": "Tariffs open with Imperialism, on the Fiscal tab. The computer players answer a High tariff in kind.",
+ "LOC_ECONOMICS_SETUP_TARIFFS_ON_DESCRIPTION": "Tariffs open with Imperialism, on the Fiscal tab. The computer players set their own and answer yours in kind.",
  "LOC_ECONOMICS_SETUP_INVESTMENT_NAME": "Foreign investment",
  "LOC_ECONOMICS_SETUP_INVESTMENT_DESCRIPTION": "Lets civilizations put Gold into each other: a development loan on a city's current build, a general investment in its treasury, or either one as aid, which isn't paid back.",
  "LOC_ECONOMICS_SETUP_INVESTMENT_OFF": "Off",

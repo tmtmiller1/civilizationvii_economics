@@ -5,7 +5,7 @@
 // bill, a tariff between two civs or a return on an investment the AI can see (DESIGN section 1, "Native first").
 // Nothing here reads the engine.
 
-import { INVEST, MISS, STANDING } from "./econ-params.js";
+import { INVEST, MISS, STANDING, TRADE } from "./econ-params.js";
 import { anyWar, nextPrices } from "./econ-prices.js";
 import { aiTariffWanted, canChangeTariff, capPayments, highTariffCosts, netPairs, owedByPair, withTariff }
   from "./econ-trade.js";
@@ -217,16 +217,29 @@ export function investWriteOffs(ctx) {
 }
 
 /**
- * DESIGN 6 tariffs: option on only; an AI matches a High tariff set on its exports, and drops back with it.
+ * DESIGN 6 tariffs: option on only; an AI answers a tariff on its exports in kind, sets Low against a partner it pays
+ * and isn't Friendly with and High against one it's Unfriendly with, and drops back when the reasons go.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 export function aiTariff(ctx, civ) {
   if (!ctx.options.markets || !ctx.options.tariffs) return;
   if (!hasStage(civ, "tariffs", ctx.turn, ctx.options)) return;
-  const importers = (ctx.owed || []).filter((row) => row.exporter === civ.id && row.gross > 0)
-    .map((row) => row.importer);
-  const wanted = aiTariffWanted({ pid: civ.id, tariffs: ctx.markets.tariffs, importers, turn: ctx.turn });
+  const owed = ctx.owed || [];
+  const sales = owed.filter((row) => row.exporter === civ.id && row.gross > 0);
+  const buys = owed.filter((row) => row.importer === civ.id && row.gross > 0);
+  const total = (/** @type {{ gross: number }[]} */ rows) => rows.reduce((sum, row) => sum + row.gross, 0);
+  const share = (/** @type {number} */ gross, /** @type {number} */ all) => (all > 0 ? (gross * 100) / all : 0);
+  const importers = sales.map((row) => row.importer);
+  const partners = buys.map((row) => ({ level: relationLevel(ctx.relations, civ.id, row.exporter),
+    netPayer: ctx.trade.some((pay) => pay.payer === civ.id && pay.payee === row.exporter && pay.owed > 0),
+    sharePct: share(row.gross, total(buys)) }));
+  const importerSharePct = (/** @type {number} */ pid) => share(sales.find((row) => row.importer === pid)?.gross ?? 0,
+    total(sales));
+  // A system whose High tariff costs relationship less often (Mercantile) is readier to set it.
+  const cheapHigh = termsFor(ctx, civ.id).highTariffEveryTurns > TRADE.tariffEveryTurns;
+  const wanted = aiTariffWanted({ pid: civ.id, tariffs: ctx.markets.tariffs, importers, turn: ctx.turn, partners,
+    cheapHigh, importerSharePct });
   const row = ctx.markets.tariffs.find((tariff) => tariff.pid === civ.id);
   if (!wanted || !canChangeTariff(row?.changedTurn, ctx.turn)) return;
   ctx.markets.tariffs = withTariff(ctx.markets.tariffs, civ.id, wanted, ctx.turn);

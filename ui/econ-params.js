@@ -73,14 +73,14 @@ export const BASE_PRICE_CENTS = { RESOURCECLASS_BONUS: 200, RESOURCECLASS_CITY: 
   RESOURCECLASS_TREASURE: 500, RESOURCECLASS_FACTORY: 600 };
 export const PRICES = { otherCents: 200, scarcityMinPct: 50, scarcityMaxPct: 300, strategicPct: 25, warPct: 25,
   industryPct: 2, industryMaxPct: 100, smoothingPct: 80, capitalismSmoothingPct: 50, historyTurns: 30 };
-// DESIGN 4.10: the bill is half the summed prices, +10% per Trade building in the exporting city and -10% per one in
-// the importing city (30% at most each side); tariffs hold back 10% or 25%; a payer pays at most 10% of its positive
-// income in all; a tariff changes at most once per 5 turns, and a High one costs 1 relationship with each exporter
-// it bills every 5 turns. The AI matches a High tariff 2 turns after it's set (DESIGN 6).
+// DESIGN 4.10: the bill is 2.5% of the summed prices (permille), +10% per Trade building in the exporting city and
+// -10% per one in the importing city (30% at most each side); tariffs hold back 10% or 25%; a payer pays at most 10% of
+// its positive income in all; a tariff changes at most once per 5 turns, and a High one costs 1 relationship with each
+// exporter it bills every 5 turns. The AI answers a tariff in kind 2 turns after it's set (DESIGN 6).
 /** @type {Record<string, number>} */
 export const TARIFF_PCT = { none: 0, low: 10, high: 25 };
-export const TRADE = { billPct: 50, tradeBuildingPct: 10, tradeBuildingMaxPct: 30, capPct: 10, tariffEveryTurns: 5,
-  highRelationship: -1, aiMatchTurns: 2 };
+export const TRADE = { billPermille: 25, tradeBuildingPct: 10, tradeBuildingMaxPct: 30, capPct: 10,
+  tariffEveryTurns: 5, highRelationship: -1, aiMatchTurns: 2, aiPartnerSharePct: 34 };
 // DESIGN 4.12. Development loan: G / 3 Gold per point of progress, ceil(G * 5%) a turn for 25 turns (6% on a role
 // building). General: ceil(G * 4.5% * growth) with growth clamped 0.5 to 2.0. Relationship +1 per 5, 7.5 and 2.5 turns
 // of the host's income (at least 10 Gold a turn) for the development loan, general and aid. The cap of 10 on one

@@ -172,7 +172,7 @@ test("system terms in the rates and credit: Market's bond, Tribute's civ lenders
 });
 
 test("bills between systems: a Manorial importer pays 20% less, a Mercantile exporter is owed 10% more", () => {
-  const prices = { RESOURCE_IRON: 1000 };
+  const prices = { RESOURCE_IRON: 20000 };
   const civs = [me({ government: "GOVERNMENT_FEUDAL_MONARCHY", incomeCents: 100000 }),
     ai(AI, { government: "GOVERNMENT_PLUTOCRACY" })];
   const routes = [{ importer: ME, exporter: AI, resources: ["RESOURCE_IRON"] }];
@@ -191,7 +191,7 @@ test("a Planned importer pays the class price; the plan turns 20% of income into
   const routes = [{ importer: AI, exporter: ME, resources: ["RESOURCE_IRON"] }];
   const out = plan({ civs, routes, market, markets: { ...emptyMarkets(), prices: { RESOURCE_IRON: 5000 } } });
   assert.equal(out.macro.systems[AI].system, "planned");
-  assert.equal(out.trade.find((row) => row.payer === AI).owed, 200, "half of the Empire class price, 400");
+  assert.equal(out.trade.find((row) => row.payer === AI).owed, 10, "2.5% of the Empire class price, 400");
   const take = out.transfers.find((t) => t.reason === "plan");
   assert.deepEqual([take.from, take.to, take.cents], [AI, "plan", 2000], "4 Gold a point, the game's purchase rate");
   assert.deepEqual(out.progress, [{ host: AI, cityId: "6:1", amount: 4, investmentId: `PL${AI}` },

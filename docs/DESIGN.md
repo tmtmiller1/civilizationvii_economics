@@ -459,7 +459,7 @@ base game already pays for routes in its own way, so the bill is kept small and 
 making, and a deficit should matter without turning a route into a loss.
 
 ```
-bill_r    = 0.5 * sum of price_r over the copies one route imports
+bill_r    = 0.025 * sum of price_r over the copies one route imports
             * (1 + min(0.3, 0.1 * Trade buildings in the exporting city))
             * (1 - min(0.3, 0.1 * Trade buildings in the importing city))     Trade buildings: 4.13
 tariff_A  = None 0, Low 0.10, High 0.25 (importer's); 0 with the Tariffs option Off
@@ -474,7 +474,8 @@ paid      = min(net, 0.10 * max(0, payer's income))            0 when the payer'
 - The Trade tab shows the bill for each partner and the cap, and, where P7 lets the UI read a foreign city's
   resources, what a new route to that city would add before the merchant goes.
 - Tariffs: each civ starts at None (full bill). The player changes it on the Fiscal tab, at most once per 5 turns.
-  Option Off: setting hidden, AI stays at None. Opens with the Tariffs stage (4.15).
+  Option Off: setting hidden, AI stays at None. Opens with the Tariffs stage (4.15). The AI sets its own and answers
+  the player's by the rule in section 6, under the same 5-turn limit.
 - What a tariff does here: the importer holds back that share of what it owes and keeps it, so the exporter earns
   less from selling to it. It's a trade-war lever rather than a tax on the importer's own people, and the Fiscal tab
   says so in those words.
@@ -493,9 +494,11 @@ charge works (exactly 1 Gold an import) and that a 1 Gold levy didn't reduce AI 
 it; it stays out. Embargo (C11) is untested, so tariffs stay a script rule. C2: `projectPossibleTradeRoutes` answers for
 the player and for AI ids, which the Trade tab's "Routes you could make" uses. A payment the payer's funds can't cover
 is waived like the over-cap part. The AI matches a High tariff two turns after it's set and is bound by the same 5-turn
-limit as the player. In the 1.1 balance run the cap paid out on nearly every settlement row at Exploration incomes
-(NOTES finding K), so the bill behaves like "a tenth of income to the partners you buy more from"; the owner reads that
-against open question 6.
+limit as the player. In the first 1.1 balance run the cap paid out on nearly every settlement row at Exploration
+incomes (NOTES finding K), so the bill behaved like "a tenth of income to the partners you buy more from", and a tariff
+shaved a bill that was capped anyway. Changed 2026-10-30 (offline only): the bill is 2.5% of the copies' prices a turn,
+a twentieth of the first figure, so it follows what's traded and the cap is a safety net: it binds on 17% of rows in
+the same run, and a payer's median payment is 1.4% of its income. The AI now sets tariffs too (section 6).
 
 ### 4.11 Business cycle
 
@@ -986,7 +989,7 @@ numbers. The AI's native spending doesn't know about them, so they follow three 
 | After a repudiation | doesn't lend to, invest in or aid the repudiator while the repudiation counts against its standing (4.5) |
 | Lending | income > 0 and balance > `20 * income`: lends to a short civ at the 4.3 rate, cheapest first; never to an insolvent one |
 | Taxes | native: the AI slots the tax cards in its own policy pass, steered by War Levy's requirement and the two strategy rows (4.7). Only in the script fallback: Heavy if balance < `5 * max(|income|, 10)` and falling, or insolvent (War Levy at war); Light if income > 0 and balance > `30 * income`; else Standard |
-| Tariffs | option On only; stays None unless tariffed; matches a High tariff within 2 turns, drops back when the other side does |
+| Tariffs | option On only. Sets Low when it pays a partner more than it's paid and isn't Friendly with it; High against a partner it's Unfriendly or worse with, accepting High's relationship cost; a Mercantile AI, whose High costs half as much, goes to High where another would go to Low. A tariff falls on everything a civ imports, so only partners that sell it a third or more of its imports count. Answers a tariff on its exports in kind (Low with Low, High with High) 2 turns after it's set, when that importer buys a third or more of its exports; takes the higher of its own level and its answer; eases at once when the other side does and drops back when no reason holds; bound by the 5-turn limit |
 | Investment | income > 0 and balance > `20 * income`, at most once per 10 turns, Friendly host only, `5 * its own income`: general if the host's income is growing, else a development loan on a city's current build; to the player it's an offer |
 | Aid | income > 0; to a Friendly civ in default or in its own Depression, at most once per age, up to `5 * its own income` |
 | Accepting | player loans at `r <= 1.2 * bond rate` with income > 0 and within its 4.2 limits; development loans on any current build; general unless in default; aid always |
@@ -1002,9 +1005,10 @@ Where the AI and the player are treated differently, and why:
   once per age, lending only above 20 turns of income. The AI's native spending doesn't see the mod's flows, so these
   limits keep it from giving away Gold it needs (the first principle above). What a deal does once made, and whether
   a host accepts it, is the same for both sides.
-- Tariffs: the player can set Low or High first; the AI only answers a High tariff. No native lever tells the AI
-  when a trade war pays, so it doesn't start one, and answering in kind keeps a player's tariff from being free. An
-  AI that tariffs first is the owner's call.
+- Tariffs: the player sets a tariff when it likes; the AI by the rule above. Until 2026-10-30 the AI only answered a
+  High tariff, so a player's Low tariff was free; now both sides pay for a tariff in the same coin. The AI weighs only
+  partners worth a third of its trade, because one level falls on all its imports and, without that, a single
+  Unfriendly partner spread High to nearly every pair in the balance run (section 10).
 - The guard is the player's, with a switch on the Loans tab; an AI gets the same emergency loan by rule (4.6), with
   the AI option as its switch.
 - A system's tax line pays every civ alike, but the AI's card pass can't see it (P17); the player sees it on the
@@ -1238,6 +1242,8 @@ figures). No game was launched.
 | Cycle shape (1.2 run, with the AI's build loans) | as above | Steady 83 to 92% of turns, Slump 6 to 15% and Boom 1 to 5% in every game; `E` 0.85 to 1.08; the peaceful game Steady 87%, Boom 9%, Slump 4% (after its Panic) with 84 civ-turns of Slump; no Depression | Met: both Slump and Boom in all six games, Steady most common, and the peaceful game slumps |
 | Panics a game (1.2 run) | 0 in every game; leverage at most 5% of the Gold held | 1 or 2 in every game, 1 in the peaceful one; leverage up to 3.9 to 4.7 turns of world income; 262 to 277 AI build loans a game, no default | Met: at most twice, and from booms with borrowing |
 | The plan (1.2 run) | 450 Gold into 150 points in 50 turns at 3 Gold a point, worth 600 Gold at the purchase price: 1.33 times the Gold | 400 Gold into 100 points at the game's 4 Gold a point (read from the GlobalParameters fixture), worth 400 Gold: 1.0 times the Gold, with each sent point landing as one | Met on the Gold: the plan buys at the price a player pays, and the lab found a grant lands as the city's own production would (finding L), so `progressScalePct` stays at 100. It still keeps its tax cards |
+| Trade profit and the cap (1.1 run) | the cap bound on 98% of settlement rows; median payment 3% of the payer's income; civs' mean net -3.6 to +4.6 Gold a turn | the bill at 2.5% of prices: the cap binds on 17% of rows; median payment 1.4% of income; mean net -2.1 to +2.2; a copy at base price bills 0.05 to 0.25 Gold a turn against the 3 Gold the engine pays the exporter | Met: the bill follows what's traded, and the route stays worth making for both sides |
+| Tariffs (1.1 run, AI rules on) | the AI only answered High; no AI-set tariff | civ-turns at None 20%, Low 40%, High 39%; trading pairs with High on both sides on 21% of turns; 117 changes in 10 games; the AIs' net settlement +0.013 Gold a turn on average against the same games without AI tariffs (median +0.03; 60 AIs gained, 49 lost) | Met: no spiral to High everywhere, and on average the AI's tariffs raise its own net, if only by a little |
 | Borrowing pays (1.0 table) | interest at 0.03 / 0.02 / 0.015: Market 59.4 Gold against 30 to 50 of yield, Bazaar 88 against 60 to 80, Bank 125 against 80 to 100 | at 0.015 / 0.01 / 0.0075: Market 29.7 against 30 to 50, Bazaar 44 against 60 to 80, Bank 62.7 against 80 to 100; the Granary pays no Gold | Met on the strict reading in every age, the Market by a hair at its lowest yield |
 | AI solvency (1.0 run, with the new rates and limits) | 175 AIs with positive income in the Off run: 0 defaults, 0 emergency loans | the same 175: 0 defaults, 0 emergency loans; penalty turns On 491 against 2,848 Off (509 before) | Met: 0 games in 20 |
 | AI solvency (1.0 run, with build loans and three cities a civ) | as above | the same 175: 0 defaults, 0 emergency loans, about 290 build loans a game; penalty turns On 1,938 against 2,848 Off. 1,854 of them come from the harness now carrying the markets envelope (NOTES finding W), 84 from the build loans | Met: 0 games in 20 |

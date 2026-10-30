@@ -163,8 +163,9 @@ test("stages closed show the node that opens them; the Fiscal tab draws the card
 
 /** A 1.1 world: the player imports iron from 6 and wine goes back; 6 has a build to back. */
 function commerceApi(over = {}) {
-  const markets = { ...emptyMarkets(), prices: { RESOURCE_IRON: 1000, RESOURCE_WINE: 600 },
-    history: { RESOURCE_IRON: [800, 900, 1000], RESOURCE_WINE: [600] } };
+  // Prices 20 times a real copy's, so the bills read as round figures at the 2.5% share (DESIGN 4.10).
+  const markets = { ...emptyMarkets(), prices: { RESOURCE_IRON: 20000, RESOURCE_WINE: 12000 },
+    history: { RESOURCE_IRON: [16000, 18000, 20000], RESOURCE_WINE: [12000] } };
   const civs = [civ(ME, { human: true, balanceCents: 100000, incomeCents: 10000, stages: OPEN_ALL, tradeIncomeCents: 600 }),
     civ(6, { balanceCents: 1e6, incomeCents: 2000, stages: OPEN_ALL, cities: [{ id: "6:1", build: "BUILDING_LIBRARY",
       neededProgress: 40 }] })];
@@ -182,7 +183,7 @@ test("the Markets tab lists prices dearest first, with holders, the change and t
   renderMarkets(host, commerceApi());
   const text = textOf(host);
   assert.ok(text.indexOf("name:RESOURCE_IRON") < text.indexOf("name:RESOURCE_WINE"), "dearest first");
-  assert.ok(text.includes("LOC_ECONOMICS_MARKETS_ROW|2|+2|3"), "two copies held, up 2 Gold over three turns");
+  assert.ok(text.includes("LOC_ECONOMICS_MARKETS_ROW|2|+40|3"), "two copies held, up 40 Gold over three turns");
   assert.equal(byClass(host, "econ-spark").length, 1, "one history long enough to draw");
   const off = document.createElement("div");
   renderMarkets(off, commerceApi({ options: { markets: false } }));

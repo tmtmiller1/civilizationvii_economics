@@ -120,6 +120,7 @@ so, with the DESIGN section that now holds the rule.
 | 107 | Leverage and the Panic line (DESIGN 4.11) | Outstanding debt over the living civs' positive income, in hundredths of a turn (at least 10 Gold of income); the line is 1.7 turns, with 60 turns between Panics. Tuned in the 1.2 run: at 3 turns no Panic came in a boom; at 1.5 to 2 with 20 turns between them, three to five a game | `econ-cycle`: "Panic: from the Banking stage..."; `econ-build-loan`: "leverage is debt in turns..." |
 | 108 | Credit growth's weight (DESIGN 4.11) | +0.015 a turn, from +0.005: with the AI borrowing, +0.005 and +0.01 gave no Boom or at most 6 turns of it a game, +0.02 gave a Panic too many in the peaceful game | `econ-cycle`: "world income against its own trend..." |
 | 109 | What the age change's Gold cap leaves in the ledger (DESIGN 4.8) | The model doesn't predict the cap (the lab found 6,000 into Exploration and 9,000 into Modern, from the game's age-transition script, not `DefaultGoldOnTransition`'s 3,000). On an age's first batch it takes the engine's balance and records an `age-gold` event, with a notice to the player, for any civ 100 Gold or more below its last batch's end balance (snapshot plus the mod's net). That end balance is the start of the last turn, so the last turn's own income and spending are inside the gap, and the notice says so | `econ-plan`: "the age change: the Gold the game cut..."; `econ-notice-text`: "the age change's Gold cut..." |
+| 110 | The bill's share, and the AI's tariff rule (DESIGN 4.10, 6) | `TRADE.billPermille` 25: at 20 the cap bound on 10% of rows, at 30 on 26%, so 25 (17%) keeps the bill as large as the "under 20%" row allows. The AI's own tariff and its answer count only partners worth `TRADE.aiPartnerSharePct` (34) of its imports or of its exports: with every partner counted, 87% of civ-turns sat at High and 80% of trading pairs had High on both sides; at 50, the AIs lost on their tariffs as often as they gained. A Mercantile AI is found by its system's slower High cost (`highTariffEveryTurns` above 5), not its name, so the system table decides | `econ-trade`: "the AI's own tariff...", "a tariff falls on all its imports..."; `econ-commerce-edges`: "the High tariff's notice..."; `tests/econ-balance-commerce.test.mjs` |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 
@@ -172,7 +173,11 @@ payment was 3% of the payer's income, and civs' mean net settlement ran from -4 
 the bill is, in effect, "a tenth of income to the partners you buy more from". The route itself stays worth making
 for the exporter (the engine's Trade Income plus the bill); whether the importer's cost is right is open question 6.
 If the owner wants the bill to scale with what's traded rather than with income, `TRADE.billPct` or the cap is the
-constant to move.
+constant to move. Settled 2026-10-30 (choice 110): the bill is 2.5% of the copies' prices a turn (`TRADE.billPermille`
+25, was 500). In the same 10 games the cap binds on 17% of settlement rows (was 98%), the median payment is 1.4% of the
+payer's income (was 3%), and civs' mean net settlement runs from -2.1 to +2.2 Gold a turn. At base prices a copy
+bills 0.05 to 0.25 Gold a turn against the engine's 3 Gold of Trade Income a land route pays its exporter, so the route
+stays worth making for both sides. A tariff now changes what's paid instead of shaving a capped bill.
 
 L. **What `addProgress` lands.** Answered by the lab on 2026-10-30
 (`mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-watch-040.md`, section 7): a grant lands as the amount sent

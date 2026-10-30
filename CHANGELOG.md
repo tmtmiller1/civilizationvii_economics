@@ -77,6 +77,11 @@ release is generated from the matching section below by `scripts/steam-changelog
 - The turn notice reads as a sentence: "from trade bills and the business cycle", and two wars declared in one turn
   read "after 2 wars declared" instead of the same cause twice. The Fiscal tab says "next turn" instead of "in 1
   turns".
+- Trade bills follow what's traded: 2.5 percent of each copy's price a turn instead of half, so the tenth-of-income
+  cap only bites on the biggest deficits and a tariff changes what you pay.
+- The computer players set tariffs of their own: Low against a big partner they pay more than they're paid and aren't
+  friends with, High against a big partner they're Unfriendly with. They answer your Low with Low and your High with
+  High two turns later, and drop back when you do.
 - The computer players borrow to build: while their credit is cheap, each takes a loan now and then and puts it
   straight into the building it's working on, within the same limits you have. Easy credit in a boom now leads to
   more borrowing, and from Banking a boom carried on too much debt can end in a Panic. World leverage is now counted in

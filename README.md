@@ -64,13 +64,16 @@ civic or tech that opens it.
 
 Every resource has a world price, set by its class, how many copies the civilizations hold, and whether this age's
 units need it (more so in wartime). The Markets tab lists the prices and their last 30 turns. Each pair of
-civilizations that trade then settles the difference between what they import from each other: half the price of
-each copy, up 10 percent for each Trade building in the exporting city and down 10 percent for each in the importing
-one. Only the side that owes more pays, and never more than a tenth of its income; anything over that is waived.
+civilizations that trade then settles the difference between what they import from each other: 2.5 percent of the
+price of each copy a turn, up 10 percent for each Trade building in the exporting city and down 10 percent for each in
+the importing one. Only the side that owes more pays, and never more than a tenth of its income; anything over that
+is waived, which in most games is rare.
 
 From Imperialism you can set a tariff on the Fiscal tab: Low or High holds back 10 or 25 percent of what you owe the
-civilizations you import from. A High tariff costs 1 relationship with each of them every five turns, and a computer
-player you tariff High answers in kind two turns later.
+civilizations you import from. A High tariff costs 1 relationship with each of them every five turns. The computer
+players use tariffs too: one that pays a big trading partner more than it's paid sets Low unless they're friends,
+one that's Unfriendly with a big partner sets High, and any of them answers your tariff in kind two turns later and
+drops it when you do.
 
 ## Foreign investment and aid
 

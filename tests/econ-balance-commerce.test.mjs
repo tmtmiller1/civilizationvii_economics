@@ -20,9 +20,20 @@ test(`balance ladder 1.1: ${GAMES} seeded 12-civ trade games, On against Off, an
     routeProfit: { exploration: routeProfitRows("exploration"), modern: routeProfitRows("modern") },
     devLoanRatio: devLoanRatioRows(), wideTall: wideTallRows() };
   const times = [];
+  const tariffs = { none: 0, low: 0, high: 0, highPairTurns: 0, pairTurns: 0, changes: 0, aiGain: [] };
   for (let i = 0; i < GAMES; i += 1) {
     const on = runTradeGame(makeTradeGame(9100 + i), { on: true });
     const off = runTradeGame(makeTradeGame(9100 + i), { on: false });
+    // The same game with the AI rules on, so the AIs set and answer tariffs (DESIGN 6): the spread of levels, pairs at
+    // High on both sides, and each AI's net settlement against the run without them.
+    const ruled = runTradeGame(makeTradeGame(9100 + i), { on: true, ai: true });
+    for (const key of ["none", "low", "high"]) tariffs[key] += ruled.tariffTurns[key];
+    tariffs.highPairTurns += ruled.highPairTurns;
+    tariffs.pairTurns += ruled.pairTurns;
+    tariffs.changes += ruled.tariffChanges;
+    for (const [pid, net] of ruled.netByCiv) {
+      if (pid !== 1) tariffs.aiGain.push((net - on.netByCiv.get(pid)) / 200 / 100);
+    }
     let sum = 0;
     for (const net of on.netByCiv.values()) sum += net;
     assert.equal(sum, 0, "bills move Gold between civs and create none");
@@ -35,6 +46,18 @@ test(`balance ladder 1.1: ${GAMES} seeded 12-civ trade games, On against Off, an
       waivedGold: on.waived / 100, maxMarketsBytes: on.maxMarketsBytes,
       offTransfers: [...off.netByCiv.values()].every((v) => v === 0) });
   }
+  const civTurns = tariffs.none + tariffs.low + tariffs.high;
+  report.tariffs = { shareNone: tariffs.none / civTurns, shareLow: tariffs.low / civTurns,
+    shareHigh: tariffs.high / civTurns, pairsBothHighShare: tariffs.highPairTurns / tariffs.pairTurns,
+    changes: tariffs.changes, aiNetGainGoldPerTurn: { mean: tariffs.aiGain.reduce((s, x) => s + x, 0)
+      / tariffs.aiGain.length, median: median(tariffs.aiGain), positive: tariffs.aiGain.filter((x) => x > 0).length,
+    negative: tariffs.aiGain.filter((x) => x < 0).length, ais: tariffs.aiGain.length } };
+  let cappedRows = 0;
+  let settledRows = 0;
+  for (const row of report.tradeGames) { cappedRows += row.cappedRows; settledRows += row.settledRows; }
+  report.cappedShare = cappedRows / settledRows;
+  assert.ok(report.cappedShare < 0.2, `the cap binds on ${report.cappedShare}`);
+  assert.ok(report.tariffs.pairsBothHighShare < 0.5, "tariffs don't spiral into every pair at High");
   const max = Math.max(...times);
   assert.ok(median(times) < 50, `median ${median(times)} ms`);
   report.planMs = { median: median(times), max };
