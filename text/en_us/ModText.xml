@@ -59,7 +59,7 @@
 
         <!-- 1.1 setup options -->
         <Row Tag="LOC_ECONOMICS_SETUP_MARKETS_NAME"><Text>Markets and trade bills</Text></Row>
-        <Row Tag="LOC_ECONOMICS_SETUP_MARKETS_DESCRIPTION"><Text>Gives every resource a world price, set by how many copies there are and who needs them. Each pair of civilizations then settles the net value of what they import from each other every turn, on top of the Trade Income the game already pays the exporter. A civilization pays at most a tenth of its income this way.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SETUP_MARKETS_DESCRIPTION"><Text>Gives every resource a world price, set by how many copies there are and who needs them. Each pair of civilizations then settles the net value of what they import from each other every turn, and a civilization pays at most a tenth of its income this way.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_MARKETS_OFF"><Text>Off</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_MARKETS_OFF_DESCRIPTION"><Text>Resources have no price, and a route costs the importer what it does in the base game.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_MARKETS_ON"><Text>On</Text></Row>
@@ -376,5 +376,6 @@
         <Row Tag="LOC_ECONOMICS_REQUEST_INVEST"><Text>investment</Text></Row>
         <Row Tag="LOC_ECONOMICS_REQUEST_ACCEPT_OFFER"><Text>acceptance</Text></Row>
         <Row Tag="LOC_ECONOMICS_REQUEST_DECLINE_OFFER"><Text>refusal of an offer</Text></Row>
+        <Row Tag="LOC_ECONOMICS_MILAID_PAY_NAME"><Text>Military Aid sent</Text></Row>
     </EnglishText>
 </Database>

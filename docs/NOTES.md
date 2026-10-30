@@ -66,7 +66,7 @@ glue makes, and the test that pins it. Test names are quoted; files are under `.
 | 54 | The locale placeholders | `scripts/sync-locales.mjs` keeps a baseline of the English each row was synced from (`scripts/locale-baseline.json`); a row whose English changed gets the new English, so a translation of the old meaning never ships under a new one | by hand: change one English row, run the sync, read the eleven rows |
 | 55 | The mod's file URLs | The screen's CSS and HTML and the dock icon are under `fs://game/tower-economics/` (the mod id), which is where the game serves a mod's files; the folder name is `economics` | owed S.1, S.5 |
 | 56 | Where the bill's copies come from | The bill (DESIGN 4.10) is built from the importer's `Resources.getResources()` entries whose origin city (`Game.Resources.getOriginCity`) a major owns, grouped by that city, the read Demographics ships. Routes (`Trade.getCurrentTradeRoutes`) only say which of the importer's cities takes them, for its Trade buildings; with no route read, the importer's side counts none. So the bill doesn't wait on P7's per-route read, and the route-count fallback isn't needed | `econ-commerce-read`: "routes between majors..." |
-| 57 | The game's own exporter payment | The engine already pays an exporting city Trade Income per route (`TradeYields`: 3, 6, 9 by land, 6, 12, 18 by sea in Exploration; 4, 8, 12 and 8, 16, 24 in Modern). The bill stays the design's importer-to-exporter transfer on top (DESIGN 12 item 6's default), at level 2: the native per-import charge is player-wide and can't net a pair, cap a payment or hand the Gold to the exporter. The Trade tab shows the native income beside the bill and the balance run compares the two | `_balance-commerce`: `routeProfitRows` |
+| 57 | The game's own exporter payment | The game's text says the exporter gains Trade Income per copy (`TradeYields`: 3, 6, 9 by land, 6, 12, 18 by sea in Exploration; 4, 8, 12 and 8, 16, 24 in Modern), but `city.Yields.getTradeYields()` read 0 in every route city in the 1.1 probes (C9). The bill stays the design's importer-to-exporter transfer (DESIGN 12 item 6's default), at level 2: the native per-import charge works (C9) but is player-wide and can't net a pair, cap a payment or hand the Gold to the exporter. The Trade tab shows the game's Trade Income only when the read gives something | `_balance-commerce`: `routeProfitRows` |
 | 58 | A payment the funds can't cover | A settlement is paid in full from the payer's own funds at step 6 or waived, like the over-cap part; nothing is carried | `econ-commerce`: "one netted bill per pair..." |
 | 59 | The AI's tariff | It matches a High tariff held by a civ that imports from it, two turns after that tariff was set, and drops back once none does; a Low tariff isn't matched. The 5-turn change limit binds the AI as it binds the player, so the two never run different rules; if the limit blocks the match, it comes as soon as it's allowed | `econ-trade`: "the AI matches a High tariff..." |
 | 60 | Where a development loan's Gold goes | To a world account, `progress`, and the progress lands with `addProgress` on the city's current build; only the Gold the progress uses leaves the investor (3 Gold a point), so "the rest is returned in that batch" is the rest never sent. The record's principal is the Gold used | `econ-commerce`: "a development loan on an AI city's current build..." |
@@ -77,6 +77,7 @@ glue makes, and the test that pins it. Test names are quoted; files are under `.
 | 65 | Offers to the human | An AI's investment in the human is an offer kept 3 turns; the player accepts or declines on the Trade tab, and an accepted offer runs the same checks again | `econ-commerce`: "to the player an AI investment is an offer..." |
 | 66 | The 1.1 options and Loans Off | Loans Off no longer skips the batch: it stops the loan rules, the guard and loan requests, and the batch skips only with Loans, Markets and Foreign investment all off. Tariffs act only with Markets on | `econ-plan`: "every part Off: no write of any kind; Loans Off alone..." |
 | 67 | The markets envelope | Its own `Configuration` key (`tower-economics-markets`), at most 32 KB: prices, 30 turns of history, tariffs, ten turns of each civ's income, the age each AI last gave aid, the turn each last invested. Past the cap the histories are halved first. Written with the ledger, before the grants | `econ-markets`: "econ-5..." |
+| 68 | The AI's aid as Military Aid | With Foreign investment on, Military Aid's completion stage gets a second modifier charging the initiator the target's 2 Gold a turn (scaled by age), in the probe's shape (C1 compiled it). It's the one diplomatic action the AI was watched starting (C13). The section 6 aid rule (a Friendly civ in default) runs beside it, since Military Aid's AI doesn't look at defaults | `econ-data`: "Military Aid's initiator pays..." |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 
@@ -128,6 +129,12 @@ the bill is, in effect, "a tenth of income to the partners you buy more from". T
 for the exporter (the engine's Trade Income plus the bill); whether the importer's cost is right is open question 6.
 If the owner wants the bill to scale with what's traded rather than with income, `TRADE.billPct` or the cap is the
 constant to move.
+
+L. **`addProgress` lands bigger than it's sent.** From the 1.1 probes (C3): a 20-progress grant took Silla's Bazaar
+from 0 to 76.5 progress 3 s later (12% to 30%), and it read 45.9 at the next step. DESIGN 4.12 expected the grant
+"scaled up by the city's production bonuses", but nearly 4 times is more than a bonus, and the two reads disagree.
+Until it's read again, a development loan may buy a host far more than `G / 3` production; the ratio row in the
+balance run is the lower bound. Owed: one grant on a city with no production bonuses, its percent before and after.
 
 ## Balance run and mutation
 

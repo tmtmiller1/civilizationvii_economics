@@ -62,8 +62,7 @@ Every resource has a world price, set by its class, how many copies the civiliza
 units need it (more so in wartime). The Markets tab lists the prices and their last 30 turns. Each pair of
 civilizations that trade then settles the difference between what they import from each other: half the price of
 each copy, up 10 percent for each Trade building in the exporting city and down 10 percent for each in the importing
-one. Only the side that owes more pays, and never more than a tenth of its income; anything over that is waived. This
-comes on top of the Trade Income the game already pays the exporter, which the Trade tab shows beside the bill.
+one. Only the side that owes more pays, and never more than a tenth of its income; anything over that is waived.
 
 From Imperialism you can set a tariff on the Fiscal tab: Low or High holds back 10 or 25 percent of what you owe the
 civilizations you import from. A High tariff costs 1 relationship with each of them every five turns, and a computer
@@ -76,7 +75,7 @@ city is working on right now, 3 Gold for each point of production, and comes bac
 6 percent on an economic building. General investment (from Colonialism) goes into the treasury and its return
 follows the host's income. Aid of either kind asks nothing back. Each raises the relationship, in proportion to the
 host's income. Computer players invest in and aid their friends, and their offers to you wait on the Trade tab for an
-answer.
+answer. With this option on, a civilization that sends Military Aid pays the 2 Gold a turn its target gets.
 
 ## Economic stages
 

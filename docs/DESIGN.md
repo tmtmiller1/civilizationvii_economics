@@ -85,8 +85,8 @@ other-mods rules: SQL that selects through parent tables, gated by a setup param
 | Economic systems | 1 for yield effects, 3 for rates and credit | government modifiers (4.17) |
 | Repudiation | 2 | grievances booked on the repudiator, which the AI acts on (4.5) |
 | Loans, guard, garnish, payments | 2 | `grantYield`; borrowing choices are section 6 rules until P18 finds a diplomatic action that can carry a loan |
-| Aid, investment | 2, maybe 1 | `grantYield` and `addProgress`; the 1.1 probes (C12, C13) check whether a rewritten diplomatic action the AI already starts (Military Aid paying both ways, Hinder Finances as Development Aid) carries them |
-| Trade bills | 2, on top of 1 | the engine already pays each exporting city Trade Income per route (`TradeYields`), which stays as it is; the bill between the pair is `grantYield`, because netting per pair and the 10% cap need a script (the native per-import charge is player-wide) |
+| Aid, investment | 1 for the AI's aid, 2 for the rest | the AI's aid rides on Military Aid, which the AI starts, with its initiator now paying the target's 2 Gold a turn; the player's aid, development loans and investment are `grantYield` and `addProgress` (the 1.1 probes: the rewritten sanctions weren't scored by the AI at all) |
+| Trade bills | 2 | `grantYield`, because netting per pair and the 10% cap need a script; the native per-import charge works but is player-wide. The engine's own exporter payment (`TradeYields`) read 0 in the 1.1 probes, so nothing here leans on it |
 | Inflation, cycle, prices | 3, felt through 2 | the mod's own state, paid out through `grantYield` |
 
 ## 2. Precedents
@@ -457,14 +457,21 @@ paid      = min(net, 0.10 * max(0, payer's income))            0 when the payer'
 - A High tariff costs the importer 1 relationship with each exporter it bills, every 5 turns. The mod tells the player
   why, because a script change shows in the diplomacy breakdown as a bare number.
 
-Built 2026-10-29 (version 0.3.0, offline only). The bill is made from the importer's resources whose origin city a major
-owns (`Resources.getResources` with `Game.Resources.getOriginCity`), grouped by that city, so it doesn't wait on P7's
-per-route read; the routes only place the importer's Trade buildings. The engine's own Trade Income for the exporter
-stays untouched and the Trade tab shows it beside the bill. A payment the payer's funds can't cover is waived like the
-over-cap part. The AI matches a High tariff two turns after it's set and is bound by the same 5-turn limit as the
-player. In the 1.1 balance run the cap paid out on nearly every settlement row at Exploration incomes (NOTES finding K),
-so the bill behaves like "a tenth of income to the partners you buy more from"; the owner reads that against open
-question 6.
+Built 2026-10-29 (version 0.3.0, offline only), with the 1.1 probe results of the same night folded in
+(`mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-commerce-results.md`, Exploration seed 9001). The bill is
+made from the importer's resources whose origin city a major owns (`Resources.getResources` with
+`Game.Resources.getOriginCity`), grouped by that city; C8 settled P7 (an AI's per-route imports read from the UI context
+and add up to its imports) and C14 that copies count once at the origin, so the read is sound for AI pairs too. C9:
+`city.Yields.getTradeYields()` read 0 Gold in every route city over 120 turns, so the engine's exporter payment the
+game's text describes is unconfirmed, and the bill is the importer-to-exporter transfer DESIGN 12 item 6 defaults to;
+the Trade tab shows the game's Trade Income only when that read gives something. C9 also found the native per-import
+charge works (exactly 1 Gold an import) and that a 1 Gold levy didn't reduce AI routes, so the AI doesn't seem to weigh
+it; it stays out. Embargo (C11) is untested, so tariffs stay a script rule. C2: `projectPossibleTradeRoutes` answers for
+the player and for AI ids, which the Trade tab's "Routes you could make" uses. A payment the payer's funds can't cover
+is waived like the over-cap part. The AI matches a High tariff two turns after it's set and is bound by the same 5-turn
+limit as the player. In the 1.1 balance run the cap paid out on nearly every settlement row at Exploration incomes
+(NOTES finding K), so the bill behaves like "a tenth of income to the partners you buy more from"; the owner reads that
+against open question 6.
 
 ### 4.11 Business cycle
 
@@ -568,14 +575,24 @@ Other rules:
 - Keep the city component id and re-resolve each turn, never the city object (engine-closed: a stale city object
   crashed the game, 2026-10-23).
 
-Built 2026-10-29 (version 0.3.0, offline only). A development loan's Gold goes to a world account, `progress`, and only
-the Gold its progress uses leaves the investor (3 Gold a point), so "the rest is returned" is the rest never sent. The
-records sit in `ledger.investments` (ledger version 3) beside the loans, with the loan rules for misses, default, the
-lender block and garnish; the dividend doesn't step up on a miss. General investment's growth counts its base from 10
-Gold a turn. One gift's relationship gain is capped at 10 points (ours, NOTES choice 63). The AI's investment and aid
-are 5 turns of its own income; an AI's investment in the player is an offer kept 3 turns. In the balance run a fully
-backed build costs its host 1.125 times the game's purchase price on a role building and 0.94 times on another, before
-production bonuses scale the progress up (`reports/balance-1.1.json`).
+Built 2026-10-29 (version 0.3.0, offline only), with the 1.1 probe results folded in. C3 settled P8: `addProgress` on an
+AI city's current build lands within 3 s and the AI keeps the build for the next 3 turns, as a control city does, so a
+development loan backs the build at the head of the queue as written. A development loan's Gold goes to a world account,
+`progress`, and only the Gold its progress uses leaves the investor (3 Gold a point), so "the rest is returned" is the
+rest never sent. The records sit in `ledger.investments` (ledger version 3) beside the loans, with the loan rules for
+misses, default, the lender block and garnish; the dividend doesn't step up on a miss. General investment's growth
+counts its base from 10 Gold a turn. One gift's relationship gain is capped at 10 points (ours, NOTES choice 63). The
+AI's investment and aid are 5 turns of its own income; an AI's investment in the player is an offer kept 3 turns. C13:
+of the four diplomacy levers the AI only starts Military Aid (7 times in 120 turns), so with Foreign investment on its
+initiator now pays the 2 Gold a turn its target gets (scaled by age) and the AI's own aid moves Gold instead of making
+it; whether that charge lands is owed, since the records couldn't separate 2 Gold from the turn's other moves. The
+rewritten Hinder Finances and Hinder Food Production weren't scored at all, and Send Gold wasn't either. For the player,
+Development Aid moved 12 a turn each way and Send Gold moved its `Amount2` at once (C12), and a deal sent as `ACCEPTED`
+moved Gold both ways with no answer needed (C6); `CostInGold` isn't charged, and no deal item carries a turn count (C7).
+Those are native player doors for aid the owner can choose later; 1.1 keeps the Trade tab's own aid so the player and
+the AI's rule run through the same checks. In the balance run a fully backed build costs its host 1.125 times the game's
+purchase price on a role building and 0.94 times on another, before production bonuses scale the progress up
+(`reports/balance-1.1.json`); C3's purchase read gives the price for what's left of a build, not the whole build.
 
 ### 4.13 Economic buildings and financial depth
 

@@ -91,7 +91,7 @@ Read only with Markets and trade bills or Foreign investment on, for every major
 | Field | Shape | Source | If missing |
 | --- | --- | --- | --- |
 | `civ.cities` | `[{ id, build, neededProgress, roleBuilding, tradeBuildings, purchaseCents }]` | each settlement's component id as `"owner:id"`, `BuildQueue.currentProductionTypeHash` named through `GameInfo`, what's left from `currentBuildProgress` and `getPercentComplete` (else the row's `Cost` times the speed), the build's roles, the Trade-role buildings standing, `Gold.getBuildingPurchaseCost` | no city read: no development loan on that civ, and nothing written off for a lost city |
-| `civ.tradeIncomeCents` | cents | `city.Yields.getTradeYields()` Gold summed, the engine's own exporter payment | 0 on the Trade tab |
+| `civ.tradeIncomeCents` | cents | `city.Yields.getTradeYields()` Gold summed, the engine's own exporter payment as the game's text describes it; it read 0 in every route city in the 1.1 probes (C9) | the Trade tab leaves the row out |
 | `input.routes` | `[{ importer, exporter, resources, importerTradeBuildings, exporterTradeBuildings }]` | the importer's `Resources.getResources()` with `Game.Resources.getOriginCity` per entry, grouped by the foreign major city they come from; the importer's city at the other end from `Trade.getCurrentTradeRoutes()` | no bills |
 | `input.market` | `{ resources, copies, strategic, industry }` | `GameInfo.Resources` (class), each major's own copies counted at the origin, `GameInfo.Units.StrategicResource`, the Industry buildings world-wide | no prices: bills are 0 |
 | `input.markets` | the markets envelope | `Configuration` key `tower-economics-markets` | an empty market |

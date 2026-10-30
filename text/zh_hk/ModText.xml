@@ -44,7 +44,7 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON" Language="zh_Hant_HK"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON_DESCRIPTION" Language="zh_Hant_HK"><Text>A part opens for a civilization when it reaches the stage's tech or civic. With the option off everything is open from the start of its age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_NAME" Language="zh_Hant_HK"><Text>Markets and trade bills</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_DESCRIPTION" Language="zh_Hant_HK"><Text>Gives every resource a world price, set by how many copies there are and who needs them. Each pair of civilizations then settles the net value of what they import from each other every turn, on top of the Trade Income the game already pays the exporter. A civilization pays at most a tenth of its income this way.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_DESCRIPTION" Language="zh_Hant_HK"><Text>Gives every resource a world price, set by how many copies there are and who needs them. Each pair of civilizations then settles the net value of what they import from each other every turn, and a civilization pays at most a tenth of its income this way.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_OFF" Language="zh_Hant_HK"><Text>Off</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_OFF_DESCRIPTION" Language="zh_Hant_HK"><Text>Resources have no price, and a route costs the importer what it does in the base game.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_ON" Language="zh_Hant_HK"><Text>On</Text></Replace>
@@ -345,5 +345,6 @@
         <Replace Tag="LOC_ECONOMICS_REQUEST_INVEST" Language="zh_Hant_HK"><Text>investment</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_ACCEPT_OFFER" Language="zh_Hant_HK"><Text>acceptance</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_DECLINE_OFFER" Language="zh_Hant_HK"><Text>refusal of an offer</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MILAID_PAY_NAME" Language="zh_Hant_HK"><Text>Military Aid sent</Text></Replace>
     </LocalizedText>
 </Database>

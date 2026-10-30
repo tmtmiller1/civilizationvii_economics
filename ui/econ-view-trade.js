@@ -36,9 +36,13 @@ const goldText = (cents, api) => api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold
 function settlementSection(input, api) {
   const view = tradeView(input, api.me);
   const block = section(api.loc("LOC_ECONOMICS_TRADE_SETTLEMENT"), [
-    row(api.loc("LOC_ECONOMICS_TRADE_INCOME"), goldText(view.tradeIncomeCents, api)),
     row(api.loc("LOC_ECONOMICS_TRADE_CAP"), goldText(view.capCents, api)),
   ]);
+  // The game's own Trade Income read 0 in every route city in the 1.1 probes (2026-10-29), so the row only shows
+  // when the read gives something.
+  if (view.tradeIncomeCents > 0) {
+    block.appendChild(row(api.loc("LOC_ECONOMICS_TRADE_INCOME"), goldText(view.tradeIncomeCents, api)));
+  }
   if (!view.on) { block.appendChild(note(api.loc("LOC_ECONOMICS_MARKETS_OFF"))); return block; }
   if (!view.stageOpen) block.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_STAGE", api.loc(api.stageOpener("trade") || "LOC_ECONOMICS_STAGE_NEXT_AGE"))));
   if (!view.rows.length) block.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_NONE")));

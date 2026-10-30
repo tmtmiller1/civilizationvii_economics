@@ -44,7 +44,7 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON" Language="ru_RU"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON_DESCRIPTION" Language="ru_RU"><Text>A part opens for a civilization when it reaches the stage's tech or civic. With the option off everything is open from the start of its age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_NAME" Language="ru_RU"><Text>Markets and trade bills</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_DESCRIPTION" Language="ru_RU"><Text>Gives every resource a world price, set by how many copies there are and who needs them. Each pair of civilizations then settles the net value of what they import from each other every turn, on top of the Trade Income the game already pays the exporter. A civilization pays at most a tenth of its income this way.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_DESCRIPTION" Language="ru_RU"><Text>Gives every resource a world price, set by how many copies there are and who needs them. Each pair of civilizations then settles the net value of what they import from each other every turn, and a civilization pays at most a tenth of its income this way.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_OFF" Language="ru_RU"><Text>Off</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_OFF_DESCRIPTION" Language="ru_RU"><Text>Resources have no price, and a route costs the importer what it does in the base game.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_ON" Language="ru_RU"><Text>On</Text></Replace>
@@ -345,5 +345,6 @@
         <Replace Tag="LOC_ECONOMICS_REQUEST_INVEST" Language="ru_RU"><Text>investment</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_ACCEPT_OFFER" Language="ru_RU"><Text>acceptance</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_DECLINE_OFFER" Language="ru_RU"><Text>refusal of an offer</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MILAID_PAY_NAME" Language="ru_RU"><Text>Military Aid sent</Text></Replace>
     </LocalizedText>
 </Database>

@@ -40,7 +40,7 @@
  "LOC_ECONOMICS_SETUP_STAGES_ON": "On",
  "LOC_ECONOMICS_SETUP_STAGES_ON_DESCRIPTION": "A part opens for a civilization when it reaches the stage's tech or civic. With the option off everything is open from the start of its age.",
  "LOC_ECONOMICS_SETUP_MARKETS_NAME": "Markets and trade bills",
- "LOC_ECONOMICS_SETUP_MARKETS_DESCRIPTION": "Gives every resource a world price, set by how many copies there are and who needs them. Each pair of civilizations then settles the net value of what they import from each other every turn, on top of the Trade Income the game already pays the exporter. A civilization pays at most a tenth of its income this way.",
+ "LOC_ECONOMICS_SETUP_MARKETS_DESCRIPTION": "Gives every resource a world price, set by how many copies there are and who needs them. Each pair of civilizations then settles the net value of what they import from each other every turn, and a civilization pays at most a tenth of its income this way.",
  "LOC_ECONOMICS_SETUP_MARKETS_OFF": "Off",
  "LOC_ECONOMICS_SETUP_MARKETS_OFF_DESCRIPTION": "Resources have no price, and a route costs the importer what it does in the base game.",
  "LOC_ECONOMICS_SETUP_MARKETS_ON": "On",
@@ -340,5 +340,6 @@
  "LOC_ECONOMICS_REQUEST_TARIFF": "tariff change",
  "LOC_ECONOMICS_REQUEST_INVEST": "investment",
  "LOC_ECONOMICS_REQUEST_ACCEPT_OFFER": "acceptance",
- "LOC_ECONOMICS_REQUEST_DECLINE_OFFER": "refusal of an offer"
+ "LOC_ECONOMICS_REQUEST_DECLINE_OFFER": "refusal of an offer",
+ "LOC_ECONOMICS_MILAID_PAY_NAME": "Military Aid sent"
 }

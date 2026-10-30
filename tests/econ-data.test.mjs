@@ -117,3 +117,34 @@ test("against a compiled gameplay database copy, the SQL applies and the touched
   }
   t.diagnostic(`applied to a ${age} database copy: ${unlocks.length} unlock rows`);
 });
+
+test("Military Aid's initiator pays: the modifier pays what the target gets, behind Foreign investment, through parents", (t) => {
+  const xml = read("data/econ-investment-gameeffects.xml");
+  const invest = read("data/econ-investment-diplomacy.sql");
+  assert.match(xml, /id="MOD_ECONOMICS_MILAID_PAY_GOLD"[\s\S]*?type="ScaleByGameAge" extra="100">-2</, "-2 a turn, scaled by age");
+  assert.match(xml, /id="MOD_ECONOMICS_MILAID_INITIATOR_PAYS"[\s\S]*?InitialPlayerAccept">MOD_ECONOMICS_MILAID_PAY_GOLD</);
+  assert.match(xml, /TargetPlayerAccept">MOD_ECONOMICS_MILAID_NO_EFFECT</, "the target keeps only the game's own +2");
+  assert.match(invest, /INSERT OR IGNORE INTO EnterStageModifiers \(StageType, ModifierId\)\s+SELECT/);
+  assert.match(invest, /FROM DiplomaticActionStages s, Modifiers m/);
+  const group = (modinfo.match(/<ActionGroup id="economics-investment"[\s\S]*?<\/ActionGroup>/) || [""])[0];
+  assert.match(group, /criteria="investment-on"[\s\S]*econ-investment-gameeffects\.xml[\s\S]*econ-investment-diplomacy\.sql/);
+  assert.match((modinfo.match(/<Criteria id="investment-on">[\s\S]*?<\/Criteria>/) || [""])[0], /ECONOMICS_INVESTMENT_ON/);
+  const source = process.env.CIV7_GAMEPLAY_DB;
+  if (!source || !fs.existsSync(source)) { t.diagnostic("CIV7_GAMEPLAY_DB not set; the database check didn't run"); return; }
+  const copy = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "econ-fk-")), "gameplay.sqlite");
+  fs.copyFileSync(source, copy);
+  const run = (script) => execFileSync("sqlite3", [copy], { input: script, encoding: "utf8" });
+  run(`PRAGMA foreign_keys=OFF; DELETE FROM EnterStageModifiers WHERE ModifierId LIKE 'MOD_ECON%';
+    INSERT INTO Modifiers (ModifierId, ModifierType) SELECT 'MOD_ECONOMICS_MILAID_INITIATOR_PAYS', ModifierType
+      FROM Modifiers WHERE ModifierId = 'PLAYER_DIPLOMACY_MILITARY_AID_COMPLETE';
+    ${invest}`);
+  assert.equal(run("SELECT COUNT(*) FROM EnterStageModifiers WHERE ModifierId = 'MOD_ECONOMICS_MILAID_INITIATOR_PAYS';").trim(), "1");
+  assert.equal(run("PRAGMA foreign_key_check(EnterStageModifiers);").trim(), "");
+  const without = path.join(path.dirname(copy), "no-milaid.sqlite");
+  fs.copyFileSync(source, without);
+  const runWithout = (script) => execFileSync("sqlite3", [without], { input: script, encoding: "utf8" });
+  runWithout(`PRAGMA foreign_keys=OFF; DELETE FROM EnterStageModifiers WHERE StageType = 'DIPLOMACY_MILITARY_AID_COMPLETE';
+    DELETE FROM DiplomaticActionStages WHERE DiplomacyActionType = 'DIPLOMACY_ACTION_MILITARY_AID'; ${invest}`);
+  assert.equal(runWithout("SELECT COUNT(*) FROM EnterStageModifiers WHERE ModifierId LIKE 'MOD_ECONOMICS%';").trim(), "0",
+    "no stage, no row, no failure");
+});

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Economics: the native half of aid (DESIGN 4.12, section 1 "Native first"). Loaded only with the Foreign investment
+  setup option on (economics.modinfo, criteria investment-on).
+
+  Military Aid already pays its target 2 Gold a turn (PLAYER_DIPLOMACY_MILITARY_AID_TARGET_PLAYER_ACCEPT, scaled by
+  age), and it's the one diplomatic action the AI was watched starting in the 1.1 probes (7 times in 120 Exploration
+  turns, 2026-10-29); the sanction ids rewritten as aid weren't scored at all. A second modifier on its completion
+  stage charges the initiator the same 2 Gold a turn, so the endeavor moves Gold from one civ to the other instead of
+  making it, and the AI plays aid as a player. It's in the shape the base endeavors attach their per-turn yields with
+  (EFFECT_DAE_COOPERATIVE_ATTACH_MODIFIER), the one the probe compiled. The stage row is in
+  data/econ-investment-diplomacy.sql.
+-->
+<GameEffects xmlns="GameEffects">
+    <Modifier id="MOD_ECONOMICS_MILAID_NO_EFFECT" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_DO_NOTHING">
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_MILAID_PAY_GOLD" collection="COLLECTION_OWNER" effect="EFFECT_PLAYER_ADJUST_YIELD">
+        <Argument name="Amount" type="ScaleByGameAge" extra="100">-2</Argument>
+        <Argument name="YieldType">YIELD_GOLD</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_MILAID_PAY_NAME</Argument>
+    </Modifier>
+    <Modifier id="MOD_ECONOMICS_MILAID_INITIATOR_PAYS" collection="COLLECTION_OWNER" effect="EFFECT_DAE_COOPERATIVE_ATTACH_MODIFIER">
+        <String context="Name">LOC_ECONOMICS_MILAID_PAY_NAME</String>
+        <Argument name="InitialPlayerAccept">MOD_ECONOMICS_MILAID_PAY_GOLD</Argument>
+        <Argument name="InitialPlayerSupport">MOD_ECONOMICS_MILAID_PAY_GOLD</Argument>
+        <Argument name="TargetPlayerAccept">MOD_ECONOMICS_MILAID_NO_EFFECT</Argument>
+        <Argument name="TargetPlayerSupport">MOD_ECONOMICS_MILAID_NO_EFFECT</Argument>
+    </Modifier>
+</GameEffects>

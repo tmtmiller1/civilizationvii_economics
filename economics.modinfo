@@ -63,6 +63,13 @@
             </ConfigurationValueMatches>
             <AgeInUse>AGE_MODERN</AgeInUse>
         </Criteria>
+        <Criteria id="investment-on">
+            <ConfigurationValueMatches>
+                <Group>Game</Group>
+                <ConfigurationId>ECONOMICS_INVESTMENT</ConfigurationId>
+                <Value>ECONOMICS_INVESTMENT_ON</Value>
+            </ConfigurationValueMatches>
+        </Criteria>
         <Criteria id="ai-on">
             <ConfigurationValueMatches>
                 <Group>Game</Group>
@@ -252,6 +259,18 @@
                 <UpdateDatabase>
                     <Item>data/econ-tax-cards-modern.xml</Item>
                     <Item>data/econ-tax-cards.sql</Item>
+                </UpdateDatabase>
+            </Actions>
+        </ActionGroup>
+        <!-- Military Aid's initiator pays (DESIGN 4.12), behind the Foreign investment option. -->
+        <ActionGroup id="economics-investment" scope="game" criteria="investment-on">
+            <Properties>
+                <LoadOrder>110</LoadOrder>
+            </Properties>
+            <Actions>
+                <UpdateDatabase>
+                    <Item>data/econ-investment-gameeffects.xml</Item>
+                    <Item>data/econ-investment-diplomacy.sql</Item>
                 </UpdateDatabase>
             </Actions>
         </ActionGroup>

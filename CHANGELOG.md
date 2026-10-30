@@ -25,13 +25,14 @@ release is generated from the matching section below by `scripts/steam-changelog
   debt, War Levy with Coinage; each closed part is greyed with the civic or tech that opens it.
 - World prices: every resource gets a price from its class, how many copies the civilizations hold and who needs
   it, and the Markets tab lists them with the last 30 turns.
-- Trade bills: each pair of civilizations settles the net value of what they import from each other every turn, on
-  top of the Trade Income the game already pays the exporter. The side that owes more pays, never more than a tenth
-  of its income, and anything over that is waived. Trade buildings at either end move the bill. The Trade tab shows
+- Trade bills: each pair of civilizations settles the net value of what they import from each other every turn. The
+  side that owes more pays, never more than a tenth of its income, and anything over that is waived. Trade buildings at either end move the bill. The Trade tab shows
   each partner's bill, the cap and what a new route would add.
 - Tariffs, from Imperialism: Low or High holds back 10 or 25 percent of what you owe the civilizations you import
   from. A High tariff costs 1 relationship with each of them every five turns, and the computer players answer one
   in kind. Set it on the Fiscal tab, once every five turns.
+- With Foreign investment on, a civilization that sends Military Aid pays the 2 Gold a turn its target gets (scaled
+  by age), so the computer players' own aid moves Gold between them instead of making it.
 - Foreign investment and aid from the Trade tab: a development loan puts Gold into the build a city is working on now
   (from Guilds) and is repaid with interest over 25 turns, more on an economic building; general investment (from
   Colonialism) goes into the treasury and its return follows the host's income; aid of either kind asks nothing back.

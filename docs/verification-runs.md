@@ -193,10 +193,10 @@ lines in one game.
 | --- | --- | --- | --- |
 | C.8 | With a route importing from an AI and the AI importing from you, the Trade tab shows one bill per partner, the side owing more pays, and both balances move by the same amount at the next `TurnBegin` (`UI.log` turn line counts the transfer); the turn notification has the trade line | Exploration 9001, a route each way | `ui/econ-commerce.js` `settleTradeFor`, `ui/econ-view-trade.js` |
 | C.9 | The bill never passes a tenth of the payer's income; at income 0 or below nothing is paid; anything over the cap shows as waived and isn't owed next turn | same, the player's income pushed low | `ui/econ-trade.js` `capPayments` |
-| C.10 | The imports read for AI pairs: an AI importing from another AI shows a bill between them in `__towerEconomics.session().lastPlan.trade` (the read is the AI's own `getResources` with origins, not P7's per-route list) | same | `ui/econ-commerce-read.js` `readRoutes` |
-| C.11 | The Trade tab's "Trade Income the game pays your cities" equals the city yield tooltips' Trade Income, and the exporter's figure per route matches `TradeYields` (3 a copy by land, 6 by sea in Exploration) | same | `ui/econ-commerce-read.js` `readTradeIncomeCents` |
+| C.10 | The imports read for AI pairs: an AI importing from another AI shows a bill between them in `__towerEconomics.session().lastPlan.trade`. The 1.1 probes settled the reads underneath (C8: per-route imports for AIs add up; C14: copies count once at the origin); the bill itself is unwatched | same | `ui/econ-commerce-read.js` `readRoutes` |
+| C.11 | Where the game pays an exporter for a route, if it does: `getTradeYields()` read 0 in every route city in the 1.1 probes (C9). Read a route city's Gold yield breakdown by hand (or `calculateAllResourceTradeYields`); if the payment is found, point `readTradeIncomeCents` at it and the Trade tab's row shows | Exploration 9001, a person | `ui/econ-commerce-read.js` `readTradeIncomeCents` |
 | C.12 | A Bazaar or Guildhall in the exporting city raises that route's bill by 10 percent; one in the importing city lowers it | same | `ui/econ-commerce-read.js` `routeEnds` |
-| C.13 | "Routes you could make" lists foreign cities with what a route would bring and the bill it would add, or says the game didn't answer (`projectPossibleTradeRoutes`) | same | `ui/econ-commerce-read.js` `readPossibleRoutes` |
+| C.13 | "Routes you could make" lists foreign cities with what a route would bring and the bill it would add. C2 found `projectPossibleTradeRoutes` answers with `importPayloads` by turn 40; the tab's list is unwatched | same | `ui/econ-commerce-read.js` `readPossibleRoutes` |
 | C.14 | Bills follow a war: a route a war ends drops out of the next turn's bill | same, a declared war | `ui/econ-commerce-read.js` |
 
 ### Tariffs
@@ -213,7 +213,7 @@ lines in one game.
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
 | C.19 | A development loan on an AI city's current build: the build's progress jumps (by the points shown, scaled up by the city's production bonuses), only the Gold the progress used leaves your treasury, and the return arrives each turn for 25 turns; relationship up by the shown points | Exploration 9001, Guilds on both sides, a Neutral AI | `ui/econ-invest-open.js` `openInvestment`, `ui/econ-commerce-read.js` `sendProgress` |
-| C.20 | P8: the AI keeps the build the progress landed on for the next 3 turns, or finishes it; if it switches, the return still runs | same | DESIGN 4.12, P8 |
+| C.20 | How much progress a grant lands as (NOTES finding L: 20 sent read as 76.5): one development loan on a city with no production bonuses, percent before and after. P8's keep is settled (C3) | same | `ui/econ-commerce-read.js` `sendProgress` |
 | C.21 | A city with nothing queued has no development loan button; at war or Unfriendly the buttons say why | same | `ui/econ-view-commerce.js` `investTargets` |
 | C.22 | General investment: the Gold lands in the AI's treasury; the return each turn moves with its income (higher when it grows) | Exploration 9001, Colonialism on both sides | `ui/econ-invest.js` `dividendDue` |
 | C.23 | Aid: Gold to the AI, nothing back, relationship up by the shown points | any, at peace | `ui/econ-invest-open.js` |
@@ -222,6 +222,15 @@ lines in one game.
 | C.26 | Missing a return three times puts the record in default, the investor's later investments in you are refused, and the garnish runs | the player hosting, balance held low | `ui/econ-commerce.js` `payDividend` |
 | C.27 | Repudiating an investor from the Loans tab closes what you host from it, with the grievance and witness costs of a loan repudiation | the player hosting | `ui/econ-repudiation.js` |
 | C.28 | AI aid: an AI Friendly with a civ in default sends it 5 turns of its income once in the age (ledger event `invest` with aid 1) | soak | `ui/econ-commerce.js` `aiAid` |
+
+### Military Aid's initiator pays
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| C.35 | The data group loads with Foreign investment on (`Database.log` clean) and is absent with it off | Exploration 9001, vanilla | `data/econ-investment-*.{xml,sql}` |
+| C.36 | An AI that starts Military Aid loses 2 Gold a turn (scaled by age) while its target gains 2, for the endeavor's turns: `Player_Treasury.csv` for both, the levy-free way C13 couldn't separate (compare the same seed with the option off) | Exploration 9001, 120 turns, `AIVerboseLogging 1` | same |
+| C.37 | AIs still start Military Aid about as often with the charge as without (C13 counted 7 in 120 turns with no charge on the levy game) | same, on and off | same |
+| C.38 | The yield breakdown names "Military Aid sent" on the initiator (hover) | a person | `LOC_ECONOMICS_MILAID_PAY_NAME` |
 
 ### Roles, other mods, soak
 
@@ -242,3 +251,4 @@ lines in one game.
 | The 1.1 glue against a fake engine | `tests/econ-commerce-read.test.mjs` | imports grouped by origin city, majors only; copies at the origin; builds and what's left; progress on the city found by its key; the markets envelope written with the ledger |
 | The Markets and Trade tabs and the tariff row | `tests/econ-views.test.mjs`, `tests/econ-view-commerce.test.mjs` | each draws; Accept, invest and tariff queue the requests the model expects |
 | The 1.1 balance rows | `tests/econ-balance-commerce.test.mjs`, `reports/balance-1.1.json` | bills sum to zero, no payer past 10% of income, markets envelope about 10 KB, a turn in about 0.1 ms; the cap binds on most settlement rows (NOTES finding K) |
+| Military Aid's initiator charge against the compiled database | `tests/econ-data.test.mjs` with `CIV7_GAMEPLAY_DB` | the stage row lands once on 1.5.0 Exploration and Modern copies, foreign keys clean; a copy without Military Aid's stage skips the row |
