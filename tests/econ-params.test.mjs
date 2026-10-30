@@ -20,12 +20,12 @@ test("base rates: 0.03 in Antiquity, 0.02 in Exploration, 0.015 in Modern (DESIG
   assert.deepEqual(BASE_RATE_PPM, { AGE_ANTIQUITY: 30000, AGE_EXPLORATION: 20000, AGE_MODERN: 15000 });
 });
 
-test("world accounts: bond, temple and tax are the only parties that are not a player id", () => {
-  assert.equal(isWorldAccount("bond"), true);
-  assert.equal(isWorldAccount("temple"), true);
-  assert.equal(isWorldAccount("tax"), true);
+test("world accounts: the named accounts are the only parties that are not a player id", () => {
+  for (const id of ["bond", "temple", "tax", "progress", "citizens", "inflation", "cycle", "plan"]) {
+    assert.equal(isWorldAccount(id), true, id);
+  }
   assert.equal(isWorldAccount(3), false);
-  assert.equal(isWorldAccount("citizens"), false, "1.2's account is not in 1.0");
+  assert.equal(isWorldAccount("treasury"), false);
 });
 
 test("rates option: unknown falls back to standard", () => {

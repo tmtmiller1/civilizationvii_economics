@@ -38,13 +38,17 @@ export function recentRepudiations(ledger, pid, turn) {
 }
 
 /**
- * max(0, (12 + depth_turns - 4 * repudiations) * income) - outstanding, never below 0.
- * @param {{ incomeCents: number, outstandingCents: number, depthTurns?: number, repudiations?: number }} q
+ * max(0, (12 + depth_turns - 4 * repudiations) * income) - outstanding, never below 0. A system adds turns
+ * (Merchant oligarchy +4, Manorial -4) or scales the whole limit (Corporatist 1.5x), DESIGN 4.17.
+ * @param {{ incomeCents: number, outstandingCents: number, depthTurns?: number, repudiations?: number,
+ *   systemTurns?: number, systemPct?: number }} q
  */
-export function creditCap({ incomeCents, outstandingCents, depthTurns = 0, repudiations = 0 }) {
+export function creditCap({ incomeCents, outstandingCents, depthTurns = 0, repudiations = 0, systemTurns = 0,
+  systemPct = 100 }) {
   const depth = Math.max(0, Math.min(CREDIT.maxDepthTurns, Math.floor(depthTurns) || 0));
-  const turns = CREDIT.baseTurns + depth - CREDIT.perRepudiationTurns * repudiations;
-  return Math.max(0, Math.max(0, turns * incomeCents) - outstandingCents);
+  const turns = CREDIT.baseTurns + depth + systemTurns - CREDIT.perRepudiationTurns * repudiations;
+  const limit = Math.floor((Math.max(0, turns * incomeCents) * Math.max(0, systemPct)) / 100);
+  return Math.max(0, limit - outstandingCents);
 }
 
 /**

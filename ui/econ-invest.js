@@ -60,26 +60,31 @@ export function baseDividend(principal, mille) {
 }
 
 /**
- * growth = clamp(income now / income at investment, 0.5, 2.0) in thousandths; income at or below 0 now reads 0.5,
- * and an investment made at an income under 10 Gold counts from 10.
+ * growth = clamp(income now / income at investment, 0.5, 2.0) in thousandths; income at or below 0 now reads the
+ * floor, and an investment made at an income under 10 Gold counts from 10. `wide` is the Capitalism stage's equity
+ * range, 0.25 to 3.0 (DESIGN 4.15).
  * @param {number} incomeNow
  * @param {number} baseIncome
+ * @param {boolean} [wide]
  */
-export function growthMille(incomeNow, baseIncome) {
-  if (!(incomeNow > 0)) return INVEST.growthMinMille;
+export function growthMille(incomeNow, baseIncome, wide = false) {
+  const low = wide ? INVEST.equityMinMille : INVEST.growthMinMille;
+  const high = wide ? INVEST.equityMaxMille : INVEST.growthMaxMille;
+  if (!(incomeNow > 0)) return low;
   const base = Math.max(INVEST.minHostIncomeCents, baseIncome);
   const mille = Math.floor((incomeNow * 1000) / base);
-  return Math.max(INVEST.growthMinMille, Math.min(INVEST.growthMaxMille, mille));
+  return Math.max(low, Math.min(high, mille));
 }
 
 /**
  * This turn's dividend: fixed for a development loan, ceil(G * 4.5% * growth) for general.
  * @param {Investment} record
  * @param {number} hostIncomeCents
+ * @param {boolean} [wide] the Capitalism stage's equity range on the host
  */
-export function dividendDue(record, hostIncomeCents) {
+export function dividendDue(record, hostIncomeCents, wide = false) {
   if (record.kind === "project") return baseDividend(record.principal, record.mille);
-  return divCeil(record.principal * record.mille * growthMille(hostIncomeCents, record.baseIncome), 1000000);
+  return divCeil(record.principal * record.mille * growthMille(hostIncomeCents, record.baseIncome, wide), 1000000);
 }
 
 /**
@@ -106,13 +111,14 @@ export function tenthsFor(kind, asAid) {
 }
 
 /**
+ * `extraMille` is the investor's system's addition to the return (Mercantile +1 point, DESIGN 4.17).
  * @param {{ id: string, kind: InvestKind, investor: number, host: number, principal: number, turn: number,
- *   cityId?: string | null, roleBuilding?: boolean, baseIncome?: number }} spec
+ *   cityId?: string | null, roleBuilding?: boolean, baseIncome?: number, extraMille?: number }} spec
  * @returns {Investment}
  */
 export function makeInvestment({ id, kind, investor, host, principal, turn, cityId = null, roleBuilding = false,
-  baseIncome = 0 }) {
-  const mille = returnMille(kind, roleBuilding);
+  baseIncome = 0, extraMille = 0 }) {
+  const mille = returnMille(kind, roleBuilding) + Math.max(0, extraMille);
   return { id, kind, investor, host, principal, mille, term: INVEST.term, paid: 0, missed: 0, state: "active",
     opened: turn, closedTurn: null, writtenOff: 0, outstanding: INVEST.term * baseDividend(principal, mille),
     cityId: kind === "project" ? cityId : null, baseIncome: kind === "general" ? baseIncome : 0 };
@@ -127,10 +133,10 @@ export function isOpenInvestment(record) {
  * An active record's turn: the dividend in full or a miss. Three misses in a row is default, as for a loan
  * (DESIGN 4.4); the dividend itself doesn't step up, since its size is the contract.
  * @param {Investment} record
- * @param {{ funds: number, hostIncomeCents: number }} q
+ * @param {{ funds: number, hostIncomeCents: number, wide?: boolean }} q
  */
-export function settleDividend(record, { funds, hostIncomeCents }) {
-  const due = dividendDue(record, hostIncomeCents);
+export function settleDividend(record, { funds, hostIncomeCents, wide = false }) {
+  const due = dividendDue(record, hostIncomeCents, wide);
   if (funds < due) {
     const missed = record.missed + 1;
     /** @type {LoanState} */

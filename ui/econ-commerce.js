@@ -16,7 +16,10 @@ import { blockFor, relationLevel } from "./econ-lenders.js";
 import { withBlock } from "./econ-payments.js";
 import { hasStage } from "./econ-stages.js";
 import { addInfluence, funds, lenderBalance } from "./econ-batch.js";
-import { emit, event, incomeOf, isAlive, notice } from "./econ-turn.js";
+import { emit, event, incomeOf, isAlive, notice, termsFor } from "./econ-turn.js";
+import { basePriceCents } from "./econ-prices.js";
+import { takesCapitalism } from "./econ-systems.js";
+import { isInDepression } from "./econ-macro.js";
 import { openInvestment, investRefusal } from "./econ-invest-open.js";
 
 /**
@@ -28,11 +31,40 @@ export function marketStep(ctx, market) {
   const { markets } = ctx;
   markets.incomes = withIncomes(markets.incomes, ctx.civs);
   if (!ctx.options.markets || !market) return;
+  for (const row of market.resources || []) ctx.basePrices[row.type] = basePriceCents(row.class);
   const civs = ctx.civs.filter((civ) => civ.alive === true).length;
-  const next = nextPrices({ market, previous: markets, civs, war: anyWar(ctx.relations) });
+  const next = nextPrices({ market, previous: markets, civs, war: anyWar(ctx.relations), eBp: ctx.readings.e,
+    capitalism: capitalismPrices(ctx) });
   markets.prices = next.prices;
   markets.history = next.history;
   markets.lastTurn = ctx.turn;
+}
+
+/**
+ * Whether the Capitalism stage's price smoothing (0.5, DESIGN 4.15) runs: a Market or Mixed civ has reached it.
+ * @param {TurnContext} ctx
+ */
+function capitalismPrices(ctx) {
+  return ctx.civs.some((civ) => civ.alive === true && hasStage(civ, "capitalism", ctx.turn, ctx.options)
+    && takesCapitalism(ctx.macro.systems[String(civ.id)]?.system));
+}
+
+/**
+ * The Capitalism stage's equity on a host (DESIGN 4.15): a Market or Mixed civ past the stage.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ */
+export function hasEquity(ctx, pid) {
+  return hasStage(ctx.civ.get(pid), "capitalism", ctx.turn, ctx.options)
+    && takesCapitalism(ctx.macro.systems[String(pid)]?.system);
+}
+
+/**
+ * The bill's terms for each civ from its system (DESIGN 4.17).
+ * @param {TurnContext} ctx
+ */
+export function tradeTermsOf(ctx) {
+  return (/** @type {number} */ pid) => termsFor(ctx, pid);
 }
 
 /**
@@ -55,11 +87,12 @@ export function tradeStep(ctx) {
   const civIds = new Set(ctx.civs.filter((civ) => civ.alive === true).map((civ) => civ.id));
   const tariffsOn = ctx.options.tariffs === true;
   const owed = owedByPair({ routes: billedRoutes(ctx), prices: ctx.markets.prices, tariffs: ctx.markets.tariffs,
-    civIds, tariffsOn });
+    civIds, tariffsOn, termsOf: tradeTermsOf(ctx), basePrices: ctx.basePrices });
   ctx.owed = owed;
   ctx.trade = capPayments(netPairs(owed), (pid) => incomeOf(ctx, pid)).map((row) => ({ ...row, paid: 0 }));
   if (!tariffsOn) return;
-  const costs = highTariffCosts({ tariffs: ctx.markets.tariffs, owed, turn: ctx.turn });
+  const costs = highTariffCosts({ tariffs: ctx.markets.tariffs, owed, turn: ctx.turn,
+    everyTurns: (pid) => termsFor(ctx, pid).highTariffEveryTurns });
   ctx.out.relationships.push(...costs);
   /** @type {Map<number, number>} */
   const partners = new Map();
@@ -128,7 +161,7 @@ function replaceInvestment(ctx, record) {
  */
 function payDividend(ctx, record) {
   const result = settleDividend(record, { funds: funds(ctx.batch, record.host),
-    hostIncomeCents: incomeOf(ctx, record.host) });
+    hostIncomeCents: incomeOf(ctx, record.host), wide: hasEquity(ctx, record.host) });
   const closedTurn = result.closed ? ctx.turn : null;
   replaceInvestment(ctx, { ...result.record, closedTurn });
   if (!result.missed) {
@@ -233,13 +266,20 @@ function hasRepudiated(ctx, host, investor) {
 }
 
 /**
- * The living civs this AI is Friendly with and that haven't repudiated a debt to it lately, in id order.
+ * The living civs this AI is Friendly with and that haven't repudiated a debt to it lately, in id order. From the
+ * Capitalism stage, AI civs invest in each other (DESIGN 4.15): a Market or Mixed investor past it also takes Neutral
+ * hosts that are too.
  * @param {TurnContext} ctx
  * @param {Civ} civ
+ * @param {boolean} [equity] whether Neutral equity hosts count
  */
-function friendlyHosts(ctx, civ) {
-  return ctx.civs.filter((host) => host.id !== civ.id && host.alive === true
-    && relationLevel(ctx.relations, civ.id, host.id) === "friendly" && !hasRepudiated(ctx, host.id, civ.id));
+function friendlyHosts(ctx, civ, equity = false) {
+  const wide = equity && hasEquity(ctx, civ.id);
+  return ctx.civs.filter((host) => {
+    if (host.id === civ.id || host.alive !== true || hasRepudiated(ctx, host.id, civ.id)) return false;
+    const level = relationLevel(ctx.relations, civ.id, host.id);
+    return level === "friendly" || (wide && level === "neutral" && hasEquity(ctx, host.id));
+  });
 }
 
 /**
@@ -279,7 +319,7 @@ export function aiInvest(ctx, civ) {
   if (!ctx.options.investment || !canSpare(ctx, civ)) return;
   if (ctx.turn - lastInvestTurn(ctx, civ.id) < INVEST.aiEveryTurns) return;
   const cents = INVEST.aiSizeTurns * civ.incomeCents;
-  for (const host of friendlyHosts(ctx, civ)) {
+  for (const host of friendlyHosts(ctx, civ, true)) {
     const target = aiTargetFor(ctx, civ, host);
     if (!target) continue;
     const spec = { investor: civ.id, host: host.id, form: target.form, cents, cityId: target.cityId, asAid: false };
@@ -306,8 +346,8 @@ function offerTo(ctx, spec) {
 }
 
 /**
- * DESIGN 6 aid: income above 0; to a Friendly civ in default, once per age, up to 5 turns of its own income.
- * Depression, the other trigger, arrives with the business cycle in 1.2.
+ * DESIGN 6 aid: income above 0; to a Friendly civ in default or in its own Depression (4.11), once per age, up to 5
+ * turns of its own income.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
@@ -316,7 +356,7 @@ export function aiAid(ctx, civ) {
   if (ctx.markets.aidAge[String(civ.id)] === ctx.age) return;
   const cents = Math.min(INVEST.aiSizeTurns * civ.incomeCents, Math.max(0, funds(ctx.batch, civ.id)));
   for (const host of friendlyHosts(ctx, civ)) {
-    if (activeDefaults(ctx.ledger, host.id) === 0) continue;
+    if (activeDefaults(ctx.ledger, host.id) === 0 && !isInDepression(ctx, host.id)) continue;
     const spec = { investor: civ.id, host: host.id, form: /** @type {InvestKind} */ ("general"), cents,
       cityId: null, asAid: true };
     if (investRefusal(ctx, spec)) continue;

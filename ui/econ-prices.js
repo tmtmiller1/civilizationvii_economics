@@ -2,8 +2,9 @@
 // resource rows, the source copies at their origin, this age's strategic resources and the Industry count once a
 // turn; this module turns them into a target price and smooths the price toward it. Resources come from the table
 // the glue read, with every mod applied, so a removed resource drops out and a new one gets a price. Prices only feed
-// the trade bills and the Markets tab: holding a resource pays nothing by itself (DESIGN 12 item 5). E, the business
-// cycle's index, is 1.0 until 1.2. Nothing here reads the engine.
+// the trade bills and the Markets tab: holding a resource pays nothing by itself (DESIGN 12 item 5). E is the business
+// cycle's index (4.11, in basis points); from the Capitalism stage prices move faster toward their target (4.15).
+// Nothing here reads the engine.
 
 import { BASE_PRICE_CENTS, PRICES } from "./econ-params.js";
 
@@ -39,14 +40,14 @@ export function demandPct({ strategic, war, factory, industry }) {
 }
 
 /**
- * target = base * scarcity * demand (* E, 1.0 in 1.1), in cents.
+ * target = base * scarcity * demand * E, in cents; E in basis points (10000 is 1.0).
  * @param {{ type: string, class: string }} resource
- * @param {{ civs: number, copies: number, strategic: boolean, war: boolean, industry: number }} q
+ * @param {{ civs: number, copies: number, strategic: boolean, war: boolean, industry: number, eBp?: number }} q
  */
-export function targetPriceCents(resource, { civs, copies, strategic, war, industry }) {
+export function targetPriceCents(resource, { civs, copies, strategic, war, industry, eBp = 10000 }) {
   const factory = resource.class === "RESOURCECLASS_FACTORY";
   const demand = demandPct({ strategic, war, factory, industry });
-  return Math.round((basePriceCents(resource.class) * scarcityPct(civs, copies) * demand) / 10000);
+  return Math.round((basePriceCents(resource.class) * scarcityPct(civs, copies) * demand * eBp) / 100000000);
 }
 
 /**
@@ -70,11 +71,21 @@ export function anyWar(relations) {
 
 /**
  * The next prices and their history for every resource the market read lists; a resource the read no longer lists
- * drops out of both.
- * @param {{ market: MarketRead, previous: MarketsState, civs: number, war: boolean }} q
+ * drops out of both. `eBp` is the cycle's E; `capitalism` the Capitalism stage's faster smoothing (0.5).
+ * @param {{ market: MarketRead, previous: MarketsState, civs: number, war: boolean, eBp?: number,
+ *   capitalism?: boolean }} q
  * @returns {{ prices: Record<string, number>, history: Record<string, number[]> }}
  */
-export function nextPrices({ market, previous, civs, war }) {
+export function nextPrices({ market, previous, civs, war, eBp = 10000, capitalism = false }) {
+  return pricesFrom({ market, previous, civs, war, eBp,
+    smoothing: capitalism ? PRICES.capitalismSmoothingPct : PRICES.smoothingPct });
+}
+
+/**
+ * @param {{ market: MarketRead, previous: MarketsState, civs: number, war: boolean, eBp: number,
+ *   smoothing: number }} q
+ */
+function pricesFrom({ market, previous, civs, war, eBp, smoothing }) {
   const strategic = new Set(market.strategic || []);
   /** @type {Record<string, number>} */
   const prices = {};
@@ -83,8 +94,8 @@ export function nextPrices({ market, previous, civs, war }) {
   for (const resource of market.resources || []) {
     if (!resource || typeof resource.type !== "string") continue;
     const target = targetPriceCents(resource, { civs, copies: market.copies?.[resource.type] || 0,
-      strategic: strategic.has(resource.type), war, industry: market.industry || 0 });
-    const price = smoothPrice(previous.prices[resource.type], target);
+      strategic: strategic.has(resource.type), war, industry: market.industry || 0, eBp });
+    const price = smoothPrice(previous.prices[resource.type], target, smoothing);
     prices[resource.type] = price;
     history[resource.type] = [...(previous.history[resource.type] || []), price].slice(-PRICES.historyTurns);
   }

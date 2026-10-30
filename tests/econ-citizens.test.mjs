@@ -1,0 +1,58 @@
+// Citizen loans and the plan (DESIGN 4.17; TEST-PLAN 12.1 econ-systems): the cap per market town, the rate, the
+// celebration the interest buys, a miss and a repudiation at home, the AI's rule; the plan's take and split.
+import test from "node:test";
+import assert from "node:assert/strict";
+import { aiCitizenPrincipal, citizenCapCents, citizenRatePpm, interestCelebrationCents, missCelebrationCents,
+  repudiationCelebrationCents } from "../ui/econ-citizens.js";
+import { planSplit, planTakeCents } from "../ui/econ-planned.js";
+
+test("citizen_cap: 5 turns of max(10, income) per settlement with a Commerce building, less what's owed", () => {
+  assert.equal(citizenCapCents({ incomeCents: 2000, commerceSettlements: 2, owedCents: 0 }), 20000);
+  assert.equal(citizenCapCents({ incomeCents: 500, commerceSettlements: 2, owedCents: 0 }), 10000, "income at least 10");
+  assert.equal(citizenCapCents({ incomeCents: 2000, commerceSettlements: 2, owedCents: 15000 }), 5000);
+  assert.equal(citizenCapCents({ incomeCents: 2000, commerceSettlements: 2, owedCents: 50000 }), 0);
+  assert.equal(citizenCapCents({ incomeCents: 2000, commerceSettlements: 0, owedCents: 0 }), 0, "no market towns");
+  assert.equal(citizenCapCents({ incomeCents: 2000, commerceSettlements: -1.5, owedCents: -5 }), 0);
+});
+
+test("the rate is 0.75 of the base rate over standing, by depth and the Rates option, stopped at r_cap", () => {
+  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 100 }), 22500);
+  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 50 }), 45000);
+  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 100, depthFactorPct: 80, rates: 125 }), 22500);
+  assert.equal(citizenRatePpm({ age: "AGE_ANTIQUITY", standing: 10 }), 120000, "r_cap");
+  assert.equal(citizenRatePpm({ age: "AGE_NONE", standing: 100 }), null);
+});
+
+test("interest buys twice its size in celebration; a miss costs 5 turns of the meter, a repudiation 10", () => {
+  assert.equal(interestCelebrationCents(450), 900);
+  assert.equal(interestCelebrationCents(-3), 0);
+  assert.equal(missCelebrationCents(600), -3000);
+  assert.equal(missCelebrationCents(-600), 0, "nothing to lose from a falling meter");
+  assert.equal(repudiationCelebrationCents(600), -6000);
+});
+
+test("the AI's citizen rule: positive income, solvent, owing them nothing, under 10 turns of income held", () => {
+  const base = { incomeCents: 1000, balanceCents: 5000, insolvent: false, owesCitizens: false, roomCents: 20000 };
+  assert.equal(aiCitizenPrincipal(base), 5000);
+  assert.equal(aiCitizenPrincipal({ ...base, roomCents: 3000 }), 3000);
+  assert.equal(aiCitizenPrincipal({ ...base, incomeCents: 0 }), 0);
+  assert.equal(aiCitizenPrincipal({ ...base, insolvent: true }), 0);
+  assert.equal(aiCitizenPrincipal({ ...base, owesCitizens: true }), 0);
+  assert.equal(aiCitizenPrincipal({ ...base, balanceCents: 10000 }), 0, "10 turns held is enough");
+  assert.equal(aiCitizenPrincipal({ ...base, balanceCents: 9999 }), 5000);
+  assert.equal(aiCitizenPrincipal({ ...base, roomCents: -1 }), 0);
+});
+
+test("the plan takes 20% of positive income and splits it by population over cities with a queue", () => {
+  assert.equal(planTakeCents(10000), 2000);
+  assert.equal(planTakeCents(-500), 0);
+  const cities = [{ id: "1:1", build: "B", neededProgress: 100, population: 3 },
+    { id: "1:2", build: "U", neededProgress: 2, population: 1 }, { id: "1:3", build: null, neededProgress: 0, population: 9 },
+    { id: "1:4", build: "C", neededProgress: 50 }];
+  assert.deepEqual(planSplit(6000, cities), [{ cityId: "1:1", progress: 12, cents: 3600 },
+    { cityId: "1:2", progress: 2, cents: 600 }, { cityId: "1:4", progress: 4, cents: 1200 }],
+    "3 Gold a point, an empty queue skipped, a build's need caps it, no population read counts 1");
+  assert.deepEqual(planSplit(0, cities), []);
+  assert.deepEqual(planSplit(6000, []), []);
+  assert.deepEqual(planSplit(200, [{ id: "1:1", build: "B", neededProgress: 9, population: 1 }]), [], "less than a point");
+});

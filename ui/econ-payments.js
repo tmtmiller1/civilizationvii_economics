@@ -26,13 +26,14 @@ function clamp(value, low, high) {
 
 /**
  * An active loan's turn. `funds` is the borrower's funds for the turn after its earlier charges (DESIGN 4.14);
- * `extra` is an early repayment requested this turn, applied only if the regular payment is made and the extra fits.
+ * `extra` is an early repayment requested this turn, applied only if the regular payment is made and the extra fits;
+ * `growthMille` scales a partnership's interest (DESIGN 4.17).
  * @param {Loan} loan
  * @param {number} funds
- * @param {{ capPpm?: number, extra?: number }} [q]
+ * @param {{ capPpm?: number, extra?: number, growthMille?: number }} [q]
  */
-export function settleActive(loan, funds, { capPpm = Infinity, extra = 0 } = {}) {
-  const { interest, amortisation, total } = paymentDue(loan);
+export function settleActive(loan, funds, { capPpm = Infinity, extra = 0, growthMille = 1000 } = {}) {
+  const { interest, amortisation, total } = paymentDue(loan, growthMille);
   if (funds - total < 0) {
     const missed = loan.missed + 1;
     /** @type {LoanState} */

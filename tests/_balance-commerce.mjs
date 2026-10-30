@@ -140,7 +140,7 @@ export function runTradeGame(game, { on, turns = 200 }) {
       cities: Array.from({ length: c.cities }, (_, k) => ({ id: `${c.id}:${k}`, build: null, neededProgress: 0 })) }));
     const t0 = process.hrtime.bigint();
     const plan = planTurn({ turn, age: "AGE_EXPLORATION", civs, relations: [], requests: [], params: PARAMS,
-      options: { loans: false, investment: false, markets: on, ai: false }, ledger, markets, routes: game.routes,
+      options: { loans: false, investment: false, markets: on, ai: false, cycle: "off", systems: false }, ledger, markets, routes: game.routes,
       market: game.market });
     facts.planMs.push(Number(process.hrtime.bigint() - t0) / 1e6);
     for (const row of plan.trade) {

@@ -5,12 +5,12 @@ export {};
 
 declare global {
   /** A civ by player id, or one of the world accounts (DESIGN 4.14): the bond market, temple treasuries, tax. */
-  type Party = number | "bond" | "temple" | "tax" | "progress";
+  type Party = number | "bond" | "temple" | "tax" | "progress" | "citizens" | "inflation" | "cycle" | "plan";
   type LoanState = "active" | "default" | "closed" | "repudiated";
   /** `project` and `general` are 1.1's investment records; 1.0 only writes `loan`. */
   type LoanKind = "loan" | "project" | "general";
   /** Who opened the record: a player's borrow or lend request, the guard, or an AI rule. */
-  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall";
+  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens";
   type RelationLevel = "war" | "unfriendly" | "neutral" | "friendly";
   type BlockReason = "default" | "repudiation";
 
@@ -32,6 +32,10 @@ declare global {
     closedTurn: number | null;
     writtenOff: number;
     source: LoanSource;
+    /** A Religious lender's loan (DESIGN 4.17): its interest moves with the borrower's income since it opened. */
+    partnership?: boolean;
+    /** The borrower's income when a partnership opened. */
+    baseIncome?: number;
   }
 
   /** A lender refusing a borrower: for the rest of the age, for a number of ages, or until a turn. */
@@ -88,6 +92,8 @@ declare global {
     guildPatronage?: number | null;
     charteredCompanies?: number | null;
     tariffs?: number | null;
+    banking?: number | null;
+    capitalism?: number | null;
   }
 
   type InvestKind = "project" | "general";
@@ -140,6 +146,8 @@ declare global {
     tradeBuildings?: number;
     /** The game's Gold price for the current build, when it's a building and the read answers. */
     purchaseCents?: number | null;
+    /** The settlement's population, for the plan's split (DESIGN 4.17). */
+    population?: number;
   }
 
   /** One trade route between two major civs: the importer owns it (the merchant's civ). */
@@ -196,7 +204,20 @@ declare global {
     cities?: CityRead[];
     /** The native Trade Income the civ's settlements earn a turn (TradeYields), for the Trade tab. */
     tradeIncomeCents?: number;
+    /** The government type and ideology type the civ runs, or null before it has one (DESIGN 4.17). */
+    government?: string | null;
+    ideology?: string | null;
+    /** Warehouse buildings, weighted (DESIGN 4.13), for the cut on a negative L (4.11). */
+    warehouses?: number;
+    /** The legacy cushion from old buildings (DESIGN 4.16), in basis points. */
+    cushionBp?: number;
+    /** Settlements with a Commerce building, for citizen_cap (DESIGN 4.17). */
+    commerceSettlements?: number;
   }
+
+  /** What the glue saw between batches that the cycle weighs (DESIGN 4.11): `pid` is the civ that took part. */
+  interface CycleInputEvent { kind: "capture" | "raze" | "disaster"; pid: number; populationLost?: boolean;
+    foodWarehouse?: boolean }
 
   interface Relation { a: number; b: number; level: RelationLevel }
 
@@ -210,6 +231,9 @@ declare global {
     markets: boolean;
     tariffs: boolean;
     investment: boolean;
+    inflation: boolean;
+    cycle: string;
+    systems: boolean;
   }
 
   /** The engine's negative-balance lines, in cents; null when the GlobalParameters row couldn't be read. */
@@ -229,6 +253,10 @@ declare global {
     routes?: RouteRead[];
     market?: MarketRead;
     markets?: MarketsState;
+    macro?: import("../ui/econ-macro-state.js").MacroState;
+    cycleEvents?: CycleInputEvent[];
+    /** The age crisis stage, Game.CrisisManager.getCurrentCrisisStage (P12): -1 before, 0 to 2 running, 3 ended. */
+    crisisStage?: number;
   }
 
   /** One movement of Gold for one loan on one turn; at most one per (loan, turn). */
@@ -263,6 +291,7 @@ declare global {
     markets: MarketsState;
     progress: ProgressRow[];
     trade: TradeRow[];
+    macro: import("../ui/econ-macro-state.js").MacroState;
   }
 
   /** The turn's Gold bookkeeping (DESIGN 4.14), each Map keyed by player id. */
@@ -296,6 +325,16 @@ declare global {
     relations?: Relation[];
     options?: Partial<PlanOptions>;
     depthFactorPct?: number;
+    /** The bond rate's multiplier for this borrower: its system, the cycle spread, inflation (DESIGN 4.17, 4.11, 4.8). */
+    bondPct?: number;
+    /** A civ lender's rate multiplier for this borrower: the lender's system and the borrower's. */
+    civPct?: (lender: number) => number;
+    /** During a Panic civ lenders stop offering (DESIGN 4.11). */
+    civLendersClosed?: boolean;
+    /** A "civ lenders only" system (DESIGN 4.17): no bond market, temple treasuries for emergencies. */
+    noBond?: boolean;
+    /** A Civic market civ's citizens, with what they'd lend and at what rate (DESIGN 4.17). */
+    citizens?: { ratePpm: number; roomCents: number } | null;
   }
 
   /** What the plan's passes share for one turn (ui/econ-turn.js). */
@@ -319,6 +358,10 @@ declare global {
     trade: TradeRow[];
     /** What each importer owes each exporter this turn, before netting. */
     owed: { importer: number; exporter: number; gross: number; owed: number }[];
+    macro: import("../ui/econ-macro-state.js").MacroState;
+    readings: import("../ui/econ-macro-state.js").MacroReadings;
+    /** Each resource's class price (DESIGN 4.9's base_c), for a Planned importer's fixed prices (4.17). */
+    basePrices: Record<string, number>;
   }
 
   interface TradeRow { payer: number; payee: number; owed: number; cents: number; waived: number; paid: number }

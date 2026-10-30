@@ -17,6 +17,7 @@ import { creditRoom, limitRefusal } from "./econ-requests.js";
 import { STANDING, REPUDIATION } from "./econ-params.js";
 import { emptyLedger } from "./econ-state.js";
 import { emptyMarkets } from "./econ-markets.js";
+import { emptyMacro } from "./econ-macro-state.js";
 
 /**
  * A turn context for reading offers and limits without planning anything.
@@ -27,7 +28,7 @@ export function viewContext(input) {
   /** @type {PlanOutput} */
   const out = { ledger: input.ledger || emptyLedger(), transfers: [], influence: [], celebration: [], grievances: [],
     relationships: [], events: [], notices: [], batch: null, skipped: null, markets: emptyMarkets(), progress: [],
-    trade: [] };
+    trade: [], macro: input.macro || emptyMacro() };
   return turnContext(input, options, out);
 }
 

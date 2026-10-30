@@ -19,25 +19,37 @@ export function isTariffLevel(level) {
 }
 
 /**
- * The bill's share for Trade buildings on one side: 10% a building, 30% at most (DESIGN 4.13).
+ * The bill's share for Trade buildings on one side: 10% a building (12% for a Civic market civ, DESIGN 4.17), 30%
+ * at most (DESIGN 4.13).
  * @param {number | undefined} count
+ * @param {number} [perBuildingPct]
  */
-export function tradeBuildingPct(count) {
-  return Math.min(TRADE.tradeBuildingMaxPct, TRADE.tradeBuildingPct * Math.max(0, Math.floor(Number(count)) || 0));
+export function tradeBuildingPct(count, perBuildingPct = TRADE.tradeBuildingPct) {
+  return Math.min(TRADE.tradeBuildingMaxPct, perBuildingPct * Math.max(0, Math.floor(Number(count)) || 0));
 }
 
 /**
  * bill = 0.5 * the prices of the copies the route imports * (1 + exporter's Trade share) * (1 - importer's), in cents.
  * @param {RouteRead} route
  * @param {Record<string, number>} prices
+ * @param {{ exporterPct?: number, importerPct?: number }} [perBuilding] each side's share a Trade building
  */
-export function routeBillCents(route, prices) {
+export function routeBillCents(route, prices, perBuilding = {}) {
   let sum = 0;
   for (const type of route.resources || []) sum += priceOf(prices, type);
-  const up = 100 + tradeBuildingPct(route.exporterTradeBuildings);
-  const down = 100 - tradeBuildingPct(route.importerTradeBuildings);
+  const up = 100 + tradeBuildingPct(route.exporterTradeBuildings, perBuilding.exporterPct);
+  const down = 100 - tradeBuildingPct(route.importerTradeBuildings, perBuilding.importerPct);
   return Math.round((sum * TRADE.billPct * up * down) / 1000000);
 }
+
+/**
+ * @typedef {{ tradeBuildingPct: number, billPaidPct: number, exportPct: number, highTariffEveryTurns: number,
+ *   fixedPrices: boolean }} TradeTerms
+ */
+
+/** The terms a civ trades on when nobody says otherwise (Mixed). @type {TradeTerms} */
+const PLAIN = { tradeBuildingPct: TRADE.tradeBuildingPct, billPaidPct: 100, exportPct: 100,
+  highTariffEveryTurns: TRADE.tariffEveryTurns, fixedPrices: false };
 
 /**
  * A civ's tariff level; every civ starts at None.
@@ -51,24 +63,30 @@ export function tariffOf(tariffs, pid) {
 
 /**
  * What each importer owes each exporter: the bills summed over its routes from that exporter, before and after its
- * tariff. Routes between a civ and itself, or with a party outside `civIds`, are skipped.
+ * tariff. Routes between a civ and itself, or with a party outside `civIds`, are skipped. Between systems (DESIGN
+ * 4.17) the bill uses the importer's prices (a Planned importer's are the class prices, `basePrices`), each side's
+ * Trade buildings count at its own share, a Manorial importer pays 20% less and a Mercantile exporter is owed 10% more.
  * @param {{ routes: RouteRead[], prices: Record<string, number>, tariffs: TariffRow[], civIds: Set<number>,
- *   tariffsOn: boolean }} q
+ *   tariffsOn: boolean, termsOf?: (pid: number) => TradeTerms, basePrices?: Record<string, number> }} q
  * @returns {{ importer: number, exporter: number, gross: number, owed: number }[]}
  */
-export function owedByPair({ routes, prices, tariffs, civIds, tariffsOn }) {
+export function owedByPair({ routes, prices, tariffs, civIds, tariffsOn, termsOf = () => PLAIN, basePrices = {} }) {
   /** @type {Map<string, { importer: number, exporter: number, gross: number, owed: number }>} */
   const rows = new Map();
-  for (const route of routes) {
-    if (route.importer === route.exporter || !civIds.has(route.importer) || !civIds.has(route.exporter)) continue;
+  const billed = routes.filter((route) => route.importer !== route.exporter && civIds.has(route.importer)
+    && civIds.has(route.exporter));
+  for (const route of billed) {
     const key = `${route.importer}>${route.exporter}`;
     const row = rows.get(key) || { importer: route.importer, exporter: route.exporter, gross: 0, owed: 0 };
-    row.gross += routeBillCents(route, prices);
+    const importer = termsOf(route.importer);
+    row.gross += routeBillCents(route, importer.fixedPrices ? basePrices : prices,
+      { exporterPct: termsOf(route.exporter).tradeBuildingPct, importerPct: importer.tradeBuildingPct });
     rows.set(key, row);
   }
   for (const row of rows.values()) {
     const held = tariffsOn ? TARIFF_PCT[tariffOf(tariffs, row.importer)] : 0;
-    row.owed = Math.floor((row.gross * (100 - held)) / 100);
+    const system = termsOf(row.importer).billPaidPct * termsOf(row.exporter).exportPct;
+    row.owed = Math.floor((row.gross * (100 - held) * system) / 1000000);
   }
   return [...rows.values()].sort((a, b) => a.importer - b.importer || a.exporter - b.exporter);
 }
@@ -145,16 +163,18 @@ export function withTariff(tariffs, pid, level, turn) {
 }
 
 /**
- * A High tariff costs its importer 1 relationship with each exporter it bills, every 5 turns it stands.
- * @param {{ tariffs: TariffRow[], owed: { importer: number, exporter: number, gross: number }[], turn: number }} q
+ * A High tariff costs its importer 1 relationship with each exporter it bills, every 5 turns it stands (every 10 for
+ * a Mercantile importer, DESIGN 4.17).
+ * @param {{ tariffs: TariffRow[], owed: { importer: number, exporter: number, gross: number }[], turn: number,
+ *   everyTurns?: (pid: number) => number }} q
  * @returns {RelationshipRow[]}
  */
-export function highTariffCosts({ tariffs, owed, turn }) {
+export function highTariffCosts({ tariffs, owed, turn, everyTurns = () => TRADE.tariffEveryTurns }) {
   /** @type {RelationshipRow[]} */
   const out = [];
   for (const row of tariffs) {
     if (row.level !== "high" || turn <= row.changedTurn) continue;
-    if ((turn - row.changedTurn) % TRADE.tariffEveryTurns !== 0) continue;
+    if ((turn - row.changedTurn) % Math.max(1, everyTurns(row.pid)) !== 0) continue;
     for (const pair of owed) {
       if (pair.importer === row.pid && pair.gross > 0) {
         out.push({ a: row.pid, b: pair.exporter, delta: TRADE.highRelationship });

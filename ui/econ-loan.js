@@ -12,7 +12,7 @@ export const LOAN_STATES = ["active", "default", "closed", "repudiated"];
 export const LOAN_KINDS = ["loan", "project", "general"];
 // Who opened the record: a player's borrow or lend request, the guard, or an AI rule.
 /** @type {LoanSource[]} */
-export const LOAN_SOURCES = ["borrow", "lend", "guard", "ai-shortfall"];
+export const LOAN_SOURCES = ["borrow", "lend", "guard", "ai-shortfall", "ai-citizens"];
 
 /** @param {number} seq */
 export function loanId(seq) {
@@ -39,9 +39,14 @@ export function makeLoan({ id, lender, borrower, principal, ratePpm, term, turn,
   };
 }
 
-/** @param {Loan} loan */
-export function interestDue(loan) {
-  return applyPpm(loan.outstanding, loan.ratePpm);
+/**
+ * Interest for the turn; a partnership's (DESIGN 4.17) moves with the borrower's income, `growthMille` thousandths.
+ * @param {Loan} loan
+ * @param {number} [growthMille]
+ */
+export function interestDue(loan, growthMille = 1000) {
+  const interest = applyPpm(loan.outstanding, loan.ratePpm);
+  return growthMille === 1000 ? interest : Math.floor((interest * Math.max(0, growthMille)) / 1000);
 }
 
 /**
@@ -63,9 +68,12 @@ export function amortisationDue(loan) {
   return Math.min(loan.outstanding, scheduledSlice(loan.principal, loan.term, k));
 }
 
-/** @param {Loan} loan */
-export function paymentDue(loan) {
-  const interest = interestDue(loan);
+/**
+ * @param {Loan} loan
+ * @param {number} [growthMille]
+ */
+export function paymentDue(loan, growthMille = 1000) {
+  const interest = interestDue(loan, growthMille);
   const amortisation = amortisationDue(loan);
   return { interest, amortisation, total: interest + amortisation };
 }

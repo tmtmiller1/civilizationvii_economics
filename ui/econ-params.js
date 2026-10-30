@@ -8,8 +8,15 @@ export const TEMPLE = "temple";
 export const TAX = "tax";
 // DESIGN 4.12: a development loan's Gold becomes build progress (addProgress), so it leaves the treasuries for good.
 export const PROGRESS = "progress";
+// DESIGN 4.17, 4.8, 4.11: a Civic market civ's citizens lend from outside the treasuries and their interest leaves
+// them; inflation's erosion is a sink; cycle Gold is a source in a boom and a sink in a slump; the plan's Gold becomes
+// build progress.
+export const CITIZENS = "citizens";
+export const INFLATION = "inflation";
+export const CYCLE = "cycle";
+export const PLAN = "plan";
 /** @type {Party[]} */
-export const WORLD_ACCOUNTS = [BOND, TEMPLE, TAX, PROGRESS];
+export const WORLD_ACCOUNTS = [BOND, TEMPLE, TAX, PROGRESS, CITIZENS, INFLATION, CYCLE, PLAN];
 
 export const AGE = { ANTIQUITY: "AGE_ANTIQUITY", EXPLORATION: "AGE_EXPLORATION", MODERN: "AGE_MODERN" };
 
@@ -49,7 +56,8 @@ export const AI = { lendIncomeMultiple: 20, acceptRatePct: 120, restructureAt: 2
 // 9 asks for; see docs/NOTES.md choice 25.
 export const LIMITS = { events: 100, closedLoans: 32, envelopeBytes: 65536, openPerBorrower: 6 };
 
-export const STAGES = ["moneylending", "publicDebt", "trade", "guildPatronage", "charteredCompanies", "tariffs"];
+export const STAGES = ["moneylending", "publicDebt", "trade", "guildPatronage", "charteredCompanies", "tariffs",
+  "banking", "capitalism"];
 
 // DESIGN 4.9: base price by resource class, in cents; an unknown class is priced as Bonus. Scarcity is
 // sqrt(civs / copies) clamped 0.5 to 3; demand adds 0.25 for a strategic resource this age's units use, 0.25 more
@@ -58,7 +66,7 @@ export const STAGES = ["moneylending", "publicDebt", "trade", "guildPatronage", 
 export const BASE_PRICE_CENTS = { RESOURCECLASS_BONUS: 200, RESOURCECLASS_CITY: 300, RESOURCECLASS_EMPIRE: 400,
   RESOURCECLASS_TREASURE: 500, RESOURCECLASS_FACTORY: 600 };
 export const PRICES = { otherCents: 200, scarcityMinPct: 50, scarcityMaxPct: 300, strategicPct: 25, warPct: 25,
-  industryPct: 2, industryMaxPct: 100, smoothingPct: 80, historyTurns: 30 };
+  industryPct: 2, industryMaxPct: 100, smoothingPct: 80, capitalismSmoothingPct: 50, historyTurns: 30 };
 // DESIGN 4.10: the bill is half the summed prices, +10% per Trade building in the exporting city and -10% per one in
 // the importing city (30% at most each side); tariffs hold back 10% or 25%; a payer pays at most 10% of its positive
 // income in all; a tariff changes at most once per 5 turns, and a High one costs 1 relationship with each exporter
@@ -72,9 +80,37 @@ export const TRADE = { billPct: 50, tradeBuildingPct: 10, tradeBuildingMaxPct: 3
 // of the host's income (at least 10 Gold a turn) for the development loan, general and aid. The cap of 10 on one
 // gift's relationship gain is ours (NOTES choice 36), so Gold can't buy a whole relationship at once.
 export const INVEST = { goldPerProgress: 3, term: 25, projectMille: 50, roleProjectMille: 60, generalMille: 45,
-  growthMinMille: 500, growthMaxMille: 2000, minHostIncomeCents: 1000, projectTenthsPerPoint: 50,
+  growthMinMille: 500, growthMaxMille: 2000, equityMinMille: 250, equityMaxMille: 3000,
+  minHostIncomeCents: 1000, projectTenthsPerPoint: 50,
   generalTenthsPerPoint: 75, aidTenthsPerPoint: 25, maxRelationship: 10, aiEveryTurns: 10, aiSizeTurns: 5,
   offerTurns: 3, incomeHistoryTurns: 10 };
+
+// DESIGN 4.11, in basis points (1/10000) so every weight is an integer: E starts at 10000 (1.0) and L at 0, and
+// war declared, -0.02, is -200. k is the Business cycle option; s the world stage scale (DESIGN 4.15).
+/** @type {Record<string, number>} */
+export const CYCLE_K_PCT = { off: 0, mild: 50, standard: 100, strong: 150 };
+export const CYCLE_RULES = { one: 10000, reversionPct: 10, worldClamp: 1000, eMin: 7000, eMax: 13000, lMax: 2000,
+  lDecayPct: 80, depression: 8000, slump: 9500, boom: 10500, panicLeverPct: 150, panicDrop: 2000, panicTurns: 5,
+  panicEveryTurns: 20, panicSpreadPct: 50, goldPct: 20, historyTurns: 30, eventsKept: 24, warehouseBp: 300,
+  warehouseMaxBp: 3000, cushionMaxBp: 1000, cutMaxBp: 3500, scaleEarlyPct: 25, scalePublicDebtPct: 60,
+  scaleCapitalismPct: 100, minLeverCents: 100000 };
+// Event weights in basis points (DESIGN 4.11's table). The caps bound a sum of one kind in a turn.
+export const CYCLE_WEIGHTS = { warDeclared: -200, warOngoing: -40, warOngoingCap: -200, capture: -100, raze: -200,
+  disaster: -50, disasterPopulation: -100, crisisStart: -200, crisisOngoing: -50, default: -300, repudiation: -300,
+  peace: 100, routeNew: 50, routeEnded: -50, routeStanding: 10, routeStandingCap: 100, incomePer5Pct: 50,
+  incomeCap: 100, creditGrowth: 50, creditGrowthPct: 10, reform: -300, corporatistWar: 100, corporatistPeace: -300 };
+// DESIGN 4.8: pi = min(0.005, 0.02 * B / max(M, 1000)) a turn in ppm; reserve 20 turns of max(income, 10); bond rate
+// up 50 * pi, at most 25%.
+export const INFLATION_RULES = { capPpm: 5000, factorPpm: 20000, minMoneyCents: 100000, reserveTurns: 20,
+  minIncomeCents: 1000, premiumPerPpm: 50, premiumCapPct: 25 };
+// DESIGN 4.17: citizen loans and the plan. Citizens: 5 turns of max(10, income) per settlement with a Commerce
+// building, 0.75 of the base rate, 10 turns, celebration at twice the interest paid; a miss costs 5 turns of the
+// meter's gain, a repudiation 10, the citizens close for 30 turns. The plan: 20% of positive income, 3 Gold a point.
+export const CITIZEN = { capTurns: 5, minIncomeCents: 1000, ratePct: 75, term: 10, celebrationMultiple: 2,
+  missTurns: 5, repudiationTurns: 10, aiBalanceTurns: 10, aiSizeTurns: 5 };
+export const PLANNED = { takePct: 20, goldPerProgress: 3 };
+// DESIGN 4.17: a change of system blends each number evenly over 10 turns.
+export const SYSTEM_BLEND_TURNS = 10;
 
 /** @param {string | undefined} option */
 export function ratesPct(option) {

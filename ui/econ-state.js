@@ -89,6 +89,9 @@ function cleanLoan(row) {
     opened: row.opened, closedTurn: isTurn(row.closedTurn) ? row.closedTurn : null,
     writtenOff: atLeast(row.writtenOff, 1) ? row.writtenOff : 0,
     source: LOAN_SOURCES.includes(row.source) ? row.source : "borrow",
+    // A Religious lender's partnership (DESIGN 4.17) keeps the borrower's income it opened at.
+    ...(row.partnership === true ? { partnership: true, baseIncome: atLeast(row.baseIncome, 0) ? row.baseIncome : 0 }
+      : {}),
   };
 }
 

@@ -2,8 +2,8 @@
 // balances, income, relations and stages, calls planTurn once per turn, and sends each civ's net as grantYield calls
 // (econ-conservation.js). The turn is one batch: snapshot, propose, resolve each payer on its own funds, commit.
 // Civs are handled in id order whatever order they came in, so the result doesn't depend on the glue's listing.
-// The 1.1 steps (prices, trade settlement, dividends, the investment and tariff rules) are in econ-commerce.js; 1.2
-// adds erosion and cycle Gold.
+// The 1.1 steps (prices, trade settlement, dividends, the investment and tariff rules) are in econ-commerce.js; the
+// 1.2 steps (systems, the cycle, inflation, the plan, citizen loans) in econ-macro.js.
 
 import { EMERGENCY, MISS, STANDING, TAX } from "./econ-params.js";
 import { isOpen } from "./econ-loan.js";
@@ -21,10 +21,15 @@ import { runRequests } from "./econ-requests.js";
 import { aiBorrow, aiRepudiate, aiRestructure, guardFor, isInsolventCiv } from "./econ-shortfall.js";
 import { aiAid, aiInvest, aiTariff, investWriteOffs, marketStep, payDividendsFor, settleTradeFor, tradeNotices,
   tradeStep } from "./econ-commerce.js";
+import { aiMacro, cycleInflows, macroPayerSteps, macroSnapshot } from "./econ-macro.js";
+import { citizenInterest, citizenMiss } from "./econ-citizens.js";
+import { cycleKPct, emptyMacro } from "./econ-macro-state.js";
+import { growthMille } from "./econ-invest.js";
 
 /** @type {PlanOptions} */
 export const DEFAULT_OPTIONS = { loans: true, guard: true, ai: true, rates: "standard", stages: true,
-  taxFallback: false, markets: true, tariffs: true, investment: true };
+  taxFallback: false, markets: true, tariffs: true, investment: true, inflation: false, cycle: "standard",
+  systems: true };
 
 /**
  * @param {Loan} a
@@ -43,28 +48,32 @@ export function planTurn(input) {
   const ledger = cloneLedger(input.ledger || emptyLedger());
   /** @type {PlanOutput} */
   const out = { ledger, transfers: [], influence: [], celebration: [], grievances: [], relationships: [], events: [],
-    notices: [], batch: null, skipped: null, markets: input.markets || emptyMarkets(), progress: [], trade: [] };
+    notices: [], batch: null, skipped: null, markets: input.markets || emptyMarkets(), progress: [], trade: [],
+    macro: input.macro || emptyMacro() };
   const skipped = skipReason(input, options, ledger);
   if (skipped) return { ...out, skipped };
   const ctx = turnContext(input, options, out);
-  snapshotStep(ctx, input.market);
+  snapshotStep(ctx, input);
   proposeStep(ctx);
   finishTurn(ctx);
   return out;
 }
 
 /**
- * DESIGN 4.14 step 1: the age change, the insolvency counters, the records whose party is gone, and the prices.
+ * DESIGN 4.14 step 1: the age change, the insolvency counters, the records whose party is gone, the systems, the
+ * cycle and inflation, then the prices (which read the cycle's E).
  * @param {TurnContext} ctx
- * @param {MarketRead | undefined} market
+ * @param {PlanInput} input
  */
-function snapshotStep(ctx, market) {
+function snapshotStep(ctx, input) {
+  const market = input.market;
   const { ledger } = ctx;
   if (ledger.age !== null && ledger.age !== ctx.age) ledger.blocks = blocksAfterAge(ledger.blocks);
   ledger.age = ctx.age;
   trackIncome(ctx);
   writeOffs(ctx);
   investWriteOffs(ctx);
+  macroSnapshot(ctx, input);
   marketStep(ctx, market);
 }
 
@@ -79,6 +88,8 @@ function proposeStep(ctx) {
   tradeStep(ctx);
   const extras = runRequests(ctx);
   aiCommerce(ctx, ai);
+  aiMacro(ctx, ai);
+  cycleInflows(ctx);
   if (ctx.options.taxFallback) for (const civ of live) taxOne(ctx, civ);
   for (const civ of live) payerSteps(ctx, civ.id, extras);
   tradeNotices(ctx);
@@ -106,12 +117,14 @@ function aiCommerce(ctx, ai) {
 }
 
 /**
- * One payer's steps 6 to 8 in order: trade settlement, then its loans, then the dividends it owes.
+ * One payer's steps 3 to 8 in order: erosion, the plan and negative cycle Gold, trade settlement, then its loans,
+ * then the dividends it owes.
  * @param {TurnContext} ctx
  * @param {number} pid
  * @param {Map<string, number>} extras
  */
 function payerSteps(ctx, pid, extras) {
+  macroPayerSteps(ctx, pid);
   settleTradeFor(ctx, pid);
   if (ctx.options.loans) payerPass(ctx, pid, extras);
   payDividendsFor(ctx, pid);
@@ -123,7 +136,8 @@ function payerSteps(ctx, pid, extras) {
  * @param {Ledger} ledger
  */
 function skipReason(input, options, ledger) {
-  if (!options.loans && !options.markets && !options.investment) return "all-off";
+  const macroOff = cycleKPct(options.cycle) === 0 && !options.inflation && !options.systems;
+  if (!options.loans && !options.markets && !options.investment && macroOff) return "all-off";
   if (Number.isInteger(ledger.lastTurn) && input.turn <= /** @type {number} */ (ledger.lastTurn)) {
     return "already-planned";
   }
@@ -255,11 +269,15 @@ function garnishOne(ctx, loan, extras) {
  */
 function payOne(ctx, loan, extras) {
   const extra = extras.get(loan.id) || 0;
-  const result = settleActive(loan, funds(ctx.batch, loan.borrower), { capPpm: ctx.capPpm, extra });
+  const growth = loan.partnership === true ? growthMille(ctx.civ.get(loan.borrower)?.incomeCents ?? 0,
+    loan.baseIncome ?? 0) : 1000;
+  const result = settleActive(loan, funds(ctx.batch, loan.borrower), { capPpm: ctx.capPpm, extra,
+    growthMille: growth });
   replaceLoan(ctx, result.loan);
   if (result.missed) { recordMiss(ctx, loan, result); return; }
   emit(ctx, loan, { from: loan.borrower, to: loan.lender, cents: result.cents, reason: "payment",
     parts: { interest: result.interest, amortisation: result.amortisation, extra: result.extra } });
+  citizenInterest(ctx, loan, result.interest);
   if (result.closed) closeLoan(ctx, result.loan);
 }
 
@@ -271,8 +289,10 @@ function payOne(ctx, loan, extras) {
 function recordMiss(ctx, loan, result) {
   const { ledger, turn, out } = ctx;
   addMiss(ledger, loan.borrower, turn);
-  addInfluence(ctx.batch, loan.borrower, MISS.influence);
-  out.influence.push({ pid: loan.borrower, amount: MISS.influence, loanId: loan.id, reason: "miss" });
+  if (!citizenMiss(ctx, loan)) {
+    addInfluence(ctx.batch, loan.borrower, MISS.influence);
+    out.influence.push({ pid: loan.borrower, amount: MISS.influence, loanId: loan.id, reason: "miss" });
+  }
   event(ctx, { kind: "miss", loanId: loan.id, borrower: loan.borrower, missed: result.loan.missed,
     capitalised: result.capitalised });
   notice(ctx, loan.borrower, { kind: "miss", loanId: loan.id, missed: result.loan.missed });
@@ -297,6 +317,7 @@ function finishTurn(ctx) {
   ctx.out.batch = ledger.lastBatch;
   ctx.out.markets = ctx.markets;
   ctx.out.trade = ctx.trade;
+  ctx.out.macro = ctx.macro;
   prune(ledger);
 }
 

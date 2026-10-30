@@ -6,14 +6,15 @@
 /** The anchor each stage opens on (DESIGN 4.15): the type a node unlocks, never a node. */
 export const STAGE_ANCHORS = { moneylending: "TRADITION_COMMODITIES", publicDebt: "TRADITION_MARITIME_LAW",
   coinage: "BUILDING_MARKET", trade: "UNIT_MERCHANT", guildPatronage: "BUILDING_GUILDHALL",
-  charteredCompanies: "TRADITION_CHARTERS", tariffs: "TRADITION_TARIFFS" };
+  charteredCompanies: "TRADITION_CHARTERS", tariffs: "TRADITION_TARIFFS", banking: "BUILDING_BANK",
+  capitalism: "TRADITION_LAISSEZ_FAIRE" };
 
 // The age each anchor belongs to in 1.5.0 (DESIGN 4.15's table), as a chronology index. Read only when this age has
 // no node that unlocks the anchor and the anchor's own row names no age: then a later age opens the stage at its
 // start and an earlier one keeps it closed.
 /** @type {Record<string, number>} */
 export const STAGE_DESIGN_AGE_INDEX = { moneylending: 0, publicDebt: 1, coinage: 0, trade: 0, guildPatronage: 1,
-  charteredCompanies: 1, tariffs: 1 };
+  charteredCompanies: 1, tariffs: 1, banking: 1, capitalism: 2 };
 
 export const STAGE_NAMES = Object.keys(STAGE_ANCHORS);
 // Coinage gates only data (War Levy's unlock), so the model's civ record leaves it out.

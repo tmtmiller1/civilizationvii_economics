@@ -123,9 +123,13 @@ export function readOptions(glue) {
   const on = (/** @type {string} */ key) => readConfig(key) !== `${key}_OFF`;
   const rates = String(readConfig("ECONOMICS_RATES") || "").replace("ECONOMICS_RATES_", "").toLowerCase();
   const markets = on("ECONOMICS_MARKETS");
+  const cycle = String(readConfig("ECONOMICS_CYCLE") || "").replace("ECONOMICS_CYCLE_", "").toLowerCase();
   return { loans: on("ECONOMICS_LOANS"), guard: glue.guardOn ?? on("ECONOMICS_GUARD"), ai: on("ECONOMICS_AI"),
     rates: ["low", "standard", "high"].includes(rates) ? rates : "standard", stages: on("ECONOMICS_STAGES"),
-    taxFallback: false, markets, tariffs: markets && on("ECONOMICS_TARIFFS"), investment: on("ECONOMICS_INVESTMENT") };
+    taxFallback: false, markets, tariffs: markets && on("ECONOMICS_TARIFFS"), investment: on("ECONOMICS_INVESTMENT"),
+    // Inflation ships Off (DESIGN 8), so only an explicit On turns it on.
+    inflation: readConfig("ECONOMICS_INFLATION") === "ECONOMICS_INFLATION_ON",
+    cycle: ["off", "mild", "standard", "strong"].includes(cycle) ? cycle : "standard", systems: on("ECONOMICS_SYSTEMS") };
 }
 
 /**

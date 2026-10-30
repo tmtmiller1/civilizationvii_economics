@@ -3,7 +3,8 @@
 // answer to an AI's investment offer. Each runs in step 2 of the batch (DESIGN 4.14) and a
 // refusal is an event with its reason, never a throw.
 
-import { BOND, LIMITS, SHORT_TERM, TERMS, isWorldAccount } from "./econ-params.js";
+import { BOND, CITIZENS, LIMITS, SHORT_TERM, TERMS, isWorldAccount } from "./econ-params.js";
+import { citizenRepudiation } from "./econ-citizens.js";
 import { firstPayment, isOpen, isOverdue, restructure } from "./econ-loan.js";
 import { addMiss, creditCap, fitsService, outstandingOf, recentRepudiations, serviceOf } from "./econ-credit.js";
 import { bondRatePpm, civLenderRefusal, offersFor, relationLevel, termRefusal } from "./econ-lenders.js";
@@ -14,8 +15,8 @@ import { canChangeTax, isTaxLevel } from "./econ-tax.js";
 import { canChangeTariff, isTariffLevel, withTariff } from "./econ-trade.js";
 import { hasStage } from "./econ-stages.js";
 import { investRequestRefusal, offerAnswerRefusal } from "./econ-invest-open.js";
-import { isAlive, event, incomeOf, isHuman, lendersFor, notice, offerQuery, openLoan, replaceLoan, standing }
-  from "./econ-turn.js";
+import { isAlive, event, incomeOf, isHuman, lendersFor, notice, offerQuery, openLoan, replaceLoan, standing,
+  termsFor } from "./econ-turn.js";
 
 // A request as the glue hands it over: the fields each kind carries are read where the kind is handled.
 /** @typedef {Record<string, any>} Request */
@@ -34,8 +35,10 @@ export function isAtLoanLimit(ctx, pid) {
  */
 export function creditRoom(ctx, pid) {
   const civ = /** @type {Civ} */ (ctx.civ.get(pid));
+  const terms = termsFor(ctx, pid);
   return creditCap({ incomeCents: civ.incomeCents, outstandingCents: outstandingOf(ctx.ledger, pid),
-    depthTurns: civ.depthTurns, repudiations: recentRepudiations(ctx.ledger, pid, ctx.turn).length });
+    depthTurns: civ.depthTurns, repudiations: recentRepudiations(ctx.ledger, pid, ctx.turn).length,
+    systemTurns: terms.creditTurns, systemPct: terms.creditPct });
 }
 
 /**
@@ -182,22 +185,36 @@ export function restructureLoan(ctx, loan, by) {
 }
 
 /**
- * DESIGN 4.5: the player repudiates what it owes one lender; AI lenders' income sizes the grudge.
+ * The other living civs a repudiator has met (NOTES choice 29).
  * @param {TurnContext} ctx
  * @param {number} borrower
- * @param {Party} lender
  */
-export function repudiateFor(ctx, borrower, lender) {
-  const level = relationLevel(ctx.relations, borrower, lender);
+function witnessesOf(ctx, borrower) {
   /** @type {Set<number>} */
   const met = new Set();
   for (const row of ctx.relations) {
     if (row.a === borrower && isAlive(ctx, row.b)) met.add(row.b);
     if (row.b === borrower && isAlive(ctx, row.a)) met.add(row.a);
   }
+  return [...met];
+}
+
+/**
+ * DESIGN 4.5: the player repudiates what it owes one lender; AI lenders' income sizes the grudge. Repudiating the
+ * citizens (DESIGN 4.17) has no lender abroad and no witnesses who care: its cost is at home, the meter's 10 turns,
+ * and standing at the 0.15 of a repudiation abroad lenders read lightly.
+ * @param {TurnContext} ctx
+ * @param {number} borrower
+ * @param {Party} lender
+ */
+export function repudiateFor(ctx, borrower, lender) {
+  const level = relationLevel(ctx.relations, borrower, lender);
+  const home = lender === CITIZENS;
   const result = repudiate({ ledger: ctx.ledger, turn: ctx.turn, borrower, lender,
-    lenderIncomeCents: incomeOf(ctx, lender), atWar: level === "war", witnesses: [...met] });
+    lenderIncomeCents: incomeOf(ctx, lender), atWar: home || level === "war",
+    witnesses: home ? [] : witnessesOf(ctx, borrower) });
   if (!result) return "nothing-owed";
+  if (home) citizenRepudiation(ctx, borrower);
   Object.assign(ctx.ledger, { loans: result.ledger.loans, blocks: result.ledger.blocks,
     repudiations: result.ledger.repudiations, investments: result.ledger.investments });
   ctx.out.grievances.push(...result.grievances);

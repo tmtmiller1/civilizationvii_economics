@@ -2,13 +2,17 @@
 // and the small verbs that write a transfer, an event or a notice. econ-plan.js builds it; econ-requests.js and
 // econ-shortfall.js act on it. Nothing here reads the engine.
 
-import { isWorldAccount, ratesPct } from "./econ-params.js";
-import { loanId, makeLoan } from "./econ-loan.js";
+import { CITIZENS, isWorldAccount, ratesPct } from "./econ-params.js";
+import { isOpen, loanId, makeLoan } from "./econ-loan.js";
 import { standingPct } from "./econ-credit.js";
 import { rateCapPpm } from "./econ-lenders.js";
 import { createBatch, lenderBalance, record } from "./econ-batch.js";
 import { aiWillLend } from "./econ-ai.js";
 import { cloneMarkets, emptyMarkets } from "./econ-markets.js";
+import { cloneMacro, emptyMacro, macroReadings } from "./econ-macro-state.js";
+import { termsOf } from "./econ-systems.js";
+import { citizenCapCents, citizenRatePpm } from "./econ-citizens.js";
+import { premiumPct } from "./econ-inflation.js";
 
 /**
  * @param {Civ} a
@@ -27,11 +31,20 @@ export function turnContext(input, options, out) {
   // Civs are held sorted by id so every pass runs in one order whatever order the glue listed them in.
   const civs = [...(input.civs || [])].sort(byId);
   const rates = ratesPct(options.rates);
+  const macro = input.macro ? cloneMacro(input.macro) : emptyMacro();
   return { turn, age, civs, relations, requests, params, options, out, ledger: out.ledger, rates,
     capPpm: rateCapPpm(age, rates) ?? Infinity, civ: new Map(civs.map((civ) => [civ.id, civ])),
     batch: createBatch(civs), routes: Array.isArray(input.routes) ? input.routes : [],
-    markets: input.markets ? cloneMarkets(input.markets) : emptyMarkets(), trade: [], owed: [] };
+    markets: input.markets ? cloneMarkets(input.markets) : emptyMarkets(), trade: [], owed: [], macro,
+    readings: macroReadings(macro, { civs, turn, options }), basePrices: {} };
 }
+
+/**
+ * A civ's system terms this turn (DESIGN 4.17); Mixed for a civ the readings don't hold.
+ * @param {TurnContext} ctx
+ * @param {Party} pid
+ */
+export const termsFor = (ctx, pid) => ctx.readings.terms.get(/** @type {number} */ (pid)) || termsOf("mixed");
 
 /**
  * @param {TurnContext} ctx
@@ -96,8 +109,11 @@ export function emit(ctx, loan, spec) {
 export function openLoan(ctx, spec) {
   const { ledger, turn } = ctx;
   const { lender, borrower, principal, ratePpm, term, source, emergency = false } = spec;
-  const loan = makeLoan({ id: loanId(ledger.nextId), lender, borrower, principal, ratePpm, term, turn, source,
+  const made = makeLoan({ id: loanId(ledger.nextId), lender, borrower, principal, ratePpm, term, turn, source,
     emergency });
+  // A Religious lender lends as a partnership (DESIGN 4.17): its interest follows the borrower's income from here.
+  const loan = !isWorldAccount(lender) && termsFor(ctx, lender).partnership
+    ? { ...made, partnership: true, baseIncome: incomeOf(ctx, borrower) } : made;
   ledger.nextId += 1;
   ledger.loans.push(loan);
   emit(ctx, loan, { from: lender, to: borrower, cents: principal, reason: "principal" });
@@ -163,7 +179,45 @@ export function aiLendersFor(ctx, borrower) {
  */
 export function offerQuery(ctx, borrower, extra = {}) {
   const civ = ctx.civ.get(borrower);
+  const own = termsFor(ctx, borrower);
+  const spread = ctx.readings.civ.get(borrower)?.spreadPct ?? 100;
+  const bondPct = Math.round((own.bondPct * own.borrowPct * spread * (100 + premiumPct(ctx.readings.piPpm)))
+    / 1000000);
   return { ledger: ctx.ledger, borrower, borrowerCiv: civ, age: ctx.age, turn: ctx.turn, rates: ctx.rates,
     standing: standing(ctx, borrower), relations: ctx.relations, options: ctx.options,
-    depthFactorPct: civ?.depthFactorPct ?? 100, ...extra };
+    depthFactorPct: civ?.depthFactorPct ?? 100, bondPct,
+    civPct: (lender) => Math.round((own.borrowPct * termsFor(ctx, lender).lendPct) / 100),
+    civLendersClosed: ctx.readings.panic, noBond: own.civLendersOnly, citizens: citizensFor(ctx, borrower),
+    ...extra };
+}
+
+/**
+ * What a civ owes one lender on its open loans.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ * @param {Party} lender
+ */
+export function owedTo(ctx, pid, lender) {
+  let sum = 0;
+  for (const loan of ctx.ledger.loans) {
+    if (loan.borrower === pid && loan.lender === lender && isOpen(loan)) sum += loan.outstanding;
+  }
+  return sum;
+}
+
+/**
+ * What a Civic market civ's citizens would lend it this turn and at what rate (DESIGN 4.17); null for any other
+ * system or with Loans off.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ */
+export function citizensFor(ctx, pid) {
+  const civ = ctx.civ.get(pid);
+  if (!civ || !ctx.options.loans || !termsFor(ctx, pid).citizens) return null;
+  const owed = owedTo(ctx, pid, CITIZENS);
+  const ratePpm = citizenRatePpm({ age: ctx.age, standing: standing(ctx, pid), rates: ctx.rates,
+    depthFactorPct: civ.depthFactorPct ?? 100 });
+  if (ratePpm === null) return null;
+  return { ratePpm, roomCents: citizenCapCents({ incomeCents: civ.incomeCents,
+    commerceSettlements: civ.commerceSettlements ?? 0, owedCents: owed }) };
 }

@@ -12,7 +12,8 @@ test("a stage is open from the turn the civ reached it; unknown, missing or malf
   assert.equal(hasStage({}, "moneylending", 50), false);
   assert.equal(hasStage(undefined, "moneylending", 50), false);
   assert.equal(hasStage({ stages: { tariffs: 1 } }, "tariffs", 50), true, "the 1.1 stages gate too");
-  assert.equal(hasStage({ stages: { banking: 1 } }, "banking", 50), false, "a stage the model doesn't know reads closed");
+  assert.equal(hasStage({ stages: { banking: 1, capitalism: 2 } }, "capitalism", 50), true, "and the 1.2 ones");
+  assert.equal(hasStage({ stages: { guilds: 1 } }, "guilds", 50), false, "a stage the model doesn't know reads closed");
 });
 
 test("Economic stages Off opens every stage from the start", () => {

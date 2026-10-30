@@ -30,7 +30,7 @@ test("every major is read with the same fields, human and AI alike; stages come 
   }
   assert.deepEqual(input.civs.map((c) => [c.balanceCents, c.incomeCents, c.human, c.atWar]),
     [[5000, 1200, true, false], [40000, 1200, false, true], [1000, 300, false, true]]);
-  const later = { guildPatronage: null, charteredCompanies: null, tariffs: null };
+  const later = { guildPatronage: null, charteredCompanies: null, tariffs: null, banking: null, capitalism: null };
   assert.deepEqual(input.civs.map((c) => c.stages), [{ moneylending: 10, publicDebt: null, trade: 10, ...later },
     { moneylending: 10, publicDebt: 10, trade: 10, ...later }, { moneylending: 10, publicDebt: null, trade: 10, ...later }],
     "Moneylending and Trade are Antiquity's, open in Exploration; Public debt needs the civic");
@@ -47,7 +47,7 @@ test("options map from the setup keys, the guard switch overrides, and a dead ci
     ECONOMICS_AI: "ECONOMICS_AI_OFF" } });
   const glue = emptyGlue();
   assert.deepEqual(readOptions(glue), { loans: true, guard: false, ai: false, rates: "high", stages: true, taxFallback: false,
-    markets: true, tariffs: true, investment: true });
+    markets: true, tariffs: true, investment: true, inflation: false, cycle: "standard", systems: true });
   const session = loadSession();
   assert.equal(setGuard(session, true), true);
   assert.equal(setGuard(session, null), false, "null follows the setup option again");
@@ -76,7 +76,8 @@ test("a turn writes the ledger before any grant, nets one Gold grant per civ, an
 });
 
 test("on load, a batch saved this turn whose grants never landed is re-sent, and a landed one isn't", () => {
-  const world = fresh();
+  // The cycle off, so the war between 3 and 5 moves nobody's Gold and only the player's borrow has a net.
+  const world = fresh({ config: { ECONOMICS_CYCLE: "ECONOMICS_CYCLE_OFF" } });
   const session = loadSession();
   session.glue.stages = { 0: { moneylending: 1, publicDebt: 1 } };
   session.glue.requests.push({ kind: "borrow", borrower: 0, lender: "bond", principal: 1000, term: 10 });

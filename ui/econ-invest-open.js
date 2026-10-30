@@ -10,7 +10,7 @@ import { activeDefaults } from "./econ-credit.js";
 import { isBlocked, relationLevel } from "./econ-lenders.js";
 import { hasStage } from "./econ-stages.js";
 import { funds } from "./econ-batch.js";
-import { emit, event, incomeOf, isAlive, isHuman, notice } from "./econ-turn.js";
+import { emit, event, incomeOf, isAlive, isHuman, notice, termsFor } from "./econ-turn.js";
 
 /**
  * @typedef {{ investor: number, host: number, form: InvestKind, cents: number, cityId: string | null,
@@ -74,6 +74,8 @@ function gateRefusal(ctx, spec) {
   const both = hasStage(ctx.civ.get(spec.investor), stage, ctx.turn, ctx.options)
     && hasStage(ctx.civ.get(spec.host), stage, ctx.turn, ctx.options);
   if (!both) return "invest-stage";
+  // Corporatist and Planned hosts receive development loans only (DESIGN 4.17); a gift is still a gift.
+  if (spec.form === "general" && termsFor(ctx, spec.host).devLoansOnly) return "host-system";
   return isBlocked(ctx.ledger, spec.investor, spec.host, ctx.turn) ? "blocked" : null;
 }
 
@@ -112,7 +114,7 @@ function bookRecord(ctx, spec, { id, spent, city }) {
   ctx.ledger.nextInvestId += 1;
   ctx.ledger.investments.push(makeInvestment({ id, kind: spec.form, investor: spec.investor, host: spec.host,
     principal: spent, turn: ctx.turn, cityId: city ? city.id : null, roleBuilding: city?.roleBuilding === true,
-    baseIncome: incomeOf(ctx, spec.host) }));
+    baseIncome: incomeOf(ctx, spec.host), extraMille: termsFor(ctx, spec.investor).dividendMille }));
 }
 
 /**
@@ -131,7 +133,10 @@ export function openInvestment(ctx, spec, source) {
     ctx.out.progress.push({ host: spec.host, cityId: spend.city.id, amount: spend.progress, investmentId: id });
   }
   if (!spec.asAid) bookRecord(ctx, spec, { id, spent: spend.cents, city: spend.city });
-  const gain = relationshipGain(spend.cents, incomeOf(ctx, spec.host), tenthsFor(spec.form, spec.asAid));
+  // Tribute and Religious aid buys twice the goodwill (DESIGN 4.17).
+  const share = spec.asAid ? termsFor(ctx, spec.investor).aidRelationPct : 100;
+  const gain = Math.floor((relationshipGain(spend.cents, incomeOf(ctx, spec.host), tenthsFor(spec.form, spec.asAid))
+    * share) / 100);
   if (gain > 0) ctx.out.relationships.push({ a: spec.investor, b: spec.host, delta: gain });
   const fields = { loanId: id, lender: spec.investor, borrower: spec.host, cents: spend.cents, form: spec.form,
     aid: spec.asAid ? 1 : 0, progress: spend.progress, relationship: gain, source };

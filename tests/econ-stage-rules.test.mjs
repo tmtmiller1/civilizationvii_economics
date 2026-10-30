@@ -5,7 +5,8 @@ import { STAGE_ANCHORS, isStageOpenNow, modelStages, nextStageTurns } from "../u
 test("the anchors are the DESIGN 4.15 types, never nodes", () => {
   assert.deepEqual(STAGE_ANCHORS, { moneylending: "TRADITION_COMMODITIES", publicDebt: "TRADITION_MARITIME_LAW",
     coinage: "BUILDING_MARKET", trade: "UNIT_MERCHANT", guildPatronage: "BUILDING_GUILDHALL",
-    charteredCompanies: "TRADITION_CHARTERS", tariffs: "TRADITION_TARIFFS" });
+    charteredCompanies: "TRADITION_CHARTERS", tariffs: "TRADITION_TARIFFS", banking: "BUILDING_BANK",
+    capitalism: "TRADITION_LAISSEZ_FAIRE" });
 });
 
 test("with nodes in this age the civ needs one; without, an earlier age's stage is open and a later one's closed", () => {
@@ -23,14 +24,16 @@ test("with nodes in this age the civ needs one; without, an earlier age's stage 
 
 test("stage turns are recorded once and carried forward; a civ with no read keeps its record", () => {
   const first = nextStageTurns({}, [{ pid: 4, open: { moneylending: true, publicDebt: false, coinage: false } }], 12);
-  const rest = { trade: null, guildPatronage: null, charteredCompanies: null, tariffs: null };
+  const rest = { trade: null, guildPatronage: null, charteredCompanies: null, tariffs: null, banking: null,
+    capitalism: null };
   assert.deepEqual(first, { 4: { moneylending: 12, publicDebt: null, coinage: null, ...rest } });
   const later = nextStageTurns(first, [{ pid: 4, open: { moneylending: false, publicDebt: true, coinage: true } }], 30);
   assert.deepEqual(later[4], { moneylending: 12, publicDebt: 30, coinage: 30, ...rest }, "a recorded turn never moves");
   const kept = nextStageTurns(later, [], 31);
   assert.deepEqual(kept, later);
   assert.notEqual(kept[4], later[4], "copies, not the same rows");
-  const none = { trade: null, guildPatronage: null, charteredCompanies: null, tariffs: null };
+  const none = { trade: null, guildPatronage: null, charteredCompanies: null, tariffs: null, banking: null,
+    capitalism: null };
   assert.deepEqual(modelStages(later[4]), { moneylending: 12, publicDebt: 30, ...none }, "coinage stays out of the model");
   assert.deepEqual(modelStages(undefined), { moneylending: null, publicDebt: null, ...none });
   assert.deepEqual(modelStages({ trade: 4, tariffs: "x" }).trade, 4);
