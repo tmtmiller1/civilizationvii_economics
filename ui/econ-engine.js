@@ -80,7 +80,7 @@ export function aliveMajorIds() {
 
 /** @param {number} pid */
 export function civName(pid) {
-  return safe(() => String(Players.get(pid).civilizationName), `#${pid}`);
+  return safe(() => String(Locale.compose(Players.get(pid).civilizationName)), `#${pid}`);
 }
 
 /** @param {number} pid */
