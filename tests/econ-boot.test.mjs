@@ -9,6 +9,10 @@ import { installFakeDom, removeFakeDom } from "./_fake-dom.mjs";
 import { emptyLedger, load, save, MOD_ID } from "../ui/econ-state.js";
 import { resetBuildingDataForTests } from "../ui/econ-engine.js";
 import { resetAnchorsForTests } from "../ui/econ-stage-read.js";
+import { readFileSync } from "node:fs";
+
+// The boot line names the release; tests/modinfo.test.mjs holds it to the modinfo and package.json.
+const { version: VERSION } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 
 register("./_game-paths-hooks.mjs", import.meta.url);
 
@@ -43,7 +47,7 @@ test.afterEach(() => { removeFakeEngine(); removeFakeDom(); delete globalThis.__
 
 test("single player: one boot line, the batch at TurnBegin, the notification at the local turn and only once", async () => {
   const { world, lines, harness } = await boot("sp", {});
-  assert.equal(lines.filter((line) => line.startsWith("[Economics] v0.4.0 loaded; turn 10,")).length, 1, lines.join("\n"));
+  assert.equal(lines.filter((line) => line.startsWith(`[Economics] v${VERSION} loaded; turn 10,`)).length, 1, lines.join("\n"));
   assert.deepEqual([...world.handlers.keys()].sort(), ["CityRazingStarted", "CityTransfered", "PlayerTurnActivated",
     "RandomEventOccurred", "TurnBegin"]);
   assert.equal(harness.multiplayer, false);
@@ -75,7 +79,7 @@ test("a save from before its turn's batch runs that batch once at load, and the 
 
 test("multiplayer: the mod says once that it's off and listens to nothing", async () => {
   const { world, lines, harness } = await boot("mp", { multiplayer: true });
-  assert.deepEqual(lines, ["[Economics] v0.4.0 loaded; multiplayer game, the mod is off"]);
+  assert.deepEqual(lines, [`[Economics] v${VERSION} loaded; multiplayer game, the mod is off`]);
   assert.equal(world.handlers.size, 0);
   assert.equal(harness.multiplayer, true);
   assert.equal(world.calls.length, 0);

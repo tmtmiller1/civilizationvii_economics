@@ -28,11 +28,13 @@ test("every ui module is imported in the game group, and the keeper is the first
   }
 });
 
-test("the id, version and AffectsSavedGames are set, and the version matches package.json", () => {
+test("the id, version and AffectsSavedGames are set, and the version matches package.json and the boot line", () => {
   assert.match(modinfo, /<Mod id="tower-economics"/);
   const version = modinfo.match(/<Version>(\d+\.\d+\.\d+)<\/Version>/);
   assert.ok(version, "semver <Version>");
   assert.equal(version[1], pkg.version, "modinfo and package.json versions");
+  const boot = fs.readFileSync(path.join(ROOT, "ui/econ-bootstrap.js"), "utf8").match(/const VERSION = "([^"]+)";/);
+  assert.equal(boot && boot[1], version[1], "the boot line's version");
   assert.match(modinfo, /<AffectsSavedGames>1<\/AffectsSavedGames>/);
   assert.match(modinfo, /<Authors>Tower<\/Authors>/);
 });
