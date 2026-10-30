@@ -196,7 +196,7 @@ export function resetBuildingDataForTests() {
 }
 
 /** The Bank's base Gold yield from the data, or the 1.5.0 value when no Bank row exists. */
-function bankGoldYield() {
+export function bankGoldYield() {
   const bank = buildingData().get("BUILDING_BANK");
   return bank && bank.goldYield > 0 ? bank.goldYield : DEPTH.bankGoldFallback;
 }
@@ -207,23 +207,37 @@ function bankGoldYield() {
  * @returns {{ type: string, roles: import("./econ-depth.js").BuildingRoles, goldYield: number, weight: number }[]}
  */
 export function readBuildings(pid) {
+  return safe(() => {
+    /** @type {CityBuilding[]} */
+    const out = [];
+    for (const city of Players.get(pid).Cities.getCities() || []) out.push(...readCityBuildings(city));
+    return out;
+  }, /** @type {CityBuilding[]} */ ([]));
+}
+
+/**
+ * @typedef {{ type: string, roles: import("./econ-depth.js").BuildingRoles, goldYield: number, weight: number }}
+ *   CityBuilding
+ */
+
+/**
+ * One city's standing buildings with their roles; a damaged building weighs 0 (P9).
+ * @param {any} city
+ * @returns {CityBuilding[]}
+ */
+export function readCityBuildings(city) {
   const data = buildingData();
   const bankGold = bankGoldYield();
-  /** @type {{ type: string, roles: import("./econ-depth.js").BuildingRoles, goldYield: number, weight: number }[]} */
+  /** @type {CityBuilding[]} */
   const out = [];
-  const add = (/** @type {any} */ instance) => {
-    const row = instance ? GameInfo.Constructibles.lookup(instance.type) : null;
+  for (const id of safe(() => city.Constructibles.getIds(), []) || []) {
+    const instance = safe(() => Constructibles.getByComponentID(id), null);
+    const row = instance ? safe(() => GameInfo.Constructibles.lookup(instance.type), null) : null;
     const info = row ? data.get(row.ConstructibleType) : undefined;
-    if (!row || !info || instance.complete === false) return;
+    if (!row || !info || instance.complete === false) continue;
     out.push({ type: row.ConstructibleType, roles: rolesOf(info, bankGold), goldYield: info.goldYield,
       weight: instance.damaged === true ? 0 : 1 });
-  };
-  safe(() => {
-    for (const city of Players.get(pid).Cities.getCities() || []) {
-      for (const id of city.Constructibles.getIds() || []) add(Constructibles.getByComponentID(id));
-    }
-    return true;
-  }, false);
+  }
   return out;
 }
 

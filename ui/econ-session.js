@@ -1,9 +1,9 @@
-// econ-session.js - Economics: the game-side session. It holds the ledger and the glue's own envelope (stage turns,
-// the civs ever seen, the player's pending requests, the guard switch), builds the plan input from the engine once
-// per turn, runs the model and sends what comes back (DESIGN 4.14). The batch runs at TurnBegin: right after the
-// roll every balance is fresh and nobody has spent yet, and a negative balance with positive income has just been
-// wiped by the engine (P3, P4). The ledger is written before the grants go out, so a save in the second before they
-// land can be told from one after (P15; batchStatus on load).
+// econ-session.js - Economics: the game-side session. It holds the ledger, the markets envelope (prices, tariffs) and
+// the glue's own envelope (stage turns, the civs ever seen, the player's pending requests, the guard switch), builds
+// the plan input from the engine once per turn, runs the model and sends what comes back (DESIGN 4.14). The batch runs
+// at TurnBegin: right after the roll every balance is fresh and nobody has spent yet, and a negative balance with
+// positive income has just been wiped by the engine (P3, P4). The ledger is written before the grants go out, so a save
+// in the second before they land can be told from one after (P15; batchStatus on load).
 
 import { planTurn } from "./econ-plan.js";
 import { MOD_ID, emptyLedger, load, save } from "./econ-state.js";
@@ -14,19 +14,26 @@ import { checkPlan } from "./econ-invariants.js";
 import { modelStages } from "./econ-stage-rules.js";
 import { readStageTurns } from "./econ-stage-read.js";
 import { logDebug, logLine } from "./econ-log.js";
-import { aliveMajorIds, ageType, bookGrievance, bookRelationship, gameTurn, isAliveMajor, player, readAtWar,
-  readBalanceCents, readConfig, readDepth, readEnvelope, readGlobalParameters, readHappinessCents, readIncomeCents,
-  readRelations, readUpkeepCents, sendCelebration, sendGold, sendInfluence, writeEnvelope } from "./econ-engine.js";
+import { MARKETS_KEY, loadMarkets, saveMarkets } from "./econ-markets.js";
+import { countRoles } from "./econ-depth.js";
+import { cityKey, makeRolesFor, readCities, readMarket, readRoutes, readTradeIncomeCents, sendProgress }
+  from "./econ-commerce-read.js";
+import { aliveMajorIds, ageType, bankGoldYield, bookGrievance, bookRelationship, buildingData, gameTurn, isAliveMajor,
+  player, readAtWar, readBalanceCents, readCityBuildings, readConfig, readDepth, readEnvelope, readGlobalParameters,
+  readHappinessCents, readIncomeCents, readRelations, readUpkeepCents, safe, sendCelebration, sendGold, sendInfluence,
+  writeEnvelope } from "./econ-engine.js";
 
 export const GLUE_KEY = "tower-economics-glue";
 export const GLUE_VERSION = 1;
-const REQUEST_KINDS = ["borrow", "lend", "repay", "restructure", "repudiate", "tax"];
+const REQUEST_KINDS = ["borrow", "lend", "repay", "restructure", "repudiate", "tax", "tariff", "invest",
+  "accept-offer", "decline-offer"];
 const MAX_REQUESTS = 16;
 
 /**
  * @typedef {{ v: number, stages: Record<string, StageTurns>, seen: number[], requests: PlanRequest[],
  *   guardOn: boolean | null }} GlueState
- * @typedef {{ ledger: Ledger, glue: GlueState, lastPlan: PlanOutput | null, params: EngineParams | null }} Session
+ * @typedef {{ ledger: Ledger, glue: GlueState, lastPlan: PlanOutput | null, params: EngineParams | null,
+ *   markets: MarketsState }} Session
  */
 
 /** @returns {GlueState} */
@@ -84,7 +91,15 @@ function parseGlue(raw) {
 export function loadSession() {
   const ledgerRead = load(readEnvelope(MOD_ID));
   if (!ledgerRead.ok) logLine(`ledger envelope refused (${ledgerRead.reason}); starting empty`);
-  return { ledger: ledgerRead.ledger, glue: parseGlue(readEnvelope(GLUE_KEY)), lastPlan: null, params: null };
+  const marketsRead = loadMarkets(readEnvelope(MARKETS_KEY));
+  if (!marketsRead.ok) logLine(`markets envelope refused (${marketsRead.reason}); starting empty`);
+  return { ledger: ledgerRead.ledger, glue: parseGlue(readEnvelope(GLUE_KEY)), lastPlan: null, params: null,
+    markets: marketsRead.markets };
+}
+
+/** @param {Session} session */
+export function writeMarkets(session) {
+  return writeEnvelope(MARKETS_KEY, saveMarkets(session.markets));
 }
 
 /** @param {Session} session */
@@ -112,20 +127,51 @@ export function readOptions(glue) {
 }
 
 /**
- * One civ's row for the plan, every field by the same read whoever the civ is (docs/glue-contract.md).
+ * One civ's row for the plan, every field by the same read whoever the civ is (docs/glue-contract.md). With a
+ * 1.1 part on, its settlements' builds and Trade buildings, and the Trade Income the engine pays it.
  * @param {number} pid
  * @param {number[]} majors
  * @param {StageTurns} stages
+ * @param {{ cities?: CityRead[] }} [commerce]
  * @returns {Civ}
  */
-export function readCiv(pid, majors, stages) {
+export function readCiv(pid, majors, stages, commerce = {}) {
   const p = player(pid);
   const human = !!(p && p.isHuman === true);
   if (!isAliveMajor(pid)) return { id: pid, alive: false, human, balanceCents: 0, incomeCents: 0, stages };
   const depth = readDepth(pid);
-  return { id: pid, alive: true, human, balanceCents: readBalanceCents(pid), incomeCents: readIncomeCents(pid),
+  /** @type {Civ} */
+  const civ = { id: pid, alive: true, human, balanceCents: readBalanceCents(pid), incomeCents: readIncomeCents(pid),
     upkeepCents: readUpkeepCents(pid), stages, depthTurns: depth.depthTurns, depthFactorPct: depth.depthFactorPct,
     atWar: readAtWar(pid, majors), happinessCents: readHappinessCents(pid) };
+  if (commerce.cities) Object.assign(civ, { cities: commerce.cities, tradeIncomeCents: readTradeIncomeCents(pid) });
+  return civ;
+}
+
+/**
+ * The 1.1 reads for every living major (DESIGN 4.9, 4.10, 4.12): each civ's cities, the routes between majors and
+ * the market, from one pass over the cities' buildings.
+ * @param {number[]} majors
+ */
+export function readCommerce(majors) {
+  const rolesFor = makeRolesFor(buildingData(), bankGoldYield());
+  /** @type {Map<string, number>} */
+  const tradeByCity = new Map();
+  let industry = 0;
+  /** @type {Map<number, CityRead[]>} */
+  const cities = new Map();
+  for (const pid of majors) {
+    const buildingsOf = (/** @type {any} */ city) => {
+      const list = readCityBuildings(city);
+      const counts = countRoles(list);
+      const key = cityKey(safe(() => city.id, null));
+      if (key) tradeByCity.set(key, Math.round(counts.trade));
+      industry += counts.industry;
+      return list;
+    };
+    cities.set(pid, readCities(pid, rolesFor, buildingsOf));
+  }
+  return { cities, routes: readRoutes(majors, tradeByCity), market: readMarket(majors, Math.round(industry)) };
 }
 
 /**
@@ -141,9 +187,14 @@ export function buildInput(session) {
   session.glue.seen = seen;
   session.glue.stages = readStageTurns(session.glue.stages, majors, turn);
   if (!session.params) session.params = engineLines(readGlobalParameters());
-  const civs = seen.map((pid) => readCiv(pid, majors, modelStages(session.glue.stages[String(pid)])));
+  const options = readOptions(session.glue);
+  const commerce = options.markets || options.investment ? readCommerce(majors) : null;
+  const civs = seen.map((pid) => readCiv(pid, majors, modelStages(session.glue.stages[String(pid)]),
+    { cities: commerce?.cities.get(pid) }));
   return { turn, age: ageType(), ledger: session.ledger, civs, relations: readRelations(majors),
-    requests: session.glue.requests, params: session.params, options: readOptions(session.glue) };
+    requests: session.glue.requests, params: session.params, options, markets: session.markets,
+    routes: options.markets && commerce ? commerce.routes : [],
+    market: options.markets ? commerce?.market : undefined };
 }
 
 /**
@@ -160,6 +211,16 @@ export function sendPlan(plan) {
   for (const [pid, amount] of sumBy(plan.celebration)) if (sendCelebration(pid, amount)) sent += 1;
   for (const row of plan.grievances) bookGrievance(row);
   for (const row of plan.relationships) bookRelationship(row);
+  return sent + sendProgressRows(plan.progress);
+}
+
+/**
+ * The development loans' progress (DESIGN 4.12), one addProgress per city.
+ * @param {ProgressRow[]} rows
+ */
+function sendProgressRows(rows) {
+  let sent = 0;
+  for (const row of rows || []) if (sendProgress(row)) sent += 1;
   return sent;
 }
 
@@ -172,6 +233,21 @@ function sumBy(rows) {
 }
 
 /**
+ * Takes the plan's ledger and markets as the session's and writes all three envelopes, before any grant goes out.
+ * @param {Session} session
+ * @param {PlanOutput} plan
+ */
+function commitSession(session, plan) {
+  session.ledger = plan.ledger;
+  session.markets = plan.markets;
+  session.glue.requests = [];
+  session.lastPlan = plan;
+  writeLedger(session);
+  writeMarkets(session);
+  writeGlue(session);
+}
+
+/**
  * The turn batch: snapshot, plan, write the ledger, send. Returns the plan, or null when nothing ran.
  * @param {Session} session
  * @param {string} why
@@ -181,13 +257,10 @@ export function runTurn(session, why) {
   const input = buildInput(session);
   const plan = planTurn(input);
   if (plan.skipped) { logDebug(`turn ${input.turn} (${why}): skipped, ${plan.skipped}`); writeGlue(session); return null; }
-  session.ledger = plan.ledger;
-  session.glue.requests = [];
-  session.lastPlan = plan;
-  writeLedger(session);
-  writeGlue(session);
+  commitSession(session, plan);
   const sent = sendPlan(plan);
-  const violations = checkPlan({ plan, civs: input.civs, envelopeText: undefined });
+  const marketsText = saveMarkets(plan.markets);
+  const violations = checkPlan({ plan, civs: input.civs, envelopeText: undefined, marketsText });
   for (const violation of violations) logLine(`invariant ${violation.id} on turn ${input.turn}: ${violation.detail}`);
   logLine(`turn ${input.turn} (${why}): ${plan.transfers.length} transfer(s), ${sent} grant(s), `
     + `${plan.events.length} event(s), ${Date.now() - started} ms`);
@@ -256,6 +329,8 @@ export function setGuard(session, on) {
 export function resetLedger(session) {
   session.ledger = emptyLedger();
   session.glue = emptyGlue();
+  session.markets = loadMarkets(null).markets;
   writeLedger(session);
+  writeMarkets(session);
   writeGlue(session);
 }

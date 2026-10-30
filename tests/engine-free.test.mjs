@@ -8,7 +8,8 @@ import { readdirSync, readFileSync } from "node:fs";
 // purpose, never by accident. The views are glue too: they draw with the DOM.
 const GLUE = new Set(["econ-bootstrap.js", "econ-log.js", "econ-engine.js", "econ-stage-read.js", "econ-session.js",
   "econ-notify.js", "econ-fiscal.js", "econ-settings.js", "econ-dom.js", "econ-screen.js", "econ-screen-api.js",
-  "econ-dock.js", "econ-view-treasury.js", "econ-view-loans.js", "econ-view-borrow.js", "econ-view-fiscal.js"]);
+  "econ-dock.js", "econ-view-treasury.js", "econ-view-loans.js", "econ-view-borrow.js", "econ-view-fiscal.js",
+  "econ-commerce-read.js"]);
 const BANNED = ["Game", "GameContext", "Players", "GameplayMap", "GameInfo", "WorldBuilder", "Units", "Cities",
   "engine", "UI", "localStorage", "sessionStorage", "Configuration", "Network", "document", "window", "Controls",
   "ContextManager", "YieldTypes", "Database"];

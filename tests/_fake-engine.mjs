@@ -22,6 +22,25 @@ function table(rows) {
  * @param {{ turn?: number, local?: number, age?: string, civs?: object[], config?: Record<string, unknown>,
  *   multiplayer?: boolean, unlocks?: object[], nodesOf?: Record<number, string[]>, met?: boolean }} [spec]
  */
+/**
+ * A settlement with its own id, build queue and Trade Income, for the 1.1 reads; `addProgress` is recorded.
+ * @param {number} pid
+ * @param {{ id: number, buildings?: number[], build?: string | null, progress?: number, percent?: number,
+ *   trade?: number, purchase?: number }} spec
+ */
+function fakeCity(pid, spec, world) {
+  return {
+    id: { owner: pid, id: spec.id, type: 1 },
+    Constructibles: { getIds: () => spec.buildings || [] },
+    Yields: { getYield: () => 0, getTradeYields: () => [null, { value: spec.trade ?? 0 }] },
+    Gold: { getSpecificBuildingMaintenance: () => ({ value: 0 }),
+      getBuildingPurchaseCost: () => spec.purchase ?? Number.NaN },
+    BuildQueue: { isEmpty: !spec.build, currentProductionTypeHash: spec.build ? `#${spec.build}` : null,
+      currentBuildProgress: spec.progress ?? 0, getPercentComplete: () => spec.percent ?? 0,
+      addProgress: (n) => world.calls.push(`progress ${pid}:${spec.id} ${n}`) },
+  };
+}
+
 export function installFakeEngine(spec = {}) {
   const world = {
     turn: spec.turn ?? 10, local: spec.local ?? 0, age: spec.age ?? "AGE_EXPLORATION",
@@ -55,12 +74,18 @@ export function installFakeEngine(spec = {}) {
           canSwapCultureSlot: () => world.swapAllowed,
         },
         Techs: { isNodeUnlocked: (node) => c.nodes.includes(node) },
-        Cities: { getCities: () => c.buildings.length || c.cityYields ? [{
-          Constructibles: { getIds: () => c.buildings },
-          Yields: { getYield: (yieldType) => ({ 1: c.cityYields?.gold, 3: c.cityYields?.happiness })[yieldType] ?? 0 },
-          // Keyed by the Constructibles row's $index, as the engine's getter is (P2); a type hash reads 0.
-          Gold: { getSpecificBuildingMaintenance: (index) => ({ value: Number.isInteger(index) ? 1 : 0 }) },
-        }] : [] },
+        Cities: { getCities: () => (c.cityList ? c.cityList.map((spec) => fakeCity(pid, spec, world))
+          : c.buildings.length || c.cityYields ? [{
+            id: { owner: pid, id: 1, type: 1 },
+            Constructibles: { getIds: () => c.buildings },
+            Yields: { getYield: (yieldType) => ({ 1: c.cityYields?.gold, 3: c.cityYields?.happiness })[yieldType] ?? 0,
+              getTradeYields: () => [] },
+            // Keyed by the Constructibles row's $index, as the engine's getter is (P2); a type hash reads 0.
+            Gold: { getSpecificBuildingMaintenance: (index) => ({ value: Number.isInteger(index) ? 1 : 0 }) },
+          }] : []) },
+        Resources: { getResources: () => (c.held || []).map((h, k) => ({ value: `${pid}/${k}`,
+          uniqueResource: { resource: h.type } })) },
+        Trade: { getCurrentTradeRoutes: () => c.routes || [] },
         Units: { getUnitIds: () => [1] },
       };
     },
@@ -71,6 +96,11 @@ export function installFakeEngine(spec = {}) {
     Players: players,
     Game: {
       get turn() { return world.turn; }, age: 7, getHash: (s) => `#${s}`,
+      // A held entry's origin, from the civ spec's `held` rows: "pid/k" is civ pid's k-th row.
+      Resources: { getOriginCity: (value) => {
+        const [pid, k] = String(value).split("/").map(Number);
+        return world.civs.get(pid)?.held?.[k]?.origin ?? null;
+      } },
       Notifications: { send: (n, pid) => world.notifications.push({ ...n, pid }) },
       PlayerOperations: {
         canStart: () => ({ Success: world.swapAllowed }),
@@ -90,15 +120,21 @@ export function installFakeEngine(spec = {}) {
         TargetType: "TRADITION_MARITIME_LAW" }]),
       ProgressionTreeNodes: table([{ ProgressionTreeNodeType: "NODE_CIVIC_EX_MAIN_ECONOMICS", Name: "LOC_CIVIC_ECONOMICS_NAME" }]),
       Constructibles: table([{ ConstructibleType: "BUILDING_MARKET", Age: "AGE_ANTIQUITY", ConstructibleClass: "BUILDING", $index: 0, $hash: "#0" },
-        { ConstructibleType: "BUILDING_BANK", Age: "AGE_EXPLORATION", ConstructibleClass: "BUILDING", $index: 1, $hash: "#1" }]),
-      TypeTags: table([{ Type: "BUILDING_MARKET", Tag: "GOLD" }, { Type: "BUILDING_BANK", Tag: "GOLD" }]),
+        { ConstructibleType: "BUILDING_BANK", Age: "AGE_EXPLORATION", ConstructibleClass: "BUILDING", $index: 1, $hash: "#1" },
+        ...(spec.constructibles || [])]),
+      TypeTags: table([{ Type: "BUILDING_MARKET", Tag: "GOLD" }, { Type: "BUILDING_BANK", Tag: "GOLD" }, ...(spec.tags || [])]),
       Constructible_YieldChanges: table([{ ConstructibleType: "BUILDING_MARKET", YieldType: "YIELD_GOLD", YieldChange: 3 },
         { ConstructibleType: "BUILDING_BANK", YieldType: "YIELD_GOLD", YieldChange: 8 }]),
-      Constructible_Advisories: table([]),
+      Constructible_Advisories: table(spec.advisories || []),
       Traditions: table(spec.traditions || []),
+      Resources: table(spec.resources || []),
+      Units: table(spec.units || []),
+      Projects: table([]),
+      GameSpeeds: table([{ GameSpeedType: "GAMESPEED_STANDARD", CostMultiplier: 100, $hash: 77 }]),
     },
     Configuration: {
-      getGame: () => ({ isAnyMultiplayer: spec.multiplayer === true, getValue: (key) => world.config[key] ?? null }),
+      getGame: () => ({ isAnyMultiplayer: spec.multiplayer === true, gameSpeedType: 77,
+        getValue: (key) => world.config[key] ?? null }),
       editGame: () => ({ setValue: (key, value) => { world.config[key] = value; record(`write ${key}`); } }),
     },
     YieldTypes: { YIELD_GOLD: 1, YIELD_DIPLOMACY: 2, YIELD_HAPPINESS: 3 },

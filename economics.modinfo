@@ -154,6 +154,7 @@
                     <Item>ui/econ-ai.js</Item>
                     <Item>ui/econ-batch.js</Item>
                     <Item>ui/econ-bootstrap.js</Item>
+                    <Item>ui/econ-commerce-read.js</Item>
                     <Item>ui/econ-commerce.js</Item>
                     <Item>ui/econ-conservation.js</Item>
                     <Item>ui/econ-credit.js</Item>
