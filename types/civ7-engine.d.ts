@@ -100,4 +100,11 @@ declare global {
   const PlayerOperationTypes: { CHANGE_TRADITION: number; [key: string]: any };
   const PlayerOperationParameters: { Activate: number; Deactivate: number; [key: string]: any };
   const CultureSlotTypes: { POLICY_CULTURE_SLOT: number; [key: string]: any };
+  /** Plot reads: a plot's owner and owning city (the cycle's disasters, DESIGN 4.11). */
+  const GameplayMap: { getOwner(x: number, y: number): number; getOwningCityFromXY(x: number, y: number): unknown;
+    [key: string]: any };
+  /** City instances by component id. */
+  const Cities: { get(id: unknown): EngineHandle; [key: string]: any };
+  /** CityTransfered's transfer kinds by name. */
+  const CityTransferTypes: { [key: string]: unknown };
 }

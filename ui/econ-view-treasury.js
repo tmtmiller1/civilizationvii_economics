@@ -4,7 +4,7 @@
 
 import { el, note, projectionChart, row, section } from "./econ-dom.js";
 import { formatFactor, formatGold, formatPct } from "./econ-format.js";
-import { describeEvent, eventConcerns } from "./econ-notice-text.js";
+import { composeArgs, describeEvent, eventConcerns } from "./econ-notice-text.js";
 import { treasuryView } from "./econ-view-model.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
@@ -60,7 +60,7 @@ function flowsSection(api) {
     const line = describeEvent(event, { ledger: /** @type {Ledger} */ (ledger), nameOf: api.nameOf });
     const shown = api.turnLabel(event.turn);
     const when = shown === null ? api.loc("LOC_ECONOMICS_TURN_EARLIER_AGE") : String(shown);
-    return line ? el("div", "econ-line", `${when}: ${api.loc(line.key, ...line.args)}`) : null;
+    return line ? el("div", "econ-line", `${when}: ${api.loc(line.key, ...composeArgs(line.args, api.loc))}`) : null;
   }).filter((line) => line !== null);
   const block = section(api.loc("LOC_ECONOMICS_TREASURY_FLOWS"), /** @type {HTMLElement[]} */ (lines));
   if (!lines.length) block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_NO_FLOWS")));

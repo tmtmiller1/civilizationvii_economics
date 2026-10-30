@@ -5,7 +5,7 @@
 
 const GLOBALS = ["Players", "Game", "GameContext", "GameInfo", "Configuration", "YieldTypes", "engine", "Locale",
   "DiplomacyPlayerRelationships", "Units", "Constructibles", "PlayerOperationTypes", "PlayerOperationParameters",
-  "CultureSlotTypes", "document", "localStorage"];
+  "CultureSlotTypes", "document", "localStorage", "GameplayMap", "Cities", "CityTransferTypes"];
 
 function table(rows) {
   const list = [...rows];
@@ -35,6 +35,7 @@ function fakeCity(pid, spec, world) {
     Yields: { getYield: () => 0, getTradeYields: () => [null, { value: spec.trade ?? 0 }] },
     Gold: { getSpecificBuildingMaintenance: () => ({ value: 0 }),
       getBuildingPurchaseCost: () => spec.purchase ?? Number.NaN },
+    population: spec.population ?? 3,
     BuildQueue: { isEmpty: !spec.build, currentProductionTypeHash: spec.build ? `#${spec.build}` : null,
       currentBuildProgress: spec.progress ?? 0, getPercentComplete: () => spec.percent ?? 0,
       addProgress: (n) => world.calls.push(`progress ${pid}:${spec.id} ${n}`) },
@@ -70,6 +71,8 @@ export function installFakeEngine(spec = {}) {
         Culture: {
           isNodeUnlocked: (node) => c.nodes.includes(node),
           isTraditionActive: (hash) => c.active.includes(hash),
+          getGovernmentType: () => c.government ?? -1,
+          getChosenIdeology: () => c.ideology ?? -1,
           getUnlockedTraditions: () => c.unlocked,
           canSwapCultureSlot: () => world.swapAllowed,
         },
@@ -77,6 +80,7 @@ export function installFakeEngine(spec = {}) {
         Cities: { getCities: () => (c.cityList ? c.cityList.map((spec) => fakeCity(pid, spec, world))
           : c.buildings.length || c.cityYields ? [{
             id: { owner: pid, id: 1, type: 1 },
+            population: c.population ?? 2,
             Constructibles: { getIds: () => c.buildings },
             Yields: { getYield: (yieldType) => ({ 1: c.cityYields?.gold, 3: c.cityYields?.happiness })[yieldType] ?? 0,
               getTradeYields: () => [] },
@@ -96,6 +100,7 @@ export function installFakeEngine(spec = {}) {
     Players: players,
     Game: {
       get turn() { return world.turn; }, get age() { return world.ageHash ?? 7; }, getHash: (s) => `#${s}`,
+      CrisisManager: { getCurrentCrisisStage: () => world.crisis ?? -1 },
       // A held entry's origin, from the civ spec's `held` rows: "pid/k" is civ pid's k-th row.
       Resources: { getOriginCity: (value) => {
         const [pid, k] = String(value).split("/").map(Number);
@@ -131,6 +136,10 @@ export function installFakeEngine(spec = {}) {
       Units: table(spec.units || []),
       Projects: table([]),
       GameSpeeds: table([{ GameSpeedType: "GAMESPEED_STANDARD", CostMultiplier: 100, $hash: 77 }]),
+      Governments: table([{ GovernmentType: "GOVERNMENT_DESPOTISM" }, { GovernmentType: "GOVERNMENT_OLIGARCHY" },
+        { GovernmentType: "GOVERNMENT_FEUDAL_MONARCHY" }]),
+      Ideologies: table([{ IdeologyType: "IDEOLOGY_COMMUNISM", FirstTreeNode: "NODE_CIVIC_MO_BRANCH_COMMUNISM" }]),
+      Buildings: table(spec.buildingRows || []),
     },
     Configuration: {
       getGame: () => ({ isAnyMultiplayer: spec.multiplayer === true, gameSpeedType: 77,
@@ -150,6 +159,10 @@ export function installFakeEngine(spec = {}) {
     // An instance's type is the row's hash, as in the engine.
     Constructibles: { getByComponentID: (id) => ({ type: `#${id}`, complete: true, damaged: false }) },
     PlayerOperationTypes: { CHANGE_TRADITION: 42 },
+    GameplayMap: { getOwner: (x, y) => world.plots?.[`${x},${y}`]?.owner ?? -1,
+      getOwningCityFromXY: (x, y) => world.plots?.[`${x},${y}`]?.city ?? null },
+    Cities: { get: (id) => ({ Constructibles: { getIds: () => world.cityBuildings?.[`${id.owner}:${id.id}`] || [] } }) },
+    CityTransferTypes: { BY_COMBAT: 1, BY_GIFT: 2 },
     PlayerOperationParameters: { Activate: 1, Deactivate: 0 },
     CultureSlotTypes: { POLICY_CULTURE_SLOT: 1 },
   };

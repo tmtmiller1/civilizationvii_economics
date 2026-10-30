@@ -19,10 +19,14 @@ import { MARKETS_KEY, loadMarkets, saveMarkets } from "./econ-markets.js";
 import { countRoles } from "./econ-depth.js";
 import { cityKey, makeRolesFor, readCities, readMarket, readRoutes, readTradeIncomeCents, sendProgress }
   from "./econ-commerce-read.js";
+import { MACRO_KEY, loadMacro, saveMacro } from "./econ-macro-state.js";
+import { blendedTerms, termsOf } from "./econ-systems.js";
+import { readCrisisStage, readEconomy, readGovernment, readIdeology, readPopulations, resolveCycleEvents,
+  sanitizePending, withPending } from "./econ-macro-read.js";
 import { aliveMajorIds, ageType, bankGoldYield, bookGrievance, bookRelationship, buildingData, gameTurn, isAliveMajor,
-  player, readAtWar, readBalanceCents, readCityBuildings, readConfig, readDepth, readEnvelope, readGlobalParameters,
-  readHappinessCents, readIncomeCents, readRelations, readUpkeepCents, safe, sendCelebration, sendGold, sendInfluence,
-  writeEnvelope } from "./econ-engine.js";
+  player, readAtWar, readBalanceCents, readConfig, readEnvelope, readGlobalParameters, readHappinessCents,
+  readIncomeCents, readRelations, readUpkeepCents, safe, sendCelebration, sendGold, sendInfluence, writeEnvelope }
+  from "./econ-engine.js";
 
 export const GLUE_KEY = "tower-economics-glue";
 export const GLUE_VERSION = 2;
@@ -31,15 +35,30 @@ const REQUEST_KINDS = ["borrow", "lend", "repay", "restructure", "repudiate", "t
 const MAX_REQUESTS = 16;
 
 /**
+ * `roles` remembers the roles each building type had in its own age (econ-macro-read.js); `cycleEvents` holds the
+ * engine's events since the last batch.
  * @typedef {{ v: number, stages: Record<string, StageTurns>, seen: number[], requests: PlanRequest[],
- *   guardOn: boolean | null, turns: import("./econ-turn-count.js").TurnCount }} GlueState
+ *   guardOn: boolean | null, turns: import("./econ-turn-count.js").TurnCount, roles: Record<string, string>,
+ *   cycleEvents: import("./econ-macro-read.js").PendingCycleEvent[] }} GlueState
  * @typedef {{ ledger: Ledger, glue: GlueState, lastPlan: PlanOutput | null, params: EngineParams | null,
- *   markets: MarketsState }} Session
+ *   markets: MarketsState, macro: import("./econ-macro-state.js").MacroState, pops: Map<string, number> }} Session
  */
 
 /** @returns {GlueState} */
 export function emptyGlue() {
-  return { v: GLUE_VERSION, stages: {}, seen: [], requests: [], guardOn: null, turns: emptyTurnCount() };
+  return { v: GLUE_VERSION, stages: {}, seen: [], requests: [], guardOn: null, turns: emptyTurnCount(), roles: {},
+    cycleEvents: [] };
+}
+
+/** @param {unknown} raw */
+function cleanRoles(raw) {
+  /** @type {Record<string, string>} */
+  const out = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [type, letters] of Object.entries(raw)) {
+    if (/^[A-Z0-9_]{1,64}$/.test(type) && typeof letters === "string" && /^[cbtwie]{1,6}$/.test(letters)) out[type] = letters;
+  }
+  return out;
 }
 
 /**
@@ -74,6 +93,8 @@ export function sanitizeGlue(raw) {
   out.requests = Array.isArray(value.requests) ? value.requests.filter(isRequest).slice(0, MAX_REQUESTS) : [];
   out.guardOn = typeof value.guardOn === "boolean" ? value.guardOn : null;
   out.turns = sanitizeTurnCount(value.turns);
+  out.roles = cleanRoles(value.roles);
+  out.cycleEvents = sanitizePending(value.cycleEvents);
   return out;
 }
 
@@ -95,8 +116,15 @@ export function loadSession() {
   if (!ledgerRead.ok) logLine(`ledger envelope refused (${ledgerRead.reason}); starting empty`);
   const marketsRead = loadMarkets(readEnvelope(MARKETS_KEY));
   if (!marketsRead.ok) logLine(`markets envelope refused (${marketsRead.reason}); starting empty`);
+  const macroRead = loadMacro(readEnvelope(MACRO_KEY));
+  if (!macroRead.ok) logLine(`macro envelope refused (${macroRead.reason}); starting empty`);
   return { ledger: ledgerRead.ledger, glue: parseGlue(readEnvelope(GLUE_KEY)), lastPlan: null, params: null,
-    markets: marketsRead.markets };
+    markets: marketsRead.markets, macro: macroRead.macro, pops: new Map() };
+}
+
+/** @param {Session} session */
+export function writeMacro(session) {
+  return writeEnvelope(MACRO_KEY, saveMacro(session.macro));
 }
 
 /** @param {Session} session */
@@ -133,33 +161,78 @@ export function readOptions(glue) {
 }
 
 /**
+ * @typedef {ReturnType<typeof readEconomy>} Economy
+ */
+
+/**
  * One civ's row for the plan, every field by the same read whoever the civ is (docs/glue-contract.md). With a
- * 1.1 part on, its settlements' builds and Trade buildings, and the Trade Income the engine pays it.
+ * 1.1 part on, its settlements' builds and Trade buildings, and the Trade Income the engine pays it; from 1.2 its
+ * government and ideology, and from its economy the depth, the weighted Warehouses, the legacy cushion and the
+ * settlements with a Commerce building.
  * @param {number} pid
  * @param {number[]} majors
  * @param {StageTurns} stages
- * @param {{ cities?: CityRead[] }} [commerce]
+ * @param {{ cities?: CityRead[], economy?: Economy }} [extra]
  * @returns {Civ}
  */
-export function readCiv(pid, majors, stages, commerce = {}) {
+export function readCiv(pid, majors, stages, extra = {}) {
   const p = player(pid);
   const human = !!(p && p.isHuman === true);
   if (!isAliveMajor(pid)) return { id: pid, alive: false, human, balanceCents: 0, incomeCents: 0, stages };
-  const depth = readDepth(pid);
   /** @type {Civ} */
   const civ = { id: pid, alive: true, human, balanceCents: readBalanceCents(pid), incomeCents: readIncomeCents(pid),
-    upkeepCents: readUpkeepCents(pid), stages, depthTurns: depth.depthTurns, depthFactorPct: depth.depthFactorPct,
-    atWar: readAtWar(pid, majors), happinessCents: readHappinessCents(pid) };
-  if (commerce.cities) Object.assign(civ, { cities: commerce.cities, tradeIncomeCents: readTradeIncomeCents(pid) });
+    upkeepCents: readUpkeepCents(pid), stages, atWar: readAtWar(pid, majors), happinessCents: readHappinessCents(pid),
+    government: readGovernment(pid), ideology: readIdeology(pid), ...economyFields(extra.economy) };
+  if (extra.cities) Object.assign(civ, { cities: extra.cities, tradeIncomeCents: readTradeIncomeCents(pid) });
   return civ;
 }
 
 /**
- * The 1.1 reads for every living major (DESIGN 4.9, 4.10, 4.12): each civ's cities, the routes between majors and
- * the market, from one pass over the cities' buildings.
- * @param {number[]} majors
+ * The fields a civ's row takes from its economy; a civ with none reads as having no buildings.
+ * @param {Economy | undefined} economy
  */
-export function readCommerce(majors) {
+function economyFields(economy) {
+  if (!economy) return { depthTurns: 0, depthFactorPct: 100, warehouses: 0, cushionBp: 0, commerceSettlements: 0 };
+  return { depthTurns: economy.depthTurns, depthFactorPct: economy.depthFactorPct, warehouses: economy.warehouses,
+    cushionBp: economy.cushionBp, commerceSettlements: economy.commerceSettlements };
+}
+
+/**
+ * A civ's system terms for the glue's own reads (the Civic market depth share, Corporatist industry): last batch's
+ * systems, at this turn's blend.
+ * @param {Session} session
+ * @param {number} pid
+ * @param {number} turn
+ * @param {PlanOptions} options
+ */
+export function glueTerms(session, pid, turn, options) {
+  return options.systems === false ? termsOf("mixed") : blendedTerms(session.macro.systems[String(pid)], turn);
+}
+
+/**
+ * A civ's economy (econ-macro-read.js readEconomy) with what the session knows: its stage turns, the age's first
+ * turn, the role memory, its system's Commerce share and whether Banking's depth cap applies.
+ * @param {Session} session
+ * @param {number} pid
+ * @param {number} turn
+ * @param {PlanOptions} options
+ */
+export function economyOf(session, pid, turn, options) {
+  const stageTurns = /** @type {Record<string, number | null | undefined>} */ (session.glue.stages[String(pid)] || {});
+  const banking = stageTurns.banking;
+  return readEconomy(pid, { turn, ageStartTurn: session.glue.turns.base + 1, age: ageType(), stageTurns,
+    memory: session.glue.roles, commercePct: glueTerms(session, pid, turn, options).commercePct,
+    bankingOpen: options.stages === false || (Number.isInteger(banking) && /** @type {number} */ (banking) <= turn) });
+}
+
+/**
+ * The 1.1 reads for every living major (DESIGN 4.9, 4.10, 4.12): each civ's cities, the routes between majors and
+ * the market, from the economies' buildings. Corporatist Industry buildings count twice for demand (DESIGN 4.17).
+ * @param {number[]} majors
+ * @param {Map<number, Economy>} economies
+ * @param {(pid: number) => number} industryPct
+ */
+export function readCommerce(majors, economies, industryPct) {
   const rolesFor = makeRolesFor(buildingData(), bankGoldYield());
   /** @type {Map<string, number>} */
   const tradeByCity = new Map();
@@ -167,12 +240,12 @@ export function readCommerce(majors) {
   /** @type {Map<number, CityRead[]>} */
   const cities = new Map();
   for (const pid of majors) {
+    const economy = economies.get(pid);
+    industry += ((economy?.industry ?? 0) * industryPct(pid)) / 100;
     const buildingsOf = (/** @type {any} */ city) => {
-      const list = readCityBuildings(city);
-      const counts = countRoles(list);
       const key = cityKey(safe(() => city.id, null));
-      if (key) tradeByCity.set(key, Math.round(counts.trade));
-      industry += counts.industry;
+      const list = (key && economy?.byCity.get(key)) || [];
+      if (key) tradeByCity.set(key, Math.round(countRoles(list).trade));
       return list;
     };
     cities.set(pid, readCities(pid, rolesFor, buildingsOf));
@@ -214,13 +287,17 @@ export function buildInput(session) {
   session.glue.stages = readStageTurns(session.glue.stages, majors, turn);
   if (!session.params) session.params = engineLines(readGlobalParameters());
   const options = readOptions(session.glue);
-  const commerce = options.markets || options.investment ? readCommerce(majors) : null;
+  const economies = new Map(majors.map((pid) => [pid, economyOf(session, pid, turn, options)]));
+  const commerce = options.markets || options.investment
+    ? readCommerce(majors, economies, (pid) => glueTerms(session, pid, turn, options).industryPct) : null;
   const civs = seen.map((pid) => readCiv(pid, majors, modelStages(session.glue.stages[String(pid)]),
-    { cities: commerce?.cities.get(pid) }));
+    { cities: commerce?.cities.get(pid), economy: economies.get(pid) }));
   return { turn, age: ageType(), ledger: session.ledger, civs, relations: readRelations(majors),
     requests: session.glue.requests, params: session.params, options, markets: session.markets,
     routes: options.markets && commerce ? commerce.routes : [],
-    market: options.markets ? commerce?.market : undefined };
+    market: options.markets ? commerce?.market : undefined, macro: session.macro,
+    cycleEvents: resolveCycleEvents(session.glue.cycleEvents, readPopulations(majors)),
+    crisisStage: readCrisisStage() };
 }
 
 /**
@@ -266,10 +343,14 @@ function sumBy(rows) {
 function commitSession(session, plan) {
   session.ledger = plan.ledger;
   session.markets = plan.markets;
+  session.macro = plan.macro;
   session.glue.requests = [];
+  session.glue.cycleEvents = [];
+  session.pops = readPopulations(aliveMajorIds());
   session.lastPlan = plan;
   writeLedger(session);
   writeMarkets(session);
+  writeMacro(session);
   writeGlue(session);
 }
 
@@ -286,7 +367,8 @@ export function runTurn(session, why) {
   commitSession(session, plan);
   const sent = sendPlan(plan);
   const marketsText = saveMarkets(plan.markets);
-  const violations = checkPlan({ plan, civs: input.civs, envelopeText: undefined, marketsText });
+  const violations = checkPlan({ plan, civs: input.civs, envelopeText: undefined, marketsText,
+    macroText: saveMacro(plan.macro) });
   for (const violation of violations) logLine(`invariant ${violation.id} on turn ${input.turn}: ${violation.detail}`);
   logLine(`turn ${input.turn} (${why}): ${plan.transfers.length} transfer(s), ${sent} grant(s), `
     + `${plan.events.length} event(s), ${Date.now() - started} ms`);
@@ -311,6 +393,19 @@ export function resendLostBatch(session) {
     logLine(`batch ${batch.id} re-sent for player ${row.pid}: ${row.cents} cents`);
   }
   return lost;
+}
+
+/**
+ * Keeps one engine event the cycle weighs (a capture, a raze, a disaster) for the next batch, in the glue envelope so
+ * a save before the batch keeps it (DESIGN 4.11).
+ * @param {Session} session
+ * @param {import("./econ-macro-read.js").PendingCycleEvent | null} row
+ */
+export function noteCycleEvent(session, row) {
+  if (!row) return false;
+  session.glue.cycleEvents = withPending(session.glue.cycleEvents, row);
+  writeGlue(session);
+  return true;
 }
 
 /**
@@ -356,7 +451,9 @@ export function resetLedger(session) {
   session.ledger = emptyLedger();
   session.glue = emptyGlue();
   session.markets = loadMarkets(null).markets;
+  session.macro = loadMacro(null).macro;
   writeLedger(session);
   writeMarkets(session);
+  writeMacro(session);
   writeGlue(session);
 }

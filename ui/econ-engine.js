@@ -155,11 +155,22 @@ export function readAtWar(pid, majors) {
 }
 
 /**
- * @typedef {{ tags: string[], goldYield: number, isWonder: boolean, advisories: string[] }} BuildingData
+ * @typedef {{ tags: string[], goldYield: number, isWonder: boolean, advisories: string[], age: string | null,
+ *   unique: boolean }} BuildingData
  */
 
 /** @type {Map<string, BuildingData> | null} */
 let buildingDataCache = null;
+
+/**
+ * A constructible's row before its tags, yields and advisories are added.
+ * @param {{ ConstructibleType: string, ConstructibleClass?: string, Age?: string }} row
+ * @returns {BuildingData}
+ */
+function buildingRow(row) {
+  const age = typeof row.Age === "string" && row.Age ? row.Age : null;
+  return { tags: [], goldYield: 0, isWonder: row.ConstructibleClass === "WONDER", advisories: [], age, unique: false };
+}
 
 /**
  * Every constructible's tags, base Gold yield, class and advisories from GameInfo, read once and cached. Other mods'
@@ -170,10 +181,7 @@ export function buildingData() {
   /** @type {Map<string, BuildingData>} */
   const map = new Map();
   safe(() => {
-    for (const row of GameInfo.Constructibles) {
-      map.set(row.ConstructibleType, { tags: [], goldYield: 0, isWonder: row.ConstructibleClass === "WONDER",
-        advisories: [] });
-    }
+    for (const row of GameInfo.Constructibles) map.set(row.ConstructibleType, buildingRow(row));
     for (const row of GameInfo.TypeTags) map.get(row.Type)?.tags.push(row.Tag);
     for (const row of GameInfo.Constructible_YieldChanges) {
       if (row.YieldType === "YIELD_GOLD") {
@@ -183,6 +191,15 @@ export function buildingData() {
     }
     for (const row of GameInfo.Constructible_Advisories) {
       map.get(row.ConstructibleType)?.advisories.push(row.AdvisoryClassType);
+    }
+    return true;
+  }, false);
+  // A civ's own unique building names its trait; uniques don't age (DESIGN 4.16). A separate pass, so a game without
+  // the Buildings table still gets the rest.
+  safe(() => {
+    for (const row of GameInfo.Buildings) {
+      const data = map.get(row.ConstructibleType);
+      if (data && typeof row.TraitType === "string" && row.TraitType) data.unique = true;
     }
     return true;
   }, false);
@@ -216,7 +233,8 @@ export function readBuildings(pid) {
 }
 
 /**
- * @typedef {{ type: string, roles: import("./econ-depth.js").BuildingRoles, goldYield: number, weight: number }}
+ * @typedef {{ type: string, roles: import("./econ-depth.js").BuildingRoles, goldYield: number, weight: number,
+ *   age: string | null, ageless: boolean, unique: boolean, wonder: boolean, weights?: Record<string, number> }}
  *   CityBuilding
  */
 
@@ -236,7 +254,8 @@ export function readCityBuildings(city) {
     const info = row ? data.get(row.ConstructibleType) : undefined;
     if (!row || !info || instance.complete === false) continue;
     out.push({ type: row.ConstructibleType, roles: rolesOf(info, bankGold), goldYield: info.goldYield,
-      weight: instance.damaged === true ? 0 : 1 });
+      weight: instance.damaged === true ? 0 : 1, age: info.age ?? null, ageless: info.tags.includes("AGELESS"),
+      unique: info.unique === true, wonder: info.isWonder });
   }
   return out;
 }

@@ -184,6 +184,7 @@
                     <Item>ui/econ-lenders.js</Item>
                     <Item>ui/econ-loan.js</Item>
                     <Item>ui/econ-log.js</Item>
+                    <Item>ui/econ-macro-read.js</Item>
                     <Item>ui/econ-macro-state.js</Item>
                     <Item>ui/econ-macro.js</Item>
                     <Item>ui/econ-markets.js</Item>

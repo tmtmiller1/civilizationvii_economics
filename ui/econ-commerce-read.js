@@ -171,12 +171,22 @@ function readCity(city, rolesFor, trade) {
   const empty = safe(() => queue.isEmpty === true, false);
   const type = !queue || empty || hash === null ? null : buildType(hash);
   if (!type) {
-    return { id, build: null, neededProgress: 0, roleBuilding: false, tradeBuildings: trade, purchaseCents: null };
+    return { id, build: null, neededProgress: 0, roleBuilding: false, tradeBuildings: trade, purchaseCents: null,
+      population: readPopulation(city) };
   }
   const roles = rolesFor(type);
   return { id, build: type, neededProgress: neededProgress(queue, hash, type),
     roleBuilding: roles ? isRoleBuilding(roles) : false, tradeBuildings: trade,
-    purchaseCents: roles ? readPurchaseCents(city, type) : null };
+    purchaseCents: roles ? readPurchaseCents(city, type) : null, population: readPopulation(city) };
+}
+
+/**
+ * A settlement's population, for the plan's split (DESIGN 4.17); 1 when it doesn't read.
+ * @param {any} city
+ */
+function readPopulation(city) {
+  const pop = safe(() => Number(city.population), NaN);
+  return Number.isFinite(pop) && pop > 0 ? Math.floor(pop) : 1;
 }
 
 /**

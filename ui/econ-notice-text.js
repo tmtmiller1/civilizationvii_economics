@@ -5,7 +5,7 @@
 import { formatGold, formatRate } from "./econ-format.js";
 import { isWorldAccount } from "./econ-params.js";
 
-/** @typedef {{ key: string, args: (string | number)[] }} Line */
+/** @typedef {{ key: string, args: (string | number | string[])[] }} Line */
 /** @typedef {{ ledger: Ledger, nameOf: (party: Party) => string }} TextContext */
 
 const PREFIX = "LOC_ECONOMICS_";
@@ -53,6 +53,44 @@ const name = (ctx, party) => ctx.nameOf(/** @type {Party} */ (party));
 /** @param {unknown} cents */
 const gold = (cents) => formatGold(Number(cents) || 0);
 
+/**
+ * A system's name key (DESIGN 4.17): `civicMarket` is LOC_ECONOMICS_SYSTEM_CIVIC_MARKET.
+ * @param {unknown} id
+ */
+export function systemKey(id) {
+  const code = String(id || "mixed").replace(/([A-Z])/g, "_$1");
+  return `${PREFIX}SYSTEM_${upper(code)}`;
+}
+
+/**
+ * A cycle phase's name key (DESIGN 4.11).
+ * @param {unknown} phase
+ */
+export function phaseKey(phase) {
+  return `${PREFIX}PHASE_${upper(String(phase || "steady"))}`;
+}
+
+/**
+ * The key naming one kind of cycle event, for a phase change's causes and the World tab.
+ * @param {unknown} kind
+ */
+export function cycleEventKey(kind) {
+  return `${PREFIX}CYCLE_EVENT_${upper(String(kind || "unknown"))}`;
+}
+
+/**
+ * The arguments as the game composes them: a LOC key is composed in the game's language first, a list of keys is
+ * composed and joined, numbers and text pass through.
+ * @param {(string | number | string[])[]} args
+ * @param {(key: string) => string} compose
+ * @returns {(string | number)[]}
+ */
+export function composeArgs(args, compose) {
+  const one = (/** @type {string | number} */ arg) => (typeof arg === "string" && arg.startsWith(PREFIX)
+    ? compose(arg) : arg);
+  return args.map((arg) => (Array.isArray(arg) ? arg.map(one).join(", ") : one(arg)));
+}
+
 /** @type {Record<string, (notice: Record<string, unknown>, ctx: TextContext) => Line | null>} */
 const NOTICES = {
   open(notice, ctx) {
@@ -94,6 +132,13 @@ const NOTICES = {
   "invest-writeoff": (notice) => ({ key: `${PREFIX}NOTICE_INVEST_WRITEOFF`, args: [String(notice.loanId), gold(notice.cents)] }),
   offer: (notice, ctx) => ({ key: `${PREFIX}NOTICE_OFFER_${notice.form === "general" ? "GENERAL" : "PROJECT"}`,
     args: [name(ctx, notice.investor), gold(notice.cents)] }),
+  system: (notice) => ({ key: `${PREFIX}NOTICE_SYSTEM`, args: [systemKey(notice.to), systemKey(notice.from)] }),
+  phase: (notice) => {
+    const causes = String(notice.causes || "").split(",").filter(Boolean).map(cycleEventKey);
+    return { key: `${PREFIX}NOTICE_PHASE${causes.length ? "" : "_QUIET"}`, args: [phaseKey(notice.to), causes] };
+  },
+  panic: () => ({ key: `${PREFIX}NOTICE_PANIC`, args: [] }),
+  plan: (notice) => ({ key: `${PREFIX}NOTICE_PLAN`, args: [gold(notice.cents), Number(notice.cities) || 0] }),
 };
 
 /**
@@ -176,6 +221,8 @@ const EVENTS = {
   offer: (event, who) => ({ key: `${PREFIX}EVENT_OFFER`, args: [who(event.lender), gold(event.cents)] }),
   "offer-declined": (event, who) => ({ key: `${PREFIX}EVENT_OFFER_DECLINED`, args: [who(event.lender)] }),
   tariff: (event, who) => ({ key: `${PREFIX}EVENT_TARIFF_${String(event.level).toUpperCase()}`, args: [who(event.pid)] }),
+  system: (event, who) => ({ key: `${PREFIX}EVENT_SYSTEM`, args: [who(event.pid), systemKey(event.to)] }),
+  panic: () => ({ key: `${PREFIX}EVENT_PANIC`, args: [] }),
 };
 
 /**

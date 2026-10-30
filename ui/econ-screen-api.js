@@ -14,8 +14,9 @@
  * @property {(on: boolean | null) => boolean} setGuard
  * @property {() => boolean} guardOn
  * @property {(stage: string) => string | null} stageOpener the name key of the node that opens a stage, or null
- * @property {() => { buildings: { type: string, roles: import("./econ-depth.js").BuildingRoles, goldYield: number,
- *   weight: number }[], depthTurns: number, depthFactorPct: number }} depth
+ * @property {() => { buildings: import("./econ-macro-read.js").EconomyBuilding[], depthTurns: number,
+ *   depthFactorPct: number, legacyBp: number, cushionBp: number }} depth the player's buildings by role, old ones with
+ *   their weights (DESIGN 4.13, 4.16)
  * @property {() => import("./econ-fiscal.js").CardRead[]} cards
  * @property {() => import("./econ-tax-cards.js").FiscalRead} fiscal the yields and celebration meter the Fiscal
  *   tab's forecast starts from

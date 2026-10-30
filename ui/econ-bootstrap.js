@@ -4,10 +4,12 @@
 // multiplayer game it says once that it's off and does nothing. Every engine read is guarded in econ-engine.js.
 
 import { logLine } from "./econ-log.js";
-import { aliveMajorIds, gameTurn, isMultiplayer, listen, loc, localId, readAtWar, readBuildings, readDepth, safe }
-  from "./econ-engine.js";
-import { buildInput, displayTurn, dropRequest, loadSession, queueRequest, readOptions, resendLostBatch, runTurn,
-  setGuard, turnNow } from "./econ-session.js";
+import { aliveMajorIds, gameTurn, isMultiplayer, listen, loc, localId, readAtWar, safe } from "./econ-engine.js";
+import { buildInput, displayTurn, dropRequest, economyOf, loadSession, noteCycleEvent, queueRequest, readOptions,
+  resendLostBatch, runTurn, setGuard, turnNow } from "./econ-session.js";
+import { captureEvent, disasterEvent, razeEvent, readPopulations } from "./econ-macro-read.js";
+import { phaseKey } from "./econ-notice-text.js";
+import { formatRate } from "./econ-format.js";
 import { flushNotice, holdNotice, installClickHandler, nameOf } from "./econ-notify.js";
 import { stageOpenerName } from "./econ-stage-read.js";
 import { canSwap, readCards, readFiscal, swapTo } from "./econ-fiscal.js";
@@ -27,16 +29,25 @@ const G = globalThis;
 /** @type {{ session: Session | null, activeTurn: number, multiplayer: boolean }} */
 const state = { session: null, activeTurn: -1, multiplayer: false };
 
-/** The pill: the player's outstanding debt, red while any loan of theirs is in default. */
+/**
+ * The pill: the player's outstanding debt, red while any loan of theirs is in default, with the cycle's phase and
+ * inflation beside it when those options are on (DESIGN 9).
+ */
 function pillSource() {
   const session = state.session;
   const me = localId();
   if (!session || me < 0) return { text: loc("LOC_ECONOMICS_PILL_NONE"), warning: false };
   const inDefault = session.ledger.loans.some((loan) => loan.borrower === me && loan.state === "default");
   const owed = outstandingOf(session.ledger, me);
-  if (inDefault) return { text: loc("LOC_ECONOMICS_PILL_DEFAULT"), warning: true };
-  return { text: owed > 0 ? loc("LOC_ECONOMICS_PILL", formatGold(owed)) : loc("LOC_ECONOMICS_PILL_NONE"),
-    warning: false };
+  const debt = inDefault ? loc("LOC_ECONOMICS_PILL_DEFAULT")
+    : owed > 0 ? loc("LOC_ECONOMICS_PILL", formatGold(owed)) : loc("LOC_ECONOMICS_PILL_NONE");
+  const options = readOptions(session.glue);
+  const phase = session.macro.cycle.phases[String(me)];
+  if (options.cycle === "off" || !phase) return { text: debt, warning: inDefault };
+  const pi = options.inflation ? session.macro.inflation.piPpm : 0;
+  const text = pi > 0 ? loc("LOC_ECONOMICS_PILL_MACRO_INFLATION", debt, loc(phaseKey(phase)), formatRate(pi))
+    : loc("LOC_ECONOMICS_PILL_MACRO", debt, loc(phaseKey(phase)));
+  return { text, warning: inDefault };
 }
 
 /**
@@ -55,7 +66,7 @@ function screenApi(session) {
     setGuard: (on) => setGuard(session, on),
     guardOn: () => readOptions(session.glue).guard,
     stageOpener: stageOpenerName,
-    depth: () => ({ buildings: readBuildings(localId()), ...readDepth(localId()) }),
+    depth: () => economyOf(session, localId(), turnNow(session), readOptions(session.glue)),
     cards: () => readCards(localId()),
     fiscal: () => readFiscal(localId(), readAtWar(localId(), aliveMajorIds())),
     swapTo,
@@ -115,6 +126,18 @@ function installConsole() {
   };
 }
 
+/**
+ * The cycle's engine events (DESIGN 4.11), kept in the glue envelope until the next batch weighs them.
+ * @param {Session} session
+ */
+function listenCycle(session) {
+  session.pops = readPopulations(aliveMajorIds());
+  listen("CityTransfered", (/** @type {any} */ data) => safe(() => noteCycleEvent(session, captureEvent(data)), false));
+  listen("CityRazingStarted", (/** @type {any} */ data) => safe(() => noteCycleEvent(session, razeEvent(data)), false));
+  listen("RandomEventOccurred", (/** @type {any} */ data) => safe(() => noteCycleEvent(session,
+    disasterEvent(data, session.pops)), false));
+}
+
 function boot() {
   state.multiplayer = isMultiplayer();
   installConsole();
@@ -130,6 +153,7 @@ function boot() {
   installClickHandler(() => openScreen());
   listen("TurnBegin", onTurnBegin);
   listen("PlayerTurnActivated", onPlayerTurnActivated);
+  listenCycle(session);
   logLine(`v${VERSION} loaded; turn ${gameTurn()}, ${session.ledger.loans.length} loan record(s), `
     + `${lost.length} re-sent, options ${JSON.stringify(readOptions(session.glue))}`);
 }

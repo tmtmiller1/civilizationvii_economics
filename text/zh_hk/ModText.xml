@@ -347,5 +347,135 @@
         <Replace Tag="LOC_ECONOMICS_REQUEST_ACCEPT_OFFER" Language="zh_Hant_HK"><Text>acceptance</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_DECLINE_OFFER" Language="zh_Hant_HK"><Text>refusal of an offer</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MILAID_PAY_NAME" Language="zh_Hant_HK"><Text>Military Aid sent</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_NAME" Language="zh_Hant_HK"><Text>Inflation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_DESCRIPTION" Language="zh_Hant_HK"><Text>When the civilizations with Public debt owe the bond market a lot beside the Gold they hold, the Gold each of them keeps above a reserve of twenty turns of income slowly loses value, and bond loans get dearer. Off by default.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_OFF" Language="zh_Hant_HK"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_OFF_DESCRIPTION" Language="zh_Hant_HK"><Text>Gold keeps its value.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_ON" Language="zh_Hant_HK"><Text>On</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_ON_DESCRIPTION" Language="zh_Hant_HK"><Text>Bond debt erodes idle Gold above the reserve and raises bond rates.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_NAME" Language="zh_Hant_HK"><Text>Business cycle</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_DESCRIPTION" Language="zh_Hant_HK"><Text>Wars, captures, disasters, the age's crisis, defaults and changes in trade move a world economic index and each civilization's own economy through booms and slumps. A boom pays a little Gold each turn and makes bonds cheaper; a slump takes a little and makes them dearer.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_OFF" Language="zh_Hant_HK"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_OFF_DESCRIPTION" Language="zh_Hant_HK"><Text>The economy stays steady.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_MILD" Language="zh_Hant_HK"><Text>Mild</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_MILD_DESCRIPTION" Language="zh_Hant_HK"><Text>Events move the economy half as much.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_STANDARD" Language="zh_Hant_HK"><Text>Standard</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_STANDARD_DESCRIPTION" Language="zh_Hant_HK"><Text>Events move the economy by their full weight.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_STRONG" Language="zh_Hant_HK"><Text>Strong</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_STRONG_DESCRIPTION" Language="zh_Hant_HK"><Text>Events move the economy half again as much.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SYSTEMS_NAME" Language="zh_Hant_HK"><Text>Economic systems</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SYSTEMS_DESCRIPTION" Language="zh_Hant_HK"><Text>Each civilization's government, or its ideology in the Modern age, sets how its economy runs: Despotism lives on tribute, a Classical Republic borrows from its citizens, Communism plans production, and more. The Fiscal tab shows what yours changes.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SYSTEMS_OFF" Language="zh_Hant_HK"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SYSTEMS_OFF_DESCRIPTION" Language="zh_Hant_HK"><Text>Every civilization runs a mixed economy.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SYSTEMS_ON" Language="zh_Hant_HK"><Text>On</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SYSTEMS_ON_DESCRIPTION" Language="zh_Hant_HK"><Text>Government and ideology set each civilization's economic system.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_MIXED" Language="zh_Hant_HK"><Text>Mixed economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_MARKET" Language="zh_Hant_HK"><Text>Market economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_TRIBUTE" Language="zh_Hant_HK"><Text>Palace economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_CIVIC_MARKET" Language="zh_Hant_HK"><Text>Civic market</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_MERCHANT_OLIGARCHY" Language="zh_Hant_HK"><Text>Merchant oligarchy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_MANORIAL" Language="zh_Hant_HK"><Text>Manorial economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_MERCANTILE" Language="zh_Hant_HK"><Text>Mercantile economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_RELIGIOUS" Language="zh_Hant_HK"><Text>Usury law</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_CORPORATIST" Language="zh_Hant_HK"><Text>Corporatist economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_PLANNED" Language="zh_Hant_HK"><Text>Planned economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_MIXED_LINE" Language="zh_Hant_HK"><Text>A bit of everything: the rules as written.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_MARKET_LINE" Language="zh_Hant_HK"><Text>Private capital and price signals: bonds cost 10 percent less and your economy recovers from a slump faster, but a Panic hits you harder.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_TRIBUTE_LINE" Language="zh_Hant_HK"><Text>You take wealth to pay for expansion: Heavy Taxation and War Levy bring more Gold, your aid buys twice the goodwill, and you borrow only from other civilizations, at 20 percent more.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_CIVIC_MARKET_LINE" Language="zh_Hant_HK"><Text>Your citizens fund the state: you can borrow from them, and the interest comes back as celebration. Light Taxation celebrates more and Heavy Taxation costs more Happiness. Your Trade buildings move bills by 12 percent each and your Commerce buildings count a quarter more.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_MERCHANT_OLIGARCHY_LINE" Language="zh_Hant_HK"><Text>Finance runs the state: you borrow and lend at 20 percent less, your credit limit is 4 turns of income higher, and booms and slumps swing you harder, a Panic most of all.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_MANORIAL_LINE" Language="zh_Hant_HK"><Text>Local stability over money: taxes come in kind, half the Gold and half the Happiness cost. You pay 20 percent less on trade bills, your warehouses shelter twice as much from a slump, the world's swings reach you less, and your credit limit is 4 turns lower.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_MERCANTILE_LINE" Language="zh_Hant_HK"><Text>You get rich exporting: you're owed 10 percent more on bills, a High tariff costs relationship half as often, bonds cost 20 percent less, your investments earn a point more, and booms and slumps swing you harder.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_RELIGIOUS_LINE" Language="zh_Hant_HK"><Text>Interest is forbidden: what you lend comes back as a share that follows the borrower's income, and your aid buys twice the goodwill.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_CORPORATIST_LINE" Language="zh_Hant_HK"><Text>Capital goes to industry and war: War Levy pays in peace, a war booms your own economy and peace brings it down, your credit limit is half again as large and bonds cost 25 percent less, idle Gold erodes twice as fast, your factories count twice for demand, and you take development loans only.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_PLANNED_LINE" Language="zh_Hant_HK"><Text>The treasury becomes production: a fifth of your Gold income goes into your cities' builds each turn, you buy at fixed prices, the world's booms and slumps pass you by, you borrow only from other civilizations and you take development loans only.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PHASE_DEPRESSION" Language="zh_Hant_HK"><Text>Depression</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PHASE_SLUMP" Language="zh_Hant_HK"><Text>Slump</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PHASE_STEADY" Language="zh_Hant_HK"><Text>Steady</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PHASE_BOOM" Language="zh_Hant_HK"><Text>Boom</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PHASE_PANIC" Language="zh_Hant_HK"><Text>Panic</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PHASE_OUTSIDE" Language="zh_Hant_HK"><Text>Outside the cycle</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_WAR_DECLARED" Language="zh_Hant_HK"><Text>a war declared</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_WAR_ONGOING" Language="zh_Hant_HK"><Text>a war going on</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_PEACE" Language="zh_Hant_HK"><Text>peace</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CAPTURE" Language="zh_Hant_HK"><Text>a settlement captured</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_RAZE" Language="zh_Hant_HK"><Text>a settlement razed</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_DISASTER" Language="zh_Hant_HK"><Text>a disaster</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CRISIS_START" Language="zh_Hant_HK"><Text>the age's crisis</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CRISIS" Language="zh_Hant_HK"><Text>the crisis going on</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_DEFAULT" Language="zh_Hant_HK"><Text>a default</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_REPUDIATION" Language="zh_Hant_HK"><Text>a repudiated debt</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_NEW" Language="zh_Hant_HK"><Text>a new trade route</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_ENDED" Language="zh_Hant_HK"><Text>a trade route ending</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_STANDING" Language="zh_Hant_HK"><Text>trade routes standing</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_INCOME_UP" Language="zh_Hant_HK"><Text>the world's income rising</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_INCOME_DOWN" Language="zh_Hant_HK"><Text>the world's income falling</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CREDIT_GROWTH" Language="zh_Hant_HK"><Text>credit growing fast</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_UNKNOWN" Language="zh_Hant_HK"><Text>events</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SYSTEM" Language="zh_Hant_HK"><Text>Your economic system is now the {1_System}. Its numbers move over from the {2_Old} during the next 10 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_PHASE" Language="zh_Hant_HK"><Text>Business cycle: {1_Phase}, after {2_Causes}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_PHASE_QUIET" Language="zh_Hant_HK"><Text>Business cycle: {1_Phase}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_PANIC" Language="zh_Hant_HK"><Text>A financial Panic: for 5 turns civilizations stop lending to each other and bond rates jump. A slump usually follows.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_PLAN" Language="zh_Hant_HK"><Text>The plan put {1_Amount} Gold into the builds of {2_Count} of your cities.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_SYSTEM" Language="zh_Hant_HK"><Text>{1_Civ} changed its economic system to the {2_System}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_PANIC" Language="zh_Hant_HK"><Text>A financial Panic began.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_CITIZENS" Language="zh_Hant_HK"><Text>your citizens</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_INFLATION" Language="zh_Hant_HK"><Text>inflation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_CYCLE" Language="zh_Hant_HK"><Text>the business cycle</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_PLAN" Language="zh_Hant_HK"><Text>the plan</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_HOST_SYSTEM" Language="zh_Hant_HK"><Text>their economic system takes development loans only.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TAB_WORLD" Language="zh_Hant_HK"><Text>World</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_NOW" Language="zh_Hant_HK"><Text>The world economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_INDEX" Language="zh_Hant_HK"><Text>World index</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_PHASE" Language="zh_Hant_HK"><Text>World phase</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_YOURS" Language="zh_Hant_HK"><Text>Your economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_YOURS_ROW" Language="zh_Hant_HK"><Text>{1_Index}, {2_Phase}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_CYCLE_OFF" Language="zh_Hant_HK"><Text>The business cycle is off in this game, so the economy stays steady.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_PANIC" Language="zh_Hant_HK"><Text>Panic until turn {1_Turn}: civilizations aren't lending to each other and bond rates are up by half.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_NOTE" Language="zh_Hant_HK"><Text>1.00 is steady. Below 0.95 is a slump and below 0.80 a depression; above 1.05 is a boom. Your own economy is the world's index plus how the events you took part in moved you. A boom pays you a fifth of your income times how far you are above 1.00, and a slump charges the same.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_EVENTS" Language="zh_Hant_HK"><Text>What moved it</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_EVENTS_NONE" Language="zh_Hant_HK"><Text>The economy has been quiet lately.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_EVENT_ROW" Language="zh_Hant_HK"><Text>{1_Event} {2_Who}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_HISTORY" Language="zh_Hant_HK"><Text>The last {1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION" Language="zh_Hant_HK"><Text>Inflation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_OFF" Language="zh_Hant_HK"><Text>Inflation is off in this game, so Gold keeps its value.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_RATE" Language="zh_Hant_HK"><Text>Each turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_BOND" Language="zh_Hant_HK"><Text>Owed to the bond market</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_MONEY" Language="zh_Hant_HK"><Text>Gold the members hold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_CAUSE" Language="zh_Hant_HK"><Text>Bond debt is {1_Ratio} times the Gold the bond market's members hold, mostly {2_Civ}'s.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_NONE" Language="zh_Hant_HK"><Text>Nobody owes the bond market, so Gold keeps its value.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_NOTE" Language="zh_Hant_HK"><Text>Only civilizations with Public debt take part. Gold above twenty turns of income loses this much each turn, and bond rates rise with it. Paying bond debt down brings it back.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT" Language="zh_Hant_HK"><Text>World debt</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_OUTSTANDING" Language="zh_Hant_HK"><Text>All loans outstanding</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_LEVERAGE" Language="zh_Hant_HK"><Text>Against the Gold the civilizations hold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_NOTE" Language="zh_Hant_HK"><Text>From the Banking stage, a boom with loans above one and a half times the Gold held can turn into a Panic.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY" Language="zh_Hant_HK"><Text>Old buildings</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_POINTS" Language="zh_Hant_HK"><Text>Legacy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_CUSHION" Language="zh_Hant_HK"><Text>Slump cushion</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_NOTE" Language="zh_Hant_HK"><Text>Markets, banks and other economic buildings from earlier ages fade as you reach newer stages. What they lose softens a slump for you: 1 percent a point, 10 percent at most, with warehouses on top.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM" Language="zh_Hant_HK"><Text>Economic system</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEMS_OFF" Language="zh_Hant_HK"><Text>Economic systems are off in this game; every civilization runs a mixed economy.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_FROM_GOVERNMENT" Language="zh_Hant_HK"><Text>Set by your government.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_FROM_IDEOLOGY" Language="zh_Hant_HK"><Text>Set by your ideology.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_FROM_NONE" Language="zh_Hant_HK"><Text>A mixed economy until you choose a government.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_BLEND" Language="zh_Hant_HK"><Text>Moving over from the {1_Old}: {2_Turns} more turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_PLAN" Language="zh_Hant_HK"><Text>The plan this turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_PLAN_NOTE" Language="zh_Hant_HK"><Text>A fifth of your Gold income goes into your cities' builds, split by population, at 3 Gold a point of production.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_TAX_NOTE" Language="zh_Hant_HK"><Text>Your government's changes to the tax cards show on each city's yields while the card is slotted.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_RESERVE" Language="zh_Hant_HK"><Text>Inflation reserve</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_EROSION" Language="zh_Hant_HK"><Text>Lost to inflation next turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OLD" Language="zh_Hant_HK"><Text>Old buildings</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_NONE" Language="zh_Hant_HK"><Text>Your economic buildings all belong to this age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_ROW" Language="zh_Hant_HK"><Text>{1_Building}: {2_Weight}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_WAITING" Language="zh_Hant_HK"><Text>full until you reach {1_Stage}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_FADING" Language="zh_Hant_HK"><Text>fading</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_FLOOR" Language="zh_Hant_HK"><Text>at its floor</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_REPLACED" Language="zh_Hant_HK"><Text>at its floor: a newer building with its role stands in this city</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_NOTE" Language="zh_Hant_HK"><Text>An old building's Commerce, Trade and Banking roles fade from 1.0 to 0.5 once you reach the stage that replaces them, and from 0.5 to 0.25 in the age after. What they lose becomes your slump cushion.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_STAGE_NAME_PUBLIC_DEBT" Language="zh_Hant_HK"><Text>Public debt</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_STAGE_NAME_GUILD_PATRONAGE" Language="zh_Hant_HK"><Text>Guild patronage</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_STAGE_NAME_CAPITALISM" Language="zh_Hant_HK"><Text>Capitalism</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL_MACRO" Language="zh_Hant_HK"><Text>{1_Debt} · {2_Phase}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL_MACRO_INFLATION" Language="zh_Hant_HK"><Text>{1_Debt} · {2_Phase} · {3_Rate} inflation</Text></Replace>
     </LocalizedText>
 </Database>

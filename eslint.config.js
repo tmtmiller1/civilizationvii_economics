@@ -25,7 +25,10 @@ const ENGINE_GLOBALS = {
   Constructibles: "readonly",
   PlayerOperationTypes: "readonly",
   PlayerOperationParameters: "readonly",
-  CultureSlotTypes: "readonly"
+  CultureSlotTypes: "readonly",
+  GameplayMap: "readonly",
+  Cities: "readonly",
+  CityTransferTypes: "readonly"
 };
 
 const BROWSER_GLOBALS = {
