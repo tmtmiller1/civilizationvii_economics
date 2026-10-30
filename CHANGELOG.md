@@ -55,6 +55,9 @@ release is generated from the matching section below by `scripts/steam-changelog
   economy, civic market, merchant oligarchy, manorial, mercantile, usury law, corporatist, market, planned or mixed),
   which changes its rates, credit, trade bills, investment and how hard booms and slumps swing it. The tax-card
   changes are policy-card yields the game shows on each city's breakdown. A new system blends in over ten turns.
+- With Economic systems on, each civilization leans toward one government in its own age, so the computer players
+  spread across the systems instead of most of them taking the same two or three. The game reads these leanings when
+  a game is created, so they reach new games only. `docs/government-biases.md` lists each civilization's pick.
 - Citizen loans for a Classical Republic: borrow from your own citizens from the start of the game, and the
   interest comes back as celebration. The computer players take them too.
 - The plan for a Communist civilization: a fifth of its Gold income goes into its cities' builds each turn.
@@ -69,6 +72,10 @@ release is generated from the matching section below by `scripts/steam-changelog
   Economic systems (On).
 
 ### Changed
+- The mod's description in Additional Content covers the whole mod: loans, taxes and the guard, markets, trade bills,
+  tariffs and investment, and the business cycle, inflation, old buildings and economic systems. The Fiscal tab's
+  line for a mixed economy says what it gets, and the Economic systems option says the computer players lean toward a
+  government that suits their civilization.
 - The tax cards add flat amounts in each settlement instead of percentages: Light Taxation -2 Gold and +4 Happiness,
   Heavy Taxation +4 Gold and -2 Happiness, War Levy +8 Gold and -4 Happiness while you're at war. The computer
   players took flat cards in test games where they passed over the percentage ones. The two AI strategies that steer

@@ -803,9 +803,14 @@ ideology; the Fiscal tab names the system and its changes.
 - Otherwise the government decides: `Culture.getGovernmentType()` (P14 for AI). `Culture.getChosenIdeology()` may
   replace the branch-root read above once P14 reads it back.
 - Effects on yields (Tribute's extra Gold from Heavy Taxation, for one) ship as `GovernmentModifiers`
-  rows on the base governments, written by SQL that selects through `Governments`, so they apply natively and the AI
-  weighs them when it picks a government. Rates, credit and cycle multipliers are the mod's own numbers and stay in
-  the script. Whether a modifier can require a card to be active is part of P17.
+  rows on the base governments, written by SQL that selects through `Governments`, so they apply natively. The AI
+  doesn't weigh them when it picks a government (M2); its `GovernmentBiases` lists decide that, and the mod gives each
+  civ one (below). Rates, credit and cycle multipliers are the mod's own numbers and stay in the script. Whether a
+  modifier can require a card to be active is part of P17.
+- Each civ leans toward one government in its own age: a `GovernmentBiases` item at 75 on the civ's trait, chosen so
+  each age's civs spread evenly across its governments, with every DLC and with the base game alone.
+  `docs/government-biases.md` holds the table and a reason for each civ, and `data/econ-government-biases.sql` writes
+  it with the Economic systems option on.
 - The government table is our own rule, since the data has nothing to classify by. Governments it doesn't list (DLC,
   modded, future) run Mixed; governments the game lacks are skipped.
 - A civ whose government is unreadable runs Mixed.
@@ -881,8 +886,11 @@ Each row lists only the changes from Mixed. Mixed is sections 4.1 to 4.16 as wri
 
 Built 2026-10-30 (version 0.4.0, offline only), with the M-probes folded in. M2: the AI's government pick didn't move
 for +10 Gold, +5 Production and +5 Science a settlement on Oligarchy, and moved for a `GovernmentBiases` row; so the
-modifiers carry what a system pays, and the AI picks its government as the base game has it (biases are the owner's
-call). M11: a government-only card is gated correctly but wasn't slotted. The tax lines ship as flat per-settlement
+modifiers carry what a system pays, and only bias rows steer the pick. The owner decided on 2026-10-30 to give each civ
+its own: 50 civs, one row each at 75, spread Antiquity Classical Republic 6, Despotism 5, Oligarchy 6; Exploration
+Feudal Monarchy, Plutocracy and Theocracy 6 each; Modern Authoritarianism 4, Bureaucratic Monarchy 5, Elective Republic
+5 and Mexico's Revolución (`docs/government-biases.md`; NOTES, "Government biases and the description"). Not yet watched
+in a game. M11: a government-only card is gated correctly but wasn't slotted. The tax lines ship as flat per-settlement
 modifiers gated on the slotted card, in each settlement (`data/econ-systems-gameeffects.xml`):
 
 | System | Light Taxation | Heavy Taxation | War Levy (at war) |
@@ -969,8 +977,9 @@ Where the AI and the player are treated differently, and why:
   Fiscal tab and the yield breakdown. Most lines point the way the card's face value already does (Heavy under
   Tribute), so the AI rarely loses by it; Civic market's richer Light is the exception, and a Light-steering strategy
   row for Classical Republic AIs is the owner's call.
-- The player can choose a government for its system; the AI chooses without knowing the mod (M2). Bias lists would
-  steer it, but by fixed preference; left to the owner.
+- The player can choose a government for its system; the AI chooses by its bias lists without knowing the mod (M2).
+  Each civ gets one bias of its own (4.17, `docs/government-biases.md`), so an AI's system follows the civ it's
+  playing: the same civ leans the same way every game, and the civs in an age spread across its systems.
 - Citizen loans: the player borrows when it likes, the AI by the rule above. The AI never repudiates its citizens
   (among the world accounts its repudiation rule reaches the bond market and temple treasuries only), while the
   player can.

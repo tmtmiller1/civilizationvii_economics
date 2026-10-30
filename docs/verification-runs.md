@@ -370,3 +370,20 @@ M3 and M4 run did. Each line says what the player sees when it works, the setup 
 | The World tab, the Fiscal system section, the Treasury's inflation lines and old buildings | `tests/econ-view-macro.test.mjs` | each draws the keys and numbers expected |
 | The systems' data against the compiled databases | `tests/econ-data.test.mjs` with `CIV7_GAMEPLAY_DB` on 1.5.0 Antiquity, Exploration and Modern copies | each age attaches only its own rows (6, 7 and 4 government rows, 2 on Fascism's root), foreign keys clean; a copy missing a government and two cards skips their rows |
 | The 1.2 balance rows | `tests/econ-balance-macro.test.mjs`, `reports/balance-1.2.json` | the hard rows pass; the cycle-shape, system-diversity and plan rows miss their starting targets (DESIGN 10) |
+
+## Owed: government biases
+
+Each civilization leans toward one government in its own age (DESIGN 4.17, `docs/government-biases.md`,
+`data/econ-government-biases.sql`). Built and checked offline on 2026-10-30; nothing here has been watched in a game.
+The tally reads each AI's pick from `Game_Gossip.csv` (`GOSSIP_CHANGE_GOVERNMENT`) or from the government events the
+probe logs, and the human seat under Autoplay counts like an AI.
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| G.1 | A transition game: on each age's first pick every AI takes the government `docs/government-biases.md` gives its civ, and the tally per age matches the table (for the civs in that game) | Antiquity start through Modern with Economic systems On, AI civs from the table, vanilla | `data/econ-government-biases.sql` |
+| G.2 | The changed picks move: Carthage takes Oligarchy and Maurya Classical Republic in Antiquity; Iceland and Shawnee Theocracy, Spain, Goryeo and the Pirate Republic Plutocracy in Exploration; Great Britain and Meiji Elective Republic, Buganda Authoritarianism in Modern | the same game, or a start in each age with those civs | same |
+| G.3 | Heian takes Classical Republic by its corrected row, and a civ that had no row (Babylon, Gaul, Silla, England, Joseon, Ottomans) takes its new pick rather than the age's first government | Antiquity, Exploration and Modern starts with them | same |
+| G.4 | With Economic systems Off the picks fall back to the game's own (Spain Feudal Monarchy, Meiji Authoritarianism) | one Exploration and one Modern start, Economic systems Off | `economics.modinfo` `systems-option-on` |
+| G.5 | The game starts and the rows load without the DLC civs' parents: `Modding.log` and `Database.log` show the file loaded with no error | a game with a DLC switched off, or the lab's compiled database with a DLC disabled | same |
+| G.6 | A shared `GovernmentBiases` row at 50 on `TRAIT_LEADER_MAJOR_CIV` (the probe's `gov bias` arm) no longer moves any civ off its own pick | Antiquity 4242 with the probe overlay | same |
+| G.7 | Each AI's system in `__towerEconomics.session().macro.systems` follows its pick, three systems in Antiquity and Exploration and at least two in Modern before the ideologies | the G.1 game | `ui/econ-systems.js` |
