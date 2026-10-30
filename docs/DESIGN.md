@@ -972,7 +972,8 @@ Where the AI and the player are treated differently, and why:
 - The player can choose a government for its system; the AI chooses without knowing the mod (M2). Bias lists would
   steer it, but by fixed preference; left to the owner.
 - Citizen loans: the player borrows when it likes, the AI by the rule above. The AI never repudiates its citizens
-  (its repudiation rule reaches the bond market and temple treasuries only), while the player can.
+  (among the world accounts its repudiation rule reaches the bond market and temple treasuries only), while the
+  player can.
 - Cycle Gold, erosion, the plan, partnerships, old-building weights and every system number run through one code
   path for every civ.
 
