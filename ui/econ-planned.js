@@ -2,7 +2,8 @@
 // Gold income goes into the builds of the civ's cities that have something queued, split by population, at the
 // development loan's ratio (3 Gold a point, 4.12). Empty queues are skipped, and a city takes no more than its build
 // still needs; the Gold a city can't use stays with the civ. No data effect turns Gold into production, so this is
-// level 2: addProgress, which P8 and M7 watched landing on AI builds. Nothing here reads the engine.
+// level 2: addProgress, which lands on AI builds as well as the player's (DESIGN 10, P8 and M7). Nothing here reads
+// the engine.
 
 import { PLANNED } from "./econ-params.js";
 

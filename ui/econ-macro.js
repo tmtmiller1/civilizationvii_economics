@@ -1,7 +1,8 @@
 // econ-macro.js - Economics: the 1.2 steps of the turn batch (DESIGN 4.14). In the snapshot: each civ's system
 // (4.17), the business cycle (4.11) and inflation's pi (4.8). Positive cycle Gold is a world inflow counted in the
 // payers' funds; then, in each payer's own pass, erosion (step 3), the plan (step 4) and negative cycle Gold (step 5).
-// The AI's rule for citizen loans and the cycle's AI aid trigger live here too.
+// The AI's rule for citizen loans and the cycle's AI aid trigger live here too: no native lever carries a loan (P18)
+// or reads the cycle, so both are script rules.
 // econ-plan.js calls these in order; the arithmetic is in econ-cycle.js, econ-inflation.js, econ-systems.js,
 // econ-citizens.js and econ-planned.js. Nothing here reads the engine.
 

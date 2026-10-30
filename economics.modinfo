@@ -4,7 +4,8 @@
   as policy cards, world prices, trade bills and tariffs, foreign investment and aid, a business cycle, inflation,
   old buildings that fade across the ages, economic systems set by government and ideology, and the economic stages
   that open each part (docs/DESIGN.md). In development: the 1.0 Finance, 1.1 Commerce and 1.2 Macro mechanics are
-  built and gated offline; the in-game checks are owed (docs/verification-runs.md).
+  built and gated offline; part of 1.0 and 1.1 has been watched in test games and the rest is owed
+  (docs/verification-runs.md).
   Groups: the setup options and the text at the main menu; the scripts and the text in every game; the level 1
   gameplay rows (DESIGN section 1, "Native first") in their own groups, each gated on the setup option that owns it;
   and the four Civilopedia History Corrections groups every Tower mod carries.

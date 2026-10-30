@@ -9,7 +9,7 @@ import { MACRO_MAX_BYTES } from "./econ-macro-state.js";
 
 // TEST-PLAN 12.2 for 1.1: econ-1 (civ-to-civ flows sum to 0) is debt-1 over the bills and dividends too, econ-2 (the
 // grants equal the world flows) is debt-7 with the progress account among them, and econ-4 (no grant to a non-major
-// or a world account) is alive-target. econ-3 and econ-5 are below.
+// or a world account) is alive-target. econ-3, econ-5 and econ-6 are below.
 
 /**
  * debt-1: every civ-to-civ transfer's grants sum to zero.
