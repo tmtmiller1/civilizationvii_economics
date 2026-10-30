@@ -33,8 +33,8 @@ test("each age's card file holds the three cards of its age, pointing at modifie
   }
 });
 
-test("the effects file: flat yield modifiers on every settlement, War Levy behind a war requirement, the slot on its own", () => {
-  assert.equal((effects.match(/effect="EFFECT_CITY_ADJUST_YIELD"/g) || []).length, 6);
+test("the effects file: flat yield modifiers on every settlement, War Levy's second pair behind a war requirement, the slot on its own", () => {
+  assert.equal((effects.match(/effect="EFFECT_CITY_ADJUST_YIELD"/g) || []).length, 8);
   assert.equal((effects.match(/type="REQUIREMENT_PLAYER_HAS_X_WARS"/g) || []).length, 2);
   assert.equal(/name="Percent"/.test(effects), false, "the cards are flat amounts, never percentages");
   assert.match(effects, /id="MOD_ECONOMICS_TAX_SLOT" collection="COLLECTION_OWNER" effect="EFFECT_PLAYER_GRANT_TRADITION_SLOTS"/);
@@ -45,9 +45,24 @@ test("the effects file: flat yield modifiers on every settlement, War Levy behin
     const body = block.replace(/<OwnerRequirements>[\s\S]*?<\/OwnerRequirements>/, "");
     return Number((body.match(/<Argument name="Amount">(-?\d+)<\/Argument>/) || [])[1]);
   };
+  const gated = (id) => /REQUIREMENT_PLAYER_HAS_X_WARS/.test((effects.match(new RegExp(`<Modifier id="${id}"[\\s\\S]*?</Modifier>`)) || [""])[0]);
   for (const [level, card] of Object.entries(CARD_LEVELS)) {
     assert.equal(ownAmount(`MOD_ECONOMICS_${level}_GOLD`), card.gold, `${level} gold`);
     assert.equal(ownAmount(`MOD_ECONOMICS_${level}_HAPPINESS`), card.happiness, `${level} happiness`);
+    assert.equal(gated(`MOD_ECONOMICS_${level}_GOLD`) || gated(`MOD_ECONOMICS_${level}_HAPPINESS`), false,
+      `${level}'s first pair pays in peace`);
+    if (!card.atWar) continue;
+    assert.equal(ownAmount(`MOD_ECONOMICS_${level}_AT_WAR_GOLD`), card.atWar.gold, `${level} gold at war`);
+    assert.equal(ownAmount(`MOD_ECONOMICS_${level}_AT_WAR_HAPPINESS`), card.atWar.happiness, `${level} happiness at war`);
+    assert.ok(gated(`MOD_ECONOMICS_${level}_AT_WAR_GOLD`) && gated(`MOD_ECONOMICS_${level}_AT_WAR_HAPPINESS`),
+      `${level}'s second pair needs a war`);
+  }
+  for (const [name, [, suffix]] of Object.entries(AGES)) {
+    const xml = read(`data/econ-tax-cards-${name}.xml`);
+    for (const id of ["GOLD", "HAPPINESS", "AT_WAR_GOLD", "AT_WAR_HAPPINESS"]) {
+      assert.ok(xml.includes(`TraditionType="TRADITION_ECONOMICS_WAR_LEVY_${suffix}" ModifierId="MOD_ECONOMICS_WAR_LEVY_${id}"`),
+        `${name}: War Levy carries ${id}`);
+    }
   }
   for (const m of effects.matchAll(/type="REQUIREMENT_PLAYER_HAS_X_WARS">[\s\S]*?<Argument name="Amount">(-?\d+)</g)) {
     assert.equal(m[1], "1", "War Levy needs one war, whatever its yields are");
@@ -69,6 +84,9 @@ test("the card numbers live in CARD_LEVELS: the modifiers and every description 
       /LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-3 Gold and \+5 Happiness in each settlement\./);
     assert.match(syncDescriptions('Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-15% Gold and +20% Happiness.</Text>'),
       /<Text>-3 Gold and \+5 Happiness\.<\/Text>/, "the old percentage text moves to the flat form");
+    assert.match(syncDescriptions('Tag="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION"><Text>1 Gold and 1 Happiness. At war, 1 Gold and 1 Happiness.</Text>'),
+      /<Text>\+2 Gold and -1 Happiness\. At war, \+8 Gold and -4 Happiness\.<\/Text>/,
+      "War Levy's text names the peacetime part first and the at-war totals second");
   } finally {
     Object.assign(light, saved);
   }

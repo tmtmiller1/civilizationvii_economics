@@ -387,3 +387,20 @@ probe logs, and the human seat under Autoplay counts like an AI.
 | G.5 | The game starts and the rows load without the DLC civs' parents: `Modding.log` and `Database.log` show the file loaded with no error | a game with a DLC switched off, or the lab's compiled database with a DLC disabled | same |
 | G.6 | A shared `GovernmentBiases` row at 50 on `TRAIT_LEADER_MAJOR_CIV` (the probe's `gov bias` arm) no longer moves any civ off its own pick | Antiquity 4242 with the probe overlay | same |
 | G.7 | Each AI's system in `__towerEconomics.session().macro.systems` follows its pick, three systems in Antiquity and Exploration and at least two in Modern before the ideologies | the G.1 game | `ui/econ-systems.js` |
+
+## Owed: Light and War Levy (arms)
+
+Light Taxation at -1 Gold and +6 Happiness, and War Levy at +2 Gold and -1 Happiness in peace with +6 and -3 more at
+war (DESIGN 4.7, NOTES 101 and finding V). The shapes were watched in the Light arms' probe games on 2026-10-30
+(`mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-light-arms.md`, arm 10 and every arm's War Levy); the built
+mod hasn't been run in a game.
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| L.1 | Some AIs but not all slot Light, each once grown and short of Happiness (arm 10: Hawaii t69, Persia t92, Dai Viet t107); Goryeo and Hawaii still take Heavy at their second slot, and the AIs take War Levy | Antiquity 4242, `--setup fast --quick`, Economics alone, 110 turns of `lab drive` with a per-turn card reading | `ui/econ-tax-cards.js` `CARD_LEVELS`, `data/econ-tax-gameeffects.xml` |
+| L.2 | A civ holding War Levy at peace shows a "War Levy" line of +2 Gold and a "War Levy" deduction of 1 Happiness on each settlement; at war two lines each, +2 and +6 Gold, 1 and 3 Happiness | the L.1 game, `city.Yields.getYieldsForType` | `data/econ-tax-gameeffects.xml` |
+| L.3 | A settlement under Light shows "Light Taxation" at -1 Gold and +6 Happiness | the L.1 game, an AI pick or the player's swap (`__towerEconomics.swapTo`) | same |
+| L.4 | The Fiscal tab's War Levy card reads "Effect in every settlement: Gold +2, Happiness -1" and "While you're at war: Gold +8, Happiness -4", and its forecast in peace is +2 Gold and -1 Happiness times the settlements | any game with Taxes on, the screen's DOM | `ui/econ-view-fiscal.js` |
+| L.5 | A Civic market civ under Light shows a "Civic market" line of +2 Happiness | Antiquity with Economic systems on, a Classical Republic civ holding Light | `data/econ-systems-gameeffects.xml` |
+| L.6 | A Corporatist civ holding War Levy at peace shows War Levy's +2 and -1 and a "Corporatist" line of +6 Gold and -3 Happiness, so +8 and -4 in all | Modern with Authoritarianism or Bureaucratic Monarchy, no ideology, at peace | same |
+| L.7 | The game starts with Taxes on in each age, and `Database.log` has no error from the War Levy rows | Antiquity, Exploration and Modern starts | `data/econ-tax-cards-*.xml` |

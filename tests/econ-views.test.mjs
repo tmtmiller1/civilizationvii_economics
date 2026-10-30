@@ -122,12 +122,14 @@ test("stages closed show the node that opens them; the Fiscal tab draws the card
   const full = document.createElement("div");
   renderFiscal(full, api);
   const text = textOf(full);
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-12|+12"), "Light against Heavy on 2 settlements: -12 Gold, +12 Happiness");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|-2|+4"), "Light's flat amounts in each settlement");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|3"), "the celebration under Light");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-10|+16"), "Light against Heavy on 2 settlements: -10 Gold, +16 Happiness");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|-1|+6"), "Light's flat amounts in each settlement");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|2"), "the celebration under Light");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|7"), "the celebration now, under Heavy");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-8|+4"), "clearing Heavy");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_LEVY_PEACE"));
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|+2|-1"), "War Levy's peacetime part");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR"), "and a line for war");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|+8|-4"), "War Levy's amounts at war, both parts");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_LOCKED_BY|LOC_TECH_CURRENCY_NAME"), "a locked card names what opens it");
   const slot = byClass(full, "econ-button").filter((b) => b.textContent === "LOC_ECONOMICS_FISCAL_SLOT");
   assert.equal(slot.length, 2);

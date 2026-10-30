@@ -1,13 +1,15 @@
 // sync-tax-cards.mjs - writes the tax cards' amounts from ui/econ-tax-cards.js (CARD_LEVELS) into the places the
 // game reads them: the Amount arguments of the cards' modifiers and the comment above each card in
-// data/econ-tax-gameeffects.xml, and the amounts in each card's description row in every text file. Change the
+// data/econ-tax-gameeffects.xml, and the amounts in each card's description row in every text file. A card with an
+// `atWar` part (War Levy) has a second pair of modifiers, MOD_ECONOMICS_<level>_AT_WAR_GOLD and _HAPPINESS, with their
+// own comment, and its description names the peacetime amounts first and the at-war totals second. Change the
 // numbers in CARD_LEVELS, then run:
 //   node scripts/sync-tax-cards.mjs           write the files
 //   node scripts/sync-tax-cards.mjs --check   exit 1 if a file is out of step (tests/econ-data.test.mjs runs this)
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CARD_LEVELS } from "../ui/econ-tax-cards.js";
+import { CARD_LEVELS, atWarAmounts } from "../ui/econ-tax-cards.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const EFFECTS = "data/econ-tax-gameeffects.xml";
@@ -22,18 +24,36 @@ const signed = (amount) => (amount > 0 ? `+${amount}` : String(amount));
  */
 export function syncEffects(xml) {
   let out = xml;
-  for (const [level, card] of Object.entries(CARD_LEVELS)) {
-    for (const [kind, amount] of [["GOLD", card.gold], ["HAPPINESS", card.happiness]]) {
-      // The modifier's own Amount, after any requirements block: War Levy's war requirement carries an Amount of
-      // its own (how many wars), which must stay at 1.
-      const pattern = new RegExp(`(<Modifier id="MOD_ECONOMICS_${level}_${kind}"[^>]*>`
-        + "(?:\\s*<OwnerRequirements>[\\s\\S]*?</OwnerRequirements>)?[\\s\\S]*?<Argument name=\"Amount\">)"
-        + "(-?\\d+)(</Argument>)");
-      out = out.replace(pattern, (_m, head, _old, tail) => `${head}${amount}${tail}`);
-    }
-    const title = TITLES[/** @type {keyof typeof TITLES} */ (level)];
+  /**
+   * @param {string} id
+   * @param {number} amount
+   */
+  const setAmount = (id, amount) => {
+    // The modifier's own Amount, after any requirements block: War Levy's war requirement carries an Amount of its
+    // own (how many wars), which must stay at 1.
+    const pattern = new RegExp(`(<Modifier id="${id}"[^>]*>`
+      + "(?:\\s*<OwnerRequirements>[\\s\\S]*?</OwnerRequirements>)?[\\s\\S]*?<Argument name=\"Amount\">)"
+      + "(-?\\d+)(</Argument>)");
+    out = out.replace(pattern, (_m, head, _old, tail) => `${head}${amount}${tail}`);
+  };
+  /**
+   * @param {string} title
+   * @param {{ gold: number, happiness: number }} part
+   */
+  const setComment = (title, part) => {
     const comment = new RegExp(`(<!-- ${title}:[^>]*?Gold )[+-]?\\d+(, Happiness )[+-]?\\d+`);
-    out = out.replace(comment, (_m, head, mid) => `${head}${signed(card.gold)}${mid}${signed(card.happiness)}`);
+    out = out.replace(comment, (_m, head, mid) => `${head}${signed(part.gold)}${mid}${signed(part.happiness)}`);
+  };
+  for (const [level, card] of Object.entries(CARD_LEVELS)) {
+    setAmount(`MOD_ECONOMICS_${level}_GOLD`, card.gold);
+    setAmount(`MOD_ECONOMICS_${level}_HAPPINESS`, card.happiness);
+    const title = TITLES[/** @type {keyof typeof TITLES} */ (level)];
+    setComment(title, card);
+    if (card.atWar) {
+      setAmount(`MOD_ECONOMICS_${level}_AT_WAR_GOLD`, card.atWar.gold);
+      setAmount(`MOD_ECONOMICS_${level}_AT_WAR_HAPPINESS`, card.atWar.happiness);
+      setComment(`${title} at war`, card.atWar);
+    }
   }
   return out;
 }
@@ -48,9 +68,18 @@ export function syncDescriptions(xml) {
   let out = xml;
   for (const [level, card] of Object.entries(CARD_LEVELS)) {
     const row = new RegExp(`(Tag="LOC_ECONOMICS_CARD_${level}_DESCRIPTION"[^>]*><Text>)([^<]*)(</Text>)`);
-    out = out.replace(row, (_m, head, text, tail) => `${head}${String(text)
-      .replace(/[+-]?\d+%? Gold/, `${signed(card.gold)} Gold`)
-      .replace(/[+-]?\d+%? Happiness/, `${signed(card.happiness)} Happiness`)}${tail}`);
+    // The peacetime amounts first, then (War Levy) the at-war totals, each in the order the text names them.
+    const war = card.atWar ? atWarAmounts(level) : null;
+    const golds = [card.gold, ...(war ? [war.gold] : [])];
+    const joys = [card.happiness, ...(war ? [war.happiness] : [])];
+    out = out.replace(row, (_m, head, text, tail) => {
+      let g = 0;
+      let h = 0;
+      const synced = String(text)
+        .replace(/[+-]?\d+%? Gold/g, (word) => (g < golds.length ? `${signed(golds[g++])} Gold` : word))
+        .replace(/[+-]?\d+%? Happiness/g, (word) => (h < joys.length ? `${signed(joys[h++])} Happiness` : word));
+      return `${head}${synced}${tail}`;
+    });
   }
   return out;
 }
