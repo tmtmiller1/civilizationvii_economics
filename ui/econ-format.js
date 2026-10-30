@@ -10,7 +10,8 @@ import { PPM } from "./econ-money.js";
  * @param {{ signed?: boolean }} [options]
  */
 export function formatGold(cents, { signed = false } = {}) {
-  const value = Number.isFinite(cents) ? Math.round(cents) / 100 : 0;
+  // Rounded to the tenth shown first, so a few cents read "0" rather than "-0.0".
+  const value = Number.isFinite(cents) ? Math.round(cents / 10) / 10 : 0;
   const whole = Number.isInteger(value);
   const text = whole ? String(Math.abs(value)) : Math.abs(value).toFixed(1);
   if (value < 0) return `-${text}`;

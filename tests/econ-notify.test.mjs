@@ -8,7 +8,8 @@ import { makeLoan } from "../ui/econ-loan.js";
 const plan = () => ({
   ledger: { ...emptyLedger(), lastTurn: 10, loans: [makeLoan({ id: "L1", lender: "bond", borrower: 0, principal: 10000,
     ratePpm: 40000, term: 10, turn: 10 })] },
-  transfers: [], influence: [], celebration: [], grievances: [], relationships: [], skipped: null,
+  transfers: [{ loanId: "L1", turn: 10, from: "bond", to: 0, cents: 10000, reason: "principal", parts: {} }],
+  influence: [], celebration: [], grievances: [], relationships: [], skipped: null,
   events: [{ turn: 10, kind: "refused", request: "lend", lender: 0, reason: "declined" },
     { turn: 10, kind: "refused", request: "borrow", borrower: 3, reason: "credit-cap" }],
   notices: [{ pid: 0, kind: "open", loanId: "L1", source: "borrow", emergency: false }, { pid: 3, kind: "miss", loanId: "L1" }],
@@ -19,7 +20,7 @@ test("the lines are the human's own: its net, its notices and its refusals, in t
   installFakeEngine({ civs: [{ id: 0, human: true }, { id: 3 }] });
   const lines = composeLines(plan(), 0);
   assert.deepEqual(lines, [
-    "LOC_ECONOMICS_NOTICE_NET|+100",
+    "LOC_ECONOMICS_NOTICE_NET|+100|LOC_ECONOMICS_FLOW_LOANS",
     "LOC_ECONOMICS_NOTICE_OPEN|100|LOC_ECONOMICS_LENDER_BOND|4.0%|10",
     "LOC_ECONOMICS_NOTICE_REFUSED|LOC_ECONOMICS_REQUEST_LEND|LOC_ECONOMICS_REASON_DECLINED",
   ]);

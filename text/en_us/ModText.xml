@@ -222,9 +222,17 @@
         <!-- The turn notification -->
         <Row Tag="LOC_ECONOMICS_NOTIFY_TITLE"><Text>Economics</Text></Row>
         <Row Tag="LOC_ECONOMICS_NOTIFY_FALLBACK"><Text>Your treasury moved this turn. Open the Economics screen for the details.</Text></Row>
-        <Row Tag="LOC_ECONOMICS_NOTICE_NET"><Text>Loans moved your treasury by {1_Amount} Gold.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_NOTICE_NET"><Text>Your treasury moved by {1_Amount} Gold this turn, from {2_Flows}.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_NOTICE_NET_PLAIN"><Text>Your treasury moved by {1_Amount} Gold this turn.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FLOW_LOANS"><Text>loans</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FLOW_TRADE"><Text>trade bills</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FLOW_INVESTMENT"><Text>investment</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FLOW_CYCLE"><Text>the business cycle</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FLOW_INFLATION"><Text>inflation</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FLOW_PLAN"><Text>the plan</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FLOW_TAX"><Text>taxes</Text></Row>
         <Row Tag="LOC_ECONOMICS_NOTICE_INFLUENCE"><Text>Missed payments cost you {1_Amount} Influence.</Text></Row>
-        <Row Tag="LOC_ECONOMICS_NOTICE_CELEBRATION"><Text>Taxes moved your celebration meter by {1_Amount}.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_NOTICE_CELEBRATION"><Text>Your celebration meter moved by {1_Amount}.</Text></Row>
         <Row Tag="LOC_ECONOMICS_NOTICE_OPEN"><Text>A loan of {1_Amount} Gold from {2_Lender} has landed, at {3_Rate} a turn over {4_Turns} turns.</Text></Row>
         <Row Tag="LOC_ECONOMICS_NOTICE_LENT"><Text>Your loan of {1_Amount} Gold to {2_Borrower} has gone out.</Text></Row>
         <Row Tag="LOC_ECONOMICS_NOTICE_MISS"><Text>You missed a payment on loan {1_Loan} ({2_Count} in a row). The interest joins the debt and the rate rises; three in a row is default.</Text></Row>

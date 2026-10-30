@@ -195,9 +195,17 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_VERDICT_SAME" Language="fr_FR"><Text>That card is already slotted.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTIFY_TITLE" Language="fr_FR"><Text>Economics</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTIFY_FALLBACK" Language="fr_FR"><Text>Your treasury moved this turn. Open the Economics screen for the details.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_NET" Language="fr_FR"><Text>Loans moved your treasury by {1_Amount} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_NET" Language="fr_FR"><Text>Your treasury moved by {1_Amount} Gold this turn, from {2_Flows}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_NET_PLAIN" Language="fr_FR"><Text>Your treasury moved by {1_Amount} Gold this turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LOANS" Language="fr_FR"><Text>loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_TRADE" Language="fr_FR"><Text>trade bills</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_INVESTMENT" Language="fr_FR"><Text>investment</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_CYCLE" Language="fr_FR"><Text>the business cycle</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_INFLATION" Language="fr_FR"><Text>inflation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_PLAN" Language="fr_FR"><Text>the plan</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_TAX" Language="fr_FR"><Text>taxes</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INFLUENCE" Language="fr_FR"><Text>Missed payments cost you {1_Amount} Influence.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_CELEBRATION" Language="fr_FR"><Text>Taxes moved your celebration meter by {1_Amount}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_CELEBRATION" Language="fr_FR"><Text>Your celebration meter moved by {1_Amount}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_OPEN" Language="fr_FR"><Text>A loan of {1_Amount} Gold from {2_Lender} has landed, at {3_Rate} a turn over {4_Turns} turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_LENT" Language="fr_FR"><Text>Your loan of {1_Amount} Gold to {2_Borrower} has gone out.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_MISS" Language="fr_FR"><Text>You missed a payment on loan {1_Loan} ({2_Count} in a row). The interest joins the debt and the rate rises; three in a row is default.</Text></Replace>

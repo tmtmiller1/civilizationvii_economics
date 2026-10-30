@@ -171,16 +171,40 @@ export function describeRefusal(event) {
     reasonKey: reasonKey(event.reason) };
 }
 
+/** What a transfer's reason moved, for the net line. @type {Record<string, string>} */
+const FLOW_OF = { principal: "LOANS", payment: "LOANS", garnish: "LOANS", trade: "TRADE", invest: "INVESTMENT",
+  dividend: "INVESTMENT", cycle: "CYCLE", erosion: "INFLATION", plan: "PLAN", tax: "TAX" };
+
 /**
- * The turn's net line for the human: Gold moved by loans, Influence lost to misses, the celebration meter.
+ * The kinds of flow that moved a civ's Gold this turn, as name keys in a fixed order (loans, trade, ...).
+ * @param {Transfer[]} transfers
+ * @param {number} pid
+ */
+export function flowKeys(transfers, pid) {
+  const seen = new Set();
+  for (const transfer of transfers || []) {
+    if (transfer.from !== pid && transfer.to !== pid) continue;
+    if (Object.hasOwn(FLOW_OF, transfer.reason)) seen.add(FLOW_OF[transfer.reason]);
+  }
+  return [...new Set(Object.values(FLOW_OF))].filter((flow) => seen.has(flow)).map((flow) => `${PREFIX}FLOW_${flow}`);
+}
+
+/**
+ * The turn's net line for the human: the Gold the mod moved and what moved it, Influence lost to misses, the
+ * celebration meter. A net that rounds to 0 Gold says nothing.
  * @param {BatchRow | undefined} row
+ * @param {string[]} [flows] name keys of what moved the Gold (flowKeys)
  * @returns {Line[]}
  */
-export function describeBatchRow(row) {
+export function describeBatchRow(row, flows = []) {
   if (!row) return [];
   /** @type {Line[]} */
   const lines = [];
-  if (row.net !== 0) lines.push({ key: `${PREFIX}NOTICE_NET`, args: [formatGold(row.net, { signed: true })] });
+  const net = formatGold(row.net, { signed: true });
+  if (net !== "0") {
+    lines.push(flows.length ? { key: `${PREFIX}NOTICE_NET`, args: [net, flows] }
+      : { key: `${PREFIX}NOTICE_NET_PLAIN`, args: [net] });
+  }
   if (row.influence !== 0) lines.push({ key: `${PREFIX}NOTICE_INFLUENCE`, args: [row.influence] });
   if (row.celebration !== 0) {
     lines.push({ key: `${PREFIX}NOTICE_CELEBRATION`, args: [formatGold(row.celebration, { signed: true })] });
