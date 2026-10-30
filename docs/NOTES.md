@@ -410,6 +410,18 @@ AB. **A world Depression now has responses and no aid.** Choice 139 took the AI'
 - The AI plan's run (2026-10-31, stages A to E) is DESIGN 10's dated note of that day: the ledger's events counted
   (`report.aiRules`), the investment stages open in the harness, the engine's level numbers behind the relations.
 
+- The model fixes (2026-10-30, branch `model-fixes`): the 1.0, 1.1 and 1.2 balance suites rerun after each part; the
+  before and after figures are in DESIGN 10's note "after the model fixes", findings K, P to R, U and W to Y above,
+  and choices 102 to 113. The 1.0 harness now gives each civ three cities with a build and carries the markets
+  envelope (finding X); the 1.1 harness draws relationships and runs a third pass with the AI rules on, for the
+  tariff rows.
+- Mutation on the modules those parts changed (2026-10-30, the same house bar, 2,689 mutants): `econ-view-commerce.js`
+  100, `econ-trade.js` 98.7, `econ-shortfall.js` 97.3, `econ-ai.js` 96.0, `econ-cycle.js` 94.1, `econ-macro.js` 89.2,
+  `econ-lenders.js` 87.9, `econ-invest-open.js` 84.2, `econ-commerce.js` 83.7, `econ-plan.js` 82.9 (74.4 on the first
+  run, before the age-change edge test), `econ-requests.js` 80.0, `econ-planned.js` 79.1, `econ-macro-state.js` 78.6.
+  `econ-citizens.js` changed only its celebration constant, which a test pins against Light's card. The survivors are
+  mostly the tax fallback's branches, the Treasury projection's loop, event fields and sort tie-breaks no rule reads.
+
 ## Not done here
 
 - Watching any of it in a game: `docs/verification-runs.md` lists each check under "Owed".

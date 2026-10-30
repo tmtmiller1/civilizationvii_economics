@@ -742,3 +742,17 @@ test("an AI losing 4,813 Gold a turn (lab run 2026-11-04T04-27-29): the emergenc
   assert.deepEqual(capped.transfers.filter((t) => t.to === 4), []);
   assert.equal(capped.events.find((e) => e.kind === "guard-cap" && e.pid === 4).cap, 4813000);
 });
+
+test("the age change's record: 100 Gold or more below the last batch's end, living civs only, none without a batch", () => {
+  const last = (snapshot) => ({ id: "B9", turn: 120, civs: [{ pid: ME, snapshot, net: 0, influence: 0, celebration: 0 },
+    { pid: 6, snapshot: 900000, net: 0, influence: 0, celebration: 0 }] });
+  const at = (snapshot, civs) => planTurn(input({ turn: 121, age: "AGE_EXPLORATION", civs,
+    ledger: { ...emptyLedger(), age: "AGE_ANTIQUITY", lastTurn: 120, lastBatch: last(snapshot) } }))
+    .events.filter((e) => e.kind === "age-gold").map((e) => [e.pid, e.before - e.after]);
+  const living = [me({ balanceCents: 600000 }), civ(6, { alive: false, balanceCents: 0 })];
+  assert.deepEqual(at(610000, living), [[ME, 10000]], "exactly 100 Gold is recorded; a dead civ isn't");
+  assert.deepEqual(at(609999, living), [], "99.99 Gold is the turn's own spending");
+  assert.deepEqual(planTurn(input({ turn: 121, age: "AGE_EXPLORATION", civs: living,
+    ledger: { ...emptyLedger(), age: "AGE_ANTIQUITY", lastTurn: 120 } })).events.filter((e) => e.kind === "age-gold"),
+  [], "no last batch, nothing to measure from");
+});
