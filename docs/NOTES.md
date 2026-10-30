@@ -205,6 +205,16 @@ T. **The government pick ignores government modifiers.** M2 moved no civ with +1
 a settlement; a bias row moved four. DESIGN 4.17's "the AI weighs them when it picks a government" is out: the
 modifiers change what a system pays, not who picks it.
 
+U. **A 300 Gold loan at early income is refused by the limits as written, not by a sizing bug.** The lab's build
+checks (1.1, 2.6, 2026-10-30): at 20 Gold of income the credit limit is 12 turns, 240 Gold, so 300 is over it; and 50
+Gold at 9 Gold of income needs a first payment of 7 (2 of interest at the bond market's 4%, 5 of principal) against
+35% of income, 3.15. The arithmetic is pinned in `../tests/econ-limits.test.mjs`. What it shows: the debt-service limit
+binds long before `credit_cap`. A 10-turn loan's first payment is a tenth of the principal plus the rate, so the
+service limit holds it to about 2.5 turns of income at the bond rate (4.8 turns over 30 turns), against `credit_cap`'s
+12. Nothing is changed; whether the two limits should meet (a longer term, or `credit_cap` lowered toward what the
+service limit allows) is the owner's call, with "Borrowing pays" and `base_rate`. The owed check 1.1's 300 Gold needs a
+civ with about 120 Gold of income at 10 turns, or a smaller loan, as the lab's 50 Gold one was.
+
 ## Balance run and mutation
 
 - The 1.0 balance rows ran 2026-10-29 in `../tests/econ-balance.test.mjs` (20 seeded 12-civ 500-turn games, On against
