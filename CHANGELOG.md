@@ -112,6 +112,9 @@ release is generated from the matching section below by `scripts/steam-changelog
 - Light Taxation is cheaper and calms more: -1 Gold and +6 Happiness in each settlement, up from -2 and +4. In test
   games the computer players never took the old one; now a grown civilization whose cities are getting unhappy takes
   it, while young ones still go for Heavy Taxation. Under a Civic market Light gives +2 Happiness more, up from +1.
+- Light Taxation gives less Happiness in the later ages: +6 in Antiquity, +4 in Exploration and +3 in Modern, still
+  for 1 Gold in each settlement. In a test game every computer player slotted the +6 card early in Exploration and
+  Modern and kept it all age, with Happiness to spare. The card's text and the Fiscal tab show the age's amount.
 - War Levy pays a little in peace: +2 Gold and -1 Happiness in each settlement, rising to +8 Gold and -4 Happiness
   while you're at war. The computer players often keep it slotted in peacetime, and before this it gave them nothing
   there. The Fiscal tab shows both amounts. Under Corporatist it still pays the full wartime amount in peace.

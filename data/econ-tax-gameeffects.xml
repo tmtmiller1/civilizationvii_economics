@@ -11,22 +11,36 @@
   that always pays, and a larger one that holds only while the owner has a formal war (REQUIREMENT_PLAYER_HAS_X_WARS,
   the closest the requirement table comes to "at war with a major civ"). The AI's card pass scores the card as if the
   requirement held (P17 arm 5) and slots it in peace too, so the peacetime pair gives those turns a return; the
-  breakdown names both parts "War Levy" (Light arms, 2026-10-30).
+  breakdown names both parts "War Levy" (Light arms, 2026-10-30). Light's Happiness differs by age (+6, +4, +3), so it
+  has one modifier per age, MOD_ECONOMICS_LIGHT_HAPPINESS_AQ, _EX and _MO, and each age's Light card carries its own.
 
   The tax slot is one extra policy slot, granted by each age's root civic through ProgressionTreeNodeUnlocks
   (data/econ-tax-cards.sql), in the shape of the base MOD_TOT_TRADITION_SLOT. It is never attached to a card: a card
   that grants the slot it sits in crashed the AI turn (engine-closed.md, 2026-10-17).
 -->
 <GameEffects xmlns="GameEffects">
-    <!-- Light Taxation: Gold -1, Happiness +6 in each settlement -->
+    <!-- Light Taxation: Gold -1 in each settlement in every age; its Happiness differs by age, one modifier each -->
     <Modifier id="MOD_ECONOMICS_LIGHT_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
         <Argument name="YieldType">YIELD_GOLD</Argument>
         <Argument name="Amount">-1</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_CARD_LIGHT_NAME</Argument>
     </Modifier>
-    <Modifier id="MOD_ECONOMICS_LIGHT_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+    <!-- Light Taxation in Antiquity: Happiness +6 in each settlement -->
+    <Modifier id="MOD_ECONOMICS_LIGHT_HAPPINESS_AQ" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
         <Argument name="YieldType">YIELD_HAPPINESS</Argument>
         <Argument name="Amount">6</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_CARD_LIGHT_NAME</Argument>
+    </Modifier>
+    <!-- Light Taxation in Exploration: Happiness +4 in each settlement -->
+    <Modifier id="MOD_ECONOMICS_LIGHT_HAPPINESS_EX" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">4</Argument>
+        <Argument name="Tooltip">LOC_ECONOMICS_CARD_LIGHT_NAME</Argument>
+    </Modifier>
+    <!-- Light Taxation in Modern: Happiness +3 in each settlement -->
+    <Modifier id="MOD_ECONOMICS_LIGHT_HAPPINESS_MO" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
+        <Argument name="YieldType">YIELD_HAPPINESS</Argument>
+        <Argument name="Amount">3</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_CARD_LIGHT_NAME</Argument>
     </Modifier>
     <!-- Heavy Taxation: Gold +4, Happiness -2 in each settlement -->

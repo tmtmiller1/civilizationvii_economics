@@ -13,7 +13,7 @@ import { utf8Bytes } from "../ui/econ-state.js";
 import { creditRoom } from "../ui/econ-requests.js";
 import { viewContext } from "../ui/econ-view-model.js";
 import { leverPct } from "../ui/econ-cycle.js";
-import { CARD_LEVELS } from "../ui/econ-tax-cards.js";
+import { cardAmounts } from "../ui/econ-tax-cards.js";
 import { gen } from "./_prng.mjs";
 import { PARAMS } from "./_fixtures.mjs";
 
@@ -272,7 +272,8 @@ export function systemDiversityRows() {
 /**
  * Citizen loans against Light tax (DESIGN 10): a Classical Republic AI that keeps 5 turns of income borrows from its
  * citizens by the rule for 100 Antiquity turns. Interest paid, the celebration it bought, defaults, and what the
- * same Gold buys under Light Taxation (CARD_LEVELS: +6 Happiness for -1 Gold a settlement, 6 a Gold).
+ * same Gold buys under Antiquity's Light Taxation (CARD_LEVELS: +6 Happiness for -1 Gold a settlement, 6 a Gold;
+ * Classical Republic, the only Civic market government, is an Antiquity one).
  */
 export function citizenLoanRow() {
   const id = 3;
@@ -304,9 +305,10 @@ export function citizenLoanRow() {
     ({ ledger, macro } = plan);
   }
   const otherBorrowed = 0;
+  const lightRate = cardAmounts("LIGHT", "AQ");
   return { borrowedGold: borrowed / 100, interestGold: interest / 100, celebration: celebration / 100,
     celebrationPerInterestGold: interest ? Math.round((celebration / interest) * 100) / 100 : 0,
-    lightTaxHappinessPerGold: CARD_LEVELS.LIGHT.happiness / -CARD_LEVELS.LIGHT.gold, defaults, otherAntiquityBorrowedGold: otherBorrowed };
+    lightTaxHappinessPerGold: lightRate.happiness / -lightRate.gold, defaults, otherAntiquityBorrowedGold: otherBorrowed };
 }
 
 /**

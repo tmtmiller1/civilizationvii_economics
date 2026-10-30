@@ -79,7 +79,9 @@
 
         <!-- Tax cards (data/econ-tax-cards-*.xml) -->
         <Row Tag="LOC_ECONOMICS_CARD_LIGHT_NAME"><Text>Light Taxation</Text></Row>
-        <Row Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-1 Gold and +6 Happiness in each settlement.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION_AQ"><Text>-1 Gold and +6 Happiness in each settlement.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION_EX"><Text>-1 Gold and +4 Happiness in each settlement.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION_MO"><Text>-1 Gold and +3 Happiness in each settlement.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CARD_HEAVY_NAME"><Text>Heavy Taxation</Text></Row>
         <Row Tag="LOC_ECONOMICS_CARD_HEAVY_DESCRIPTION"><Text>+4 Gold and -2 Happiness in each settlement.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CARD_WAR_LEVY_NAME"><Text>War Levy</Text></Row>

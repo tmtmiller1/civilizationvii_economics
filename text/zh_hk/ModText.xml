@@ -62,7 +62,9 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_ON" Language="zh_Hant_HK"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_ON_DESCRIPTION" Language="zh_Hant_HK"><Text>Development loans open with Guild patronage (Guilds), general investment with Chartered companies (Colonialism), and aid is open from the start.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_NAME" Language="zh_Hant_HK"><Text>Light Taxation</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION" Language="zh_Hant_HK"><Text>-1 Gold and +6 Happiness in each settlement.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION_AQ" Language="zh_Hant_HK"><Text>-1 Gold and +6 Happiness in each settlement.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION_EX" Language="zh_Hant_HK"><Text>-1 Gold and +4 Happiness in each settlement.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION_MO" Language="zh_Hant_HK"><Text>-1 Gold and +3 Happiness in each settlement.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_HEAVY_NAME" Language="zh_Hant_HK"><Text>Heavy Taxation</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_HEAVY_DESCRIPTION" Language="zh_Hant_HK"><Text>+4 Gold and -2 Happiness in each settlement.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_WAR_LEVY_NAME" Language="zh_Hant_HK"><Text>War Levy</Text></Replace>

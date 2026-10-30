@@ -9,7 +9,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { ROOT } from "./_fs-helpers.mjs";
-import { CARD_LEVELS } from "../ui/econ-tax-cards.js";
+import { CARD_LEVELS, amountIn, descriptionKey, modifierIds } from "../ui/econ-tax-cards.js";
 import { outOfStep, syncDescriptions, syncEffects } from "../scripts/sync-tax-cards.mjs";
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
@@ -20,21 +20,31 @@ const effects = read("data/econ-tax-gameeffects.xml");
 const sql = read("data/econ-tax-cards.sql");
 const modinfo = read("economics.modinfo");
 
-test("each age's card file holds the three cards of its age, pointing at modifiers the effects file defines", () => {
-  const modifierIds = new Set([...effects.matchAll(/<Modifier id="([A-Z_]+)"/g)].map((m) => m[1]));
+test("each age's card file holds the three cards of its age, each pointing at its age's modifiers and description", () => {
+  const defined = new Set([...effects.matchAll(/<Modifier id="([A-Z_]+)"/g)].map((m) => m[1]));
   for (const [name, [age, suffix]] of Object.entries(AGES)) {
     const xml = read(`data/econ-tax-cards-${name}.xml`);
     const types = [...xml.matchAll(/TraditionType="(TRADITION_ECONOMICS_[A-Z_]+)" Name/g)].map((m) => m[1]);
     assert.deepEqual(types, ["LIGHT", "HEAVY", "WAR_LEVY"].map((level) => `TRADITION_ECONOMICS_${level}_${suffix}`), name);
     assert.equal((xml.match(new RegExp(`AgeType="${age}"`, "g")) || []).length, 3, `${name} AgeType`);
     assert.equal(/CultureSlotType="POLICY_CULTURE_SLOT"/.test(xml), true, "the game's own slot, never one of ours");
-    for (const m of xml.matchAll(/ModifierId="([A-Z_]+)"/g)) assert.ok(modifierIds.has(m[1]), `${name}: ${m[1]}`);
+    for (const m of xml.matchAll(/ModifierId="([A-Z_]+)"/g)) assert.ok(defined.has(m[1]), `${name}: ${m[1]}`);
+    for (const level of Object.keys(CARD_LEVELS)) {
+      const type = `TRADITION_ECONOMICS_${level}_${suffix}`;
+      const carried = [...xml.matchAll(new RegExp(`TraditionType="${type}" ModifierId="([A-Z_]+)"`, "g"))].map((m) => m[1]);
+      assert.deepEqual(carried, modifierIds(level, suffix), `${name}: ${level}'s modifiers`);
+      assert.ok(xml.includes(`TraditionType="${type}" Name="${CARD_LEVELS[level].nameKey}" Description="${descriptionKey(level, suffix)}"`),
+        `${name}: ${level}'s description`);
+    }
     assert.equal(/EFFECT_PLAYER_GRANT_TRADITION_SLOTS/.test(xml), false, "a card never grants a slot");
   }
 });
 
 test("the effects file: flat yield modifiers on every settlement, War Levy's second pair behind a war requirement, the slot on its own", () => {
-  assert.equal((effects.match(/effect="EFFECT_CITY_ADJUST_YIELD"/g) || []).length, 8);
+  const yieldModifiers = new Set(Object.keys(AGES).flatMap((name) => Object.keys(CARD_LEVELS)
+    .flatMap((level) => modifierIds(level, AGES[name][1]))));
+  assert.equal((effects.match(/effect="EFFECT_CITY_ADJUST_YIELD"/g) || []).length, yieldModifiers.size,
+    "one yield modifier for each the cards carry, and no other");
   assert.equal((effects.match(/type="REQUIREMENT_PLAYER_HAS_X_WARS"/g) || []).length, 2);
   assert.equal(/name="Percent"/.test(effects), false, "the cards are flat amounts, never percentages");
   assert.match(effects, /id="MOD_ECONOMICS_TAX_SLOT" collection="COLLECTION_OWNER" effect="EFFECT_PLAYER_GRANT_TRADITION_SLOTS"/);
@@ -47,10 +57,12 @@ test("the effects file: flat yield modifiers on every settlement, War Levy's sec
   };
   const gated = (id) => /REQUIREMENT_PLAYER_HAS_X_WARS/.test((effects.match(new RegExp(`<Modifier id="${id}"[\\s\\S]*?</Modifier>`)) || [""])[0]);
   for (const [level, card] of Object.entries(CARD_LEVELS)) {
-    assert.equal(ownAmount(`MOD_ECONOMICS_${level}_GOLD`), card.gold, `${level} gold`);
-    assert.equal(ownAmount(`MOD_ECONOMICS_${level}_HAPPINESS`), card.happiness, `${level} happiness`);
-    assert.equal(gated(`MOD_ECONOMICS_${level}_GOLD`) || gated(`MOD_ECONOMICS_${level}_HAPPINESS`), false,
-      `${level}'s first pair pays in peace`);
+    for (const [, suffix] of Object.values(AGES)) {
+      const [goldId, happinessId] = modifierIds(level, suffix);
+      assert.equal(ownAmount(goldId), amountIn(card.gold, suffix), `${level} gold in ${suffix}`);
+      assert.equal(ownAmount(happinessId), amountIn(card.happiness, suffix), `${level} happiness in ${suffix}`);
+      assert.equal(gated(goldId) || gated(happinessId), false, `${level}'s first pair pays in peace`);
+    }
     if (!card.atWar) continue;
     assert.equal(ownAmount(`MOD_ECONOMICS_${level}_AT_WAR_GOLD`), card.atWar.gold, `${level} gold at war`);
     assert.equal(ownAmount(`MOD_ECONOMICS_${level}_AT_WAR_HAPPINESS`), card.atWar.happiness, `${level} happiness at war`);
@@ -72,23 +84,34 @@ test("the effects file: flat yield modifiers on every settlement, War Levy's sec
 test("the card numbers live in CARD_LEVELS: the modifiers and every description row are in step with it", () => {
   assert.deepEqual(outOfStep().map((row) => row.file), [], "run node scripts/sync-tax-cards.mjs");
   const light = CARD_LEVELS.LIGHT;
-  const saved = { ...light };
+  const heavy = CARD_LEVELS.HEAVY;
+  const saved = { light: { ...light }, heavy: { ...heavy } };
   try {
-    Object.assign(light, { gold: -3, happiness: 5 });
+    Object.assign(light, { gold: -3, happiness: { AQ: 5, EX: 2, MO: 1 } });
     const moved = syncEffects(effects);
     assert.match(moved, /id="MOD_ECONOMICS_LIGHT_GOLD"[\s\S]*?<Argument name="Amount">-3<\/Argument>/);
-    assert.match(moved, /id="MOD_ECONOMICS_LIGHT_HAPPINESS"[\s\S]*?<Argument name="Amount">5<\/Argument>/);
-    assert.match(moved, /<!-- Light Taxation: Gold -3, Happiness \+5 in each settlement -->/);
+    assert.match(moved, /id="MOD_ECONOMICS_LIGHT_HAPPINESS_AQ"[\s\S]*?<Argument name="Amount">5<\/Argument>/);
+    assert.match(moved, /id="MOD_ECONOMICS_LIGHT_HAPPINESS_EX"[\s\S]*?<Argument name="Amount">2<\/Argument>/);
+    assert.match(moved, /id="MOD_ECONOMICS_LIGHT_HAPPINESS_MO"[\s\S]*?<Argument name="Amount">1<\/Argument>/);
+    assert.match(moved, /<!-- Light Taxation: Gold -3 in each settlement/);
+    assert.match(moved, /<!-- Light Taxation in Exploration: Happiness \+2 in each settlement -->/);
     assert.match(moved, /id="MOD_ECONOMICS_HEAVY_GOLD"[\s\S]*?<Argument name="Amount">4<\/Argument>/, "others untouched");
-    assert.match(syncDescriptions(read("text/en_us/ModText.xml")),
-      /LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-3 Gold and \+5 Happiness in each settlement\./);
-    assert.match(syncDescriptions('Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-15% Gold and +20% Happiness.</Text>'),
-      /<Text>-3 Gold and \+5 Happiness\.<\/Text>/, "the old percentage text moves to the flat form");
+    const english = syncDescriptions(read("text/en_us/ModText.xml"));
+    assert.match(english, /LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION_AQ"><Text>-3 Gold and \+5 Happiness in each settlement\./);
+    assert.match(english, /LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION_MO"><Text>-3 Gold and \+1 Happiness in each settlement\./);
+    assert.match(syncDescriptions('Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION_EX"><Text>-15% Gold and +20% Happiness.</Text>'),
+      /<Text>-3 Gold and \+2 Happiness\.<\/Text>/, "the old percentage text moves to the flat form");
     assert.match(syncDescriptions('Tag="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION"><Text>1 Gold and 1 Happiness. At war, 1 Gold and 1 Happiness.</Text>'),
       /<Text>\+2 Gold and -1 Happiness\. At war, \+8 Gold and -4 Happiness\.<\/Text>/,
       "War Levy's text names the peacetime part first and the at-war totals second");
+    // A card made to differ by age (Heavy's Gold here) needs its per-age modifiers in the file: the check sees the
+    // file go out of step only once they're written, so the card-file test above is what catches a missing one.
+    Object.assign(heavy, { gold: { AQ: 4, EX: 5, MO: 6 } });
+    assert.match(syncDescriptions('Tag="LOC_ECONOMICS_CARD_HEAVY_DESCRIPTION_MO"><Text>1 Gold and 1 Happiness.</Text>'),
+      /<Text>\+6 Gold and -2 Happiness\.<\/Text>/);
   } finally {
-    Object.assign(light, saved);
+    Object.assign(light, saved.light);
+    Object.assign(heavy, saved.heavy);
   }
 });
 

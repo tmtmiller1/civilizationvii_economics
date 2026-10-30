@@ -144,9 +144,10 @@ test("stages closed show the node that opens them; the Fiscal tab draws the card
   const full = document.createElement("div");
   renderFiscal(full, api);
   const text = textOf(full);
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-10|+16"), "Light against Heavy on 2 settlements: -10 Gold, +16 Happiness");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|-1|+6"), "Light's flat amounts in each settlement");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|2"), "the celebration under Light");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-10|+12"),
+    "Exploration's Light (+4) against Heavy on 2 settlements: -10 Gold, +12 Happiness");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|-1|+4"), "Light's flat amounts in each settlement, Exploration's");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|3"), "the celebration under Light");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|7"), "the celebration now, under Heavy");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-8|+4"), "clearing Heavy");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|+2|-1"), "War Levy's peacetime part");

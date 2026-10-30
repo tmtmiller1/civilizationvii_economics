@@ -2,7 +2,7 @@
 // celebration the interest buys, a miss and a repudiation at home, the AI's rule; the plan's take and split.
 import test from "node:test";
 import { CITIZEN } from "../ui/econ-params.js";
-import { CARD_LEVELS } from "../ui/econ-tax-cards.js";
+import { cardAmounts } from "../ui/econ-tax-cards.js";
 import assert from "node:assert/strict";
 import { aiCitizenPrincipal, citizenCapCents, citizenRatePpm, interestCelebrationCents, missCelebrationCents,
   repudiationCelebrationCents } from "../ui/econ-citizens.js";
@@ -27,8 +27,11 @@ test("the rate is 0.75 of the base rate over standing, by depth and the Rates op
 
 test("interest buys 6 times its size in celebration, as Light does; a miss costs 5 turns of the meter, a repudiation 10", () => {
   assert.equal(interestCelebrationCents(450), 2700);
-  assert.equal(CITIZEN.celebrationMultiple, CARD_LEVELS.LIGHT.happiness / -CARD_LEVELS.LIGHT.gold,
-    "the same celebration per Gold as Light Taxation");
+  // Citizen loans are Civic market's, and Civic market is Classical Republic's, an Antiquity government: the price
+  // is Antiquity Light's.
+  const light = cardAmounts("LIGHT", "AQ");
+  assert.equal(CITIZEN.celebrationMultiple, light.happiness / -light.gold,
+    "the same celebration per Gold as Antiquity's Light Taxation");
   assert.equal(interestCelebrationCents(-3), 0);
   assert.equal(missCelebrationCents(600), -3000);
   assert.equal(missCelebrationCents(-600), 0, "nothing to lose from a falling meter");

@@ -7,7 +7,7 @@ import { button, chips, el, note, pill, row, section } from "./econ-dom.js";
 import { canChangeTariff } from "./econ-trade.js";
 import { hasStage } from "./econ-stages.js";
 import { formatGold } from "./econ-format.js";
-import { CARD_LEVELS, atWarAmounts, cardForecast } from "./econ-tax-cards.js";
+import { CARD_LEVELS, ageOf, atWarAmounts, cardAmounts, cardForecast } from "./econ-tax-cards.js";
 import { systemView } from "./econ-view-macro.js";
 import { systemKey } from "./econ-notice-text.js";
 
@@ -64,9 +64,11 @@ function renderCards(host, api) {
   const read = api.fiscal();
   const canSwap = api.canSwap();
   const active = cards.find((card) => card.active) || null;
-  host.appendChild(nowSection(read, active ? active.level : null, api));
+  // Every card the database holds is this age's, so any card's type names the age whose amounts apply.
+  const age = ageOf(cards[0].type);
+  host.appendChild(nowSection(read, active ? active.level : null, age, api));
   for (const card of cards) block.appendChild(cardBlock(card, active ? active.level : null, read, canSwap, api));
-  if (active) block.appendChild(clearBlock(active.level, read, canSwap, api));
+  if (active) block.appendChild(clearBlock(active.level, read, canSwap, age, api));
   if (!canSwap) block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_NO_SWAP")));
   if (lastVerdict) block.appendChild(note(api.loc(verdictKey(lastVerdict))));
   block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_NOTE")));
@@ -77,10 +79,11 @@ function renderCards(host, api) {
  * Where the civ stands now: its settlements' Gold and Happiness and the next celebration.
  * @param {FiscalRead} read
  * @param {string | null} activeLevel
+ * @param {string | null} age
  * @param {ScreenApi} api
  */
-function nowSection(read, activeLevel, api) {
-  const now = cardForecast(activeLevel, activeLevel, read);
+function nowSection(read, activeLevel, age, api) {
+  const now = cardForecast(activeLevel, activeLevel, read, age);
   return section(api.loc("LOC_ECONOMICS_FISCAL_NOW"), [
     row(api.loc("LOC_ECONOMICS_FISCAL_GOLD_NOW"), formatGold(read.goldCents)),
     row(api.loc("LOC_ECONOMICS_FISCAL_HAPPINESS_NOW"), formatGold(read.happinessCents)),
@@ -108,6 +111,8 @@ function celebrationText(turns, read, api) {
  */
 function cardBlock(card, activeLevel, read, canSwap, api) {
   const level = CARD_LEVELS[card.level];
+  const age = ageOf(card.type);
+  const amounts = cardAmounts(card.level, age);
   const box = el("div", "econ-card");
   const head = el("div", "econ-card-head");
   head.appendChild(el("div", "econ-card-title", api.loc(level.nameKey)));
@@ -115,14 +120,14 @@ function cardBlock(card, activeLevel, read, canSwap, api) {
   else if (!card.unlocked) head.appendChild(pill(lockedText(card, api), false));
   box.appendChild(head);
   box.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_EFFECT"), api.loc("LOC_ECONOMICS_FISCAL_EFFECT_ROW",
-    formatGold(level.gold * 100, { signed: true }), formatGold(level.happiness * 100, { signed: true }))));
+    formatGold(amounts.gold * 100, { signed: true }), formatGold(amounts.happiness * 100, { signed: true }))));
   if (level.atWar) {
-    const war = atWarAmounts(card.level);
+    const war = atWarAmounts(card.level, age);
     box.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR"), api.loc("LOC_ECONOMICS_FISCAL_EFFECT_ROW",
       formatGold(war.gold * 100, { signed: true }), formatGold(war.happiness * 100, { signed: true }))));
   }
   if (!card.active) {
-    for (const line of forecastRows(card.level, activeLevel, read, api)) box.appendChild(line);
+    for (const line of forecastRows(card.level, activeLevel, read, age, api)) box.appendChild(line);
     box.appendChild(button(api.loc("LOC_ECONOMICS_FISCAL_SLOT"), () => swap(card.type, api),
       { disabled: !canSwap || !card.unlocked }));
   }
@@ -144,10 +149,11 @@ function lockedText(card, api) {
  * @param {string | null} level
  * @param {string | null} activeLevel
  * @param {FiscalRead} read
+ * @param {string | null} age
  * @param {ScreenApi} api
  */
-function forecastRows(level, activeLevel, read, api) {
-  const forecast = cardForecast(level, activeLevel, read);
+function forecastRows(level, activeLevel, read, age, api) {
+  const forecast = cardForecast(level, activeLevel, read, age);
   const label = api.loc("LOC_ECONOMICS_FISCAL_FORECAST");
   const gold = formatGold(forecast.goldDeltaCents, { signed: true });
   const happiness = formatGold(forecast.happinessDeltaCents, { signed: true });
@@ -162,12 +168,13 @@ function forecastRows(level, activeLevel, read, api) {
  * @param {string} activeLevel
  * @param {FiscalRead} read
  * @param {boolean} canSwap
+ * @param {string | null} age
  * @param {ScreenApi} api
  */
-function clearBlock(activeLevel, read, canSwap, api) {
+function clearBlock(activeLevel, read, canSwap, age, api) {
   const box = el("div", "econ-card");
   box.appendChild(el("div", "econ-card-title", api.loc("LOC_ECONOMICS_FISCAL_NO_CARD")));
-  for (const line of forecastRows(null, activeLevel, read, api)) box.appendChild(line);
+  for (const line of forecastRows(null, activeLevel, read, age, api)) box.appendChild(line);
   box.appendChild(button(api.loc("LOC_ECONOMICS_FISCAL_CLEAR"), () => swap(null, api), { disabled: !canSwap }));
   return box;
 }

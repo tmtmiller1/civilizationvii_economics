@@ -358,7 +358,7 @@ lets anyone change it, player or AI (section 3), so taxes use the game's own slo
 
 | Card | Unlocked by | Effect in each settlement | Partisans hardship |
 | --- | --- | --- | --- |
-| Light Taxation | each age's root civic | Gold -1, Happiness +6 | 0 |
+| Light Taxation | each age's root civic | Gold -1; Happiness +6 in Antiquity, +4 in Exploration, +3 in Modern | 0 |
 | Heavy Taxation | each age's root civic | Gold +4, Happiness -2 | +1 |
 | War Levy | the node that unlocks the Coinage anchor (4.15), and each later age's root civic | Gold +2, Happiness -1; while at war with a major civ, Gold +8, Happiness -4 | +2 |
 
@@ -394,6 +394,17 @@ percentage Gold cost read large on a rich civ's card (-15% of 51 Gold) and lost;
 strategy changed nothing. War Levy's peacetime part shows in the city breakdown as a "War Levy" line of +2 Gold and
 -1 Happiness, and the AIs hold it in peace about as often as before. Watched in the arm games; the built mod hasn't
 been run (`docs/verification-runs.md`, "Owed: Light and War Levy (arms)").
+
+Light by age, 2026-10-30. The merged watch (`mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-watch-merged.md`,
+one game through all three ages) had 2 of 5 AIs take Light in Antiquity, as the arms predicted, but all five slot it
+early in Exploration and in Modern and hold it to the age's end at 35 to 266 Happiness a turn with no unhappy
+settlements. The AI weighs a card's face value against the yields of its age, and +6 Happiness is a large number next
+to Antiquity yields and a small cost later. The owner's call: Light's Happiness falls with the age, +6 in Antiquity, +4
+in Exploration and +3 in Modern, and its Gold stays -1. Each age's Light card carries its own Happiness modifier
+(`MOD_ECONOMICS_LIGHT_HAPPINESS_AQ`, `_EX`, `_MO`) and its own description (`LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION_AQ`
+and so on); `CARD_LEVELS` holds the three figures and the sync script writes them. Antiquity is unchanged, so the arm
+10 picture there should hold; how many AIs take +4 and +3 hasn't been seen (`docs/verification-runs.md`, "Owed: Light
+by age").
 
 - One card of each per age, as Emigration's stance cards do, unlocked through `ProgressionTreeNodeUnlocks` rows that
   SQL writes by selecting the node through the progression tree tables, so a mod that changes a tree moves the card
@@ -920,8 +931,8 @@ Each row lists only the changes from Mixed. Mixed is sections 4.1 to 4.16 as wri
   citizen_cap   = 5 turns of max(10, income) per settlement with a Commerce building, within credit_cap (4.2)
   rate          = 0.75 * base_rate / standing * depth_factor
   terms         = 10 turns; the debt-service limit applies (4.2)
-  celebration   = 6 * the interest paid this turn, granted to the meter the same turn (Light Taxation's 6
-                  Happiness for each Gold it costs, so both buy celebration at the same price)
+  celebration   = 6 * the interest paid this turn, granted to the meter the same turn (Antiquity Light Taxation's
+                  6 Happiness for each Gold it costs, so both buy celebration at the same price)
   ```
 
   - The lender is the world account `citizens`: the principal comes from outside the civs' treasuries, and the
@@ -973,7 +984,8 @@ modifiers gated on the slotted card, in each settlement (`data/econ-systems-game
 
 Each is DESIGN's percentage of the card's flat amount, rounded to a whole yield (Tribute's 15% cheaper celebration
 rounds to nothing on Heavy's -2). Since the Light arms (2026-10-30): Civic market's 30% of Light's +6 is +2; Manorial's
-half of Light's -1 Gold rounds up to the whole 1, so Light costs a Manorial civ no Gold; War Levy's peacetime +2 and -1
+half of Light's -1 Gold rounds up to the whole 1, so Light costs a Manorial civ no Gold (and gives it Exploration's +4
+Happiness); War Levy's peacetime +2 and -1
 get no system line (Tribute's 20% and Civic market's 25% round to nothing; Manorial's half was left out to keep the rows
 few, a choice in NOTES); Corporatist's peace rows give the rest of the wartime +8 and -4. The Modern governments' rows
 stand aside once a civ has an ideology, and Fascism's come from its branch root. A government that reads none (the first
