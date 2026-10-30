@@ -9,7 +9,8 @@
 --
 -- "Root civic" is a node of the age's main civics tree with no prerequisite. Antiquity has one (Chiefdom);
 -- Exploration has two (Economics, Piety) and Modern three. Light and Heavy Taxation unlock on every root, so
--- whichever a civ researches first opens them. The tax slot is granted once, by the first root in cost order and
+-- whichever a civ researches first opens them, except Heavy in Antiquity: it waits for the civic after the one that
+-- unlocks Priesthood (Code of Laws after Mysticism in 1.5.0), so Priesthood's +2 Gold comes first. The tax slot is granted once, by the first root in cost order and
 -- then name order, so a civ never gets two slots from one age.
 --
 -- War Levy unlocks on the node that unlocks the Coinage anchor, BUILDING_MARKET (Currency, DESIGN 4.15), and on each
@@ -21,12 +22,34 @@ INSERT OR IGNORE INTO ProgressionTreeNodeUnlocks (ProgressionTreeNodeType, Targe
   FROM ProgressionTreeNodes n
   JOIN ProgressionTrees t ON t.ProgressionTreeType = n.ProgressionTree
   JOIN Traditions tr ON tr.TraditionType IN (
-      'TRADITION_ECONOMICS_LIGHT_AQ', 'TRADITION_ECONOMICS_HEAVY_AQ',
+      'TRADITION_ECONOMICS_LIGHT_AQ',
       'TRADITION_ECONOMICS_LIGHT_EX', 'TRADITION_ECONOMICS_HEAVY_EX',
       'TRADITION_ECONOMICS_LIGHT_MO', 'TRADITION_ECONOMICS_HEAVY_MO')
   WHERE t.SystemType = 'SYSTEM_CULTURE'
     AND t.ProgressionTreeType IN ('TREE_CIVICS_AQ_MAIN', 'TREE_CIVICS_EX_MAIN', 'TREE_CIVICS_MO_MAIN')
     AND n.ProgressionTreeNodeType NOT IN (SELECT Node FROM ProgressionTreePrereqs);
+
+-- Heavy Taxation in Antiquity: the cheapest civic that needs the node unlocking Priesthood, name order on a tie.
+INSERT OR IGNORE INTO ProgressionTreeNodeUnlocks (ProgressionTreeNodeType, TargetKind, TargetType, UnlockDepth)
+  SELECT n.ProgressionTreeNodeType, 'KIND_TRADITION', tr.TraditionType, 1
+  FROM ProgressionTreeNodes n
+  JOIN ProgressionTreePrereqs p ON p.Node = n.ProgressionTreeNodeType
+  JOIN ProgressionTreeNodeUnlocks u ON u.ProgressionTreeNodeType = p.PrereqNode
+    AND u.TargetKind = 'KIND_TRADITION' AND u.TargetType = 'TRADITION_PRIESTHOOD'
+  JOIN Traditions tr ON tr.TraditionType = 'TRADITION_ECONOMICS_HEAVY_AQ'
+  ORDER BY n.Cost, n.ProgressionTreeNodeType
+  LIMIT 1;
+
+-- Without such a civic (Priesthood removed or moved to a last node), Heavy opens on the Antiquity root as before.
+INSERT OR IGNORE INTO ProgressionTreeNodeUnlocks (ProgressionTreeNodeType, TargetKind, TargetType, UnlockDepth)
+  SELECT n.ProgressionTreeNodeType, 'KIND_TRADITION', tr.TraditionType, 1
+  FROM ProgressionTreeNodes n
+  JOIN ProgressionTrees t ON t.ProgressionTreeType = n.ProgressionTree
+  JOIN Traditions tr ON tr.TraditionType = 'TRADITION_ECONOMICS_HEAVY_AQ'
+  WHERE t.SystemType = 'SYSTEM_CULTURE' AND t.ProgressionTreeType = 'TREE_CIVICS_AQ_MAIN'
+    AND n.ProgressionTreeNodeType NOT IN (SELECT Node FROM ProgressionTreePrereqs)
+    AND NOT EXISTS (SELECT 1 FROM ProgressionTreeNodeUnlocks
+      WHERE TargetKind = 'KIND_TRADITION' AND TargetType = 'TRADITION_ECONOMICS_HEAVY_AQ');
 
 -- War Levy: Exploration and Modern roots.
 INSERT OR IGNORE INTO ProgressionTreeNodeUnlocks (ProgressionTreeNodeType, TargetKind, TargetType, UnlockDepth)
