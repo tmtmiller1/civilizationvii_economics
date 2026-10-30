@@ -197,20 +197,23 @@ times the Gold it takes at the game's purchase price (4 a point), before product
 (finding L), and a Planned civ keeps its tax cards (choice 83).
 
 S. **The AI clusters on a few governments, so on a few systems.** In the M-probe transition game every AI took Feudal
-Monarchy or Theocracy in Exploration and Authoritarianism in Modern (Corporatist until an ideology); in Antiquity five
-of six took Classical Republic. System diversity in play is narrower than DESIGN 4.17's table, and the mod doesn't
-steer the pick (M2: only bias lists do).
+Monarchy or Theocracy in Exploration and, by the game's gossip log, Authoritarianism or Bureaucratic Monarchy in Modern
+(Corporatist until an ideology); in Antiquity five of six took Classical Republic. Each AI followed its civ's own bias
+row where its age had that government, and the rest took the age's default (below). The owner decided on 2026-10-30
+to give each civ a bias of its own, spread evenly in each age; `../data/econ-government-biases.sql` ships it and
+"Government biases and the description" below has the reasoning.
 
-T. **The government pick ignores government modifiers.** M2 moved no civ with +10 Gold, +5 Production and +5 Science
-a settlement; a bias row moved four. DESIGN 4.17's "the AI weighs them when it picks a government" is out: the
-modifiers change what a system pays, not who picks it. The rest of the 2026-10-30 macro results, as 0.4.0 reads them:
-the government-only Republican Levy card was unlocked only for Classical Republic civs and never slotted (M11), so no
+T. **The government pick ignores government modifiers.** M2 moved no civ with +10 Gold, +5 Production and +5 Science a
+settlement; a bias row moved four. DESIGN 4.17's "the AI weighs them when it picks a government" is out: the modifiers
+change what a system pays, not who picks it. The rest of the 2026-10-30 macro results, as 0.4.0 reads them: the
+government-only Republican Levy card was unlocked only for Classical Republic civs and never slotted (M11), so no
 government-only card ships; -50% purchase efficiency raised Persia's prices by exactly half (M10), a native price rise
-the owner can weigh, but nothing native follows bond debt, so inflation stays script; and on the Communism root only
-the big arm (+10 Gold, +5 Production, +5 Science) changed a pick, the Autoplay seat taking Communism where it had taken
+the owner can weigh, but nothing native follows bond debt, so inflation stays script; and on the Communism root only the
+big arm (+10 Gold, +5 Production, +5 Science) changed a pick, the Autoplay seat taking Communism where it had taken
 Fascism while Persia went the other way, so the tally held at one each and the call waits for seeds 9001 and 1234. No
 1.2 rule leans on the AI choosing an ideology for the mod's sake. `../tests/econ-data.test.mjs` pins that the data
-carries no bias rows, government-only cards or price modifiers.
+carries no government-only cards or price modifiers, and that bias rows live only in
+`../data/econ-government-biases.sql`.
 
 U. **A 300 Gold loan at early income is refused by the limits as written, not by a sizing bug.** The lab's build
 checks (1.1, 2.6, 2026-10-30): at 20 Gold of income the credit limit is 12 turns, 240 Gold, so 300 is over it; and 50
@@ -221,6 +224,47 @@ service limit holds it to about 2.5 turns of income at the bond rate (4.8 turns 
 12. Nothing is changed; whether the two limits should meet (a longer term, or `credit_cap` lowered toward what the
 service limit allows) is the owner's call, with "Borrowing pays" and `base_rate`. The owed check 1.1's 300 Gold needs a
 civ with about 120 Gold of income at 10 turns, or a smaller loan, as the lab's 50 Gold one was.
+
+### Government biases and the description (2026-10-30)
+
+- **What clusters the picks.** The compiled database (each age's copy) holds no `GovernmentBiases` list on the shared
+  `TRAIT_LEADER_MAJOR_CIV` or on any leader trait; the only ones are per-civ lists on `TRAIT_<CIV>` (39 to 41 in an
+  age's database), one item each at 25 or 50, and they cluster (in Exploration 11 of 18 civs pointed at Feudal
+  Monarchy). The probe games' gossip logs show what an AI does with them: every civ with its own row for a government
+  its age offers took it, at 25 as well as 50 (Goryeo, Majapahit, Buganda, Mughal, French Empire's Elective Republic). A
+  civ without one took the age's first government by type name: Classical Republic in Antiquity, Feudal Monarchy in
+  Exploration, Authoritarianism in Modern (Ottomans every time; Rome, Spain, Persia and Silla when a lab game put them
+  in a later age). Heian's base row names `GOVERNMENT_CLASSIC_REPUBLIC`, which doesn't exist, so it fell to the default
+  too.
+- **A correction to the probe sheet.** `2026-10-30-macro-results.md` reads the transition game's Modern turn 2 as
+  "every civ Authoritarianism". The game's `Game_Gossip.csv` and the probe's own `events.json` show Meiji, Ottomans and
+  Russia on Authoritarianism and Qajar, Siam and Buganda on Bureaucratic Monarchy, each by its bias. America didn't
+  play in any probe game, so the lead's "Elective Republic at 50 lost to Authoritarianism" has no game behind it here.
+- **The value, 75.** In `gov bias` a shared row at 50 moved the four civs with no working row of their own, and the
+  two whose own row was at 50 (Greece, Persia) kept theirs. Persia's Despotism and the shared Oligarchy tied at 50, so
+  that game can't say whether its own row won on value or on order. 75 sits above every base value and above the 50 a
+  shared list or another mod would most likely use, so a civ's own row wins either way. The 31 civs that keep the
+  game's pick go up from 25 or 50 to 75 too; with no other government bias in the base data, that doesn't change
+  their pick. Not watched above 50.
+- **The table.** Each age's governments split as evenly as they can with every DLC (Antiquity 6, 5, 6; Exploration
+  6, 6, 6; Modern 4, 5, 5 and Mexico) and with the base game alone (3, 4, 3; 3, 3, 4; 3, 3, 3), so a player without the
+  DLC civs still sees the split. Where the evidence allowed, the game's own pick stayed. Two of Modern's three
+  governments run Corporatist, so Corporatist stays the biggest Modern system until the ideologies. The three
+  Exploration crisis governments come only from the Revolutions narrative choice and Revolución only to Mexico, so no
+  other civ points at them.
+- **Rewrite in place, not delete and insert.** The UPDATE names the base game's item, so another mod's extra rows on
+  the list stay, and a mod that already changed the civ's government is left alone. Checked on an Antiquity copy with
+  Rome's row changed to Despotism, an extra Oligarchy 10 on Greece and another mod's own Gaul list: all three stood.
+- **Gated on Economic systems alone.** The biases steer which system an AI runs and don't touch the tax cards, so they
+  load with the systems option on, whatever Taxes is set to.
+- **Offline check.** Applied to copies of the Antiquity, Exploration and Modern compiled databases: 26, 23 and 21 row
+  changes, `PRAGMA foreign_key_check` empty on `AiListTypes`, `AiLists` and `AiFavoredItems`, other systems' items
+  unchanged, and each age's own civs on the table's government at 75. With the 20 DLC civs' traits and lists removed
+  first: 13, 13 and 12 changes, the same empty checks, no list on a missing trait.
+- **The description.** `LOC_ECONOMICS_MOD_DESCRIPTION` covered 1.0 only; it now names each version's parts in a few
+  sentences, and the modinfo comment and README's opening say the same. `LOC_ECONOMICS_SYSTEM_MIXED_LINE` read "the
+  rules as written", the design's wording; it now says what a Mixed civ gets. `sync-locales.mjs` puts the new English
+  over the old placeholders, since the English changed; the project keeps no `i18n/<locale>.json` files.
 
 ## Balance run and mutation
 
