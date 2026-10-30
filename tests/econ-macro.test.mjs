@@ -200,7 +200,7 @@ test("a Planned importer pays the class price; the plan turns 20% of income into
   assert.ok(out.notices.length === 0 || out.notices.every((n) => n.pid === ME));
 });
 
-test("citizen loans: offered to a Civic market civ within citizen_cap; the interest comes back doubled as celebration", () => {
+test("citizen loans: offered to a Civic market civ within citizen_cap; the interest comes back 6-fold as celebration", () => {
   const cr = (over = {}) => me({ government: "GOVERNMENT_CLASSICAL_REPUBLIC", incomeCents: 30000,
     commerceSettlements: 2, happinessCents: 600, ...over });
   const borrow = { kind: "borrow", borrower: ME, lender: "citizens", principal: 50000, term: 10 };
@@ -209,7 +209,7 @@ test("citizen loans: offered to a Civic market civ within citizen_cap; the inter
   assert.deepEqual([loan.principal, loan.ratePpm, loan.term], [50000, 7500, 10], "0.75 of Exploration's base rate");
   assert.deepEqual(opened.transfers.find((t) => t.reason === "principal").from, "citizens");
   const paid = plan({ civs: [cr(), ai(AI)], turn: 51, ledger: opened.ledger, macro: opened.macro });
-  assert.deepEqual(paid.celebration.map((r) => [r.pid, r.amount, r.reason]), [[ME, 750, "citizens"]]);
+  assert.deepEqual(paid.celebration.map((r) => [r.pid, r.amount, r.reason]), [[ME, 2250, "citizens"]]);
   const missed = plan({ civs: [cr({ balanceCents: -100000 }), ai(AI)], turn: 51, ledger: opened.ledger,
     macro: opened.macro });
   assert.deepEqual(missed.celebration.map((r) => [r.amount, r.reason]), [[-3000, "citizens-miss"]]);

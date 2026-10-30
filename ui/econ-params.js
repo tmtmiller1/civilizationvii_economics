@@ -114,10 +114,11 @@ export const CYCLE_WEIGHTS = { warDeclared: -200, warOngoing: -40, warOngoingCap
 export const INFLATION_RULES = { capPpm: 5000, factorPpm: 20000, minMoneyCents: 100000, reserveTurns: 20,
   minIncomeCents: 1000, premiumPerPpm: 50, premiumCapPct: 25 };
 // DESIGN 4.17: citizen loans and the plan. Citizens: 5 turns of max(10, income) per settlement with a Commerce
-// building, 0.75 of the base rate, 10 turns, celebration at twice the interest paid; a miss costs 5 turns of the
+// building, 0.75 of the base rate, 10 turns, celebration at 6 times the interest paid (Light Taxation's 6 Happiness
+// for each Gold it costs, so the two buy celebration at the same price); a miss costs 5 turns of the
 // meter's gain, a repudiation 10, the citizens close for 30 turns. The plan: 20% of positive income at the game's
 // purchase rate a point.
-export const CITIZEN = { capTurns: 5, minIncomeCents: 1000, ratePct: 75, term: 10, celebrationMultiple: 2,
+export const CITIZEN = { capTurns: 5, minIncomeCents: 1000, ratePct: 75, term: 10, celebrationMultiple: 6,
   missTurns: 5, repudiationTurns: 10, aiBalanceTurns: 10, aiSizeTurns: 5 };
 // The plan buys progress at the game's own purchase rate, GOLD_PURCHASE_MULTIPLIER Gold a point (read at runtime;
 // 4 when the read fails).

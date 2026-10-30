@@ -1,6 +1,8 @@
 // Citizen loans and the plan (DESIGN 4.17; TEST-PLAN 12.1 econ-systems): the cap per market town, the rate, the
 // celebration the interest buys, a miss and a repudiation at home, the AI's rule; the plan's take and split.
 import test from "node:test";
+import { CITIZEN } from "../ui/econ-params.js";
+import { CARD_LEVELS } from "../ui/econ-tax-cards.js";
 import assert from "node:assert/strict";
 import { aiCitizenPrincipal, citizenCapCents, citizenRatePpm, interestCelebrationCents, missCelebrationCents,
   repudiationCelebrationCents } from "../ui/econ-citizens.js";
@@ -23,8 +25,10 @@ test("the rate is 0.75 of the base rate over standing, by depth and the Rates op
   assert.equal(citizenRatePpm({ age: "AGE_NONE", standing: 100 }), null);
 });
 
-test("interest buys twice its size in celebration; a miss costs 5 turns of the meter, a repudiation 10", () => {
-  assert.equal(interestCelebrationCents(450), 900);
+test("interest buys 6 times its size in celebration, as Light does; a miss costs 5 turns of the meter, a repudiation 10", () => {
+  assert.equal(interestCelebrationCents(450), 2700);
+  assert.equal(CITIZEN.celebrationMultiple, CARD_LEVELS.LIGHT.happiness / -CARD_LEVELS.LIGHT.gold,
+    "the same celebration per Gold as Light Taxation");
   assert.equal(interestCelebrationCents(-3), 0);
   assert.equal(missCelebrationCents(600), -3000);
   assert.equal(missCelebrationCents(-600), 0, "nothing to lose from a falling meter");

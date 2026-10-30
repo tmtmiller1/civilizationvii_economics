@@ -88,6 +88,7 @@ release is generated from the matching section below by `scripts/steam-changelog
 - General investment turned down because the other civilization is in default now says a development loan on one of
   its builds is still open, and the Trade tab shows the refusal before you ask, with a button that opens that loan
   with the same Gold. Nothing is sent until you pick a build.
+- Citizen loans' interest comes back as 6 celebration for each Gold, up from 2, the same as Light Taxation now buys.
 - The computer players borrow to build: while their credit is cheap, each takes a loan now and then and puts it
   straight into the building it's working on, within the same limits you have. Easy credit in a boom now leads to
   more borrowing, and from Banking a boom carried on too much debt can end in a Panic. World leverage is now counted in

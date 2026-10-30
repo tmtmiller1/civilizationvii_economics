@@ -32,7 +32,8 @@ export function citizenRatePpm({ age, standing, rates = 100, depthFactorPct = 10
 }
 
 /**
- * The celebration the interest buys, granted the turn it's paid: twice the interest, in the meter's cents.
+ * The celebration the interest buys, granted the turn it's paid: 6 times the interest, as Light Taxation buys it, in
+ * the meter's cents.
  * @param {number} interestCents
  */
 export function interestCelebrationCents(interestCents) {
@@ -80,7 +81,7 @@ export function servicePrincipalCents({ roomCents, ratePpm, term }) {
 }
 
 /**
- * Citizens' interest comes back as celebration, twice over, the turn it's paid (DESIGN 4.17).
+ * Citizens' interest comes back as celebration, 6 times over, the turn it's paid (DESIGN 4.17).
  * @param {TurnContext} ctx
  * @param {Loan} loan
  * @param {number} interestCents
