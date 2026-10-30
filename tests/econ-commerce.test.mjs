@@ -253,6 +253,17 @@ test("the AI invests in a Friendly civ once per 10 turns: general when the host 
     false, "never in a civ that stiffed it lately");
 });
 
+test("an AI host in default turns down another AI's general investment, as it turns down the player's", () => {
+  const relations = [{ a: AI, b: OTHER, level: "friendly" }];
+  const growing = { [OTHER]: [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900] };
+  const host = ai(OTHER, { incomeCents: 2000, balanceCents: 0, cities: [city("9:1")] });
+  const inDefault = { ...emptyLedger(), nextId: 2, loans: [{ id: "L1", kind: "loan", lender: "bond", borrower: OTHER,
+    principal: 100, outstanding: 100, ratePpm: 20000, term: 10, paid: 0, missed: 3, state: "default",
+    emergency: false, restructured: false, opened: 1, closedTurn: null, writtenOff: 0, source: "borrow" }] };
+  const out = plan({ civs: [ai(AI), host], relations, ledger: inDefault, markets: markets({ incomes: growing }) });
+  assert.equal(out.events.some((e) => e.kind === "invest" && e.form === "general" && e.aid !== 1), false);
+});
+
 test("to the player an AI investment is an offer: accepted it opens, declined or left it goes", () => {
   const relations = [{ a: AI, b: ME, level: "friendly" }];
   const civs = [me({ cities: [city("3:1")] }), ai(AI)];

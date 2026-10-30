@@ -20,7 +20,7 @@ import { emit, event, incomeOf, isAlive, notice, termsFor } from "./econ-turn.js
 import { basePriceCents } from "./econ-prices.js";
 import { takesCapitalism } from "./econ-systems.js";
 import { isInDepression } from "./econ-macro.js";
-import { openInvestment, investRefusal } from "./econ-invest-open.js";
+import { aiHostRefusal, openInvestment, investRefusal } from "./econ-invest-open.js";
 
 /**
  * Snapshot (step 1): the prices from this turn's market read, and each civ's income mark.
@@ -323,7 +323,8 @@ export function aiInvest(ctx, civ) {
     const target = aiTargetFor(ctx, civ, host);
     if (!target) continue;
     const spec = { investor: civ.id, host: host.id, form: target.form, cents, cityId: target.cityId, asAid: false };
-    if (investRefusal(ctx, spec)) continue;
+    // An AI host answers by the same "Accepting" rule the player's investment meets (DESIGN 6).
+    if (investRefusal(ctx, spec) || (host.human !== true && aiHostRefusal(ctx, spec))) continue;
     ctx.markets.investTurn[String(civ.id)] = ctx.turn;
     if (host.human === true) offerTo(ctx, spec);
     else openInvestment(ctx, spec, "ai");
