@@ -70,13 +70,17 @@ test("the batch row gives the net Gold, Influence and celebration lines, only wh
   assert.deepEqual(describeBatchRow(undefined), []);
   assert.deepEqual(describeBatchRow({ pid: 2, snapshot: 0, net: 0, influence: 0, celebration: 0 }), []);
   assert.deepEqual(describeBatchRow({ pid: 2, snapshot: 0, net: -1250, influence: -5, celebration: 300 }).map((l) => [l.key, l.args]),
-    [["LOC_ECONOMICS_NOTICE_NET_PLAIN", ["-12.5"]], ["LOC_ECONOMICS_NOTICE_INFLUENCE", [-5]], ["LOC_ECONOMICS_NOTICE_CELEBRATION", ["+3"]]]);
+    [["LOC_ECONOMICS_NOTICE_NET_PLAIN", ["-13"]], ["LOC_ECONOMICS_NOTICE_INFLUENCE", [-5]], ["LOC_ECONOMICS_NOTICE_CELEBRATION", ["+3"]]]);
   assert.deepEqual(describeBatchRow({ pid: 2, snapshot: 0, net: 501, influence: 0, celebration: 0 },
     ["LOC_ECONOMICS_FLOW_TRADE"]), [{ key: "LOC_ECONOMICS_NOTICE_NET", args: ["+5", ["LOC_ECONOMICS_FLOW_TRADE"]] }],
   "a trade bill alone is named as a trade bill, not a loan");
   assert.deepEqual(describeBatchRow({ pid: 2, snapshot: 0, net: -3, influence: 0, celebration: 0 }), [],
     "a net that rounds to 0 Gold says nothing (it read -0.0 in the lab's Antiquity game)");
   assert.deepEqual(describeBatchRow({ pid: 2, snapshot: 0, net: 4, influence: 0, celebration: 0 }), []);
+  assert.deepEqual(describeBatchRow({ pid: 2, snapshot: 0, net: -190, influence: 0, celebration: 40 }), [],
+    "a net under 2 Gold and a celebration that rounds to 0 say nothing (the top bar shows whole Gold)");
+  assert.deepEqual(describeBatchRow({ pid: 2, snapshot: 0, net: 200, influence: 0, celebration: 0 }).map((l) => l.args),
+    [["+2"]], "2 Gold shows");
   const transfers = [{ loanId: "B2-4", turn: 1, from: 4, to: 2, cents: 500, reason: "trade", parts: {} },
     { loanId: "L1", turn: 1, from: 2, to: "bond", cents: 300, reason: "payment", parts: {} },
     { loanId: "CY9", turn: 1, from: "cycle", to: 9, cents: 300, reason: "cycle", parts: {} }];
@@ -108,9 +112,9 @@ test("a list reads as a sentence: the last two joined by the language's 'and'", 
   assert.equal(joinList(["loans", "trade bills", "the plan"], "und"), "loans, trade bills und the plan");
   const loc = (key, ...args) => ({ LOC_ECONOMICS_LIST_AND: "and", LOC_ECONOMICS_FLOW_TRADE: "trade bills",
     LOC_ECONOMICS_FLOW_CYCLE: "the business cycle" })[key] ?? [key, ...args].join("|");
-  const [line] = describeBatchRow({ pid: 2, snapshot: 0, net: -10, influence: 0, celebration: 0 },
+  const [line] = describeBatchRow({ pid: 2, snapshot: 0, net: -310, influence: 0, celebration: 0 },
     ["LOC_ECONOMICS_FLOW_TRADE", "LOC_ECONOMICS_FLOW_CYCLE"]);
-  assert.deepEqual(composeArgs(line.args, loc), ["-0.1", "trade bills and the business cycle"]);
+  assert.deepEqual(composeArgs(line.args, loc), ["-3", "trade bills and the business cycle"]);
   assert.ok(english.has("LOC_ECONOMICS_LIST_AND"));
 });
 

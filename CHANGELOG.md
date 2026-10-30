@@ -72,6 +72,8 @@ release is generated from the matching section below by `scripts/steam-changelog
   Economic systems (On).
 
 ### Changed
+- The turn notice shows Gold in whole numbers, like the top bar, and only speaks up when Economics moved 2 Gold or
+  more that turn.
 - The debt pill sits in the top resource bar, after the settlement limit.
 - Heavy Taxation opens in Antiquity at Code of Laws, after Priesthood's civic, so Priesthood is the first Gold card
   you can pick. Light still opens at Chiefdom.

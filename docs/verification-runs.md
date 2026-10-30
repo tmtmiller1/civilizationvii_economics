@@ -481,6 +481,7 @@ here: Economics alone, Antiquity seed 4242, `--setup fast --quick`, `lab drive` 
 - HP.2 The AIs' first Heavy picks come after their Code of Laws, and Priesthood gets slotted by some.
 - BP.1 The debt pill sits in the top resource bar after the settlement limit, in the world view and the city view,
   and redraws after a turn and after a borrow; the dock button still opens the screen.
+- TN.1 No turn notice for a net under 2 Gold; a larger one reads in whole Gold ("-13", not "-12.5").
 - BR.1 The setup screen reads "Base Interest Rate" with the new tooltip.
 
 ## Owed: model fixes

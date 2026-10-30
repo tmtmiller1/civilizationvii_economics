@@ -247,9 +247,22 @@ export function flowKeys(transfers, pid) {
   return [...new Set(Object.values(FLOW_OF))].filter((flow) => seen.has(flow)).map((flow) => `${PREFIX}FLOW_${flow}`);
 }
 
+/** The least Gold the mod has to move in a turn for the net line to show, in cents. */
+const NET_LINE_MIN_CENTS = 200;
+
+/**
+ * A signed whole amount, as the game's top bar shows Gold: -1250 cents is "-13", 501 is "+5".
+ * @param {number} cents
+ */
+function wholeSigned(cents) {
+  const value = Math.round(Math.abs(Number(cents) || 0) / 100);
+  if (value === 0) return "0";
+  return cents < 0 ? `-${value}` : `+${value}`;
+}
+
 /**
  * The turn's net line for the human: the Gold the mod moved and what moved it, Influence lost to misses, the
- * celebration meter. A net that rounds to 0 Gold says nothing.
+ * celebration meter. Amounts are whole, as the top bar shows them, and a net under 2 Gold either way says nothing.
  * @param {BatchRow | undefined} row
  * @param {string[]} [flows] name keys of what moved the Gold (flowKeys)
  * @returns {Line[]}
@@ -258,15 +271,14 @@ export function describeBatchRow(row, flows = []) {
   if (!row) return [];
   /** @type {Line[]} */
   const lines = [];
-  const net = formatGold(row.net, { signed: true });
-  if (net !== "0") {
+  const net = wholeSigned(row.net);
+  if (Math.abs(Number(row.net) || 0) >= NET_LINE_MIN_CENTS) {
     lines.push(flows.length ? { key: `${PREFIX}NOTICE_NET`, args: [net, flows] }
       : { key: `${PREFIX}NOTICE_NET_PLAIN`, args: [net] });
   }
   if (row.influence !== 0) lines.push({ key: `${PREFIX}NOTICE_INFLUENCE`, args: [row.influence] });
-  if (row.celebration !== 0) {
-    lines.push({ key: `${PREFIX}NOTICE_CELEBRATION`, args: [formatGold(row.celebration, { signed: true })] });
-  }
+  const celebration = wholeSigned(row.celebration);
+  if (celebration !== "0") lines.push({ key: `${PREFIX}NOTICE_CELEBRATION`, args: [celebration] });
   return lines;
 }
 
