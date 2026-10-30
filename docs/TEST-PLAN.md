@@ -70,6 +70,13 @@ syntax parse of every snippet. None run in a game. P2 to P4 read through the pro
 (`devtools/probe-mod/econ-probe/ui/econ-probe.js`), so they run in a game with that mod on; the run order is
 `devtools/RUN-SHEET.md`.
 
+
+Run 2026-10-29 on 1.5.0 in lab games (probes-only registry): P1 passed twice (Exploration 9001; the recipe's
+listening step moved before the grant, it had subscribed after the Gold landed); P2, P3 and P4 passed in Antiquity 4242
+with the human's capital founded by `FOUND_CITY` first (a lab turn roll never settles the human seat). P4's reads gained
+the celebration meter and notifications. Results are in DESIGN 10. The bench's `recipe run` doesn't exit after a
+failed `await`; run it under a time limit.
+
 ## 4. Acceptance scenarios (T3)
 
 | Id | Start | Steps | Player sees | Engine read |
@@ -195,6 +202,13 @@ the order); P7, P8, P11 and P14 still have none. None run in a game.
 | `P15-save-window.json` | P15 | one timed batch of grants to every AI; every `StartSaveRequest` logged with its time; the autosave file times after the game | whether a save can fall inside the ~3 s before the grants land |
 | `P17a-tax-cards-setup.json`, `P17b-tax-cards-after-drive.json` | P17 | with the probe mod: the cards, slot, strategies and unlock rows at turn 1; after a 50-turn `lab drive`, each AI's active card and slot count, and the player's `CHANGE_TRADITION` swap under `canSwapCultureSlot` | an AI slots a card; the swap lands when the game allows it; the breakdown names the card (by hand) |
 | `P18-aid-action.json` | P18 | with the probe mod: the aid action in `GameInfo`; the player door through the diplomacy operation; both balances after; the AI's use from `AI_DiplomaticActions.csv` | the proposer loses 100 and the target gains 100; an AI proposes or accepts it |
+
+
+Run 2026-10-29: P13 settled (AI tech reads match each AI's research); P15 watched (a save request comes about 3 s
+after the local turn ends, a batch lands in about 1 s); P17a and P17b passed for the setup and both doors, and the
+player's swap needs Deactivate before Activate when the slots are full (recipe `P17b` still sends Activate alone, so its
+step 9 fails; the pair is in the run's notes); P18 ran, the AI scores the action and never starts it. P6 wasn't needed:
+the AI slots the cards. The steering pair is owed.
 
 ### 12.4 Acceptance scenarios (T3)
 
