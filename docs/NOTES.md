@@ -203,7 +203,14 @@ steer the pick (M2: only bias lists do).
 
 T. **The government pick ignores government modifiers.** M2 moved no civ with +10 Gold, +5 Production and +5 Science
 a settlement; a bias row moved four. DESIGN 4.17's "the AI weighs them when it picks a government" is out: the
-modifiers change what a system pays, not who picks it.
+modifiers change what a system pays, not who picks it. The rest of the 2026-10-30 macro results, as 0.4.0 reads them:
+the government-only Republican Levy card was unlocked only for Classical Republic civs and never slotted (M11), so no
+government-only card ships; -50% purchase efficiency raised Persia's prices by exactly half (M10), a native price rise
+the owner can weigh, but nothing native follows bond debt, so inflation stays script; and on the Communism root only
+the big arm (+10 Gold, +5 Production, +5 Science) changed a pick, the Autoplay seat taking Communism where it had taken
+Fascism while Persia went the other way, so the tally held at one each and the call waits for seeds 9001 and 1234. No
+1.2 rule leans on the AI choosing an ideology for the mod's sake. `../tests/econ-data.test.mjs` pins that the data
+carries no bias rows, government-only cards or price modifiers.
 
 U. **A 300 Gold loan at early income is refused by the limits as written, not by a sizing bug.** The lab's build
 checks (1.1, 2.6, 2026-10-30): at 20 Gold of income the credit limit is 12 turns, 240 Gold, so 300 is over it; and 50

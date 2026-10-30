@@ -201,3 +201,15 @@ test("the systems' tax lines: flat yields on the tax cards, each attached throug
   }
   t.diagnostic(`applied to a ${age} database copy: ${attached} government rows`);
 });
+
+test("1.2 follows the macro probes: no government bias rows, no government-only cards, no price modifier", () => {
+  // M2: the AI's government pick follows its GovernmentBiases lists and ignores government modifiers, so the systems'
+  // modifiers change what a system pays, and the mod leaves the pick to the base game (biases are the owner's call).
+  // M11: a government-only card (RequiredGovernmentType) was gated right but never slotted, so none ships. M10: a
+  // negative purchase efficiency raises prices, but nothing native follows bond debt, so inflation stays script.
+  const files = fs.readdirSync(path.join(ROOT, "data")).map((f) => read(`data/${f}`)).join("\n");
+  assert.equal(/GovernmentBiases/.test(files), false);
+  assert.equal(/RequiredGovernmentType/.test(files), false);
+  assert.equal(/PURCHASE_EFFICIENCY/.test(files), false);
+  assert.match(read("data/econ-systems.sql"), /INSERT OR IGNORE INTO GovernmentModifiers/);
+});
