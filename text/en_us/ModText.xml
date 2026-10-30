@@ -5,7 +5,7 @@
     <EnglishText>
         <!-- The mod -->
         <Row Tag="LOC_ECONOMICS_MOD_NAME"><Text>Economics</Text></Row>
-        <Row Tag="LOC_ECONOMICS_MOD_DESCRIPTION"><Text>Borrow from other civilizations or a bond market and pay it back from what the Gold brings in, lend to a neighbour in trouble, pick a tax level as a policy card, and watch an auto-loan guard keep you clear of the game's negative-balance penalties. Missed payments cost you, default costs more, and repudiating a debt keeps the Gold at the price of your name. Single-player.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_MOD_DESCRIPTION"><Text>Gold gets a market. Borrow from other civilizations or a bond market, lend to a neighbour who's short, set your taxes with a policy card, and let an auto-loan guard keep you clear of the game's negative-balance penalties; a missed payment or a repudiated debt costs you your good name. Resources get world prices, trading partners settle what they owe each other every turn, and you can put a tariff on a partner or invest in a neighbour's builds and treasury. Wars, disasters and debt push the world through booms and slumps, inflation can eat into idle Gold, old markets and banks fade across the ages, and your government sets how your economy runs. The computer players play by the same rules. Single-player.</Text></Row>
 
         <!-- Setup: Loans -->
         <Row Tag="LOC_ECONOMICS_SETUP_LOANS_NAME"><Text>Loans</Text></Row>
@@ -405,7 +405,7 @@
         <Row Tag="LOC_ECONOMICS_SETUP_CYCLE_STRONG"><Text>Strong</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_CYCLE_STRONG_DESCRIPTION"><Text>Events move the economy half again as much.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_NAME"><Text>Economic systems</Text></Row>
-        <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_DESCRIPTION"><Text>Each civilization's government, or its ideology in the Modern age, sets how its economy runs: Despotism lives on tribute, a Classical Republic borrows from its citizens, Communism plans production, and more. The Fiscal tab shows what yours changes.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_DESCRIPTION"><Text>Each civilization's government, or its ideology in the Modern age, sets how its economy runs: Despotism lives on tribute, a Classical Republic borrows from its citizens, Communism plans production, and more. The Fiscal tab shows what yours changes. Each computer player leans toward a government that suits its civilization, so they spread across the systems.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_OFF"><Text>Off</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_OFF_DESCRIPTION"><Text>Every civilization runs a mixed economy.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_SYSTEMS_ON"><Text>On</Text></Row>
@@ -420,7 +420,7 @@
         <Row Tag="LOC_ECONOMICS_SYSTEM_RELIGIOUS"><Text>Usury law</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_CORPORATIST"><Text>Corporatist economy</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_PLANNED"><Text>Planned economy</Text></Row>
-        <Row Tag="LOC_ECONOMICS_SYSTEM_MIXED_LINE"><Text>A bit of everything: the rules as written.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SYSTEM_MIXED_LINE"><Text>A bit of everything: standard rates and credit, and the world's booms and slumps reach you at their usual strength.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_MARKET_LINE"><Text>Private capital and price signals: bonds cost 10 percent less and your economy recovers from a slump faster, but a Panic hits you harder.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_TRIBUTE_LINE"><Text>You take wealth to pay for expansion: Heavy Taxation and War Levy bring more Gold, your aid buys twice the goodwill, and you borrow only from other civilizations, at 20 percent more.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SYSTEM_CIVIC_MARKET_LINE"><Text>Your citizens fund the state: you can borrow from them, and the interest comes back as celebration. Light Taxation celebrates more and Heavy Taxation costs more Happiness. Your Trade buildings move bills by 12 percent each and your Commerce buildings count a quarter more.</Text></Row>

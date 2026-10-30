@@ -72,6 +72,10 @@ release is generated from the matching section below by `scripts/steam-changelog
   Economic systems (On).
 
 ### Changed
+- The mod's description in Additional Content covers the whole mod: loans, taxes and the guard, markets, trade bills,
+  tariffs and investment, and the business cycle, inflation, old buildings and economic systems. The Fiscal tab's
+  line for a mixed economy says what it gets, and the Economic systems option says the computer players lean toward a
+  government that suits their civilization.
 - The tax cards add flat amounts in each settlement instead of percentages: Light Taxation -2 Gold and +4 Happiness,
   Heavy Taxation +4 Gold and -2 Happiness, War Levy +8 Gold and -4 Happiness while you're at war. The computer
   players took flat cards in test games where they passed over the percentage ones. The two AI strategies that steer
