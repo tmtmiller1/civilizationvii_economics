@@ -6,9 +6,9 @@
         <Replace Tag="LOC_ECONOMICS_MOD_NAME" Language="es_ES"><Text>Economics</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MOD_DESCRIPTION" Language="es_ES"><Text>Borrow from other civilizations or a bond market and pay it back from what the Gold brings in, lend to a neighbour in trouble, pick a tax level as a policy card, and watch an auto-loan guard keep you clear of the game's negative-balance penalties. Missed payments cost you, default costs more, and repudiating a debt keeps the Gold at the price of your name. Single-player.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_NAME" Language="es_ES"><Text>Loans</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_DESCRIPTION" Language="es_ES"><Text>Whether civilizations can borrow from each other and, later, from a bond market, within a limit set by income. Off turns the whole loan system off: no Gold moves and the Economics screen shows balances only.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_DESCRIPTION" Language="es_ES"><Text>Whether civilizations can borrow from each other and, later, from a bond market, within a limit set by income. Off turns the loans off; trade bills and investment keep their own options.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_OFF" Language="es_ES"><Text>Off</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_OFF_DESCRIPTION" Language="es_ES"><Text>Nobody borrows or lends. The Economics screen shows balances only.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_OFF_DESCRIPTION" Language="es_ES"><Text>Nobody borrows or lends, and the guard stays out.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_ON" Language="es_ES"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_ON_DESCRIPTION" Language="es_ES"><Text>Loans between civilizations open with Moneylending, the bond market with Public debt.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_NAME" Language="es_ES"><Text>Auto-loan guard</Text></Replace>
@@ -43,6 +43,24 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_OFF_DESCRIPTION" Language="es_ES"><Text>Every part is open from the start of its age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON" Language="es_ES"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON_DESCRIPTION" Language="es_ES"><Text>A part opens for a civilization when it reaches the stage's tech or civic. With the option off everything is open from the start of its age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_NAME" Language="es_ES"><Text>Markets and trade bills</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_DESCRIPTION" Language="es_ES"><Text>Gives every resource a world price, set by how many copies there are and who needs them. Each pair of civilizations then settles the net value of what they import from each other every turn, on top of the Trade Income the game already pays the exporter. A civilization pays at most a tenth of its income this way.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_OFF" Language="es_ES"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_OFF_DESCRIPTION" Language="es_ES"><Text>Resources have no price, and a route costs the importer what it does in the base game.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_ON" Language="es_ES"><Text>On</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_ON_DESCRIPTION" Language="es_ES"><Text>Bills open with the Trade stage (Code of Laws in Antiquity) and show on the Trade tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_NAME" Language="es_ES"><Text>Tariffs</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_DESCRIPTION" Language="es_ES"><Text>Lets a civilization hold back part of what it owes the civilizations it imports from: 10 percent at Low, 25 at High. A High tariff costs relationship with each partner it bills. Needs Markets and trade bills.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_OFF" Language="es_ES"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_OFF_DESCRIPTION" Language="es_ES"><Text>Every civilization pays its full bill.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_ON" Language="es_ES"><Text>On</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_ON_DESCRIPTION" Language="es_ES"><Text>Tariffs open with Imperialism, on the Fiscal tab. The computer players answer a High tariff in kind.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_NAME" Language="es_ES"><Text>Foreign investment</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_DESCRIPTION" Language="es_ES"><Text>Lets civilizations put Gold into each other: a development loan on a city's current build, a general investment in its treasury, or either as aid with nothing asked back.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_OFF" Language="es_ES"><Text>Off</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_OFF_DESCRIPTION" Language="es_ES"><Text>Each civilization keeps its Gold at home.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_ON" Language="es_ES"><Text>On</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_ON_DESCRIPTION" Language="es_ES"><Text>Development loans open with Guild patronage (Guilds), general investment with Chartered companies (Colonialism), and aid is open from the start.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_NAME" Language="es_ES"><Text>Light Taxation</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION" Language="es_ES"><Text>-2 Gold and +4 Happiness in each settlement.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_HEAVY_NAME" Language="es_ES"><Text>Heavy Taxation</Text></Replace>
@@ -218,7 +236,7 @@
         <Replace Tag="LOC_ECONOMICS_REASON_INCOME" Language="es_ES"><Text>a civilization with income at or below 0 can't restructure.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_NOTHING_OWED" Language="es_ES"><Text>nothing is owed to that lender.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_TAXES_NATIVE" Language="es_ES"><Text>taxes are policy cards in this game; use the Fiscal tab.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REASON_TOO_SOON" Language="es_ES"><Text>the tax level changed in the last five turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TOO_SOON" Language="es_ES"><Text>it changed in the last five turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_UNKNOWN" Language="es_ES"><Text>the request couldn't be carried out.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_OPEN" Language="es_ES"><Text>Loan {1_Loan} opened: {2_Amount} Gold from {3_Lender} to {4_Borrower}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_MISS" Language="es_ES"><Text>Payment missed on {1_Loan} ({2_Count} in a row).</Text></Replace>
@@ -229,5 +247,103 @@
         <Replace Tag="LOC_ECONOMICS_EVENT_WRITEOFF" Language="es_ES"><Text>{1_Loan} written off: {2_Amount} Gold, a party is gone.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_GUARD" Language="es_ES"><Text>The guard borrowed {1_Amount} Gold from {2_Lender}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_GUARD_CAP" Language="es_ES"><Text>The guard stopped at its cap of {1_Cap} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TAB_MARKETS" Language="es_ES"><Text>Markets</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TAB_TRADE" Language="es_ES"><Text>Trade</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_ROLE_TRADE" Language="es_ES"><Text>Trade buildings</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_ROLE_WAREHOUSE" Language="es_ES"><Text>Warehouse buildings</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_ROLE_INDUSTRY" Language="es_ES"><Text>Industry buildings</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_PROGRESS" Language="es_ES"><Text>build progress</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_PRICES" Language="es_ES"><Text>World prices</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_OFF" Language="es_ES"><Text>The Markets and trade bills option is off for this game.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_NONE" Language="es_ES"><Text>No prices yet. They're set at the start of the next turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_ROW" Language="es_ES"><Text>{1_Holders} copies held; {2_Change} Gold over the last {3_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_NOTE" Language="es_ES"><Text>A price sets what an import adds to the trade bills. Holding a resource earns nothing by itself.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_SETTLEMENT" Language="es_ES"><Text>This turn's trade bills</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_INCOME" Language="es_ES"><Text>Trade Income the game pays your cities</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_CAP" Language="es_ES"><Text>The most you pay in bills a turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_STAGE" Language="es_ES"><Text>Trade bills open with {1_Node}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_NONE" Language="es_ES"><Text>You have no bills with anyone this turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_OWE" Language="es_ES"><Text>You owe for your imports</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_OWED" Language="es_ES"><Text>They owe for theirs</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_PAY" Language="es_ES"><Text>You pay</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_RECEIVE" Language="es_ES"><Text>You receive</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_WAIVED" Language="es_ES"><Text>{1_Amount} Gold over the cap is waived.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_NOTE" Language="es_ES"><Text>Each pair settles the difference between what they import from each other, and only the side that owes more pays. Anything over a tenth of the payer's income is waived and never carried to the next turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_OFFERS" Language="es_ES"><Text>Offers to you</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_NO_OFFERS" Language="es_ES"><Text>Nobody is offering to invest in you right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFFER_PROJECT_ROW" Language="es_ES"><Text>{1_Investor} offers {2_Amount} Gold toward the build in {3_City}, repaid with interest over 25 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFFER_GENERAL_ROW" Language="es_ES"><Text>{1_Investor} offers {2_Amount} Gold for your treasury, repaid over 25 turns in step with your income.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFFER_ACCEPT" Language="es_ES"><Text>Accept</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFFER_DECLINE" Language="es_ES"><Text>Decline</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST" Language="es_ES"><Text>Invest abroad</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_AMOUNT" Language="es_ES"><Text>Amount</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_OFF" Language="es_ES"><Text>The Foreign investment option is off for this game.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_GENERAL" Language="es_ES"><Text>General investment</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_AID" Language="es_ES"><Text>Aid</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_PROJECT" Language="es_ES"><Text>Development loan: {1_Build} in {2_City}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_GENERAL_FORECAST" Language="es_ES"><Text>About {1_Amount} Gold a turn back for 25 turns, more if their income grows; relationship +{2_Points}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_AID_FORECAST" Language="es_ES"><Text>{1_Amount} Gold given, nothing back; relationship +{2_Points}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_PROJECT_FORECAST" Language="es_ES"><Text>{1_Progress} production for {2_Amount} Gold, {3_Return} Gold a turn back for 25 turns ({4_Total} in all); relationship +{5_Points}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_NOTE" Language="es_ES"><Text>A development loan goes into the build a city is working on now, and the Gold it doesn't need stays with you. If the host loses the city, what's still to come is lost.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_PREVIEW" Language="es_ES"><Text>Routes you could make</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_PREVIEW_UNREAD" Language="es_ES"><Text>The game didn't say which routes you could make.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_PREVIEW_NONE" Language="es_ES"><Text>A new route wouldn't bring you a priced resource right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_PREVIEW_ROW" Language="es_ES"><Text>{1_City} ({2_Owner}), {3_Count} resources: your bill would rise by about</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_HOLDINGS" Language="es_ES"><Text>Investments</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_INVESTED" Language="es_ES"><Text>Still to come to you</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_HOSTED" Language="es_ES"><Text>Still owed by you</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_HOLDING_OUT" Language="es_ES"><Text>{1_Id} in {2_Host}: {3_Amount} Gold still to come over {4_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_HOLDING_IN" Language="es_ES"><Text>{1_Id} from {2_Investor}: {3_Amount} Gold still owed over {4_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TARIFF" Language="es_ES"><Text>Tariff</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TARIFF_NONE" Language="es_ES"><Text>None</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TARIFF_LOW" Language="es_ES"><Text>Low (10 percent)</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TARIFF_HIGH" Language="es_ES"><Text>High (25 percent)</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TARIFF_NOW" Language="es_ES"><Text>Your tariff</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TARIFF_PENDING" Language="es_ES"><Text>Your change takes effect next turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TARIFF_WAIT" Language="es_ES"><Text>A tariff can change once every five turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TARIFF_STAGE" Language="es_ES"><Text>Tariffs open with {1_Node}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TARIFF_NOTE" Language="es_ES"><Text>A tariff holds back that share of what you owe the civilizations you import from, so they earn less selling to you. It's a trade-war lever, and a High tariff costs 1 relationship with each of them every five turns. The game's own Tariffs policy card raises your Trade Income instead; the two are separate.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE" Language="es_ES"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_WAIVED" Language="es_ES"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold; {3_Waived} Gold over your cap was waived.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_TARIFF_COST" Language="es_ES"><Text>Your High tariff cost 1 relationship with each civilization you import from ({1_Count}).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_PROJECT" Language="es_ES"><Text>Your development loan of {1_Amount} Gold to {2_Host} added {3_Progress} production to its build.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_GENERAL" Language="es_ES"><Text>You invested {1_Amount} Gold in {2_Host}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_AID" Language="es_ES"><Text>You sent {1_Amount} Gold of aid to {2_Host}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_IN_PROJECT" Language="es_ES"><Text>{1_Investor} put {2_Amount} Gold into one of your builds: {3_Progress} production.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_IN_GENERAL" Language="es_ES"><Text>{1_Investor} invested {2_Amount} Gold in your treasury.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_IN_AID" Language="es_ES"><Text>{1_Investor} sent you {2_Amount} Gold of aid.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVEST_MISS" Language="es_ES"><Text>You missed a return payment on {1_Id} ({2_Count} in a row). Three in a row is default.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVEST_DEFAULT" Language="es_ES"><Text>You defaulted on {1_Id}. The investor takes a share each turn until it's paid.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVEST_DEFAULTED_ON" Language="es_ES"><Text>{1_Host} defaulted on {2_Id}. You'll get a share of what's owed each turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVEST_WRITEOFF" Language="es_ES"><Text>{1_Id} is closed and the {2_Amount} Gold still to come is lost: the city changed hands or a party is gone.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OFFER_PROJECT" Language="es_ES"><Text>{1_Investor} offers {2_Amount} Gold toward one of your builds. Answer on the Trade tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OFFER_GENERAL" Language="es_ES"><Text>{1_Investor} offers to invest {2_Amount} Gold in your treasury. Answer on the Trade tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_PROJECT" Language="es_ES"><Text>{1_Investor} lent {3_Amount} Gold toward a build of {2_Host}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_GENERAL" Language="es_ES"><Text>{1_Investor} invested {3_Amount} Gold in {2_Host}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_AID" Language="es_ES"><Text>{1_Investor} sent {2_Host} {3_Amount} Gold of aid.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_MISS" Language="es_ES"><Text>Return missed on {1_Id} ({2_Count} in a row).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_DEFAULT" Language="es_ES"><Text>{1_Id} went into default ({2_Host}).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_CLOSED" Language="es_ES"><Text>{1_Id} paid in full.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_WRITEOFF" Language="es_ES"><Text>{1_Id} written off: {2_Amount} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_OFFER" Language="es_ES"><Text>{1_Investor} offered {2_Amount} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_OFFER_DECLINED" Language="es_ES"><Text>Offer from {1_Investor} declined.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_TARIFF_NONE" Language="es_ES"><Text>{1_Civ} dropped its tariff.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_TARIFF_LOW" Language="es_ES"><Text>{1_Civ} set a Low tariff.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_TARIFF_HIGH" Language="es_ES"><Text>{1_Civ} set a High tariff.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_LOANS_OFF" Language="es_ES"><Text>the Loans option is off for this game.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TARIFFS_OFF" Language="es_ES"><Text>the Tariffs option is off for this game.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TARIFF_STAGE" Language="es_ES"><Text>you haven't reached the Tariffs stage yet.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_INVESTMENT_OFF" Language="es_ES"><Text>the Foreign investment option is off for this game.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_INVEST_STAGE" Language="es_ES"><Text>you both need the stage that opens it: Guild patronage for a development loan, Chartered companies for general investment.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_BLOCKED" Language="es_ES"><Text>they defaulted on or repudiated what they owed you, so you can't invest in them for now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_BUILD" Language="es_ES"><Text>that city isn't working on anything that needs production.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_SAME_TURN" Language="es_ES"><Text>you've already given them aid this turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_RELATION" Language="es_ES"><Text>you can't invest in a civilization you're at war with or that's Unfriendly to you; aid only needs peace.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_HOST_DEFAULT" Language="es_ES"><Text>they're in default and won't take general investment.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_OFFER_GONE" Language="es_ES"><Text>that offer has lapsed.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_TARIFF" Language="es_ES"><Text>tariff change</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_INVEST" Language="es_ES"><Text>investment</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_ACCEPT_OFFER" Language="es_ES"><Text>acceptance</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_DECLINE_OFFER" Language="es_ES"><Text>refusal of an offer</Text></Replace>
     </LocalizedText>
 </Database>

@@ -15,6 +15,7 @@ import { openScreen, rerenderScreen, setScreenApi } from "./econ-screen.js";
 import { installDock, refreshPill } from "./econ-dock.js";
 import { formatGold } from "./econ-format.js";
 import { outstandingOf } from "./econ-credit.js";
+import { readCityName, readPossibleRoutes, readTypeName } from "./econ-commerce-read.js";
 
 const VERSION = "0.2.0";
 const KEY = "__towerEconomics";
@@ -60,6 +61,10 @@ function screenApi(session) {
     swapTo,
     canSwap: () => canSwap(localId()),
     rerender: () => { rerenderScreen(); refreshPill(); },
+    resourceName: (type) => loc(readTypeName(type)),
+    buildName: (type) => loc(readTypeName(type)),
+    cityName: (cityId) => loc(readCityName(cityId)),
+    possibleRoutes: () => readPossibleRoutes(localId(), aliveMajorIds()),
   };
 }
 

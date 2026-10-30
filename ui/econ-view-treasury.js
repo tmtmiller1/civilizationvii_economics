@@ -67,7 +67,8 @@ function flowsSection(api) {
 }
 
 /**
- * The player's Commerce and Banking buildings and what they do to credit and rates (DESIGN 4.13).
+ * The player's buildings by role (DESIGN 4.13): Commerce and Banking set credit and rates, Trade moves the bills,
+ * Industry raises Factory demand, Warehouse acts with the business cycle (1.2).
  * @param {ScreenApi} api
  */
 function depthSection(api) {
@@ -75,6 +76,9 @@ function depthSection(api) {
   const block = section(api.loc("LOC_ECONOMICS_TREASURY_BUILDINGS"), [
     row(api.loc("LOC_ECONOMICS_ROLE_COMMERCE"), String(depth.buildings.filter((b) => b.roles.commerce).length)),
     row(api.loc("LOC_ECONOMICS_ROLE_BANKING"), String(depth.buildings.filter((b) => b.roles.banking).length)),
+    row(api.loc("LOC_ECONOMICS_ROLE_TRADE"), String(depth.buildings.filter((b) => b.roles.trade).length)),
+    row(api.loc("LOC_ECONOMICS_ROLE_WAREHOUSE"), String(depth.buildings.filter((b) => b.roles.warehouse).length)),
+    row(api.loc("LOC_ECONOMICS_ROLE_INDUSTRY"), String(depth.buildings.filter((b) => b.roles.industry).length)),
     row(api.loc("LOC_ECONOMICS_TREASURY_DEPTH_TURNS"), `+${depth.depthTurns}`),
     row(api.loc("LOC_ECONOMICS_TREASURY_DEPTH_FACTOR"), formatFactor(depth.depthFactorPct)),
   ]);

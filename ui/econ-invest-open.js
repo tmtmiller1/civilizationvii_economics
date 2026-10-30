@@ -99,7 +99,7 @@ export function investRefusal(ctx, spec) {
  */
 export function aiHostRefusal(ctx, spec) {
   if (!ctx.options.ai) return "ai-off";
-  if (!spec.asAid && spec.form === "general" && activeDefaults(ctx.ledger, spec.host) > 0) return "declined";
+  if (!spec.asAid && spec.form === "general" && activeDefaults(ctx.ledger, spec.host) > 0) return "host-default";
   return null;
 }
 
@@ -179,7 +179,7 @@ export function investRequestRefusal(ctx, request) {
  */
 export function offerAnswerRefusal(ctx, request, accept) {
   const offer = ctx.ledger.offers.find((row) => row.id === request.offerId);
-  if (!offer || !isHuman(ctx, offer.host)) return "no-offer";
+  if (!offer || !isHuman(ctx, offer.host)) return "offer-gone";
   ctx.ledger.offers = ctx.ledger.offers.filter((row) => row.id !== offer.id);
   if (!accept) { event(ctx, { kind: "offer-declined", loanId: offer.id, lender: offer.investor }); return null; }
   /** @type {InvestSpec} */

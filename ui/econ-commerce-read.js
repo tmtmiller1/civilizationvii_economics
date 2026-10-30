@@ -250,3 +250,50 @@ export function makeRolesFor(data, bankGold) {
     return info ? rolesOf(info, bankGold) : null;
   };
 }
+
+/**
+ * The routes the game would let a civ make now, with what each would bring (the trade lens' own call); null when the
+ * read doesn't answer, so the Trade tab can say it can't preview (P7).
+ * @param {number} pid
+ * @param {number[]} majors
+ * @returns {{ owner: number, city: string, resources: string[] }[] | null}
+ */
+export function readPossibleRoutes(pid, majors) {
+  const list = safe(() => Players.get(pid).Trade.projectPossibleTradeRoutes(), null);
+  if (!Array.isArray(list)) return null;
+  const isMajor = new Set(majors);
+  /** @type {{ owner: number, city: string, resources: string[] }[]} */
+  const out = [];
+  for (const route of list) {
+    const city = cityKey(route?.targetCityId);
+    const owner = route?.targetCityId?.owner;
+    if (!city || !isMajor.has(owner) || owner === pid) continue;
+    const resources = (Array.isArray(route.importPayloads) ? route.importPayloads : []).map(resourceType)
+      .filter((/** @type {string | null} */ type) => typeof type === "string");
+    out.push({ owner, city, resources: /** @type {string[]} */ (resources) });
+  }
+  return out;
+}
+
+/**
+ * A city's name key by its component id key, for the screens; the key itself when the city can't be found.
+ * @param {string} key
+ */
+export function readCityName(key) {
+  const owner = Number(String(key).split(":")[0]);
+  const city = safe(() => (Players.get(owner).Cities.getCities() || [])
+    .find((/** @type {any} */ c) => cityKey(c.id) === key), null);
+  return safe(() => String(city.name), key);
+}
+
+/**
+ * The name key of a type from whichever table holds it (a resource, a building, a unit, a project).
+ * @param {string} type
+ */
+export function readTypeName(type) {
+  for (const table of ["Resources", "Constructibles", "Units", "Projects"]) {
+    const row = safe(() => GameInfo[table].lookup(type), null);
+    if (row && row.Name) return String(row.Name);
+  }
+  return type;
+}

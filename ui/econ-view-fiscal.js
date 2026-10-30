@@ -3,7 +3,9 @@
 // the door that slots or clears one through the game's own policy-change operation (econ-fiscal.js). The policy menu
 // shows the same cards and works as before.
 
-import { button, el, note, pill, row, section } from "./econ-dom.js";
+import { button, chips, el, note, pill, row, section } from "./econ-dom.js";
+import { canChangeTariff } from "./econ-trade.js";
+import { hasStage } from "./econ-stages.js";
 import { formatGold } from "./econ-format.js";
 import { CARD_LEVELS, cardForecast } from "./econ-tax-cards.js";
 
@@ -18,6 +20,17 @@ let lastVerdict = null;
  * @param {ScreenApi} api
  */
 export function renderFiscal(host, api) {
+  renderCards(host, api);
+  const tariff = tariffSection(api);
+  if (tariff) host.appendChild(tariff);
+}
+
+/**
+ * The tax cards block.
+ * @param {HTMLElement} host
+ * @param {ScreenApi} api
+ */
+function renderCards(host, api) {
   const cards = api.cards();
   const block = section(api.loc("LOC_ECONOMICS_FISCAL_CARDS"));
   if (!cards.length) { block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_TAXES_OFF"))); host.appendChild(block); return; }
@@ -126,6 +139,56 @@ function clearBlock(activeLevel, read, canSwap, api) {
   for (const line of forecastRows(null, activeLevel, read, api)) box.appendChild(line);
   box.appendChild(button(api.loc("LOC_ECONOMICS_FISCAL_CLEAR"), () => swap(null, api), { disabled: !canSwap }));
   return box;
+}
+
+/**
+ * The tariff row (DESIGN 4.10): hidden with Markets or Tariffs off, greyed until the Tariffs stage, one change per 5
+ * turns, with what a tariff does in words.
+ * @param {ScreenApi} api
+ */
+function tariffSection(api) {
+  const input = api.input();
+  if (input.options?.markets === false || input.options?.tariffs === false) return null;
+  const block = section(api.loc("LOC_ECONOMICS_TARIFF"));
+  for (const node of tariffRows(input, api)) block.appendChild(node);
+  block.appendChild(note(api.loc("LOC_ECONOMICS_TARIFF_NOTE")));
+  return block;
+}
+
+/**
+ * @param {PlanInput} input
+ * @param {number} pid
+ */
+function tariffRowOf(input, pid) {
+  return (input.markets ? input.markets.tariffs : []).find((tariff) => tariff.pid === pid) || null;
+}
+
+/**
+ * The stage note, the level with the wait, or the choice.
+ * @param {PlanInput} input
+ * @param {ScreenApi} api
+ * @returns {HTMLElement[]}
+ */
+function tariffRows(input, api) {
+  const me = input.civs.find((civ) => civ.id === api.me);
+  if (!hasStage(me, "tariffs", input.turn, input.options)) {
+    return [note(api.loc("LOC_ECONOMICS_TARIFF_STAGE",
+      api.loc(api.stageOpener("tariffs") || "LOC_ECONOMICS_STAGE_NEXT_AGE")))];
+  }
+  const current = tariffRowOf(input, api.me);
+  const level = current ? current.level : "none";
+  const name = (/** @type {string} */ id) => api.loc(`LOC_ECONOMICS_TARIFF_${id.toUpperCase()}`);
+  const pending = api.pending().some((request) => request.kind === "tariff");
+  if (pending || !canChangeTariff(current ? current.changedTurn : undefined, input.turn)) {
+    return [row(api.loc("LOC_ECONOMICS_TARIFF_NOW"), name(level)),
+      note(api.loc(pending ? "LOC_ECONOMICS_TARIFF_PENDING" : "LOC_ECONOMICS_TARIFF_WAIT"))];
+  }
+  const pick = (/** @type {string} */ id) => {
+    if (id === level) return;
+    api.request({ kind: "tariff", pid: api.me, level: id });
+    api.rerender();
+  };
+  return [chips(["none", "low", "high"].map((id) => ({ id, label: name(id) })), level, pick)];
 }
 
 /** The LOC key for what a swap came back with. @param {string} verdict */

@@ -12,6 +12,11 @@ const { renderTreasury } = await import("../ui/econ-view-treasury.js");
 const { renderLoans, resetConfirmForTests } = await import("../ui/econ-view-loans.js");
 const { resetFormForTests } = await import("../ui/econ-view-borrow.js");
 const { renderFiscal, verdictKey } = await import("../ui/econ-view-fiscal.js");
+const { renderMarkets } = await import("../ui/econ-view-markets.js");
+const { renderTrade } = await import("../ui/econ-view-trade.js");
+const { emptyMarkets } = await import("../ui/econ-markets.js");
+const { makeInvestment } = await import("../ui/econ-invest.js");
+const { OPEN_ALL } = await import("./_fixtures.mjs");
 
 const ME = 2;
 const loan = (id, over = {}) => ({ ...makeLoan({ id, lender: 6, borrower: ME, principal: 3000, ratePpm: 30000,
@@ -43,6 +48,10 @@ function makeApi(over = {}) {
     swapTo: (type) => { state.swaps.push(type); return Promise.resolve("sent"); },
     canSwap: () => true,
     rerender: () => {},
+    resourceName: (type) => `name:${type}`,
+    buildName: (type) => `build:${type}`,
+    cityName: (id) => `city:${id}`,
+    possibleRoutes: () => [{ owner: 6, city: "6:3", resources: ["RESOURCE_IRON"] }, { owner: 8, city: "8:1", resources: [] }],
     ...over,
   };
 }
@@ -126,6 +135,88 @@ test("stages closed show the node that opens them; the Fiscal tab draws the card
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.deepEqual(api.state.swaps, ["TRADITION_ECONOMICS_LIGHT_EX"]);
   assert.equal(verdictKey("no-slot"), "LOC_ECONOMICS_FISCAL_VERDICT_NO_SLOT");
+});
+
+
+/** A 1.1 world: the player imports iron from 6 and wine goes back; 6 has a build to back. */
+function commerceApi(over = {}) {
+  const markets = { ...emptyMarkets(), prices: { RESOURCE_IRON: 1000, RESOURCE_WINE: 600 },
+    history: { RESOURCE_IRON: [800, 900, 1000], RESOURCE_WINE: [600] } };
+  const civs = [civ(ME, { human: true, balanceCents: 100000, incomeCents: 10000, stages: OPEN_ALL, tradeIncomeCents: 600 }),
+    civ(6, { balanceCents: 1e6, incomeCents: 2000, stages: OPEN_ALL, cities: [{ id: "6:1", build: "BUILDING_LIBRARY",
+      neededProgress: 40 }] })];
+  const ledger = { ...emptyLedger(), offers: [{ id: "I5", investor: 6, host: ME, kind: "general", cents: 5000,
+    cityId: null, turn: 49 }], investments: [makeInvestment({ id: "I2", kind: "general", investor: ME, host: 6,
+    principal: 20000, turn: 40, baseIncome: 2000 })], nextInvestId: 6 };
+  return makeApi({ planInput: { civs, markets, ledger, relations: [{ a: ME, b: 6, level: "neutral" }],
+    routes: [{ importer: ME, exporter: 6, resources: ["RESOURCE_IRON"] }, { importer: 6, exporter: ME,
+      resources: ["RESOURCE_WINE"] }], market: { resources: [{ type: "RESOURCE_IRON", class: "RESOURCECLASS_EMPIRE" }],
+      copies: { RESOURCE_IRON: 2 }, strategic: [], industry: 0 }, ...over } });
+}
+
+test("the Markets tab lists prices dearest first, with holders, the change and the history bars", () => {
+  const host = document.createElement("div");
+  renderMarkets(host, commerceApi());
+  const text = textOf(host);
+  assert.ok(text.indexOf("name:RESOURCE_IRON") < text.indexOf("name:RESOURCE_WINE"), "dearest first");
+  assert.ok(text.includes("LOC_ECONOMICS_MARKETS_ROW|2|+2|3"), "two copies held, up 2 Gold over three turns");
+  assert.equal(byClass(host, "econ-spark").length, 1, "one history long enough to draw");
+  const off = document.createElement("div");
+  renderMarkets(off, commerceApi({ options: { markets: false } }));
+  assert.ok(textOf(off).includes("LOC_ECONOMICS_MARKETS_OFF"));
+  const none = document.createElement("div");
+  renderMarkets(none, makeApi());
+  assert.ok(textOf(none).includes("LOC_ECONOMICS_MARKETS_NONE"));
+});
+
+test("the Trade tab: this turn's bill per partner, offers to answer, investments to make, the route preview", () => {
+  const api = commerceApi();
+  const host = document.createElement("div");
+  renderTrade(host, api);
+  const text = textOf(host);
+  assert.ok(text.includes("LOC_ECONOMICS_TRADE_INCOME | LOC_ECONOMICS_GOLD_AMOUNT|6"), "the game's own Trade Income");
+  assert.ok(text.includes("LOC_ECONOMICS_TRADE_PAY | LOC_ECONOMICS_GOLD_AMOUNT|2"), "500 owed against 300: pay 200");
+  assert.ok(text.includes("LOC_ECONOMICS_OFFER_GENERAL_ROW|Civ 6|50"));
+  assert.ok(text.includes("LOC_ECONOMICS_INVEST_PROJECT|build:BUILDING_LIBRARY|city:6:1"));
+  assert.ok(text.includes("LOC_ECONOMICS_INVEST_PROJECT_FORECAST|40|120|6|150|1"),
+    "300 Gold offered, 40 points used: 120 Gold, 6 a turn back");
+  assert.ok(text.includes("LOC_ECONOMICS_TRADE_PREVIEW_ROW|city:6:3|Civ 6|1"), "the empty route is left out");
+  assert.ok(text.includes("LOC_ECONOMICS_HOLDING_OUT|I2|Civ 6|225|25"));
+  const accept = byClass(host, "econ-button").find((b) => b.textContent === "LOC_ECONOMICS_OFFER_ACCEPT");
+  accept.click();
+  const project = byClass(host, "econ-button").find((b) => b.textContent.startsWith("LOC_ECONOMICS_INVEST_PROJECT"));
+  project.click();
+  assert.deepEqual(api.requests, [{ kind: "accept-offer", offerId: "I5" }, { kind: "invest", investor: ME, host: 6,
+    form: "project", cents: 30000, cityId: "6:1", asAid: false }]);
+  const war = document.createElement("div");
+  renderTrade(war, commerceApi({ relations: [{ a: ME, b: 6, level: "war" }] }));
+  assert.ok(textOf(war).includes("LOC_ECONOMICS_REASON_RELATION"), "a refused action says why");
+  const unread = document.createElement("div");
+  renderTrade(unread, { ...commerceApi(), possibleRoutes: () => null });
+  assert.ok(textOf(unread).includes("LOC_ECONOMICS_TRADE_PREVIEW_UNREAD"));
+  const off = document.createElement("div");
+  renderTrade(off, commerceApi({ options: { markets: false, investment: false } }));
+  assert.ok(textOf(off).includes("LOC_ECONOMICS_MARKETS_OFF") && textOf(off).includes("LOC_ECONOMICS_INVEST_OFF"));
+});
+
+test("the Fiscal tab's tariff row: the choice once the stage opens, the wait after a change, hidden when off", () => {
+  const api = commerceApi();
+  const host = document.createElement("div");
+  renderFiscal(host, api);
+  const chip = byClass(host, "econ-chip").find((c) => c.textContent === "LOC_ECONOMICS_TARIFF_HIGH");
+  chip.click();
+  assert.deepEqual(api.requests, [{ kind: "tariff", pid: ME, level: "high" }]);
+  const waiting = document.createElement("div");
+  const markets = { ...emptyMarkets(), tariffs: [{ pid: ME, level: "low", changedTurn: 48 }] };
+  renderFiscal(waiting, commerceApi({ markets }));
+  assert.ok(textOf(waiting).includes("LOC_ECONOMICS_TARIFF_NOW | LOC_ECONOMICS_TARIFF_LOW"));
+  assert.ok(textOf(waiting).includes("LOC_ECONOMICS_TARIFF_WAIT"));
+  const closed = document.createElement("div");
+  renderFiscal(closed, makeApi());
+  assert.ok(textOf(closed).includes("LOC_ECONOMICS_TARIFF_STAGE"), "no Tariffs stage yet");
+  const off = document.createElement("div");
+  renderFiscal(off, commerceApi({ options: { tariffs: false } }));
+  assert.equal(textOf(off).includes("LOC_ECONOMICS_TARIFF"), false);
 });
 
 test.after(() => removeFakeDom());

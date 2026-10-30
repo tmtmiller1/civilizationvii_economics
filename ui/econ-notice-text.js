@@ -80,7 +80,30 @@ const NOTICES = {
   repudiated: (notice, ctx) => ({ key: `${PREFIX}NOTICE_REPUDIATED`, args: [gold(notice.cents), name(ctx, notice.lender)] }),
   "repudiated-by": (notice, ctx) => ({ key: `${PREFIX}NOTICE_REPUDIATED_BY`,
     args: [name(ctx, notice.borrower), gold(notice.cents)] }),
+  trade: (notice) => ({ key: `${PREFIX}NOTICE_TRADE${Number(notice.waived) > 0 ? "_WAIVED" : ""}`,
+    args: [gold(notice.paid), gold(notice.received), gold(notice.waived)] }),
+  "tariff-cost": (notice) => ({ key: `${PREFIX}NOTICE_TARIFF_COST`, args: [Number(notice.partners) || 1] }),
+  invested: (notice, ctx) => ({ key: `${PREFIX}NOTICE_INVESTED_${investForm(notice)}`,
+    args: [gold(notice.cents), name(ctx, notice.borrower), Number(notice.progress) || 0] }),
+  "invested-in": (notice, ctx) => ({ key: `${PREFIX}NOTICE_INVESTED_IN_${investForm(notice)}`,
+    args: [name(ctx, notice.lender), gold(notice.cents), Number(notice.progress) || 0] }),
+  "invest-miss": (notice) => ({ key: `${PREFIX}NOTICE_INVEST_MISS`, args: [String(notice.loanId), Number(notice.missed) || 1] }),
+  "invest-default": (notice) => ({ key: `${PREFIX}NOTICE_INVEST_DEFAULT`, args: [String(notice.loanId)] }),
+  "invest-defaulted-on": (notice, ctx) => ({ key: `${PREFIX}NOTICE_INVEST_DEFAULTED_ON`,
+    args: [name(ctx, notice.borrower), String(notice.loanId)] }),
+  "invest-writeoff": (notice) => ({ key: `${PREFIX}NOTICE_INVEST_WRITEOFF`, args: [String(notice.loanId), gold(notice.cents)] }),
+  offer: (notice, ctx) => ({ key: `${PREFIX}NOTICE_OFFER_${notice.form === "general" ? "GENERAL" : "PROJECT"}`,
+    args: [name(ctx, notice.investor), gold(notice.cents)] }),
 };
+
+/**
+ * The key part naming what was given: a development loan, general investment, or aid of either kind.
+ * @param {Record<string, unknown>} notice
+ */
+function investForm(notice) {
+  if (Number(notice.aid) === 1) return "AID";
+  return notice.form === "general" ? "GENERAL" : "PROJECT";
+}
 
 /**
  * The line for one notice the plan addressed to the human, or null for a kind with nothing to say.
@@ -143,6 +166,16 @@ const EVENTS = {
   writeoff: (event) => ({ key: `${PREFIX}EVENT_WRITEOFF`, args: [String(event.loanId), gold(event.cents)] }),
   guard: (event, who) => ({ key: `${PREFIX}EVENT_GUARD`, args: [gold(event.cents), who(event.lender)] }),
   "guard-cap": (event) => ({ key: `${PREFIX}EVENT_GUARD_CAP`, args: [gold(event.cap)] }),
+  invest: (event, who) => ({ key: `${PREFIX}EVENT_INVEST_${investForm(event)}`, args: [who(event.lender),
+    who(event.borrower), gold(event.cents)] }),
+  "invest-miss": (event) => ({ key: `${PREFIX}EVENT_INVEST_MISS`, args: [String(event.loanId), Number(event.missed) || 1] }),
+  "invest-default": (event, who) => ({ key: `${PREFIX}EVENT_INVEST_DEFAULT`, args: [String(event.loanId),
+    who(event.borrower)] }),
+  "invest-closed": (event) => ({ key: `${PREFIX}EVENT_INVEST_CLOSED`, args: [String(event.loanId)] }),
+  "invest-writeoff": (event) => ({ key: `${PREFIX}EVENT_INVEST_WRITEOFF`, args: [String(event.loanId), gold(event.cents)] }),
+  offer: (event, who) => ({ key: `${PREFIX}EVENT_OFFER`, args: [who(event.lender), gold(event.cents)] }),
+  "offer-declined": (event, who) => ({ key: `${PREFIX}EVENT_OFFER_DECLINED`, args: [who(event.lender)] }),
+  tariff: (event, who) => ({ key: `${PREFIX}EVENT_TARIFF_${String(event.level).toUpperCase()}`, args: [who(event.pid)] }),
 };
 
 /**

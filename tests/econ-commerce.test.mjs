@@ -169,7 +169,7 @@ test("general investment: a Gold pair, a dividend that moves with the host, refu
     restructured: false, opened: 1, closedTurn: null, writtenOff: 0, source: "borrow" }], nextId: 2 };
   const declined = plan({ civs, ledger: inDefault, requests: [{ kind: "invest", investor: ME, host: AI, form: "general",
     cents: 20000 }] });
-  assert.equal(refusal(declined, "invest"), "declined");
+  assert.equal(refusal(declined, "invest"), "host-default");
 });
 
 test("aid: no record, no return, the relationship at +1 per 2.5 turns of the host's income", () => {
@@ -271,7 +271,7 @@ test("to the player an AI investment is an offer: accepted it opens, declined or
     requests: [{ kind: "decline-offer", offerId: offer.id }] });
   assert.deepEqual([declined.ledger.offers.length, declined.transfers.length], [0, 0]);
   assert.equal(refusal(plan({ civs, relations, turn: 51, ledger: offered.ledger,
-    requests: [{ kind: "accept-offer", offerId: "I99" }] }), "accept-offer"), "no-offer");
+    requests: [{ kind: "accept-offer", offerId: "I99" }] }), "accept-offer"), "offer-gone");
   const expired = plan({ civs, relations, turn: 53, ledger: offered.ledger, markets: offered.markets });
   assert.equal(expired.ledger.offers.some((o) => o.id === offer.id), false, "gone after 3 turns");
 });

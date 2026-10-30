@@ -1,4 +1,4 @@
-// econ-screen-api.js - Economics: what the three tabs are given to read and act on, built once by the bootstrap from
+// econ-screen-api.js - Economics: what the tabs are given to read and act on, built once by the bootstrap from
 // the session and the engine. The views never import the session, so they can be rendered against a fake api in
 // tests; the bootstrap is the only place that knows both sides.
 
@@ -22,6 +22,11 @@
  * @property {(type: string | null) => Promise<string>} swapTo
  * @property {() => boolean} canSwap
  * @property {() => void} rerender
+ * @property {(type: string) => string} resourceName a resource's name in the game's language
+ * @property {(type: string) => string} buildName a building's, unit's or project's name
+ * @property {(cityId: string) => string} cityName a city's name by its component id key
+ * @property {() => { owner: number, city: string, resources: string[] }[] | null} possibleRoutes the routes the game
+ *   would let the player make now, or null when that read doesn't answer
  */
 
 export {};

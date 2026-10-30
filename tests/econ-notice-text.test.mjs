@@ -23,11 +23,18 @@ test("every notice kind the plan emits has a line, with the loan's figures looke
   assert.equal(describeNotice({ pid: 2, kind: "open", loanId: "L9" }, ctx), null, "an unknown loan says nothing");
   assert.equal(describeNotice({ pid: 2, kind: "something-new" }, ctx), null);
   for (const kind of ["open", "lent", "miss", "default", "defaulted-on", "guard", "guard-cap", "insolvent", "restructure",
-    "restructure-ask", "repudiated", "repudiated-by"]) {
-    const line = describeNotice({ pid: 2, kind, loanId: "L1", borrower: 4, lender: "bond", cents: 1, missed: 1, turns: 5,
-      cap: 1, deficit: 1 }, ctx);
-    assert.ok(line && english.has(line.key), `${kind} -> ${line && line.key}`);
+    "restructure-ask", "repudiated", "repudiated-by", "trade", "tariff-cost", "invested", "invested-in", "invest-miss",
+    "invest-default", "invest-defaulted-on", "invest-writeoff", "offer"]) {
+    for (const form of [{ form: "project" }, { form: "general" }, { form: "general", aid: 1 }, { waived: 3 }]) {
+      const line = describeNotice({ pid: 2, kind, loanId: "L1", borrower: 4, lender: "bond", cents: 1, missed: 1, turns: 5,
+        cap: 1, deficit: 1, investor: 4, paid: 1, received: 0, ...form }, ctx);
+      assert.ok(line && english.has(line.key), `${kind} -> ${line && line.key}`);
+    }
   }
+  assert.deepEqual(describeNotice({ pid: 2, kind: "invested-in", lender: 4, cents: 30000, form: "project", progress: 100 },
+    ctx), { key: "LOC_ECONOMICS_NOTICE_INVESTED_IN_PROJECT", args: ["Civ 4", "300", 100] });
+  assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 500, received: 0, waived: 0 }, ctx),
+    { key: "LOC_ECONOMICS_NOTICE_TRADE", args: ["5", "0", "0"] });
 });
 
 test("refusals name the request and the reason through keys the English text defines", () => {
@@ -35,11 +42,13 @@ test("refusals name the request and the reason through keys the English text def
   assert.deepEqual([line.requestKey, line.reasonKey], ["LOC_ECONOMICS_REQUEST_BORROW", "LOC_ECONOMICS_REASON_CREDIT_CAP"]);
   for (const reason of ["credit-cap", "service-cap", "terms", "loan-limit", "lender", "borrower", "no-offer", "term-stage",
     "term-banking", "term-repudiation", "parties", "ai-off", "balance", "declined", "not-overdue", "income",
-    "nothing-owed", "taxes-native", "too-soon", undefined]) {
+    "nothing-owed", "taxes-native", "too-soon", "loans-off", "tariffs-off", "tariff-stage", "investment-off",
+    "invest-stage", "blocked", "build", "same-turn", "relation", "host-default", "offer-gone", undefined]) {
     assert.ok(english.has(reasonKey(reason)), String(reason));
   }
-  for (const kind of ["borrow", "lend", "repay", "restructure", "repudiate", "tax", undefined]) assert.ok(english.has(requestKey(kind)), String(kind));
-  for (const party of ["bond", "temple", "tax"]) assert.ok(english.has(worldNameKey(party)), party);
+  for (const kind of ["borrow", "lend", "repay", "restructure", "repudiate", "tax", "tariff", "invest", "accept-offer",
+    "decline-offer", undefined]) assert.ok(english.has(requestKey(kind)), String(kind));
+  for (const party of ["bond", "temple", "tax", "progress"]) assert.ok(english.has(worldNameKey(party)), party);
 });
 
 test("the batch row gives the net Gold, Influence and celebration lines, only where something moved", () => {
@@ -53,9 +62,13 @@ test("ledger events give history lines for the kinds a player cares about, and n
   const line = describeEvent({ turn: 3, kind: "repudiation", borrower: 2, lender: 4, cents: 5000, grievances: 12 }, ctx);
   assert.deepEqual(line, { key: "LOC_ECONOMICS_EVENT_REPUDIATION", args: ["Civ 2", "50", "Civ 4", 12] });
   assert.equal(describeEvent({ turn: 3, kind: "refused", request: "borrow" }, ctx), null);
-  for (const kind of ["open", "miss", "default", "closed", "restructure", "repudiation", "writeoff", "guard", "guard-cap"]) {
-    const row = describeEvent({ turn: 1, kind, loanId: "L1", cents: 1, lender: "bond", borrower: 2, cap: 1 }, ctx);
-    assert.ok(row && english.has(row.key), kind);
+  for (const kind of ["open", "miss", "default", "closed", "restructure", "repudiation", "writeoff", "guard", "guard-cap",
+    "invest", "invest-miss", "invest-default", "invest-closed", "invest-writeoff", "offer", "offer-declined", "tariff"]) {
+    for (const extra of [{ level: "high", form: "project" }, { level: "low", form: "general" }, { level: "none", aid: 1 }]) {
+      const row = describeEvent({ turn: 1, kind, loanId: "L1", cents: 1, lender: "bond", borrower: 2, cap: 1, pid: 2,
+        ...extra }, ctx);
+      assert.ok(row && english.has(row.key), `${kind} -> ${row && row.key}`);
+    }
   }
   assert.equal(eventConcerns({ turn: 1, kind: "open", lender: 4, borrower: 2 }, 2), true);
   assert.equal(eventConcerns({ turn: 1, kind: "open", lender: 4, borrower: 2 }, 9), false);
