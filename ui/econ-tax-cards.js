@@ -1,21 +1,22 @@
 // econ-tax-cards.js - Economics: the tax cards' numbers (DESIGN 4.7) and the Fiscal tab's forecast, as plain data.
-// CARD_LEVELS is the one place the percentages are set: scripts/sync-tax-cards.mjs writes them into the cards'
+// CARD_LEVELS is the one place the amounts are set: scripts/sync-tax-cards.mjs writes them into the cards'
 // modifiers (data/econ-tax-gameeffects.xml) and the cards' description text, and tests/econ-data.test.mjs fails
-// while the two disagree. The forecast reads the civ's settlement yields as they stand, takes the active card's
-// share back out, and puts each card's share in, so the tab shows what a swap would change. Nothing here reads the
-// engine.
+// while the two disagree. Each card adds a flat amount to every settlement's Gold and Happiness, the shape of the
+// base game's Priesthood, because the AI's card pass rates a card by its face value and passed over percentages of
+// small Antiquity yields (P17 arms, DESIGN 10). The forecast multiplies the difference between the active card and
+// the one forecast by the civ's settlements. Nothing here reads the engine.
 
 export const CARD_PREFIX = "TRADITION_ECONOMICS_";
 
 /**
- * Each card's change to every settlement's Gold and Happiness yield, in whole percent. War Levy's apply only while
- * its owner has a formal war (the modifiers' requirement).
- * @type {Record<string, { goldPct: number, happinessPct: number, needsWar: boolean, nameKey: string }>}
+ * Each card's change to every settlement's Gold and Happiness yield, a flat amount a turn. War Levy's apply only
+ * while its owner has a formal war (the modifiers' requirement).
+ * @type {Record<string, { gold: number, happiness: number, needsWar: boolean, nameKey: string }>}
  */
 export const CARD_LEVELS = {
-  LIGHT: { goldPct: -15, happinessPct: 20, needsWar: false, nameKey: "LOC_ECONOMICS_CARD_LIGHT_NAME" },
-  HEAVY: { goldPct: 15, happinessPct: -20, needsWar: false, nameKey: "LOC_ECONOMICS_CARD_HEAVY_NAME" },
-  WAR_LEVY: { goldPct: 30, happinessPct: -40, needsWar: true, nameKey: "LOC_ECONOMICS_CARD_WAR_LEVY_NAME" },
+  LIGHT: { gold: -2, happiness: 4, needsWar: false, nameKey: "LOC_ECONOMICS_CARD_LIGHT_NAME" },
+  HEAVY: { gold: 4, happiness: -2, needsWar: false, nameKey: "LOC_ECONOMICS_CARD_HEAVY_NAME" },
+  WAR_LEVY: { gold: 8, happiness: -4, needsWar: true, nameKey: "LOC_ECONOMICS_CARD_WAR_LEVY_NAME" },
 };
 
 /**
@@ -28,26 +29,14 @@ export function levelOf(type) {
 }
 
 /**
- * The percentages a level applies right now: War Levy's are 0 in peace, no card is 0.
+ * The amounts a level adds to each settlement right now: War Levy's are 0 in peace, no card is 0.
  * @param {string | null} level
  * @param {boolean} atWar
  */
-export function appliedPct(level, atWar) {
+export function appliedAmounts(level, atWar) {
   const card = level ? CARD_LEVELS[level] : undefined;
-  if (!card || (card.needsWar && !atWar)) return { goldPct: 0, happinessPct: 0 };
-  return { goldPct: card.goldPct, happinessPct: card.happinessPct };
-}
-
-/**
- * A yield with a percentage change taken back out, then another put in: `current` was raised by `fromPct`, and the
- * result is what it would read under `toPct`. A change of -100% leaves nothing to scale back, so it reads as 0.
- * @param {number} current
- * @param {number} fromPct
- * @param {number} toPct
- */
-export function rescale(current, fromPct, toPct) {
-  if (fromPct <= -100) return 0;
-  return Math.round((current * (100 + toPct)) / (100 + fromPct));
+  if (!card || (card.needsWar && !atWar)) return { gold: 0, happiness: 0 };
+  return { gold: card.gold, happiness: card.happiness };
 }
 
 /**
@@ -64,10 +53,10 @@ export function turnsToCelebration(left, perTurn) {
 }
 
 /**
- * @typedef {{ goldCents: number, happinessCents: number, netHappinessCents: number,
+ * @typedef {{ goldCents: number, happinessCents: number, netHappinessCents: number, settlements: number,
  *   celebrationLeftCents: number | null, celebrating: boolean, atWar: boolean }} FiscalRead
- *   the settlements' summed Gold and Happiness yields, the civ's net Happiness a turn, what the celebration meter
- *   still needs, whether a celebration is running, and whether the civ has a formal war
+ *   the settlements' summed Gold and Happiness yields, the civ's net Happiness a turn, how many settlements it has,
+ *   what the celebration meter still needs, whether a celebration is running, and whether the civ has a formal war
  */
 
 /**
@@ -78,10 +67,12 @@ export function turnsToCelebration(left, perTurn) {
  * @param {FiscalRead} read
  */
 export function cardForecast(level, activeLevel, read) {
-  const now = appliedPct(activeLevel, read.atWar);
-  const then = appliedPct(level, read.atWar);
-  const goldDeltaCents = rescale(read.goldCents, now.goldPct, then.goldPct) - read.goldCents;
-  const happinessDeltaCents = rescale(read.happinessCents, now.happinessPct, then.happinessPct) - read.happinessCents;
+  const now = appliedAmounts(activeLevel, read.atWar);
+  const then = appliedAmounts(level, read.atWar);
+  const settlements = Math.max(0, Math.trunc(read.settlements) || 0);
+  // `|| 0` keeps a change of nothing at 0 rather than -0.
+  const goldDeltaCents = (then.gold - now.gold) * settlements * 100 || 0;
+  const happinessDeltaCents = (then.happiness - now.happiness) * settlements * 100 || 0;
   const card = level ? CARD_LEVELS[level] : undefined;
   return { goldDeltaCents, happinessDeltaCents, paysNow: !card || !card.needsWar || read.atWar,
     turnsToCelebration: read.celebrating ? null

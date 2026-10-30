@@ -59,11 +59,11 @@
 
         <!-- Tax cards (data/econ-tax-cards-*.xml) -->
         <Row Tag="LOC_ECONOMICS_CARD_LIGHT_NAME"><Text>Light Taxation</Text></Row>
-        <Row Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-15% Gold and +20% Happiness in all settlements.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-2 Gold and +4 Happiness in each settlement.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CARD_HEAVY_NAME"><Text>Heavy Taxation</Text></Row>
-        <Row Tag="LOC_ECONOMICS_CARD_HEAVY_DESCRIPTION"><Text>+15% Gold and -20% Happiness in all settlements.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CARD_HEAVY_DESCRIPTION"><Text>+4 Gold and -2 Happiness in each settlement.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CARD_WAR_LEVY_NAME"><Text>War Levy</Text></Row>
-        <Row Tag="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION"><Text>While you're at war: +30% Gold and -40% Happiness in all settlements. Pays nothing in peacetime.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION"><Text>While you're at war: +8 Gold and -4 Happiness in each settlement. In peacetime it doesn't pay or cost anything.</Text></Row>
         <Row Tag="LOC_ECONOMICS_TAX_SLOT_DESCRIPTION"><Text>+1 Policy slot, for a tax card or any other.</Text></Row>
 
         <!-- The screen -->

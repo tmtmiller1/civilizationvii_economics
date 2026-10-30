@@ -73,9 +73,9 @@ INSERT OR IGNORE INTO AiLists (ListType, System)
   SELECT 'EconomicsFlushBias', 'YieldBiases' FROM AiListTypes WHERE ListType = 'EconomicsFlushBias';
 
 INSERT OR IGNORE INTO AiFavoredItems (ListType, Item, Favored, Value)
-  SELECT 'EconomicsShortOfGoldBias', 'YIELD_GOLD', 1, 50 FROM AiListTypes WHERE ListType = 'EconomicsShortOfGoldBias';
+  SELECT 'EconomicsShortOfGoldBias', 'YIELD_GOLD', 1, 300 FROM AiListTypes WHERE ListType = 'EconomicsShortOfGoldBias';
 INSERT OR IGNORE INTO AiFavoredItems (ListType, Item, Favored, Value)
-  SELECT 'EconomicsFlushBias', 'YIELD_HAPPINESS', 1, 50 FROM AiListTypes WHERE ListType = 'EconomicsFlushBias';
+  SELECT 'EconomicsFlushBias', 'YIELD_HAPPINESS', 1, 300 FROM AiListTypes WHERE ListType = 'EconomicsFlushBias';
 
 INSERT OR IGNORE INTO Strategies (StrategyType, CityStrategy, MaxNumConditionsNeeded, MinConditionPercentage, MinNumConditionsNeeded)
   VALUES ('STRATEGY_ECONOMICS_SHORT_OF_GOLD', 0, 1, 25, 1);

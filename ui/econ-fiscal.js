@@ -54,8 +54,9 @@ function openerName(type) {
 
 /**
  * What the Fiscal tab's forecast needs for one civ (econ-tax-cards.js cardForecast): its settlements' Gold and
- * Happiness yields summed, its net Happiness a turn, and the celebration meter, read the way the game's own policies
- * button reads it (threshold less the lifetime Happiness). Screen-only: the turn batch never reads it.
+ * Happiness yields summed, how many settlements it has, its net Happiness a turn, and the celebration meter, read
+ * the way the game's own policies button reads it (threshold less the lifetime Happiness). Screen-only: the turn
+ * batch never reads it.
  * @param {number} pid
  * @param {boolean} atWar
  * @returns {import("./econ-tax-cards.js").FiscalRead}
@@ -71,9 +72,11 @@ export function readFiscal(pid, atWar) {
   const happiness = safe(() => YieldTypes.YIELD_HAPPINESS, -1);
   const threshold = safe(() => Number(p.Happiness.nextGoldenAgeThreshold), NaN);
   const lifetime = safe(() => Math.ceil(Number(p.Stats.getLifetimeYield(happiness))), NaN);
+  const settlements = safe(() => (p.Cities.getCities() || []).length, 0);
   const left = Number.isFinite(threshold) && Number.isFinite(lifetime) ? toCents(threshold - lifetime) : null;
   return { goldCents: toCents(cityYield(gold)), happinessCents: toCents(cityYield(happiness)),
-    netHappinessCents: toCents(safe(() => p.Stats.getNetYield(happiness), 0)), celebrationLeftCents: left,
+    netHappinessCents: toCents(safe(() => p.Stats.getNetYield(happiness), 0)), settlements,
+    celebrationLeftCents: left,
     celebrating: safe(() => p.Happiness.isInGoldenAge() === true, false), atWar };
 }
 

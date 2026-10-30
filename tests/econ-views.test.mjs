@@ -38,8 +38,8 @@ function makeApi(over = {}) {
     stageOpener: () => "LOC_CIVIC_ECONOMICS_NAME",
     depth: () => ({ buildings: [], depthTurns: 0, depthFactorPct: 100 }),
     cards: () => state.cards,
-    fiscal: () => ({ goldCents: 2300, happinessCents: 800, netHappinessCents: 600, celebrationLeftCents: 4000,
-      celebrating: false, atWar: false }),
+    fiscal: () => ({ goldCents: 2300, happinessCents: 800, netHappinessCents: 600, settlements: 2,
+      celebrationLeftCents: 4000, celebrating: false, atWar: false }),
     swapTo: (type) => { state.swaps.push(type); return Promise.resolve("sent"); },
     canSwap: () => true,
     rerender: () => {},
@@ -112,10 +112,11 @@ test("stages closed show the node that opens them; the Fiscal tab draws the card
   const full = document.createElement("div");
   renderFiscal(full, api);
   const text = textOf(full);
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-6|+4"), "Light against Heavy on 23 city Gold: -6 Gold, +4 Happiness");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|4"), "the celebration under Light");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-12|+12"), "Light against Heavy on 2 settlements: -12 Gold, +12 Happiness");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|-2|+4"), "Light's flat amounts in each settlement");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|3"), "the celebration under Light");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|7"), "the celebration now, under Heavy");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-3|+2"), "clearing Heavy");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-8|+4"), "clearing Heavy");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_LEVY_PEACE"));
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_LOCKED_BY|LOC_TECH_CURRENCY_NAME"), "a locked card names what opens it");
   const slot = byClass(full, "econ-button").filter((b) => b.textContent === "LOC_ECONOMICS_FISCAL_SLOT");

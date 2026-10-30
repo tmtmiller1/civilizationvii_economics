@@ -4,7 +4,7 @@
 // shows the same cards and works as before.
 
 import { button, el, note, pill, row, section } from "./econ-dom.js";
-import { formatGold, formatPct } from "./econ-format.js";
+import { formatGold } from "./econ-format.js";
 import { CARD_LEVELS, cardForecast } from "./econ-tax-cards.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
@@ -75,7 +75,7 @@ function cardBlock(card, activeLevel, read, canSwap, api) {
   else if (!card.unlocked) head.appendChild(pill(lockedText(card, api), false));
   box.appendChild(head);
   box.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_EFFECT"), api.loc("LOC_ECONOMICS_FISCAL_EFFECT_ROW",
-    formatPct(level.goldPct), formatPct(level.happinessPct))));
+    formatGold(level.gold * 100, { signed: true }), formatGold(level.happiness * 100, { signed: true }))));
   if (!card.active) {
     for (const line of forecastRows(card.level, activeLevel, read, api)) box.appendChild(line);
     box.appendChild(button(api.loc("LOC_ECONOMICS_FISCAL_SLOT"), () => swap(card.type, api),

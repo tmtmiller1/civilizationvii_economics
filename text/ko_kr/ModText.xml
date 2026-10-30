@@ -44,11 +44,11 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON" Language="ko_KR"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON_DESCRIPTION" Language="ko_KR"><Text>A part opens for a civilization when it reaches the stage's tech or civic. With the option off everything is open from the start of its age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_NAME" Language="ko_KR"><Text>Light Taxation</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION" Language="ko_KR"><Text>-15% Gold and +20% Happiness in all settlements.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION" Language="ko_KR"><Text>-2 Gold and +4 Happiness in each settlement.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_HEAVY_NAME" Language="ko_KR"><Text>Heavy Taxation</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CARD_HEAVY_DESCRIPTION" Language="ko_KR"><Text>+15% Gold and -20% Happiness in all settlements.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_HEAVY_DESCRIPTION" Language="ko_KR"><Text>+4 Gold and -2 Happiness in each settlement.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_WAR_LEVY_NAME" Language="ko_KR"><Text>War Levy</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION" Language="ko_KR"><Text>While you're at war: +30% Gold and -40% Happiness in all settlements. Pays nothing in peacetime.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION" Language="ko_KR"><Text>While you're at war: +8 Gold and -4 Happiness in each settlement. In peacetime it doesn't pay or cost anything.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TAX_SLOT_DESCRIPTION" Language="ko_KR"><Text>+1 Policy slot, for a tax card or any other.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPEN" Language="ko_KR"><Text>Economics</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TAB_TREASURY" Language="ko_KR"><Text>Treasury</Text></Replace>

@@ -1,6 +1,6 @@
-// sync-tax-cards.mjs - writes the tax cards' percentages from ui/econ-tax-cards.js (CARD_LEVELS) into the places the
-// game reads them: the Percent arguments of the cards' modifiers and the comment above each card in
-// data/econ-tax-gameeffects.xml, and the percentages in each card's description row in every text file. Change the
+// sync-tax-cards.mjs - writes the tax cards' amounts from ui/econ-tax-cards.js (CARD_LEVELS) into the places the
+// game reads them: the Amount arguments of the cards' modifiers and the comment above each card in
+// data/econ-tax-gameeffects.xml, and the amounts in each card's description row in every text file. Change the
 // numbers in CARD_LEVELS, then run:
 //   node scripts/sync-tax-cards.mjs           write the files
 //   node scripts/sync-tax-cards.mjs --check   exit 1 if a file is out of step (tests/econ-data.test.mjs runs this)
@@ -13,32 +13,32 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const EFFECTS = "data/econ-tax-gameeffects.xml";
 const TITLES = { LIGHT: "Light Taxation", HEAVY: "Heavy Taxation", WAR_LEVY: "War Levy" };
 
-/** @param {number} pct */
-const signed = (pct) => (pct > 0 ? `+${pct}` : String(pct));
+/** @param {number} amount */
+const signed = (amount) => (amount > 0 ? `+${amount}` : String(amount));
 
 /**
- * The effects file with each modifier's Percent and each card's comment set from CARD_LEVELS.
+ * The effects file with each modifier's Amount and each card's comment set from CARD_LEVELS.
  * @param {string} xml
  */
 export function syncEffects(xml) {
   let out = xml;
   for (const [level, card] of Object.entries(CARD_LEVELS)) {
-    for (const [kind, pct] of [["GOLD", card.goldPct], ["HAPPINESS", card.happinessPct]]) {
-      const pattern = new RegExp(`(<Modifier id="MOD_ECONOMICS_${level}_${kind}"[\\s\\S]*?<Argument name="Percent">)`
+    for (const [kind, amount] of [["GOLD", card.gold], ["HAPPINESS", card.happiness]]) {
+      const pattern = new RegExp(`(<Modifier id="MOD_ECONOMICS_${level}_${kind}"[\\s\\S]*?<Argument name="Amount">)`
         + "(-?\\d+)(</Argument>)");
-      out = out.replace(pattern, (_m, head, _old, tail) => `${head}${pct}${tail}`);
+      out = out.replace(pattern, (_m, head, _old, tail) => `${head}${amount}${tail}`);
     }
     const title = TITLES[/** @type {keyof typeof TITLES} */ (level)];
-    const comment = new RegExp(`(<!-- ${title}:[^>]*?Gold )[+-]?\\d+%(, Happiness )[+-]?\\d+%`);
-    out = out.replace(comment, (_m, head, mid) => `${head}${signed(card.goldPct)}%${mid}${signed(card.happinessPct)}%`);
+    const comment = new RegExp(`(<!-- ${title}:[^>]*?Gold )[+-]?\\d+(, Happiness )[+-]?\\d+`);
+    out = out.replace(comment, (_m, head, mid) => `${head}${signed(card.gold)}${mid}${signed(card.happiness)}`);
   }
   return out;
 }
 
 /**
- * A text file with the percentages in each card's description row set from CARD_LEVELS. Only a number written
- * right before "Gold" or "Happiness" is touched, so a translation that puts the words first is left for its
- * translator.
+ * A text file with the amounts in each card's description row set from CARD_LEVELS. Only a number written right
+ * before "Gold" or "Happiness" is touched (a trailing % from the old percentage cards goes too), so a translation
+ * that puts the words first is left for its translator.
  * @param {string} xml
  */
 export function syncDescriptions(xml) {
@@ -46,8 +46,8 @@ export function syncDescriptions(xml) {
   for (const [level, card] of Object.entries(CARD_LEVELS)) {
     const row = new RegExp(`(Tag="LOC_ECONOMICS_CARD_${level}_DESCRIPTION"[^>]*><Text>)([^<]*)(</Text>)`);
     out = out.replace(row, (_m, head, text, tail) => `${head}${String(text)
-      .replace(/[+-]?\d+% Gold/, `${signed(card.goldPct)}% Gold`)
-      .replace(/[+-]?\d+% Happiness/, `${signed(card.happinessPct)}% Happiness`)}${tail}`);
+      .replace(/[+-]?\d+%? Gold/, `${signed(card.gold)} Gold`)
+      .replace(/[+-]?\d+%? Happiness/, `${signed(card.happiness)} Happiness`)}${tail}`);
   }
   return out;
 }

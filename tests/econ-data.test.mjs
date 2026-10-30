@@ -31,14 +31,15 @@ test("each age's card file holds the three cards of its age, pointing at modifie
   }
 });
 
-test("the effects file: percent yield modifiers on every city, War Levy behind a war requirement, the slot on its own", () => {
+test("the effects file: flat yield modifiers on every settlement, War Levy behind a war requirement, the slot on its own", () => {
   assert.equal((effects.match(/effect="EFFECT_CITY_ADJUST_YIELD"/g) || []).length, 6);
   assert.equal((effects.match(/type="REQUIREMENT_PLAYER_HAS_X_WARS"/g) || []).length, 2);
+  assert.equal(/name="Percent"/.test(effects), false, "the cards are flat amounts, never percentages");
   assert.match(effects, /id="MOD_ECONOMICS_TAX_SLOT" collection="COLLECTION_OWNER" effect="EFFECT_PLAYER_GRANT_TRADITION_SLOTS"/);
   for (const [level, card] of Object.entries(CARD_LEVELS)) {
     const block = effects.slice(effects.indexOf(`MOD_ECONOMICS_${level}_GOLD`), effects.indexOf(`MOD_ECONOMICS_${level}_HAPPINESS`) + 900);
-    assert.ok(block.includes(`<Argument name="Percent">${card.goldPct}</Argument>`), `${level} gold`);
-    assert.ok(block.includes(`<Argument name="Percent">${card.happinessPct}</Argument>`), `${level} happiness`);
+    assert.ok(block.includes(`<Argument name="Amount">${card.gold}</Argument>`), `${level} gold`);
+    assert.ok(block.includes(`<Argument name="Amount">${card.happiness}</Argument>`), `${level} happiness`);
   }
 });
 
@@ -47,14 +48,16 @@ test("the card numbers live in CARD_LEVELS: the modifiers and every description 
   const light = CARD_LEVELS.LIGHT;
   const saved = { ...light };
   try {
-    Object.assign(light, { goldPct: -10, happinessPct: 25 });
+    Object.assign(light, { gold: -3, happiness: 5 });
     const moved = syncEffects(effects);
-    assert.match(moved, /id="MOD_ECONOMICS_LIGHT_GOLD"[\s\S]*?<Argument name="Percent">-10<\/Argument>/);
-    assert.match(moved, /id="MOD_ECONOMICS_LIGHT_HAPPINESS"[\s\S]*?<Argument name="Percent">25<\/Argument>/);
-    assert.match(moved, /<!-- Light Taxation: Gold -10%, Happiness \+25% -->/);
-    assert.match(moved, /id="MOD_ECONOMICS_HEAVY_GOLD"[\s\S]*?<Argument name="Percent">15<\/Argument>/, "others untouched");
+    assert.match(moved, /id="MOD_ECONOMICS_LIGHT_GOLD"[\s\S]*?<Argument name="Amount">-3<\/Argument>/);
+    assert.match(moved, /id="MOD_ECONOMICS_LIGHT_HAPPINESS"[\s\S]*?<Argument name="Amount">5<\/Argument>/);
+    assert.match(moved, /<!-- Light Taxation: Gold -3, Happiness \+5 in each settlement -->/);
+    assert.match(moved, /id="MOD_ECONOMICS_HEAVY_GOLD"[\s\S]*?<Argument name="Amount">4<\/Argument>/, "others untouched");
     assert.match(syncDescriptions(read("text/en_us/ModText.xml")),
-      /LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-10% Gold and \+25% Happiness in all settlements\./);
+      /LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-3 Gold and \+5 Happiness in each settlement\./);
+    assert.match(syncDescriptions('Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION"><Text>-15% Gold and +20% Happiness.</Text>'),
+      /<Text>-3 Gold and \+5 Happiness\.<\/Text>/, "the old percentage text moves to the flat form");
   } finally {
     Object.assign(light, saved);
   }
@@ -72,6 +75,7 @@ test("the SQL selects every row through a parent table and names only the cards 
   assert.deepEqual([...named].filter((t) => !defined.has(t)), []);
   assert.match(sql, /NOT IN \(SELECT Node FROM ProgressionTreePrereqs\)/, "root civics are found, not named");
   assert.match(sql, /TargetType = 'BUILDING_MARKET'/, "War Levy follows the Coinage anchor's node");
+  assert.match(sql, /'YIELD_GOLD', 1, 300 FROM/, "the Short of Gold bias at the size the P17 arms point to");
 });
 
 test("the modinfo loads the effects behind the Taxes option, each age's cards behind the option and its age, in order", () => {

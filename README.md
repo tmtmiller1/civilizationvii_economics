@@ -46,8 +46,8 @@ tab.
 
 ## Taxes
 
-Three policy cards, one of each per age: Light Taxation (-15% Gold, +20% Happiness in every settlement), Heavy
-Taxation (+15% Gold, -20% Happiness) and War Levy (+30% Gold, -40% Happiness, only while you're at war). The first
+Three policy cards, one of each per age: Light Taxation (-2 Gold, +4 Happiness in each settlement), Heavy Taxation
+(+4 Gold, -2 Happiness) and War Levy (+8 Gold, -4 Happiness, only while you're at war). The first
 civic of each age unlocks Light and Heavy and grants one extra policy slot so a tax card doesn't push out a card you
 already hold; War Levy comes with Currency in Antiquity and with the first civic later. They show in the policy menu
 like any card, and the Fiscal tab slots or clears one for you. Under each card it shows how much your Gold and

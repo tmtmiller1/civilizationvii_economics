@@ -340,21 +340,33 @@ lets anyone change it, player or AI (section 3), so taxes use the game's own slo
     parameter: "short of Gold" switches on through the game's `YieldIncome` condition on `YIELD_GOLD` below a
     threshold and raises the AI's Gold priority; "flush" switches on above a higher one and raises Happiness instead.
     A raised Gold priority should make Heavy Taxation look better to the AI's card pass, and a raised Happiness
-    priority Light Taxation. Strategy rows are read at game creation, so they only reach new games.
+    priority Light Taxation. Each bias is 300 (the note under the card table). Strategy rows are read at game
+    creation, so they only reach new games.
   - Whether the AI's card pass reads strategy priorities and modifier requirements at all is part of P17. If it
     doesn't, the cards still work for the AI; it just picks them on their face value.
 
-| Card | Unlocked by | Effect in each city | Partisans hardship |
+| Card | Unlocked by | Effect in each settlement | Partisans hardship |
 | --- | --- | --- | --- |
-| Light Taxation | each age's root civic | Gold -15%, Happiness +20% | 0 |
-| Heavy Taxation | each age's root civic | Gold +15%, Happiness -20% | +1 |
-| War Levy | the node that unlocks the Coinage anchor (4.15), and each later age's root civic | while at war with a major civ: Gold +30%, Happiness -40% | +2 |
+| Light Taxation | each age's root civic | Gold -2, Happiness +4 | 0 |
+| Heavy Taxation | each age's root civic | Gold +4, Happiness -2 | +1 |
+| War Levy | the node that unlocks the Coinage anchor (4.15), and each later age's root civic | while at war with a major civ: Gold +8, Happiness -4 | +2 |
+
+Flat amounts, 2026-10-29: the cards were Gold -15% and Happiness +20% (Light), the mirror (Heavy) and +30% / -40% (War
+Levy). They follow the P17 arms now (section 10, and "Arms run" in
+`mod_ideas_tested/economics/devtools/probe-runs/2026-10-29-p17-analysis.md`): the AI's card pass rates a card by its
+yields at face value, ignores the requirement on a modifier, and prefers flat per-settlement amounts; with arm 3's flat
+cards Heavy took every slot Light had held, and the strategy rows at +50 changed nothing while a Gold bias of 2000
+reached the card pass. So each card adds a flat amount in each settlement in the shape of the base game's Priesthood
+(`EFFECT_CITY_ADJUST_YIELD` with `Amount` on `COLLECTION_PLAYER_CITIES`), and both strategy biases are 300. Taxes stop
+being a share of income: a wide civ gets more from Heavy than a rich one with fewer settlements. War Levy can sit in a
+peaceful AI's slot, where it pays nothing. This is the owner's to confirm; the numbers live in `ui/econ-tax-cards.js`
+(`CARD_LEVELS`) and `scripts/sync-tax-cards.mjs` writes them into the modifiers and the card text.
 
 - One card of each per age, as Emigration's stance cards do, unlocked through `ProgressionTreeNodeUnlocks` rows that
   SQL writes by selecting the node through the progression tree tables, so a mod that changes a tree moves the card
   with it.
-- The modifiers copy the shape of a base-game card that changes a city yield by a percentage; P17 picks it from the
-  compiled database. Lower Happiness means a later celebration, and it can also make a settlement unhappy, which is
+- The modifiers copy the shape of a base-game card that adds a flat yield to each settlement (Priesthood), as the
+  note under the table says. Lower Happiness means a later celebration, and it can also make a settlement unhappy, which is
   the game's own cost of taxing hard. The balance checks (section 10) watch both.
 - A card never grants a slot, its own or another (section 3).
 - Partisans reads which card is active through `Culture.isTraditionActive`, after checking the type exists in this

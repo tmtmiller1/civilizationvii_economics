@@ -28,5 +28,9 @@ release is generated from the matching section below by `scripts/steam-changelog
   the 12 text folders, the gates and the release script.
 
 ### Changed
+- The tax cards add flat amounts in each settlement instead of percentages: Light Taxation -2 Gold and +4 Happiness,
+  Heavy Taxation +4 Gold and -2 Happiness, War Levy +8 Gold and -4 Happiness while you're at war. The computer
+  players took flat cards in test games where they passed over the percentage ones. The two AI strategies that steer
+  them are stronger.
 - The auto-loan guard only borrows while your income is at or below 0: with positive income the game wipes a
   negative balance to 0 at the turn roll and charges nothing, so a loan there would be Gold the game gives for free.
