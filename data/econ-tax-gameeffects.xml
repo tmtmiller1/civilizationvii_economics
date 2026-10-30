@@ -43,22 +43,22 @@
         <OwnerRequirements>
             <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
                 <Argument name="WarType">FORMAL_WAR</Argument>
-                <Argument name="Amount">8</Argument>
+                <Argument name="Amount">1</Argument>
             </Requirement>
         </OwnerRequirements>
         <Argument name="YieldType">YIELD_GOLD</Argument>
-        <Argument name="Amount">30</Argument>
+        <Argument name="Amount">8</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_CARD_WAR_LEVY_NAME</Argument>
     </Modifier>
     <Modifier id="MOD_ECONOMICS_WAR_LEVY_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
         <OwnerRequirements>
             <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
                 <Argument name="WarType">FORMAL_WAR</Argument>
-                <Argument name="Amount">-4</Argument>
+                <Argument name="Amount">1</Argument>
             </Requirement>
         </OwnerRequirements>
         <Argument name="YieldType">YIELD_HAPPINESS</Argument>
-        <Argument name="Amount">-40</Argument>
+        <Argument name="Amount">-4</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_CARD_WAR_LEVY_NAME</Argument>
     </Modifier>
 

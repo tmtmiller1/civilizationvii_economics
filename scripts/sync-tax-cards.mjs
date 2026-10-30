@@ -24,7 +24,10 @@ export function syncEffects(xml) {
   let out = xml;
   for (const [level, card] of Object.entries(CARD_LEVELS)) {
     for (const [kind, amount] of [["GOLD", card.gold], ["HAPPINESS", card.happiness]]) {
-      const pattern = new RegExp(`(<Modifier id="MOD_ECONOMICS_${level}_${kind}"[\\s\\S]*?<Argument name="Amount">)`
+      // The modifier's own Amount, after any requirements block: War Levy's war requirement carries an Amount of
+      // its own (how many wars), which must stay at 1.
+      const pattern = new RegExp(`(<Modifier id="MOD_ECONOMICS_${level}_${kind}"[^>]*>`
+        + "(?:\\s*<OwnerRequirements>[\\s\\S]*?</OwnerRequirements>)?[\\s\\S]*?<Argument name=\"Amount\">)"
         + "(-?\\d+)(</Argument>)");
       out = out.replace(pattern, (_m, head, _old, tail) => `${head}${amount}${tail}`);
     }

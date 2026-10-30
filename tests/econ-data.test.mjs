@@ -36,10 +36,19 @@ test("the effects file: flat yield modifiers on every settlement, War Levy behin
   assert.equal((effects.match(/type="REQUIREMENT_PLAYER_HAS_X_WARS"/g) || []).length, 2);
   assert.equal(/name="Percent"/.test(effects), false, "the cards are flat amounts, never percentages");
   assert.match(effects, /id="MOD_ECONOMICS_TAX_SLOT" collection="COLLECTION_OWNER" effect="EFFECT_PLAYER_GRANT_TRADITION_SLOTS"/);
+  // The yield's own Amount sits after any requirements block; a requirement's Amount is something else (War Levy's
+  // is how many wars, and stays 1).
+  const ownAmount = (id) => {
+    const block = (effects.match(new RegExp(`<Modifier id="${id}"[\\s\\S]*?</Modifier>`)) || [""])[0];
+    const body = block.replace(/<OwnerRequirements>[\s\S]*?<\/OwnerRequirements>/, "");
+    return Number((body.match(/<Argument name="Amount">(-?\d+)<\/Argument>/) || [])[1]);
+  };
   for (const [level, card] of Object.entries(CARD_LEVELS)) {
-    const block = effects.slice(effects.indexOf(`MOD_ECONOMICS_${level}_GOLD`), effects.indexOf(`MOD_ECONOMICS_${level}_HAPPINESS`) + 900);
-    assert.ok(block.includes(`<Argument name="Amount">${card.gold}</Argument>`), `${level} gold`);
-    assert.ok(block.includes(`<Argument name="Amount">${card.happiness}</Argument>`), `${level} happiness`);
+    assert.equal(ownAmount(`MOD_ECONOMICS_${level}_GOLD`), card.gold, `${level} gold`);
+    assert.equal(ownAmount(`MOD_ECONOMICS_${level}_HAPPINESS`), card.happiness, `${level} happiness`);
+  }
+  for (const m of effects.matchAll(/type="REQUIREMENT_PLAYER_HAS_X_WARS">[\s\S]*?<Argument name="Amount">(-?\d+)</g)) {
+    assert.equal(m[1], "1", "War Levy needs one war, whatever its yields are");
   }
 });
 
