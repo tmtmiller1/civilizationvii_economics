@@ -19,11 +19,11 @@ const refusal = (plan) => plan.events.find((e) => e.kind === "refused")?.reason;
 test("borrow from the bond market: principal arrives this turn, the first payment is next turn", () => {
   const plan = planTurn(input({ civs: [me()], requests: [borrow()] }));
   assert.deepEqual(plan.transfers.map((t) => [t.from, t.to, t.cents, t.reason]), [["bond", ME, 30000, "principal"]]);
-  assert.equal(plan.ledger.loans[0].ratePpm, 40000);
+  assert.equal(plan.ledger.loans[0].ratePpm, 20000);
   assert.equal(plan.ledger.loans[0].source, "borrow");
   assert.equal(plan.ledger.loans[0].emergency, false);
   const next = planTurn(input({ turn: 51, ledger: plan.ledger, civs: [me()] }));
-  assert.deepEqual(next.transfers.map((t) => [t.reason, t.cents]), [["payment", 1200 + 1500]]);
+  assert.deepEqual(next.transfers.map((t) => [t.reason, t.cents]), [["payment", 600 + 1500]]);
 });
 
 test("borrow from a civ: the principal is a civ pair, at that civ's relation rate", () => {
@@ -31,7 +31,7 @@ test("borrow from a civ: the principal is a civ pair, at that civ's relation rat
   const relations = [{ a: 6, b: ME, level: "friendly" }];
   const plan = planTurn(input({ civs, relations, requests: [borrow({ lender: 6 })] }));
   assert.deepEqual(grantsFor(plan.transfers).map((g) => [g.pid, g.cents]), [[6, -30000], [ME, 30000]]);
-  assert.equal(plan.ledger.loans[0].ratePpm, 16000);
+  assert.equal(plan.ledger.loans[0].ratePpm, 8000);
   assert.equal(plan.batch.civs.find((c) => c.pid === 6).net, -30000);
 });
 
@@ -49,13 +49,15 @@ test("borrow refusals: the credit cap, the debt-service limit, bad terms, a lend
   assert.equal(reason(borrow({ principal: 1000, borrower: 7 })), "borrower");
 });
 
-test("term refusals name the gate: Public debt for 20 and 30 turns, a Bank for a civ lender, a repudiation", () => {
+test("term refusals name the gate: Moneylending for 20, Public debt and a lender's Bank for 30, a repudiation", () => {
   const noPd = { moneylending: 0, publicDebt: null };
   const civs = [me({ stages: noPd }), civ(6, { balanceCents: 1e6 })];
-  assert.equal(refusal(planTurn(input({ civs, requests: [borrow({ lender: 6, principal: 1000, term: 20 })] }))),
+  assert.equal(refusal(planTurn(input({ civs, requests: [borrow({ lender: 6, principal: 1000, term: 30 })] }))),
     "term-stage");
+  assert.equal(refusal(planTurn(input({ civs, requests: [borrow({ lender: 6, principal: 1000, term: 20 })] }))),
+    undefined, "Moneylending opens 20-turn terms from a civ");
   const pd = [me(), civ(6, { balanceCents: 1e6 }), civ(8, { balanceCents: 1e6, depthTurns: 2 })];
-  assert.equal(refusal(planTurn(input({ civs: pd, requests: [borrow({ lender: 6, principal: 1000, term: 20 })] }))),
+  assert.equal(refusal(planTurn(input({ civs: pd, requests: [borrow({ lender: 6, principal: 1000, term: 30 })] }))),
     "term-banking");
   assert.equal(refusal(planTurn(input({ civs: pd, requests: [borrow({ lender: 8, principal: 1000, term: 30 })] }))),
     undefined);
@@ -177,7 +179,7 @@ test("repudiating a civ (DESIGN 4.5): records close, grievances and witness rows
   assert.equal(plan.notices.some((n) => n.kind === "repudiated"), true);
   const later = planTurn(input({ turn: 51, ledger: plan.ledger, civs, relations, requests: [borrow({ principal: 1000,
     term: 10 })] }));
-  assert.equal(later.ledger.loans.at(-1).ratePpm, 57143, "standing 0.7: 40000 / 0.7");
+  assert.equal(later.ledger.loans.at(-1).ratePpm, 28571, "standing 0.7: 20000 / 0.7");
   const capped = planTurn(input({ turn: 51, ledger: plan.ledger, civs, relations,
     requests: [borrow({ principal: 8 * 10000 - 28500 + 1, term: 10 })] }));
   assert.equal(refusal(capped), "credit-cap", "(12 - 4) turns of income less what's outstanding on L3");
@@ -249,14 +251,14 @@ test("guard lenders by stage: temple treasuries first, a civ from Moneylending, 
   const lender = civ(6, { balanceCents: 1e6, incomeCents: 1000 });
   const early = planTurn(input({ civs: [me({ ...short, stages: CLOSED }), lender] }));
   assert.deepEqual(early.transfers.map((t) => [t.from, t.cents]), [["temple", 3500]], "back to 0 after income");
-  assert.equal(early.ledger.loans[0].ratePpm, 40000);
+  assert.equal(early.ledger.loans[0].ratePpm, 20000);
   const ml = planTurn(input({ civs: [me({ ...short, stages: { moneylending: 1, publicDebt: null } }), lender] }));
   assert.deepEqual(ml.transfers.map((t) => [t.from, t.cents]), [[6, 3500]]);
   assert.equal(ml.ledger.loans[0].emergency, true);
   const mlAlone = planTurn(input({ civs: [me({ ...short, stages: { moneylending: 1, publicDebt: null } })] }));
   assert.equal(mlAlone.transfers[0].from, "temple");
   const pd = planTurn(input({ civs: [me(short), lender], relations: [{ a: 6, b: ME, level: "unfriendly" }] }));
-  assert.equal(pd.transfers[0].from, 6, "0.026 beats the bond market's 0.04");
+  assert.equal(pd.transfers[0].from, 6, "0.013 beats the bond market's 0.02");
   const pdAlone = planTurn(input({ civs: [me(short)] }));
   assert.equal(pdAlone.transfers[0].from, "bond", "temple treasuries close at Public debt");
 });
@@ -359,23 +361,23 @@ test("player lends: an AI in shortfall accepts at r <= 1.2 * its bond rate when 
   const civs = [me({ balanceCents: 50000 }), civ(4, { balanceCents: -6000, incomeCents: 5000 })];
   const lend = (ratePpm, over = {}) => ({ kind: "lend", lender: ME, borrower: 4, principal: 10000, ratePpm, term: 10,
     ...over });
-  const ok = planTurn(input({ civs, requests: [lend(48000)] }));
+  const ok = planTurn(input({ civs, requests: [lend(24000)] }));
   assert.deepEqual(ok.transfers[0], { loanId: "L1", turn: 50, from: ME, to: 4, cents: 10000, reason: "principal",
     parts: {} });
   assert.equal(ok.transfers.length, 1, "the loan covered the shortfall, so the AI borrows nothing more");
   assert.equal(ok.ledger.loans[0].source, "lend");
   const why = (r, extra = {}) => refusal(planTurn(input({ civs, requests: [r], ...extra })));
-  assert.equal(why(lend(48001)), "declined");
-  assert.equal(why(lend(48000, { principal: 70000 })), "balance", "funds for the turn are 60000");
-  assert.equal(why(lend(48000, { borrower: ME })), "parties");
-  assert.equal(why(lend(48000), { options: { ai: false } }), "ai-off");
-  assert.equal(why(lend(48000), { relations: [{ a: ME, b: 4, level: "war" }] }), "war");
+  assert.equal(why(lend(24001)), "declined");
+  assert.equal(why(lend(24000, { principal: 70000 })), "balance", "funds for the turn are 60000");
+  assert.equal(why(lend(24000, { borrower: ME })), "parties");
+  assert.equal(why(lend(24000), { options: { ai: false } }), "ai-off");
+  assert.equal(why(lend(24000), { relations: [{ a: ME, b: 4, level: "war" }] }), "war");
   assert.equal(why(lend(0)), "terms");
-  assert.equal(why(lend(48000, { term: 20 })), "term-banking", "the player needs a Bank for 20 turns too");
-  assert.equal(why(lend(48000), { civs: [civs[0], civ(4, { balanceCents: 4000 })] }), "declined", "no shortfall");
-  assert.equal(why(lend(48000), { civs: [civs[0], civ(4, { balanceCents: -4000, incomeCents: 0 })] }), "declined",
+  assert.equal(why(lend(24000, { term: 30 })), "term-banking", "the player needs a Bank for 30 turns too");
+  assert.equal(why(lend(24000), { civs: [civs[0], civ(4, { balanceCents: 4000 })] }), "declined", "no shortfall");
+  assert.equal(why(lend(24000), { civs: [civs[0], civ(4, { balanceCents: -4000, incomeCents: 0 })] }), "declined",
     "finding E: an AI that can't pay doesn't borrow from the player");
-  assert.equal(why(lend(48000, { principal: 40000 }), { civs: [civs[0], civ(4, { balanceCents: -4000,
+  assert.equal(why(lend(24000, { principal: 40000 }), { civs: [civs[0], civ(4, { balanceCents: -4000,
     incomeCents: 3000 })] }), "declined", "over its credit cap");
 });
 
@@ -390,12 +392,12 @@ test("stage gates (TEST-PLAN 12.6): no civ loans before Moneylending, no bond ma
   const opened = [me({ stages: ml }), civ(6, { balanceCents: 1e6, stages: ml })];
   const ok = planTurn(input({ age: "AGE_ANTIQUITY", civs: opened, requests: [borrow({ principal: 1000, term: 10,
     lender: 6 })] }));
-  assert.equal(ok.ledger.loans[0].ratePpm, 30000, "Antiquity's base rate");
+  assert.equal(ok.ledger.loans[0].ratePpm, 15000, "Antiquity's base rate");
   assert.equal(refusal(planTurn(input({ age: "AGE_ANTIQUITY", civs: opened, requests: [borrow({ principal: 1000,
     term: 10 })] }))), "no-offer", "the bond market waits for Public debt");
   const off = planTurn(input({ age: "AGE_ANTIQUITY", civs: closed, options: { stages: false },
     requests: [borrow({ principal: 1000, term: 10 })] }));
-  assert.equal(off.ledger.loans[0].ratePpm, 60000, "Economic stages Off opens everything");
+  assert.equal(off.ledger.loans[0].ratePpm, 30000, "Economic stages Off opens everything");
 });
 
 test("the turn is order-free (DESIGN 4.14): the same turn with the civs reversed gives the same transfers", () => {
@@ -537,4 +539,17 @@ test("projection: 20 balances per civ, moving by income less each payment", () =
   assert.equal(s[0].balances[0], 10000 + 3000 - 2100);
   assert.equal(s[0].balances[19] > s[0].balances[0], true);
   assert.equal(projectBalances(input({ civs }), 3)[0].balances.at(-1), 19000);
+});
+
+test("the age change: the Gold the game cut since the last batch is recorded, from the engine's own balance", () => {
+  const last = { id: "B9", turn: 120, civs: [{ pid: ME, snapshot: 1100000, net: 43200, influence: 0, celebration: 0 },
+    { pid: 6, snapshot: 500000, net: 0, influence: 0, celebration: 0 }] };
+  const ledger = { ...emptyLedger(), age: "AGE_ANTIQUITY", lastTurn: 120, lastBatch: last };
+  const civs = [me({ balanceCents: 600000 }), civ(6, { balanceCents: 495000 })];
+  const plan = planTurn(input({ turn: 121, age: "AGE_EXPLORATION", ledger, civs }));
+  assert.deepEqual(plan.events.filter((e) => e.kind === "age-gold").map((e) => [e.pid, e.before, e.after]),
+    [[ME, 1143200, 600000]], "civ 6's 50 Gold is the turn's own spending, not a cut");
+  assert.deepEqual(plan.notices.filter((n) => n.kind === "age-gold").map((n) => n.pid), [ME]);
+  const same = planTurn(input({ turn: 121, age: "AGE_ANTIQUITY", ledger: { ...ledger }, civs }));
+  assert.equal(same.events.some((e) => e.kind === "age-gold"), false, "only at an age change");
 });

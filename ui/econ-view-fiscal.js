@@ -41,7 +41,8 @@ function systemSection(api) {
   block.appendChild(note(api.loc(`LOC_ECONOMICS_FISCAL_SYSTEM_FROM_${view.source.toUpperCase()}`)));
   block.appendChild(note(api.loc(`${systemKey(view.system)}_LINE`)));
   if (view.from) {
-    block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_SYSTEM_BLEND", api.loc(systemKey(view.from)), view.blendLeft)));
+    const blendKey = view.blendLeft === 1 ? "LOC_ECONOMICS_FISCAL_SYSTEM_BLEND_ONE" : "LOC_ECONOMICS_FISCAL_SYSTEM_BLEND";
+    block.appendChild(note(api.loc(blendKey, api.loc(systemKey(view.from)), view.blendLeft)));
   }
   if (view.planTakeCents > 0) {
     block.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_PLAN"), formatGold(view.planTakeCents)));
@@ -95,7 +96,7 @@ function nowSection(read, activeLevel, api) {
 function celebrationText(turns, read, api) {
   if (read.celebrating) return api.loc("LOC_ECONOMICS_FISCAL_CELEBRATING");
   return turns === null ? api.loc("LOC_ECONOMICS_FISCAL_CELEBRATION_NEVER")
-    : api.loc("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS", turns);
+    : api.loc(turns === 1 ? "LOC_ECONOMICS_FISCAL_CELEBRATION_TURN" : "LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS", turns);
 }
 
 /**

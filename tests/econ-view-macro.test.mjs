@@ -52,14 +52,15 @@ test("the World tab: index, phases, events newest first, history, inflation's ca
   assert.deepEqual([view.e, view.worldPhase, view.mine.phase, view.panic], [9300, "panic", "panic", true]);
   assert.deepEqual(view.events.map((e) => e.kind), ["crisis-start", "war-declared"]);
   assert.equal(view.inflation.ratioPct, 400);
-  assert.equal(view.debt.leverPct, 266, "400000 owed against 150000 held");
+  assert.equal(view.debt.leverPct, 20000, "400000 owed against 2000 of world income: 200 turns");
   assert.equal(view.banking, true);
   const host = document.createElement("div");
   renderWorld(host, makeApi(planInput, { legacyBp: 25000, cushionBp: 250 }));
   const text = textOf(host);
   for (const piece of ["LOC_ECONOMICS_WORLD_INDEX", "0.93", "LOC_ECONOMICS_PHASE_PANIC", "LOC_ECONOMICS_WORLD_PANIC|13",
     "9: LOC_ECONOMICS_WORLD_EVENT_ROW|LOC_ECONOMICS_CYCLE_EVENT_CRISIS_START|", "(Civ 2, Civ 6)", "-0.020",
-    "LOC_ECONOMICS_WORLD_HISTORY|3", "LOC_ECONOMICS_WORLD_INFLATION_CAUSE|4.0|Civ 6", "0.2%", "2.66", "2.50", "2.5%"]) {
+    "LOC_ECONOMICS_WORLD_HISTORY|3", "LOC_ECONOMICS_WORLD_INFLATION_CAUSE|4.0|Civ 6", "0.2%", "200.0",
+    "LOC_ECONOMICS_WORLD_DEBT_NOTE|1.7", "2.50", "2.5%"]) {
     assert.ok(text.includes(piece), piece);
   }
   assert.equal(byClass(host, "econ-spark-bar").length, 3);

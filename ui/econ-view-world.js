@@ -112,10 +112,10 @@ function inflationSection(view, api) {
 function debtSection(view, api) {
   const block = section(api.loc("LOC_ECONOMICS_WORLD_DEBT"), [
     row(api.loc("LOC_ECONOMICS_WORLD_DEBT_OUTSTANDING"), formatGold(view.debt.outstandingCents)),
-    row(api.loc("LOC_ECONOMICS_WORLD_DEBT_LEVERAGE"), (view.debt.leverPct / 100).toFixed(2),
-      view.debt.leverPct > 150 ? "econ-negative" : ""),
+    row(api.loc("LOC_ECONOMICS_WORLD_DEBT_LEVERAGE"), (view.debt.leverPct / 100).toFixed(1),
+      view.debt.leverPct > view.debt.panicLeverPct ? "econ-negative" : ""),
   ]);
-  block.appendChild(note(api.loc("LOC_ECONOMICS_WORLD_DEBT_NOTE")));
+  block.appendChild(note(api.loc("LOC_ECONOMICS_WORLD_DEBT_NOTE", (view.debt.panicLeverPct / 100).toFixed(1))));
   return block;
 }
 

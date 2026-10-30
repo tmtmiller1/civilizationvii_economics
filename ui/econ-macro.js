@@ -8,8 +8,9 @@
 
 import { BOND, CITIZENS, CYCLE, CYCLE_RULES as R, CYCLE_WEIGHTS as W, INFLATION, PLAN, SHORT_TERM }
   from "./econ-params.js";
-import { civSum, crisisEvents, cycleGoldCents, emptyCycle, engineEvents, ledgerEvents, leverPct, nextE, nextL,
-  pairKey, panicStarts, routeEvents, stageScalePct, trendEvents, warEvents, worldSum } from "./econ-cycle.js";
+import { civSum, crisisEvents, cycleGoldCents, emptyCycle, engineEvents, growthBp, ledgerEvents, leverPct,
+  nextBoomTurns, nextE, nextL, nextTrendBp, overheatEvents, pairKey, panicStarts, routeEvents, stageScalePct,
+  trendEvents, warEvents, worldSum } from "./econ-cycle.js";
 import { erosionCents, largestDebtor, piPpm } from "./econ-inflation.js";
 import { nextSystems } from "./econ-systems.js";
 import { cycleKPct, emptyInflation, macroReadings } from "./econ-macro-state.js";
@@ -23,8 +24,14 @@ import { citizensFor, emit, event, incomeOf, isAlive, notice, openLoan, termsFor
 import { isAtLoanLimit, limitRefusal } from "./econ-requests.js";
 import { isInsolventCiv } from "./econ-shortfall.js";
 
-/** Kinds that repeat every turn and stay out of the World tab's list. */
-const QUIET_KINDS = new Set(["war-ongoing", "route-standing", "crisis"]);
+/** Kinds that repeat every turn and stay out of the World tab's list; overheating shows every 5th turn of a Boom. */
+const QUIET_KINDS = new Set(["war-ongoing", "crisis"]);
+
+/**
+ * @param {import("./econ-cycle.js").Weighted} row
+ * @param {number} boomTurns turns in Boom before this one
+ */
+const isLogged = (row, boomTurns) => (row.kind === "overheating" ? boomTurns % 5 === 0 : !QUIET_KINDS.has(row.kind));
 
 /**
  * The furthest stage any living civ has (DESIGN 4.15's world stage), for the cycle's scale and Panic.
@@ -99,10 +106,11 @@ function turnEvents(ctx, input) {
   const last = ctx.ledger.lastTurn;
   const events = [...warEvents(state.wars, now.wars), ...routeEvents(state.routes, now.routes),
     ...engineEvents(input.cycleEvents || []), ...crisisEvents(state.crisis, crisis),
-    ...ledgerEvents(ctx.ledger.events.filter((row) => row.turn === last)), ...trendEvents(incomeSeries, creditSeries)];
+    ...ledgerEvents(ctx.ledger.events.filter((row) => row.turn === last)),
+    ...trendEvents(incomeSeries, creditSeries, state.trend), ...overheatEvents(state.boomTurns)];
   Object.assign(state, { wars: now.wars, routes: ctx.options.markets ? now.routes : state.routes, crisis,
-    income: incomeSeries, credit: creditSeries });
-  return { events, outstanding };
+    income: incomeSeries, credit: creditSeries, trend: nextTrendBp(state.trend, growthBp(incomeSeries)) });
+  return { events, outstanding, income };
 }
 
 /**
@@ -116,16 +124,18 @@ function cycleStep(ctx, input, reforms) {
   const kPct = cycleKPct(ctx.options.cycle);
   if (kPct === 0) { ctx.macro.cycle = emptyCycle(); return; }
   const state = ctx.macro.cycle;
-  const { events, outstanding } = turnEvents(ctx, input);
+  const boomBefore = state.boomTurns;
+  const { events, outstanding, income } = turnEvents(ctx, input);
   const stage = worldStage(ctx);
   state.e = nextE(state.e, worldSum(events), kPct, stageScalePct(stage));
   const panicked = panicStarts({ allowed: stage.banking, e: state.e, lastPanic: state.lastPanic, turn: ctx.turn,
-    leverPct: leverPct(outstanding, ctx.civs.filter((civ) => civ.alive === true).map((civ) => civ.balanceCents)) });
+    leverPct: leverPct(outstanding, [income]) });
   if (panicked) startPanic(ctx);
+  state.boomTurns = nextBoomTurns(state.boomTurns, state.e);
   for (const civ of ctx.civs) if (civ.alive === true) civCycle(ctx, civ, { events, kPct, reform: reforms.has(civ.id),
     panicked });
   state.history = [...state.history, state.e].slice(-R.historyTurns);
-  const logged = events.filter((row) => !QUIET_KINDS.has(row.kind))
+  const logged = events.filter((row) => isLogged(row, boomBefore))
     .map((row) => ({ turn: ctx.turn, kind: row.kind, a: row.a, b: row.b, w: row.w }));
   state.events = [...state.events, ...logged].slice(-R.eventsKept);
 }
@@ -282,15 +292,15 @@ function erodeFor(ctx, civ) {
 }
 
 /**
- * DESIGN 4.17 the plan: 20% of positive income into the cities' builds, split by population, landed with the
- * development loans' progress (one row per city, econ-3).
+ * DESIGN 4.17 the plan: 20% of positive income into the cities' builds, split by population, at the game's purchase
+ * rate a point, landed with the development loans' progress (one row per city, econ-3).
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 function planFor(ctx, civ) {
   if (!termsFor(ctx, civ.id).plan) return;
   const split = planSplit(Math.min(planTakeCents(civ.incomeCents), Math.max(0, funds(ctx.batch, civ.id))),
-    civ.cities || []);
+    civ.cities || [], ctx.params.goldPerPointCents);
   let cents = 0;
   for (const row of split) {
     cents += row.cents;

@@ -36,6 +36,21 @@ export function aiAccepts({ offerRatePpm, bondRatePpm, shortfallCents, incomeCen
   return offerRatePpm * 100 <= /** @type {number} */ (bondRatePpm) * AI.acceptRatePct;
 }
 
+/** The phases in which an AI reads its credit as cheap: its own spread at 1.0 or below (DESIGN 4.11). */
+const CHEAP_PHASES = ["boom", "steady", "outside"];
+
+/**
+ * DESIGN 6 build loan: an AI with positive income, solvent and in no default, borrows for its own current build while
+ * its credit is cheap (its own phase Boom or Steady, or outside the cycle), at most once per 10 turns.
+ * @param {{ incomeCents: number, phase: string, insolvent: boolean, inDefault: boolean, hasBuild: boolean,
+ *   lastTurn: number | undefined, turn: number }} q
+ */
+export function aiBuildBorrowWanted({ incomeCents, phase, insolvent, inDefault, hasBuild, lastTurn, turn }) {
+  if (!(incomeCents >= AI.minIncomeCents) || insolvent || inDefault || !hasBuild) return false;
+  if (!CHEAP_PHASES.includes(phase)) return false;
+  return !Number.isInteger(lastTurn) || turn - /** @type {number} */ (lastTurn) >= AI.buildEveryTurns;
+}
+
 /**
  * DESIGN 6: an overdue loan with income > 0 is restructured at m = 2, once.
  * @param {{ loan: Loan, incomeCents: number }} q

@@ -52,30 +52,30 @@ test("blocks (DESIGN 4.5): a default ends with the age, a civ repudiation one ag
 });
 
 test("r_L = base / standing * relation_factor (0.8, 1.0, 1.3) * depth_factor", () => {
-  assert.equal(civRatePpm({ age: ex, standing: 100, level: "friendly" }), 16000);
-  assert.equal(civRatePpm({ age: ex, standing: 100, level: "neutral" }), 20000);
-  assert.equal(civRatePpm({ age: ex, standing: 100, level: "unfriendly" }), 26000);
-  assert.equal(civRatePpm({ age: ex, standing: 50, level: "neutral" }), 40000);
-  assert.equal(civRatePpm({ age: "AGE_MODERN", standing: 100, level: "neutral" }), 15000);
-  assert.equal(civRatePpm({ age: "AGE_ANTIQUITY", standing: 100, level: "neutral" }), 30000);
-  assert.equal(civRatePpm({ age: ex, standing: 100, level: "neutral", depthFactorPct: 75 }), 15000);
+  assert.equal(civRatePpm({ age: ex, standing: 100, level: "friendly" }), 8000);
+  assert.equal(civRatePpm({ age: ex, standing: 100, level: "neutral" }), 10000);
+  assert.equal(civRatePpm({ age: ex, standing: 100, level: "unfriendly" }), 13000);
+  assert.equal(civRatePpm({ age: ex, standing: 50, level: "neutral" }), 20000);
+  assert.equal(civRatePpm({ age: "AGE_MODERN", standing: 100, level: "neutral" }), 7500);
+  assert.equal(civRatePpm({ age: "AGE_ANTIQUITY", standing: 100, level: "neutral" }), 15000);
+  assert.equal(civRatePpm({ age: ex, standing: 100, level: "neutral", depthFactorPct: 75 }), 7500);
 });
 
 test("rates stop at r_cap = 4 * base, miss steps included; the rates option scales rate and cap alike", () => {
-  assert.equal(rateCapPpm(ex), 80000);
-  assert.equal(rateCapPpm(ex, 125), 100000);
+  assert.equal(rateCapPpm(ex), 40000);
+  assert.equal(rateCapPpm(ex, 125), 50000);
   assert.equal(rateCapPpm("AGE_NOPE"), null);
-  assert.equal(civRatePpm({ age: ex, standing: 10, level: "unfriendly" }), 80000);
-  assert.equal(worldRatePpm({ age: ex, standing: 10 }), 80000);
-  assert.equal(civRatePpm({ age: ex, standing: 100, level: "neutral", rates: 75 }), 15000);
-  assert.equal(bondRatePpm({ age: ex, standing: 100, rates: 125 }), 50000);
+  assert.equal(civRatePpm({ age: ex, standing: 10, level: "unfriendly" }), 40000);
+  assert.equal(worldRatePpm({ age: ex, standing: 10 }), 40000);
+  assert.equal(civRatePpm({ age: ex, standing: 100, level: "neutral", rates: 75 }), 7500);
+  assert.equal(bondRatePpm({ age: ex, standing: 100, rates: 125 }), 25000);
 });
 
 test("bond market and temple treasuries: 2 * base / standing * depth_factor", () => {
-  assert.equal(bondRatePpm({ age: ex, standing: 100 }), 40000);
-  assert.equal(bondRatePpm({ age: ex, standing: 80 }), 50000);
-  assert.equal(bondRatePpm({ age: "AGE_MODERN", standing: 80 }), 37500);
-  assert.equal(worldRatePpm({ age: "AGE_ANTIQUITY", standing: 100, depthFactorPct: 90 }), 54000);
+  assert.equal(bondRatePpm({ age: ex, standing: 100 }), 20000);
+  assert.equal(bondRatePpm({ age: ex, standing: 80 }), 25000);
+  assert.equal(bondRatePpm({ age: "AGE_MODERN", standing: 80 }), 18750);
+  assert.equal(worldRatePpm({ age: "AGE_ANTIQUITY", standing: 100, depthFactorPct: 90 }), 27000);
   assert.equal(worldRatePpm({ age: "AGE_NOPE", standing: 100 }), null);
 });
 
@@ -90,8 +90,8 @@ test("relations: either order matches; unknown pairs and unknown levels are neut
 test("offers: civ lenders cheapest first, ineligible ones dropped, the bond market last with no balance test", () => {
   const rel = [{ a: 5, b: 2, level: "unfriendly" }, { a: 8, b: 2, level: "friendly" }, { a: 9, b: 2, level: "war" }];
   const lenders = [lender(5), lender(8), lender(9), lender(11, { balanceCents: 10 })];
-  assert.deepEqual(offersFor(query({ lenders, relations: rel })), [{ lender: 8, ratePpm: 16000 },
-    { lender: 5, ratePpm: 26000 }, { lender: "bond", ratePpm: 40000 }]);
+  assert.deepEqual(offersFor(query({ lenders, relations: rel })), [{ lender: 8, ratePpm: 8000 },
+    { lender: 5, ratePpm: 13000 }, { lender: "bond", ratePpm: 20000 }]);
 });
 
 test("offers: a borrower blocked by the bond market gets no bond offer", () => {
@@ -107,20 +107,26 @@ test("stage gates (DESIGN 4.15): civ loans need Moneylending on both sides, the 
   assert.deepEqual(offersFor(ml).map((o) => o.lender), [5], "lender 8 has no Moneylending; no bond market yet");
   assert.deepEqual(offersFor({ ...noML, options: { stages: false } }).map((o) => o.lender), [5, 8, "bond"]);
   assert.deepEqual(offersFor(query({ age: "AGE_ANTIQUITY", lenders: [lender(5)] })).map((o) => o.ratePpm),
-    [30000, 60000], "Antiquity lends from Moneylending at 0.03");
+    [15000, 30000], "Antiquity lends from Moneylending at 0.015");
 });
 
-test("terms (DESIGN 4.3): 20 and 30 turns need the borrower's Public debt and, from a civ, a Banking building", () => {
+test("terms (DESIGN 4.3): 20 turns need the borrower's Moneylending; 30 its Public debt and from a civ a Banking building", () => {
   const q = { ledger: emptyLedger(), borrower: 2, turn: 50, options: {} };
   const pd = { id: 2, stages: OPEN };
   const noPd = { id: 2, stages: { moneylending: 1, publicDebt: null } };
+  const noMl = { id: 2, stages: CLOSED };
   assert.equal(termRefusal({ ...q, borrowerCiv: noPd, lenderCiv: null, term: 10 }), null);
-  assert.equal(termRefusal({ ...q, borrowerCiv: noPd, lenderCiv: null, term: 20 }), "term-stage");
-  assert.equal(termRefusal({ ...q, borrowerCiv: pd, lenderCiv: lender(5), term: 20 }), "term-banking");
+  assert.equal(termRefusal({ ...q, borrowerCiv: noMl, lenderCiv: null, term: 20 }), "term-stage");
+  assert.equal(termRefusal({ ...q, borrowerCiv: noPd, lenderCiv: null, term: 20 }), null, "Moneylending opens 20");
+  assert.equal(termRefusal({ ...q, borrowerCiv: noPd, lenderCiv: null, term: 30 }), "term-stage");
+  assert.equal(termRefusal({ ...q, borrowerCiv: noPd, lenderCiv: lender(5), term: 20 }), null, "no Bank needed for 20");
+  assert.equal(termRefusal({ ...q, borrowerCiv: pd, lenderCiv: lender(5), term: 30 }), "term-banking");
   assert.equal(termRefusal({ ...q, borrowerCiv: pd, lenderCiv: lender(5, { depthTurns: 2 }), term: 30 }), null);
   assert.equal(termRefusal({ ...q, borrowerCiv: pd, lenderCiv: null, term: 30 }), null, "the bond market needs no Bank");
-  const offers = offersFor(query({ term: 20, lenders: [lender(5), lender(8, { depthTurns: 2 })] }));
+  const offers = offersFor(query({ term: 30, lenders: [lender(5), lender(8, { depthTurns: 2 })] }));
   assert.deepEqual(offers.map((o) => o.lender), [8, "bond"]);
+  const early = offersFor(query({ term: 20, borrowerCiv: noPd, lenders: [lender(5)] }));
+  assert.deepEqual(early.map((o) => o.lender), [5], "a civ lends over 20 turns before the bond market opens");
 });
 
 test("while a repudiation counts, terms are 10 at most", () => {
@@ -135,12 +141,12 @@ test("emergency offers (DESIGN 4.6): temple before Moneylending; civs first at M
   + " at Public debt; a blocked world lender makes none", () => {
   const lenders = [lender(5)];
   const early = emergencyOffersFor(query({ borrowerCiv: { id: 2, stages: CLOSED }, lenders }));
-  assert.deepEqual(early, [{ lender: "temple", ratePpm: 40000 }]);
+  assert.deepEqual(early, [{ lender: "temple", ratePpm: 20000 }]);
   const ml = query({ borrowerCiv: { id: 2, stages: { moneylending: 1, publicDebt: null } }, lenders });
   assert.deepEqual(emergencyOffersFor(ml).map((o) => o.lender), [5], "a civ will lend, so no temple offer");
   assert.deepEqual(emergencyOffersFor({ ...ml, lenders: [] }).map((o) => o.lender), ["temple"]);
   const pd = emergencyOffersFor(query({ lenders, relations: [{ a: 5, b: 2, level: "unfriendly" }], standing: 40 }));
-  assert.deepEqual(pd.map((o) => [o.lender, o.ratePpm]), [[5, 65000], ["bond", 80000]]);
+  assert.deepEqual(pd.map((o) => [o.lender, o.ratePpm]), [[5, 32500], ["bond", 40000]]);
   const blocked = { ...emptyLedger(), blocks: [blockFor({ lender: "temple", borrower: 2, reason: "repudiation",
     turn: 40 })] };
   assert.deepEqual(emergencyOffersFor(query({ ledger: blocked, borrowerCiv: { id: 2, stages: CLOSED } })), []);

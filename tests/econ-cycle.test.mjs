@@ -2,9 +2,9 @@
 // caps, the clamps, k and s, the phases, Panic, the spread and cycle Gold. E and L are in basis points.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { civSum, crisisEvents, cycleGoldCents, effectiveL, emptyCycle, engineEvents, ledgerEvents, leverPct, nextE, nextL,
-  pairKey, panicStarts, phaseOf, routeEvents, spreadPct, stageScalePct, trendEvents, warEvents, worldSum }
-  from "../ui/econ-cycle.js";
+import { civSum, crisisEvents, cycleGoldCents, effectiveL, emptyCycle, engineEvents, growthBp, ledgerEvents, leverPct,
+  nextBoomTurns, nextE, nextL, nextTrendBp, overheatEvents, pairKey, panicStarts, phaseOf, routeEvents, spreadPct,
+  stageScalePct, trendEvents, warEvents, worldSum } from "../ui/econ-cycle.js";
 
 test("E reverts a tenth of the way to 1.0 a turn and doesn't move on a turn with no events", () => {
   assert.equal(nextE(10000, 0, 100, 100), 10000);
@@ -42,17 +42,18 @@ test("wars: declared once, ongoing each turn after, peace when one ends; each pa
   assert.deepEqual(warEvents(["2:5"], []).map((e) => [e.kind, e.a, e.b, e.w]), [["peace", 2, 5, 100]]);
 });
 
-test("ongoing wars cap at -0.02 a turn and standing routes at +0.01, world-wide and for each civ", () => {
+test("ongoing wars cap at -0.02 a turn, world-wide and for each civ", () => {
   const wars = warEvents(["1:2", "1:3", "1:4", "1:5", "1:6", "1:7"], ["1:2", "1:3", "1:4", "1:5", "1:6", "1:7"]);
   assert.equal(worldSum(wars), -200);
   assert.equal(civSum(wars, 1), -200, "civ 1 is in all six");
   assert.equal(civSum(wars, 2), -40);
+  assert.equal(civSum(wars, 99), 0, "a civ in none of them");
+});
+
+test("a standing route weighs nothing: only routes made and ended move the cycle", () => {
   const keys = Array.from({ length: 15 }, (_, i) => pairKey(1, i + 2));
-  const routes = routeEvents(keys, keys);
-  assert.equal(worldSum(routes), 100);
-  assert.equal(civSum(routes, 1), 100);
-  assert.equal(civSum(routes, 3), 10);
-  assert.equal(civSum(routes, 99), 0, "a civ in none of them");
+  assert.deepEqual(routeEvents(keys, keys), []);
+  assert.equal(worldSum(routeEvents(keys, keys)), 0);
 });
 
 test("routes: new +0.005 for both ends, ended -0.005", () => {
@@ -91,19 +92,51 @@ test("defaults weigh on both parties, a repudiation on the lender only; world ac
   assert.deepEqual(ledgerEvents(undefined), []);
 });
 
-test("world income against 10 turns ago: +-0.005 per 5%, at most +-0.01; credit up more than 10%: +0.005", () => {
+test("growth over 10 turns in basis points; a short series or no income 10 turns ago reads null", () => {
+  assert.equal(growthBp([1000, ...Array(9).fill(0), 1070]), 700);
+  assert.equal(growthBp([1000, ...Array(9).fill(0), 880]), -1200);
+  assert.equal(growthBp(Array(10).fill(1000)), null);
+  assert.equal(growthBp([0, ...Array(9).fill(0), 50]), null);
+});
+
+test("the income trend: the first growth read sets it, then it moves 4% of the way to each new read", () => {
+  assert.equal(nextTrendBp(null, 700), 700);
+  assert.equal(nextTrendBp(700, null), 700, "no read leaves it");
+  assert.equal(nextTrendBp(null, null), null);
+  assert.equal(nextTrendBp(500, 1500), 540);
+  assert.equal(nextTrendBp(500, -500), 460);
+});
+
+test("world income against its own trend: +-0.005 per 5 points above or below it, at most +-0.01; credit +0.015", () => {
   const flat = Array(11).fill(1000);
-  assert.deepEqual(trendEvents(flat, flat), []);
-  const up = [1000, ...Array(9).fill(1000), 1070];
-  assert.deepEqual(trendEvents(up, flat).map((e) => [e.kind, e.w]), [["income-up", 50]]);
-  assert.deepEqual(trendEvents([1000, ...Array(9).fill(0), 1300], flat).map((e) => e.w), [100], "capped");
-  assert.deepEqual(trendEvents([1000, ...Array(9).fill(0), 880], flat).map((e) => [e.kind, e.w]), [["income-down", -100]]);
-  assert.deepEqual(trendEvents([1000, ...Array(9).fill(0), 960], flat), [], "under 5% weighs nothing");
-  assert.deepEqual(trendEvents(Array(10).fill(1000), [1, 2]), [], "a short series weighs nothing");
-  assert.deepEqual(trendEvents(flat, [1000, ...Array(9).fill(0), 1101]).map((e) => [e.kind, e.w]), [["credit-growth", 50]]);
-  assert.deepEqual(trendEvents(flat, [1000, ...Array(9).fill(0), 1100]), [], "exactly 10% isn't more than 10%");
-  assert.deepEqual(trendEvents(flat, [0, ...Array(9).fill(0), 50]), [], "no credit 10 turns ago");
-  assert.deepEqual(trendEvents([0, ...Array(9).fill(0), 50], flat), [], "no income 10 turns ago");
+  const up7 = [1000, ...Array(9).fill(1000), 1070];
+  assert.deepEqual(trendEvents(flat, flat, 0), []);
+  assert.deepEqual(trendEvents(up7, flat, 0).map((e) => [e.kind, e.w]), [["income-up", 50]]);
+  assert.deepEqual(trendEvents(up7, flat, 700), [], "growth on trend weighs nothing");
+  assert.deepEqual(trendEvents(up7, flat, 200).map((e) => e.w), [50]);
+  assert.deepEqual(trendEvents(up7, flat, 1300).map((e) => [e.kind, e.w]), [["income-down", -50]],
+    "growing, but slower than usual");
+  assert.deepEqual(trendEvents(flat, flat, 1600).map((e) => e.w), [-100], "capped");
+  assert.deepEqual(trendEvents([1000, ...Array(9).fill(0), 1300], flat, 0).map((e) => e.w), [100], "capped");
+  assert.deepEqual(trendEvents([1000, ...Array(9).fill(0), 960], flat, 0), [], "under 5 points weighs nothing");
+  assert.deepEqual(trendEvents(up7, flat, null), [], "no trend yet weighs nothing");
+  assert.deepEqual(trendEvents(Array(10).fill(1000), [1, 2], 0), [], "a short series weighs nothing");
+  assert.deepEqual(trendEvents(flat, [1000, ...Array(9).fill(0), 1101], 0).map((e) => [e.kind, e.w]),
+    [["credit-growth", 150]]);
+  assert.deepEqual(trendEvents(flat, [1000, ...Array(9).fill(0), 1100], 0), [], "exactly 10% isn't more than 10%");
+  assert.deepEqual(trendEvents(flat, [0, ...Array(9).fill(0), 50], 0), [], "no credit 10 turns ago");
+  assert.deepEqual(trendEvents([0, ...Array(9).fill(0), 50], flat, 0), [], "no income 10 turns ago");
+});
+
+test("overheating: each turn in Boom pulls harder, -0.002 a turn up to the cap; out of Boom it's gone", () => {
+  assert.deepEqual(overheatEvents(0), []);
+  assert.deepEqual(overheatEvents(1).map((e) => [e.kind, e.a, e.w, e.world]), [["overheating", null, -20, true]]);
+  assert.deepEqual(overheatEvents(5).map((e) => e.w), [-100]);
+  assert.deepEqual(overheatEvents(40).map((e) => e.w), [-300], "capped");
+  assert.equal(nextBoomTurns(0, 10501), 1);
+  assert.equal(nextBoomTurns(6, 10600), 7);
+  assert.equal(nextBoomTurns(6, 10500), 0, "Steady resets it");
+  assert.equal(nextBoomTurns(6, 9000), 0);
 });
 
 test("phases: Depression below 0.8, Slump to 0.95, Steady to 1.05, Boom above", () => {
@@ -144,16 +177,16 @@ test("the spread is 2 - (E + L), +0.5 in a Panic; cycle Gold follows E + L - 1 o
   assert.equal(cycleGoldCents(9000, -500), 0, "nothing on negative income");
 });
 
-test("Panic: from the Banking stage, leverage above 1.5, E above 1.05, none in the last 20 turns", () => {
-  const base = { allowed: true, leverPct: 151, e: 10501, lastPanic: null, turn: 80 };
+test("Panic: from the Banking stage, leverage above 1.7 turns of world income, E above 1.05, none in 60 turns", () => {
+  const base = { allowed: true, leverPct: 171, e: 10501, lastPanic: null, turn: 80 };
   assert.equal(panicStarts(base), true);
   assert.equal(panicStarts({ ...base, allowed: false }), false);
-  assert.equal(panicStarts({ ...base, leverPct: 150 }), false);
+  assert.equal(panicStarts({ ...base, leverPct: 170 }), false);
   assert.equal(panicStarts({ ...base, e: 10500 }), false);
-  assert.equal(panicStarts({ ...base, lastPanic: 61 }), false);
-  assert.equal(panicStarts({ ...base, lastPanic: 60 }), true);
-  assert.equal(leverPct(300000, [100000, 100000, -500000]), 150, "balances floor at 0");
-  assert.equal(leverPct(150000, [0]), 150, "the Gold held counts as at least 1000");
+  assert.equal(panicStarts({ ...base, lastPanic: 21 }), false);
+  assert.equal(panicStarts({ ...base, lastPanic: 20 }), true);
+  assert.equal(leverPct(300000, [100000, 100000, -500000]), 150, "1.5 turns of income; a negative income counts 0");
+  assert.equal(leverPct(1500, [0]), 150, "the world's income counts as at least 10 Gold");
   assert.equal(leverPct(-5, [100000]), 0);
 });
 

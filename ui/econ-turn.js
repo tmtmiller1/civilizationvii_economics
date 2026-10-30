@@ -116,13 +116,15 @@ export function emit(ctx, loan, spec) {
 }
 
 /**
+ * Opens a loan and sends its principal to the borrower, or straight to `payee` when the borrowed Gold is spent the
+ * turn it's lent (an AI build loan pays the progress account, as a development loan does).
  * @param {TurnContext} ctx
  * @param {{ lender: Party, borrower: number, principal: number, ratePpm: number, term: number,
- *   source: LoanSource, emergency?: boolean }} spec
+ *   source: LoanSource, emergency?: boolean, payee?: Party }} spec
  */
 export function openLoan(ctx, spec) {
   const { ledger, turn } = ctx;
-  const { lender, borrower, principal, ratePpm, term, source, emergency = false } = spec;
+  const { lender, borrower, principal, ratePpm, term, source, emergency = false, payee = borrower } = spec;
   const made = makeLoan({ id: loanId(ledger.nextId), lender, borrower, principal, ratePpm, term, turn, source,
     emergency });
   // A Religious lender lends as a partnership (DESIGN 4.17): its interest follows the borrower's income from here.
@@ -130,7 +132,7 @@ export function openLoan(ctx, spec) {
     ? { ...made, partnership: true, baseIncome: incomeOf(ctx, borrower) } : made;
   ledger.nextId += 1;
   ledger.loans.push(loan);
-  emit(ctx, loan, { from: lender, to: borrower, cents: principal, reason: "principal" });
+  emit(ctx, loan, { from: lender, to: payee, cents: principal, reason: "principal" });
   if (!isWorldAccount(lender)) {
     const id = /** @type {number} */ (lender);
     ctx.batch.committed.set(id, (ctx.batch.committed.get(id) || 0) + principal);

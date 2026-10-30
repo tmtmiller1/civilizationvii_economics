@@ -72,6 +72,35 @@ release is generated from the matching section below by `scripts/steam-changelog
   Economic systems (On).
 
 ### Changed
+- The business cycle no longer leans to Boom. A trade route that stands and income that grows at its usual pace don't
+  move the world any more; only growth faster or slower than usual does, and a long boom wears itself out, so a
+  growing world still has slumps.
+- At an age change the turn notice says how much of your Gold the game let you keep ("the age change kept 6,000 of
+  your 11,432 Gold"), and the Treasury history records it for every civilization.
+- The turn notice reads as a sentence: "from trade bills and the business cycle", and two wars declared in one turn
+  read "after 2 wars declared" instead of the same cause twice. The Fiscal tab says "next turn" instead of "in 1
+  turns".
+- Trade bills follow what's traded: 2.5 percent of each copy's price a turn instead of half, so the tenth-of-income
+  cap only bites on the biggest deficits and a tariff changes what you pay.
+- The computer players set tariffs of their own: Low against a big partner they pay more than they're paid and aren't
+  friends with, High against a big partner they're Unfriendly with. They answer your Low with Low and your High with
+  High two turns later, and drop back when you do.
+- General investment turned down because the other civilization is in default now says a development loan on one of
+  its builds is still open, and the Trade tab shows the refusal before you ask, with a button that opens that loan
+  with the same Gold. Nothing is sent until you pick a build.
+- Citizen loans' interest comes back as 6 celebration for each Gold, up from 2, the same as Light Taxation now buys.
+- The computer players borrow to build: while their credit is cheap, each takes a loan now and then and puts it
+  straight into the building it's working on, within the same limits you have. Easy credit in a boom now leads to
+  more borrowing, and from Banking a boom carried on too much debt can end in a Panic. World leverage is now counted in
+  turns of the world's income, and the World tab shows it against the line where a Panic can start.
+- Interest rates are half what they were: 1.5 percent a turn in Antiquity, 1 in Exploration and 0.75 in Modern, so a
+  Market, Bazaar or Bank bought with a loan pays its own interest within ten turns. Your payments can take up to half
+  your income instead of 35 percent, and 20-turn loans from other civilizations open with Moneylending; 30-turn loans
+  and the bond market still wait for Public debt.
+- A loan refused for your limits tells you the most that lender will lend over that term, and the Loans tab has a
+  "Borrow that instead" button.
+- The plan buys its production at the game's own Gold price, read from the game's data (4 Gold a point unless
+  another mod changes it), instead of 3. What's left after whole points goes into the biggest cities.
 - The mod's description in Additional Content covers the whole mod: loans, taxes and the guard, markets, trade bills,
   tariffs and investment, and the business cycle, inflation, old buildings and economic systems. The Fiscal tab's
   line for a mixed economy says what it gets, and the Economic systems option says the computer players lean toward a

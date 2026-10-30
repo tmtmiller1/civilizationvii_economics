@@ -120,7 +120,7 @@ export function installFakeEngine(spec = {}) {
       Ages: table([{ AgeType: "AGE_ANTIQUITY", ChronologyIndex: 0, $hash: 5 }, { AgeType: "AGE_EXPLORATION",
         ChronologyIndex: 1, $hash: 7 }, { AgeType: "AGE_MODERN", ChronologyIndex: 2, $hash: 9 }]),
       GlobalParameters: table([{ Name: "GOLD_NEGATIVE_BALANCE_AMENITY_LOSS_LINE", Value: "0" },
-        { Name: "GOLD_NEGATIVE_BALANCE_DISBAND_UNIT_LINE", Value: "-10" }]),
+        { Name: "GOLD_NEGATIVE_BALANCE_DISBAND_UNIT_LINE", Value: "-10" }, { Name: "GOLD_PURCHASE_MULTIPLIER", Value: "4" }]),
       ProgressionTreeNodeUnlocks: table(spec.unlocks || [{ ProgressionTreeNodeType: "NODE_CIVIC_EX_MAIN_ECONOMICS",
         TargetType: "TRADITION_MARITIME_LAW" }]),
       ProgressionTreeNodes: table([{ ProgressionTreeNodeType: "NODE_CIVIC_EX_MAIN_ECONOMICS", Name: "LOC_CIVIC_ECONOMICS_NAME" }]),

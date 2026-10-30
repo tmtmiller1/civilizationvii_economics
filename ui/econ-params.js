@@ -20,9 +20,10 @@ export const WORLD_ACCOUNTS = [BOND, TEMPLE, TAX, PROGRESS, CITIZENS, INFLATION,
 
 export const AGE = { ANTIQUITY: "AGE_ANTIQUITY", EXPLORATION: "AGE_EXPLORATION", MODERN: "AGE_MODERN" };
 
-// DESIGN 4.3: 0.03 per turn before Exploration, 0.02 in Exploration, 0.015 in Modern.
+// DESIGN 4.3: 0.015 per turn before Exploration, 0.01 in Exploration, 0.0075 in Modern (the owner's decision of
+// 2026-10-30: the level at which a Market, Bazaar and Bank pay their own interest within the term).
 /** @type {Record<string, number>} */
-export const BASE_RATE_PPM = { AGE_ANTIQUITY: 30000, AGE_EXPLORATION: 20000, AGE_MODERN: 15000 };
+export const BASE_RATE_PPM = { AGE_ANTIQUITY: 15000, AGE_EXPLORATION: 10000, AGE_MODERN: 7500 };
 export const BOND_FACTOR = 2;
 export const RATE_CAP_MULTIPLE = 4;
 /** @type {Record<string, number>} */
@@ -35,8 +36,8 @@ export const RATES_PCT = { low: 75, standard: 100, high: 125 };
 // per repudiation in the last 40 turns (half for a debt to an enemy at war), floored at 0.1.
 export const STANDING = { full: 100, perDefault: 20, perMiss: 10, perRepudiation: 30, perRepudiationAtWar: 15,
   windowTurns: 20, repudiationWindowTurns: 40, floor: 10 };
-// DESIGN 4.2: credit_cap = (12 + depth_turns - 4 * repudiations) * income - outstanding; service_cap = 0.35 * income.
-export const CREDIT = { baseTurns: 12, perRepudiationTurns: 4, maxDepthTurns: 12, servicePct: 35 };
+// DESIGN 4.2: credit_cap = (12 + depth_turns - 4 * repudiations) * income - outstanding; service_cap = 0.5 * income.
+export const CREDIT = { baseTurns: 12, perRepudiationTurns: 4, maxDepthTurns: 12, servicePct: 50 };
 export const LENDER_BALANCE_MULTIPLE = 2;
 export const MISS = { rateNum: 5, rateDen: 4, influence: -5, defaultAt: 3 };
 export const RESTRUCTURE = { turns: 10 };
@@ -50,8 +51,13 @@ export const REPUDIATION = { grudgePerTurn: 5, grudgeMin: 10, grudgeMax: 40, wit
 export const EMERGENCY = { minCapCents: 10000, incomeMultiple: 10, term: 10, insolventTurns: 5 };
 export const TERMS = [10, 20, 30];
 export const SHORT_TERM = 10;
+// DESIGN 4.3: 20-turn terms open with Moneylending, 30-turn terms with Public debt.
+export const MID_TERM = 20;
+// The build loan (DESIGN 6): an AI with positive income borrows to put progress on its own current build while its
+// credit is cheap (Boom or Steady), at most once per 10 turns, up to 5 turns of income over 10 turns and within the
+// 4.2 limits.
 export const AI = { lendIncomeMultiple: 20, acceptRatePct: 120, restructureAt: 2, repudiateEveryTurns: 20,
-  repudiateDebtMultiple: 10, minIncomeCents: 1000 };
+  repudiateDebtMultiple: 10, minIncomeCents: 1000, buildEveryTurns: 10, buildSizeTurns: 5, buildTerm: 10 };
 // openPerBorrower and closedLoans are not in DESIGN: they bound the saved envelope (debt-5) with the event log DESIGN
 // 9 asks for; see docs/NOTES.md choice 25.
 export const LIMITS = { events: 100, closedLoans: 32, envelopeBytes: 65536, openPerBorrower: 6 };
@@ -67,14 +73,14 @@ export const BASE_PRICE_CENTS = { RESOURCECLASS_BONUS: 200, RESOURCECLASS_CITY: 
   RESOURCECLASS_TREASURE: 500, RESOURCECLASS_FACTORY: 600 };
 export const PRICES = { otherCents: 200, scarcityMinPct: 50, scarcityMaxPct: 300, strategicPct: 25, warPct: 25,
   industryPct: 2, industryMaxPct: 100, smoothingPct: 80, capitalismSmoothingPct: 50, historyTurns: 30 };
-// DESIGN 4.10: the bill is half the summed prices, +10% per Trade building in the exporting city and -10% per one in
-// the importing city (30% at most each side); tariffs hold back 10% or 25%; a payer pays at most 10% of its positive
-// income in all; a tariff changes at most once per 5 turns, and a High one costs 1 relationship with each exporter
-// it bills every 5 turns. The AI matches a High tariff 2 turns after it's set (DESIGN 6).
+// DESIGN 4.10: the bill is 2.5% of the summed prices (permille), +10% per Trade building in the exporting city and
+// -10% per one in the importing city (30% at most each side); tariffs hold back 10% or 25%; a payer pays at most 10% of
+// its positive income in all; a tariff changes at most once per 5 turns, and a High one costs 1 relationship with each
+// exporter it bills every 5 turns. The AI answers a tariff in kind 2 turns after it's set (DESIGN 6).
 /** @type {Record<string, number>} */
 export const TARIFF_PCT = { none: 0, low: 10, high: 25 };
-export const TRADE = { billPct: 50, tradeBuildingPct: 10, tradeBuildingMaxPct: 30, capPct: 10, tariffEveryTurns: 5,
-  highRelationship: -1, aiMatchTurns: 2 };
+export const TRADE = { billPermille: 25, tradeBuildingPct: 10, tradeBuildingMaxPct: 30, capPct: 10,
+  tariffEveryTurns: 5, highRelationship: -1, aiMatchTurns: 2, aiPartnerSharePct: 34 };
 // DESIGN 4.12. Development loan: G / 3 Gold per point of progress, ceil(G * 5%) a turn for 25 turns (6% on a role
 // building). General: ceil(G * 4.5% * growth) with growth clamped 0.5 to 2.0. Relationship +1 per 5, 7.5 and 2.5 turns
 // of the host's income (at least 10 Gold a turn) for the development loan, general and aid. The cap of 10 on one
@@ -86,29 +92,37 @@ export const INVEST = { goldPerProgress: 3, term: 25, projectMille: 50, roleProj
   offerTurns: 3, incomeHistoryTurns: 10 };
 
 // DESIGN 4.11, in basis points (1/10000) so every weight is an integer: E starts at 10000 (1.0) and L at 0, and
-// war declared, -0.02, is -200. k is the Business cycle option; s the world stage scale (DESIGN 4.15).
+// war declared, -0.02, is -200. k is the Business cycle option; s the world stage scale (DESIGN 4.15). Leverage is
+// all outstanding loans in hundredths of a turn of the world's positive income: panicLeverPct 170 is 1.7 turns.
 /** @type {Record<string, number>} */
 export const CYCLE_K_PCT = { off: 0, mild: 50, standard: 100, strong: 150 };
 export const CYCLE_RULES = { one: 10000, reversionPct: 10, worldClamp: 1000, eMin: 7000, eMax: 13000, lMax: 2000,
-  lDecayPct: 80, depression: 8000, slump: 9500, boom: 10500, panicLeverPct: 150, panicDrop: 2000, panicTurns: 5,
-  panicEveryTurns: 20, panicSpreadPct: 50, goldPct: 20, historyTurns: 30, eventsKept: 24, warehouseBp: 300,
+  lDecayPct: 80, depression: 8000, slump: 9500, boom: 10500, panicLeverPct: 170, panicDrop: 2000, panicTurns: 5,
+  panicEveryTurns: 60, panicSpreadPct: 50, goldPct: 20, historyTurns: 30, eventsKept: 24, warehouseBp: 300,
   warehouseMaxBp: 3000, cushionMaxBp: 1000, cutMaxBp: 3500, scaleEarlyPct: 25, scalePublicDebtPct: 60,
-  scaleCapitalismPct: 100, minLeverCents: 100000 };
-// Event weights in basis points (DESIGN 4.11's table). The caps bound a sum of one kind in a turn.
+  scaleCapitalismPct: 100, minLeverIncomeCents: 1000 };
+// Event weights in basis points (DESIGN 4.11's table). The caps bound a sum of one kind in a turn. World income is
+// read against its own trend, an average of its 10-turn growth that moves 4% of the way to each new read (about 50
+// turns); each turn the world has spent in Boom pulls E down by 0.002 more, up to the cap.
 export const CYCLE_WEIGHTS = { warDeclared: -200, warOngoing: -40, warOngoingCap: -200, capture: -100, raze: -200,
   disaster: -50, disasterPopulation: -100, crisisStart: -200, crisisOngoing: -50, default: -300, repudiation: -300,
-  peace: 100, routeNew: 50, routeEnded: -50, routeStanding: 10, routeStandingCap: 100, incomePer5Pct: 50,
-  incomeCap: 100, creditGrowth: 50, creditGrowthPct: 10, reform: -300, corporatistWar: 100, corporatistPeace: -300 };
+  peace: 100, routeNew: 50, routeEnded: -50, incomePer5Pct: 50, incomeCap: 100, trendPct: 4, overheatPerTurn: -20,
+  overheatCap: -300, creditGrowth: 150, creditGrowthPct: 10, reform: -300, corporatistWar: 100,
+  corporatistPeace: -300 };
 // DESIGN 4.8: pi = min(0.005, 0.02 * B / max(M, 1000)) a turn in ppm; reserve 20 turns of max(income, 10); bond rate
 // up 50 * pi, at most 25%.
 export const INFLATION_RULES = { capPpm: 5000, factorPpm: 20000, minMoneyCents: 100000, reserveTurns: 20,
   minIncomeCents: 1000, premiumPerPpm: 50, premiumCapPct: 25 };
 // DESIGN 4.17: citizen loans and the plan. Citizens: 5 turns of max(10, income) per settlement with a Commerce
-// building, 0.75 of the base rate, 10 turns, celebration at twice the interest paid; a miss costs 5 turns of the
-// meter's gain, a repudiation 10, the citizens close for 30 turns. The plan: 20% of positive income, 3 Gold a point.
-export const CITIZEN = { capTurns: 5, minIncomeCents: 1000, ratePct: 75, term: 10, celebrationMultiple: 2,
+// building, 0.75 of the base rate, 10 turns, celebration at 6 times the interest paid (Light Taxation's 6 Happiness
+// for each Gold it costs, so the two buy celebration at the same price); a miss costs 5 turns of the
+// meter's gain, a repudiation 10, the citizens close for 30 turns. The plan: 20% of positive income at the game's
+// purchase rate a point.
+export const CITIZEN = { capTurns: 5, minIncomeCents: 1000, ratePct: 75, term: 10, celebrationMultiple: 6,
   missTurns: 5, repudiationTurns: 10, aiBalanceTurns: 10, aiSizeTurns: 5 };
-export const PLANNED = { takePct: 20, goldPerProgress: 3 };
+// The plan buys progress at the game's own purchase rate, GOLD_PURCHASE_MULTIPLIER Gold a point (read at runtime;
+// 4 when the read fails).
+export const PLANNED = { takePct: 20, fallbackGoldPerPoint: 4 };
 // DESIGN 4.17: a change of system blends each number evenly over 10 turns.
 export const SYSTEM_BLEND_TURNS = 10;
 
@@ -120,6 +134,22 @@ export function ratesPct(option) {
 /** @param {unknown} party */
 export function isWorldAccount(party) {
   return WORLD_ACCOUNTS.includes(/** @type {Party} */ (party));
+}
+
+/**
+ * The game's Gold price of a point of production, in cents, from GlobalParameters' GOLD_PURCHASE_MULTIPLIER (rows as
+ * { Name: Value } or [{ Name, Value }]); null when it's missing or not a positive number, and the caller falls back.
+ * Game speed scales a build's cost and its purchase price alike, and the glue reads a build's points at the game's
+ * speed, so the price per point is the multiplier alone.
+ * @param {unknown} rows
+ * @returns {number | null}
+ */
+export function purchasePointCents(rows) {
+  let value;
+  if (Array.isArray(rows)) value = rows.find((row) => row && row.Name === "GOLD_PURCHASE_MULTIPLIER")?.Value;
+  else if (rows && typeof rows === "object") value = /** @type {Record<string, unknown>} */ (rows).GOLD_PURCHASE_MULTIPLIER;
+  const n = Number(value);
+  return value !== undefined && value !== null && Number.isFinite(n) && n > 0 ? Math.round(n * 100) : null;
 }
 
 /**

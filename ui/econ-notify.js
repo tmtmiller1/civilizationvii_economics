@@ -3,8 +3,8 @@
 // mod's own type (data/econ-notifications.xml); the engine keeps one live notification per type and player, so every
 // line of the turn goes into it. A click opens the Economics screen.
 
-import { composeArgs, describeBatchRow, describeNotice, describeRefusal, flowKeys, worldNameKey }
-  from "./econ-notice-text.js";
+import { composeArgs, describeBatchRow, describeNotice, describeRefusal, describeRefusalMost, describeRefusalProject,
+  flowKeys, worldNameKey } from "./econ-notice-text.js";
 import { civName, gameTurn, loc, localId, safe } from "./econ-engine.js";
 import { logDebug, logLine } from "./econ-log.js";
 
@@ -42,11 +42,25 @@ export function composeLines(plan, pid) {
     if (line) lines.push(loc(line.key, ...composeArgs(line.args, (key) => loc(key))));
   }
   for (const event of plan.events) {
-    if (event.kind !== "refused" || ![event.pid, event.borrower, event.lender].includes(pid)) continue;
-    const line = describeRefusal(event);
-    lines.push(loc(line.key, loc(line.requestKey), loc(line.reasonKey)));
+    if (event.kind === "refused" && [event.pid, event.borrower, event.lender].includes(pid)) {
+      lines.push(...refusalLines(event, ctx));
+    }
   }
   return lines;
+}
+
+/**
+ * A refusal's line, and the line after it naming what's still open (the most a lender would lend, or a
+ * development loan where general investment was refused).
+ * @param {LedgerEvent} event
+ * @param {{ ledger: Ledger, nameOf: (party: Party) => string }} ctx
+ */
+function refusalLines(event, ctx) {
+  const line = describeRefusal(event);
+  const out = [loc(line.key, loc(line.requestKey), loc(line.reasonKey))];
+  const next = describeRefusalMost(event, ctx) || describeRefusalProject(event, ctx);
+  if (next) out.push(loc(next.key, ...composeArgs(next.args, (key) => loc(key))));
+  return out;
 }
 
 /**

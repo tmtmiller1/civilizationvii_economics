@@ -3,11 +3,12 @@
 // civ has every stage open from turn 0 unless it says otherwise, so a test about one rule isn't gated by another.
 
 import { readFileSync } from "node:fs";
-import { engineLines } from "../ui/econ-params.js";
+import { engineLines, purchasePointCents } from "../ui/econ-params.js";
 
 const fixture = JSON.parse(readFileSync(new URL("./fixtures/global-parameters-1.5.0.json", import.meta.url), "utf8"));
 export const ENGINE = engineLines(fixture.rows);
-export const PARAMS = { amenityLineCents: ENGINE.amenityLineCents, disbandLineCents: ENGINE.disbandLineCents };
+export const PARAMS = { amenityLineCents: ENGINE.amenityLineCents, disbandLineCents: ENGINE.disbandLineCents,
+  goldPerPointCents: purchasePointCents(fixture.rows) };
 
 export const OPEN = { moneylending: 0, publicDebt: 0 };
 export const CLOSED = { moneylending: null, publicDebt: null };

@@ -4,12 +4,13 @@
 // refusal is an event with its reason, never a throw.
 
 import { BOND, CITIZENS, LIMITS, SHORT_TERM, TERMS, isWorldAccount } from "./econ-params.js";
-import { citizenRepudiation } from "./econ-citizens.js";
+import { citizenRepudiation, servicePrincipalCents } from "./econ-citizens.js";
 import { firstPayment, isOpen, isOverdue, restructure } from "./econ-loan.js";
-import { addMiss, creditCap, fitsService, outstandingOf, recentRepudiations, serviceOf } from "./econ-credit.js";
+import { addMiss, creditCap, fitsService, outstandingOf, recentRepudiations, serviceCap, serviceOf }
+  from "./econ-credit.js";
 import { bondRatePpm, civLenderRefusal, offersFor, relationLevel, termRefusal } from "./econ-lenders.js";
 import { aiAccepts, aiShortfall } from "./econ-ai.js";
-import { funds, projected } from "./econ-batch.js";
+import { funds, lenderBalance, projected } from "./econ-batch.js";
 import { repudiate } from "./econ-repudiation.js";
 import { canChangeTax, isTaxLevel } from "./econ-tax.js";
 import { canChangeTariff, isTariffLevel, withTariff } from "./econ-trade.js";
@@ -55,6 +56,30 @@ export function limitRefusal(ctx, pid, { principal, ratePpm, term }) {
 }
 
 /**
+ * The most a civ may borrow from one lender over `term` at `ratePpm` (DESIGN 4.2), in whole Gold: within its credit
+ * limit, with the first payment inside the debt-service limit, and from a civ lender no more than half what it holds.
+ * The player's refusal names it, and the AI's build loans are sized by it.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ * @param {{ lender: Party, ratePpm: number, term: number }} q
+ */
+export function mostBorrowCents(ctx, pid, { lender, ratePpm, term }) {
+  let cap = creditRoom(ctx, pid);
+  if (!isWorldAccount(lender)) {
+    cap = Math.min(cap, Math.floor(lenderBalance(ctx.batch, /** @type {number} */ (lender)) / 2));
+  }
+  const room = serviceCap(incomeOf(ctx, pid)) - serviceOf(ctx.ledger, pid);
+  // The service estimate is a little short of the limit; whole Gold steps find the exact most either way.
+  const fits = (/** @type {number} */ cents) => cents <= cap && !limitRefusal(ctx, pid, { principal: cents, ratePpm,
+    term });
+  let most = Math.floor(Math.max(0, Math.min(cap, servicePrincipalCents({ roomCents: room, ratePpm, term }))) / 100)
+    * 100;
+  while (most > 0 && !fits(most)) most -= 100;
+  for (let step = 0; step < 20 && fits(most + 100); step += 1) most += 100;
+  return most;
+}
+
+/**
  * @param {unknown} term
  * @param {unknown} principal
  */
@@ -65,10 +90,12 @@ const hasBadTerms = (term, principal) => !TERMS.includes(/** @type {number} */ (
  * @param {TurnContext} ctx
  * @param {string} request
  * @param {Record<string, string | number | undefined>} who
- * @param {string | null} reason
+ * @param {string | null | { reason: string, fields: Record<string, string | number> }} refusal
  */
-function refuse(ctx, request, who, reason) {
-  if (reason) event(ctx, { kind: "refused", request, ...who, reason });
+function refuse(ctx, request, who, refusal) {
+  if (!refusal) return;
+  if (typeof refusal === "string") event(ctx, { kind: "refused", request, ...who, reason: refusal });
+  else event(ctx, { kind: "refused", request, ...who, reason: refusal.reason, ...refusal.fields });
 }
 
 /**
@@ -98,7 +125,11 @@ function borrowRefusal(ctx, { borrower, lender, principal, term }) {
   const offer = offersFor(query).find((row) => row.lender === lender);
   if (!offer) return noOfferReason(ctx, query, lender);
   const limit = limitRefusal(ctx, borrower, { principal, ratePpm: offer.ratePpm, term });
-  if (limit) return limit;
+  // Over a limit: the refusal says the most this lender would lend over this term, for "Borrow that instead".
+  if (limit) {
+    return { reason: limit, fields: { lender, term, most: mostBorrowCents(ctx, borrower, { lender,
+      ratePpm: offer.ratePpm, term }) } };
+  }
   openLoan(ctx, { lender, borrower, principal, ratePpm: offer.ratePpm, term, source: "borrow" });
   return null;
 }

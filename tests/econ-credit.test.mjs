@@ -21,14 +21,14 @@ test("credit cap: (12 + depth_turns - 4 * repudiations) * income - outstanding, 
   assert.equal(creditCap({ incomeCents: 1000, outstandingCents: 20000 }), 0);
 });
 
-test("debt-service limit: next turn's payments plus the new loan's first payment within 35 percent of income", () => {
-  assert.equal(serviceCap(10000), 3500);
+test("debt-service limit: next turn's payments plus the new loan's first payment within half of income", () => {
+  assert.equal(serviceCap(10000), 5000);
   assert.equal(serviceCap(-10), 0);
   const led = ledgerWith([l(3, "active", 10000, { ratePpm: 20000, term: 10 }), l(3, "default", 5000, { id: "L2" }),
     l(9, "active", 7000, { id: "L3" })]);
   assert.equal(serviceOf(led, 3), 200 + 1000, "the defaulted loan has no scheduled payment");
-  assert.equal(fitsService({ serviceCents: 1200, firstPaymentCents: 2300, incomeCents: 10000 }), true);
-  assert.equal(fitsService({ serviceCents: 1200, firstPaymentCents: 2301, incomeCents: 10000 }), false);
+  assert.equal(fitsService({ serviceCents: 1200, firstPaymentCents: 3800, incomeCents: 10000 }), true);
+  assert.equal(fitsService({ serviceCents: 1200, firstPaymentCents: 3801, incomeCents: 10000 }), false);
   assert.equal(fitsService({ serviceCents: 0, firstPaymentCents: 1, incomeCents: 0 }), false, "income 0 reads 0");
 });
 

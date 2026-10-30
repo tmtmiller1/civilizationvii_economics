@@ -10,7 +10,7 @@ declare global {
   /** `project` and `general` are 1.1's investment records; 1.0 only writes `loan`. */
   type LoanKind = "loan" | "project" | "general";
   /** Who opened the record: a player's borrow or lend request, the guard, or an AI rule. */
-  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens";
+  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens" | "ai-build";
   type RelationLevel = "war" | "unfriendly" | "neutral" | "friendly" | "unmet";
   type BlockReason = "default" | "repudiation";
 
@@ -74,6 +74,8 @@ declare global {
     misses: MissRow[];
     repudiations: RepudiationRow[];
     guardTurns: TurnRow[];
+    /** The last turn each AI took a build loan (DESIGN 6). */
+    buildTurns: TurnRow[];
     capHits: TurnRow[];
     lowIncome: LowIncomeRow[];
     taxes: TaxRow[];
@@ -148,6 +150,8 @@ declare global {
     purchaseCents?: number | null;
     /** The settlement's population, for the plan's split (DESIGN 4.17). */
     population?: number;
+    /** Percent of a point sent by addProgress that lands in this city (NOTES finding L); 100 until it's read. */
+    progressScalePct?: number;
   }
 
   /** One trade route between two major civs: the importer owns it (the merchant's civ). */
@@ -237,7 +241,12 @@ declare global {
   }
 
   /** The engine's negative-balance lines, in cents; null when the GlobalParameters row couldn't be read. */
-  interface EngineParams { amenityLineCents?: number | null; disbandLineCents?: number | null }
+  interface EngineParams {
+    amenityLineCents?: number | null;
+    disbandLineCents?: number | null;
+    /** GOLD_PURCHASE_MULTIPLIER in cents: the game's Gold price of a point of production (DESIGN 4.17 the plan). */
+    goldPerPointCents?: number | null;
+  }
 
   interface PlanRequest { kind: string; [field: string]: unknown }
 

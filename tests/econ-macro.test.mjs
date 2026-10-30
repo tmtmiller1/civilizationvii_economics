@@ -98,7 +98,7 @@ test("the engine's events and the crisis reach E, and a phase change tells the p
   assert.equal(out.macro.cycle.phases[ME], "slump");
 });
 
-test("Panic: from Banking, leverage above 1.5 in a boom; E drops 0.2, civ lenders stop, bond spread +0.5", () => {
+test("Panic: from Banking, leverage above 1.7 turns of world income in a boom; E drops 0.2, civ lenders stop, bond +0.5", () => {
   const civs = [me({ stages: OPEN_MACRO }), ai(AI, { stages: OPEN_MACRO, balanceCents: 100000 })];
   const ledger = { ...emptyLedger(), nextId: 2, loans: [makeLoan({ id: "L1", lender: "bond", borrower: AI,
     principal: 400000, ratePpm: 30000, term: 30, turn: 40 })] };
@@ -113,7 +113,7 @@ test("Panic: from Banking, leverage above 1.5 in a boom; E drops 0.2, civ lender
   assert.equal(ctx.readings.civ.get(ME).phase, "panic");
   assert.equal(ctx.readings.civ.get(ME).spreadPct, 152, "2 - 0.98 + 0.5");
   const bond = offersFor(offerQuery(ctx, ME, { principal: 1000, term: 10 })).find((o) => o.lender === "bond");
-  assert.ok(bond.ratePpm > 40000 * 1.4, `${bond.ratePpm}`);
+  assert.ok(bond.ratePpm > 20000 * 1.4, `${bond.ratePpm}`);
   const calm = plan({ civs: [me(), ai(AI, { balanceCents: 100000 })], ledger, macro: macroWith({ e: 12000 }) });
   assert.equal(calm.macro.cycle.panicUntil, null, "no Panic before the Banking stage");
 });
@@ -132,7 +132,7 @@ test("inflation On: bond debt beside idle Gold erodes the Gold above the reserve
   assert.equal(off.macro.inflation.piPpm, 0);
   const ctx = viewContext(input({ civs: [me(), rich], ledger, macro: on.macro, options: { ...ON, inflation: true } }));
   const bond = offersFor(offerQuery(ctx, ME, { principal: 1000, term: 10 })).find((o) => o.lender === "bond");
-  assert.equal(bond.ratePpm, 43600, "the premium: 50 * pi, 9%");
+  assert.equal(bond.ratePpm, 21800, "the premium: 50 * pi, 9%");
 });
 
 test("systems come from the government; a change is an event, a notice and a -0.03 shock on L", () => {
@@ -157,22 +157,22 @@ test("system terms in the rates and credit: Market's bond, Tribute's civ lenders
   const systemOf = (g) => ({ GOVERNMENT_ELECTIVE_REPUBLIC: "market", GOVERNMENT_DESPOTISM: "tribute",
     GOVERNMENT_OLIGARCHY: "merchantOligarchy", GOVERNMENT_AUTHORITARIANISM: "corporatist" })[g];
   const bondOf = (ctx) => offersFor(offerQuery(ctx, ME, { principal: 1000, term: 10 })).find((o) => o.lender === "bond");
-  assert.equal(bondOf(ctxFor(null)).ratePpm, 40000);
-  assert.equal(bondOf(ctxFor("GOVERNMENT_ELECTIVE_REPUBLIC")).ratePpm, 36000);
-  assert.equal(bondOf(ctxFor("GOVERNMENT_AUTHORITARIANISM")).ratePpm, 30000);
+  assert.equal(bondOf(ctxFor(null)).ratePpm, 20000);
+  assert.equal(bondOf(ctxFor("GOVERNMENT_ELECTIVE_REPUBLIC")).ratePpm, 18000);
+  assert.equal(bondOf(ctxFor("GOVERNMENT_AUTHORITARIANISM")).ratePpm, 15000);
   assert.equal(bondOf(ctxFor("GOVERNMENT_DESPOTISM")), undefined, "Tribute borrows from civs only");
   assert.equal(creditRoom(ctxFor(null), ME), 120000);
   assert.equal(creditRoom(ctxFor("GOVERNMENT_OLIGARCHY"), ME), 160000, "+4 turns");
   assert.equal(creditRoom(ctxFor("GOVERNMENT_AUTHORITARIANISM"), ME), 180000, "1.5x");
   const civRate = (government) => offersFor(offerQuery(ctxFor(government), ME, { principal: 1000, term: 10,
     lenders: [{ id: AI, balanceCents: 300000, stages: OPEN_ALL }] })).find((o) => o.lender === AI).ratePpm;
-  assert.equal(civRate(null), 20000);
-  assert.equal(civRate("GOVERNMENT_DESPOTISM"), 24000);
-  assert.equal(civRate("GOVERNMENT_OLIGARCHY"), 16000);
+  assert.equal(civRate(null), 10000);
+  assert.equal(civRate("GOVERNMENT_DESPOTISM"), 12000);
+  assert.equal(civRate("GOVERNMENT_OLIGARCHY"), 8000);
 });
 
 test("bills between systems: a Manorial importer pays 20% less, a Mercantile exporter is owed 10% more", () => {
-  const prices = { RESOURCE_IRON: 1000 };
+  const prices = { RESOURCE_IRON: 20000 };
   const civs = [me({ government: "GOVERNMENT_FEUDAL_MONARCHY", incomeCents: 100000 }),
     ai(AI, { government: "GOVERNMENT_PLUTOCRACY" })];
   const routes = [{ importer: ME, exporter: AI, resources: ["RESOURCE_IRON"] }];
@@ -191,25 +191,25 @@ test("a Planned importer pays the class price; the plan turns 20% of income into
   const routes = [{ importer: AI, exporter: ME, resources: ["RESOURCE_IRON"] }];
   const out = plan({ civs, routes, market, markets: { ...emptyMarkets(), prices: { RESOURCE_IRON: 5000 } } });
   assert.equal(out.macro.systems[AI].system, "planned");
-  assert.equal(out.trade.find((row) => row.payer === AI).owed, 200, "half of the Empire class price, 400");
+  assert.equal(out.trade.find((row) => row.payer === AI).owed, 10, "2.5% of the Empire class price, 400");
   const take = out.transfers.find((t) => t.reason === "plan");
-  assert.deepEqual([take.from, take.to, take.cents], [AI, "plan", 1800]);
-  assert.deepEqual(out.progress, [{ host: AI, cityId: "6:1", amount: 5, investmentId: `PL${AI}` },
+  assert.deepEqual([take.from, take.to, take.cents], [AI, "plan", 2000], "4 Gold a point, the game's purchase rate");
+  assert.deepEqual(out.progress, [{ host: AI, cityId: "6:1", amount: 4, investmentId: `PL${AI}` },
     { host: AI, cityId: "6:2", amount: 1, investmentId: `PL${AI}` }]);
   assert.equal(out.macro.cycle.l[AI], undefined, "outside the world cycle");
   assert.ok(out.notices.length === 0 || out.notices.every((n) => n.pid === ME));
 });
 
-test("citizen loans: offered to a Civic market civ within citizen_cap; the interest comes back doubled as celebration", () => {
+test("citizen loans: offered to a Civic market civ within citizen_cap; the interest comes back 6-fold as celebration", () => {
   const cr = (over = {}) => me({ government: "GOVERNMENT_CLASSICAL_REPUBLIC", incomeCents: 30000,
     commerceSettlements: 2, happinessCents: 600, ...over });
   const borrow = { kind: "borrow", borrower: ME, lender: "citizens", principal: 50000, term: 10 };
   const opened = plan({ civs: [cr(), ai(AI)], requests: [borrow] });
   const loan = opened.ledger.loans.find((l) => l.lender === "citizens");
-  assert.deepEqual([loan.principal, loan.ratePpm, loan.term], [50000, 15000, 10], "0.75 of Exploration's base rate");
+  assert.deepEqual([loan.principal, loan.ratePpm, loan.term], [50000, 7500, 10], "0.75 of Exploration's base rate");
   assert.deepEqual(opened.transfers.find((t) => t.reason === "principal").from, "citizens");
   const paid = plan({ civs: [cr(), ai(AI)], turn: 51, ledger: opened.ledger, macro: opened.macro });
-  assert.deepEqual(paid.celebration.map((r) => [r.pid, r.amount, r.reason]), [[ME, 1500, "citizens"]]);
+  assert.deepEqual(paid.celebration.map((r) => [r.pid, r.amount, r.reason]), [[ME, 2250, "citizens"]]);
   const missed = plan({ civs: [cr({ balanceCents: -100000 }), ai(AI)], turn: 51, ledger: opened.ledger,
     macro: opened.macro });
   assert.deepEqual(missed.celebration.map((r) => [r.amount, r.reason]), [[-3000, "citizens-miss"]]);
@@ -257,8 +257,8 @@ test("the AI's citizen rule: a Civic market AI short of 10 turns of income borro
   const out = plan({ civs });
   const loan = out.ledger.loans.find((l) => l.lender === "citizens");
   assert.ok(loan && loan.borrower === AI && loan.source === "ai-citizens", "opened by the rule");
-  assert.equal(loan.principal, 30334, "the most whose first payment fits 35% of income");
-  assert.ok(out.transfers.some((t) => t.from === "citizens" && t.to === AI && t.cents === 30334));
+  assert.equal(loan.principal, 46411, "the most whose first payment fits half of income");
+  assert.ok(out.transfers.some((t) => t.from === "citizens" && t.to === AI && t.cents === 46411));
   const again = plan({ civs, turn: 51, ledger: out.ledger, macro: out.macro });
   assert.equal(again.ledger.loans.filter((l) => l.lender === "citizens").length, 1, "one at a time");
   const flush = plan({ civs: [me(), ai(AI, { government: "GOVERNMENT_CLASSICAL_REPUBLIC", commerceSettlements: 1 })] });

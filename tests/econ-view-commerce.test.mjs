@@ -10,13 +10,14 @@ import { makeInvestment } from "../ui/econ-invest.js";
 import { OPEN_ALL, civ, input } from "./_fixtures.mjs";
 
 const ME = 2;
-const prices = { RESOURCE_IRON: 1000, RESOURCE_WINE: 600, RESOURCE_SALT: 200 };
+// Prices 20 times a real copy's, so the bills read as round figures at the 2.5% share (DESIGN 4.10).
+const prices = { RESOURCE_IRON: 20000, RESOURCE_WINE: 12000, RESOURCE_SALT: 4000 };
 const world = (over = {}) => input({ civs: [civ(ME, { human: true, incomeCents: 3000, balanceCents: 100000,
   stages: OPEN_ALL, tradeIncomeCents: 900 }), civ(6, { incomeCents: 2000, balanceCents: 0, stages: OPEN_ALL,
   cities: [{ id: "6:1", build: "BUILDING_BANK", neededProgress: 50, roleBuilding: true },
     { id: "6:2", build: null, neededProgress: 0 }] }), civ(8, { incomeCents: 1000, stages: OPEN_ALL }),
   civ(9, { alive: false })],
-markets: { ...emptyMarkets(), prices, history: { RESOURCE_IRON: [900, 950, 1000], RESOURCE_SALT: [200] } },
+markets: { ...emptyMarkets(), prices, history: { RESOURCE_IRON: [18000, 19000, 20000], RESOURCE_SALT: [4000] } },
 routes: [{ importer: ME, exporter: 6, resources: ["RESOURCE_IRON", "RESOURCE_WINE"] },
   { importer: 6, exporter: ME, resources: ["RESOURCE_SALT"] }, { importer: 8, exporter: ME, resources: ["RESOURCE_IRON"] }],
 market: { resources: [{ type: "RESOURCE_IRON", class: "RESOURCECLASS_EMPIRE" }], copies: { RESOURCE_IRON: 3 } },
@@ -25,8 +26,8 @@ relations: [{ a: ME, b: 6, level: "neutral" }, { a: ME, b: 8, level: "war" }], .
 test("the price list: dearest first, holders from the market read, the change over the history", () => {
   const rows = marketView(world());
   assert.deepEqual(rows.map((r) => [r.type, r.priceCents, r.holders, r.changeCents, r.class]), [
-    ["RESOURCE_IRON", 1000, 3, 100, "RESOURCECLASS_EMPIRE"], ["RESOURCE_WINE", 600, 0, 0, null],
-    ["RESOURCE_SALT", 200, 0, 0, null]]);
+    ["RESOURCE_IRON", 20000, 3, 2000, "RESOURCECLASS_EMPIRE"], ["RESOURCE_WINE", 12000, 0, 0, null],
+    ["RESOURCE_SALT", 4000, 0, 0, null]]);
   assert.deepEqual(marketView(input({})), []);
   const tie = marketView(input({ markets: { ...emptyMarkets(), prices: { B: 5, A: 5 } } }));
   assert.deepEqual(tie.map((r) => r.type), ["A", "B"]);

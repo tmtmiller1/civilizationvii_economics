@@ -39,7 +39,7 @@ export function routeBillCents(route, prices, perBuilding = {}) {
   for (const type of route.resources || []) sum += priceOf(prices, type);
   const up = 100 + tradeBuildingPct(route.exporterTradeBuildings, perBuilding.exporterPct);
   const down = 100 - tradeBuildingPct(route.importerTradeBuildings, perBuilding.importerPct);
-  return Math.round((sum * TRADE.billPct * up * down) / 1000000);
+  return Math.round((sum * TRADE.billPermille * up * down) / 10000000);
 }
 
 /**
@@ -184,17 +184,67 @@ export function highTariffCosts({ tariffs, owed, turn, everyTurns = () => TRADE.
   return out;
 }
 
+/** Tariff levels from lowest to highest. */
+const RANK = { none: 0, low: 1, high: 2 };
+
 /**
- * DESIGN 6: an AI stays at None unless a civ that imports from it holds a High tariff; then it matches 2 turns after
- * that tariff was set, and drops back once no such partner holds one. Returns the level it wants, or null to stay.
- * @param {{ pid: number, tariffs: TariffRow[], importers: number[], turn: number }} q
+ * @param {TariffLevel} a
+ * @param {TariffLevel} b
+ */
+const higher = (a, b) => (RANK[b] > RANK[a] ? b : a);
+
+/**
+ * The level an AI would set on its own: Low against a partner it pays more than it's paid and isn't Friendly with,
+ * High against one it's Unfriendly or worse with. A tariff falls on everything a civ imports, so a partner counts
+ * only when it sells the AI at least `aiPartnerSharePct` of its imports (sharePct, 100 when not given). An AI whose
+ * High tariff costs it less (Mercantile, DESIGN 4.17) goes to High against any partner it isn't Friendly with and pays.
+ * @param {{ level: RelationLevel, netPayer: boolean, sharePct?: number }[]} partners the civs it imports from
+ * @param {boolean} cheapHigh
+ * @returns {TariffLevel}
+ */
+export function aiOwnTariff(partners, cheapHigh) {
+  /** @type {TariffLevel} */
+  let want = "none";
+  for (const partner of partners) {
+    if ((partner.sharePct ?? 100) < TRADE.aiPartnerSharePct) continue;
+    if (partner.level === "unfriendly" || partner.level === "war") want = higher(want, "high");
+    else if (partner.level !== "friendly" && partner.netPayer) want = higher(want, cheapHigh ? "high" : "low");
+  }
+  return want;
+}
+
+/**
+ * DESIGN 6: an AI answers a tariff on its exports in kind (Low with Low, High with High) 2 turns after it's set, sets
+ * one of its own by aiOwnTariff, takes the higher of the two, and drops back once neither reason holds. It answers an
+ * importer that buys at least `aiPartnerSharePct` of its exports (`importerSharePct`, 100 when not given). Returns
+ * the level it wants, or null to stay. The 5-turn limit is the caller's.
+ * @param {{ pid: number, tariffs: TariffRow[], importers: number[], turn: number,
+ *   partners?: { level: RelationLevel, netPayer: boolean, sharePct?: number }[], cheapHigh?: boolean,
+ *   importerSharePct?: (pid: number) => number }} q
  * @returns {TariffLevel | null}
  */
-export function aiTariffWanted({ pid, tariffs, importers, turn }) {
+export function aiTariffWanted({ pid, tariffs, importers, turn, partners = [], cheapHigh = false,
+  importerSharePct = () => 100 }) {
   const mine = tariffOf(tariffs, pid);
-  const against = tariffs.filter((row) => importers.includes(row.pid) && row.level === "high");
-  const settled = against.some((row) => turn - row.changedTurn >= TRADE.aiMatchTurns);
-  if (settled && mine !== "high") return "high";
-  if (!against.length && mine === "high") return "none";
-  return null;
+  /** @type {TariffLevel} */
+  let answer = "none";
+  for (const row of tariffs) {
+    if (!importers.includes(row.pid) || importerSharePct(row.pid) < TRADE.aiPartnerSharePct) continue;
+    answer = higher(answer, answerTo(row, mine, turn));
+  }
+  const want = higher(answer, aiOwnTariff(partners, cheapHigh));
+  return want === mine ? null : want;
+}
+
+/**
+ * The answer to one importer's tariff: its level once it's 2 turns old; before that the lower of it and the AI's own
+ * level, so a raise waits 2 turns and an easing is followed at once.
+ * @param {TariffRow} row
+ * @param {TariffLevel} mine
+ * @param {number} turn
+ * @returns {TariffLevel}
+ */
+function answerTo(row, mine, turn) {
+  const settled = turn - row.changedTurn >= TRADE.aiMatchTurns;
+  return settled || RANK[mine] >= RANK[row.level] ? row.level : mine;
 }

@@ -38,7 +38,7 @@ test("every major is read with the same fields, human and AI alike; stages come 
   assert.deepEqual([input.civs[1].depthTurns, input.civs[1].depthFactorPct], [2, 96], "one Bank");
   assert.equal(input.civs[1].upkeepCents, 200, "one unit type at 1 Gold plus one building at 1 Gold");
   assert.deepEqual(input.relations.map((r) => [r.a, r.b, r.level]), [[0, 3, "neutral"], [0, 5, "neutral"], [3, 5, "war"]]);
-  assert.deepEqual(input.params, { amenityLineCents: 0, disbandLineCents: -1000 });
+  assert.deepEqual(input.params, { amenityLineCents: 0, disbandLineCents: -1000, goldPerPointCents: 400 });
   assert.equal(input.age, "AGE_EXPLORATION");
   removeFakeEngine();
 });

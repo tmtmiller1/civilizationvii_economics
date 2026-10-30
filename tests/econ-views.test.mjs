@@ -106,6 +106,28 @@ test("the Loans tab lists the loans overdue first, queues repay, restructure and
   assert.ok(textOf(third).includes("LOC_ECONOMICS_LOANS_PENDING"));
 });
 
+test("a borrow over a limit shows the most that lender would lend, and one click borrows that instead", () => {
+  resetConfirmForTests();
+  resetFormForTests();
+  const api = makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: 20000, incomeCents: 1000 }),
+    civ(6, { balanceCents: 1e6 })], ledger: emptyLedger() } });
+  const host = document.createElement("div");
+  renderLoans(host, api);
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_REASON_SERVICE_CAP"), "100 Gold's first payment is over half of 10");
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_BORROW_MOST|Civ 6|10|45"), "45 Gold from civ 6 over 10 turns");
+  const instead = byClass(host, "econ-button").filter((b) => b.textContent === "LOC_ECONOMICS_BORROW_THAT");
+  assert.equal(instead.length, 2, "one for each lender over the limit");
+  instead[0].click();
+  assert.deepEqual(api.requests.at(-1), { kind: "borrow", borrower: ME, lender: 6, principal: 4500, term: 10 });
+  const spoken = makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: 20000, incomeCents: 1000 }),
+    civ(6, { balanceCents: 1e6 })], ledger: { ...emptyLedger(), loans: [makeLoan({ id: "L1", lender: 6, borrower: ME,
+    principal: 4500, ratePpm: 10000, term: 10, turn: 40 })], nextId: 2 } } });
+  const full = document.createElement("div");
+  renderLoans(full, spoken);
+  assert.ok(textOf(full).includes("LOC_ECONOMICS_BORROW_MOST_NONE|Civ 6|10"));
+  assert.equal(byClass(full, "econ-button").some((b) => b.textContent === "LOC_ECONOMICS_BORROW_THAT"), false);
+});
+
 test("stages closed show the node that opens them; the Fiscal tab draws the cards and sends the swap", async () => {
   const closed = makeApi({ planInput: { civs: [civ(ME, { human: true, stages: { moneylending: null, publicDebt: null } })] } });
   const host = document.createElement("div");
@@ -143,8 +165,9 @@ test("stages closed show the node that opens them; the Fiscal tab draws the card
 
 /** A 1.1 world: the player imports iron from 6 and wine goes back; 6 has a build to back. */
 function commerceApi(over = {}) {
-  const markets = { ...emptyMarkets(), prices: { RESOURCE_IRON: 1000, RESOURCE_WINE: 600 },
-    history: { RESOURCE_IRON: [800, 900, 1000], RESOURCE_WINE: [600] } };
+  // Prices 20 times a real copy's, so the bills read as round figures at the 2.5% share (DESIGN 4.10).
+  const markets = { ...emptyMarkets(), prices: { RESOURCE_IRON: 20000, RESOURCE_WINE: 12000 },
+    history: { RESOURCE_IRON: [16000, 18000, 20000], RESOURCE_WINE: [12000] } };
   const civs = [civ(ME, { human: true, balanceCents: 100000, incomeCents: 10000, stages: OPEN_ALL, tradeIncomeCents: 600 }),
     civ(6, { balanceCents: 1e6, incomeCents: 2000, stages: OPEN_ALL, cities: [{ id: "6:1", build: "BUILDING_LIBRARY",
       neededProgress: 40 }] })];
@@ -162,7 +185,7 @@ test("the Markets tab lists prices dearest first, with holders, the change and t
   renderMarkets(host, commerceApi());
   const text = textOf(host);
   assert.ok(text.indexOf("name:RESOURCE_IRON") < text.indexOf("name:RESOURCE_WINE"), "dearest first");
-  assert.ok(text.includes("LOC_ECONOMICS_MARKETS_ROW|2|+2|3"), "two copies held, up 2 Gold over three turns");
+  assert.ok(text.includes("LOC_ECONOMICS_MARKETS_ROW|2|+40|3"), "two copies held, up 40 Gold over three turns");
   assert.equal(byClass(host, "econ-spark").length, 1, "one history long enough to draw");
   const off = document.createElement("div");
   renderMarkets(off, commerceApi({ options: { markets: false } }));
@@ -223,3 +246,39 @@ test("the Fiscal tab's tariff row: the choice once the stage opens, the wait aft
 });
 
 test.after(() => removeFakeDom());
+
+test("the Fiscal tab says 'next turn' for one turn and 'one more turn' for the last of a system's blend", () => {
+  const api = makeApi({ fiscal: () => ({ goldCents: 2300, happinessCents: 800, netHappinessCents: 600, settlements: 2,
+    celebrationLeftCents: 500, celebrating: false, atWar: false }) });
+  api.state.cards = [{ type: "TRADITION_ECONOMICS_LIGHT_EX", level: "LIGHT", hash: 1, index: 1, active: false,
+    unlocked: true }];
+  const host = document.createElement("div");
+  renderFiscal(host, api);
+  const text = textOf(host);
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURN|1"), text);
+  assert.equal(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|1"), false);
+});
+
+test("a host in default: general investment shows why, and a button opens its development loan with the same Gold", () => {
+  const inDefault = { ...emptyLedger(), nextId: 2, loans: [{ ...makeLoan({ id: "L1", lender: "bond", borrower: 6,
+    principal: 100, ratePpm: 20000, term: 10, turn: 1 }), state: "default", missed: 3 }] };
+  const api = commerceApi({ ledger: inDefault });
+  const host = document.createElement("div");
+  renderTrade(host, api);
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_REASON_HOST_DEFAULT"));
+  const instead = byClass(host, "econ-button").find((b) => b.textContent === "LOC_ECONOMICS_INVEST_PROJECT_INSTEAD");
+  const before = api.requests.length;
+  instead.click();
+  assert.equal(api.requests.length, before, "opening the form sends nothing");
+  const open = document.createElement("div");
+  renderTrade(open, api);
+  assert.ok(textOf(open).includes("LOC_ECONOMICS_INVEST_PROJECT_FOR|Civ 6|300"));
+  const pick = byClass(open, "econ-button").find((b) => b.textContent.startsWith("LOC_ECONOMICS_INVEST_PROJECT|"));
+  pick.click();
+  assert.deepEqual(api.requests.at(-1), { kind: "invest", investor: ME, host: 6, form: "project", cents: 30000,
+    cityId: "6:1", asAid: false });
+  byClass(open, "econ-button").find((b) => b.textContent === "LOC_ECONOMICS_CLOSE").click();
+  const closed = document.createElement("div");
+  renderTrade(closed, api);
+  assert.equal(textOf(closed).includes("LOC_ECONOMICS_INVEST_PROJECT_FOR|"), false);
+});

@@ -12,7 +12,7 @@ import { utf8Bytes } from "../ui/econ-state.js";
 import { computeDepth, rolesOf } from "../ui/econ-depth.js";
 import { creditCap } from "../ui/econ-credit.js";
 import { civRatePpm } from "../ui/econ-lenders.js";
-import { INVEST } from "../ui/econ-params.js";
+import { INVEST, TRADE } from "../ui/econ-params.js";
 import { gen } from "./_prng.mjs";
 import { OPEN_ALL, PARAMS } from "./_fixtures.mjs";
 
@@ -38,7 +38,7 @@ export function routeProfitRows(age) {
   for (const cls of classes) {
     for (const copies of [1, 2, 3]) {
       for (const scarcity of [100, 200]) {
-        const bill = Math.round((base[cls] * scarcity / 100) * copies * 0.5);
+        const bill = Math.round((base[cls] * scarcity / 100) * copies * TRADE.billPermille / 1000);
         rows.push({ class: cls, copies, scarcityPct: scarcity, billCents: bill,
           exporterNativeLandCents: nativeIncome(data.tradeYields, "DOMAIN_LAND", copies),
           exporterNativeSeaCents: nativeIncome(data.tradeYields, "DOMAIN_SEA", copies) });
@@ -124,24 +124,35 @@ export function makeTradeGame(seed, civCount = 12) {
   }
   const copies = {};
   for (const list of owned.values()) for (const type of list) copies[type] = (copies[type] || 0) + 1;
-  return { seed, civs, routes, market: { resources, copies, strategic: [], industry: 0 } };
+  // Relationships for the AI's tariff rule, drawn after the routes so the routes are the same as before.
+  const levels = ["friendly", "neutral", "neutral", "neutral", "unfriendly"];
+  const relations = [];
+  for (let i = 0; i < ids.length; i += 1) {
+    for (let j = i + 1; j < ids.length; j += 1) relations.push({ a: ids[i], b: ids[j], level: g.pick(levels) });
+  }
+  return { seed, civs, routes, relations, market: { resources, copies, strategic: [], industry: 0 } };
 }
 
-/** Runs one trade game On (Markets and trade bills) or Off; returns per-civ net settlement and the caps hit. */
-export function runTradeGame(game, { on, turns = 200 }) {
+/**
+ * Runs one trade game On (Markets and trade bills) or Off; returns per-civ net settlement, the caps hit and each
+ * turn's tariff levels. `ai` turns the AI rules on, which set and answer tariffs (DESIGN 6).
+ */
+export function runTradeGame(game, { on, turns = 200, ai = false }) {
   let balances = new Map(game.civs.map((c) => [c.id, c.startCents]));
   let markets = emptyMarkets();
   let ledger;
   const facts = { netByCiv: new Map(game.civs.map((c) => [c.id, 0])), paidShare: [], waived: 0, capped: 0, rows: 0,
-    maxMarketsBytes: 0, planMs: [] };
+    maxMarketsBytes: 0, planMs: [], tariffTurns: { none: 0, low: 0, high: 0 }, highPairTurns: 0, pairTurns: 0,
+    tariffChanges: 0 };
   for (let turn = 1; turn <= turns; turn += 1) {
     const civs = game.civs.map((c) => ({ id: c.id, alive: true, human: c.human, balanceCents: balances.get(c.id),
       incomeCents: Math.round((1500 + 10 * turn) * c.factor), upkeepCents: 0, stages: OPEN_ALL,
       cities: Array.from({ length: c.cities }, (_, k) => ({ id: `${c.id}:${k}`, build: null, neededProgress: 0 })) }));
     const t0 = process.hrtime.bigint();
-    const plan = planTurn({ turn, age: "AGE_EXPLORATION", civs, relations: [], requests: [], params: PARAMS,
-      options: { loans: false, investment: false, markets: on, ai: false, cycle: "off", systems: false }, ledger, markets, routes: game.routes,
-      market: game.market });
+    const plan = planTurn({ turn, age: "AGE_EXPLORATION", civs, relations: game.relations || [], requests: [],
+      params: PARAMS, options: { loans: false, investment: false, markets: on, ai, cycle: "off", systems: false },
+      ledger, markets, routes: game.routes, market: game.market });
+    readTariffs(facts, plan, game);
     facts.planMs.push(Number(process.hrtime.bigint() - t0) / 1e6);
     for (const row of plan.trade) {
       facts.netByCiv.set(row.payer, facts.netByCiv.get(row.payer) - row.paid);
@@ -160,4 +171,18 @@ export function runTradeGame(game, { on, turns = 200 }) {
   }
   facts.finalBalances = balances;
   return facts;
+}
+
+/** Each civ's tariff this turn, and how many trading pairs stand at High on both sides. */
+function readTariffs(facts, plan, game) {
+  const level = (pid) => plan.markets.tariffs.find((row) => row.pid === pid)?.level ?? "none";
+  for (const c of game.civs) facts.tariffTurns[level(c.id)] += 1;
+  facts.tariffChanges += plan.events.filter((e) => e.kind === "tariff").length;
+  const pairs = new Set(game.routes.map((r) => (r.importer < r.exporter ? `${r.importer}:${r.exporter}`
+    : `${r.exporter}:${r.importer}`)));
+  for (const key of pairs) {
+    const [a, b] = key.split(":").map(Number);
+    facts.pairTurns += 1;
+    if (level(a) === "high" && level(b) === "high") facts.highPairTurns += 1;
+  }
 }

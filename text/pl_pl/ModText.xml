@@ -24,7 +24,7 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_AI_ON" Language="pl_PL"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_AI_ON_DESCRIPTION" Language="pl_PL"><Text>Computer players borrow, lend, restructure and repudiate by the same rules you play under.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_NAME" Language="pl_PL"><Text>Rates</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_DESCRIPTION" Language="pl_PL"><Text>Scales every interest rate in the game, the rate cap included. Standard is 3 percent a turn in Antiquity, 2 in Exploration and 1.5 in Modern before standing and relationship adjust it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_DESCRIPTION" Language="pl_PL"><Text>Scales every interest rate in the game, the rate cap included. Standard is 1.5 percent a turn in Antiquity, 1 in Exploration and 0.75 in Modern before standing and relationship adjust it.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_LOW" Language="pl_PL"><Text>Low</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_LOW_DESCRIPTION" Language="pl_PL"><Text>Three quarters of the standard rates. Borrowing is cheap and lending pays less.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_STANDARD" Language="pl_PL"><Text>Standard</Text></Replace>
@@ -38,7 +38,7 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_ON" Language="pl_PL"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_ON_DESCRIPTION" Language="pl_PL"><Text>The three tax cards appear in the policy list as their civics unlock them.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_NAME" Language="pl_PL"><Text>Economic stages</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_DESCRIPTION" Language="pl_PL"><Text>Whether each part opens with the tech or civic that historically brought it in: loans between civilizations with Moneylending, the bond market and longer terms with Public debt.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_DESCRIPTION" Language="pl_PL"><Text>Whether each part opens with the tech or civic that historically brought it in: loans between civilizations and 20-turn terms with Moneylending, the bond market and 30-turn terms with Public debt.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_OFF" Language="pl_PL"><Text>Off</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_OFF_DESCRIPTION" Language="pl_PL"><Text>Every part is open from the start of its age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_STAGES_ON" Language="pl_PL"><Text>On</Text></Replace>
@@ -54,7 +54,7 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_OFF" Language="pl_PL"><Text>Off</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_OFF_DESCRIPTION" Language="pl_PL"><Text>Every civilization pays its full bill.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_ON" Language="pl_PL"><Text>On</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_ON_DESCRIPTION" Language="pl_PL"><Text>Tariffs open with Imperialism, on the Fiscal tab. The computer players answer a High tariff in kind.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_ON_DESCRIPTION" Language="pl_PL"><Text>Tariffs open with Imperialism, on the Fiscal tab. The computer players set their own and answer yours in kind.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_NAME" Language="pl_PL"><Text>Foreign investment</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_DESCRIPTION" Language="pl_PL"><Text>Lets civilizations put Gold into each other: a development loan on a city's current build, a general investment in its treasury, or either one as aid, which isn't paid back.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_OFF" Language="pl_PL"><Text>Off</Text></Replace>
@@ -118,10 +118,13 @@
         <Replace Tag="LOC_ECONOMICS_LOANS_STAGES_ALL_OPEN" Language="pl_PL"><Text>Every lender of this age is open to you.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_STAGE_CLOSED" Language="pl_PL"><Text>{1_Part} opens with {2_Node}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_STAGE_NEXT_AGE" Language="pl_PL"><Text>the next age</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PART_CIV_LOANS" Language="pl_PL"><Text>Loans from other civilizations</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PART_BOND" Language="pl_PL"><Text>The bond market and longer terms</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_CIV_LOANS" Language="pl_PL"><Text>Loans from other civilizations, and 20-turn terms</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_BOND" Language="pl_PL"><Text>The bond market and 30-turn terms</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW" Language="pl_PL"><Text>Borrow</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_NO_OFFERS" Language="pl_PL"><Text>Nobody will lend you this amount on these terms right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_MOST" Language="pl_PL"><Text>The most you can borrow from {1_Lender} over {2_Turns} turns is {3_Amount} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_MOST_NONE" Language="pl_PL"><Text>Your payments already take all your limits allow, so you can't borrow from {1_Lender} over {2_Turns} turns right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_THAT" Language="pl_PL"><Text>Borrow that instead</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_OVER_ROOM" Language="pl_PL"><Text>That's more than your credit limit allows.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OFFER_SERVICE" Language="pl_PL"><Text>With this loan, your payments would take {1_Percent}% of your income.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OFFER_ROW" Language="pl_PL"><Text>{1_Lender}: {2_Rate} a turn, about {3_Payment} Gold a turn, {4_Interest} Gold of interest in all</Text></Replace>
@@ -175,6 +178,7 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_HAPPINESS_NOW" Language="pl_PL"><Text>Happiness a turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION" Language="pl_PL"><Text>Next celebration</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS" Language="pl_PL"><Text>in {1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_TURN" Language="pl_PL"><Text>next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_NEVER" Language="pl_PL"><Text>not until your Happiness rises</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATING" Language="pl_PL"><Text>you're celebrating now</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_NO_CARD" Language="pl_PL"><Text>No tax card</Text></Replace>
@@ -220,6 +224,8 @@
         <Replace Tag="LOC_ECONOMICS_NOTICE_REPUDIATED" Language="pl_PL"><Text>You repudiated {1_Amount} Gold owed to {2_Lender}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REPUDIATED_BY" Language="pl_PL"><Text>{1_Borrower} repudiated {2_Amount} Gold it owed you. Its grievance against you is booked, and the civilizations it has met think less of it.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED" Language="pl_PL"><Text>Your {1_Request} was refused: {2_Reason}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED_MOST" Language="pl_PL"><Text>The most you can borrow from {1_Lender} over {2_Turns} turns is {3_Amount} Gold. The Loans tab can borrow that instead.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED_NONE" Language="pl_PL"><Text>Your payments already take all your limits allow, so you can't borrow from {1_Lender} over {2_Turns} turns right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_BORROW" Language="pl_PL"><Text>borrow request</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_LEND" Language="pl_PL"><Text>loan offer</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_REPAY" Language="pl_PL"><Text>early repayment</Text></Replace>
@@ -228,14 +234,14 @@
         <Replace Tag="LOC_ECONOMICS_REQUEST_TAX" Language="pl_PL"><Text>tax change</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_UNKNOWN" Language="pl_PL"><Text>request</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_CREDIT_CAP" Language="pl_PL"><Text>it's over your credit limit.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REASON_SERVICE_CAP" Language="pl_PL"><Text>the payments would take more than 35 percent of your income.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_SERVICE_CAP" Language="pl_PL"><Text>the payments would take more than half your income.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_TERMS" Language="pl_PL"><Text>the amount or term isn't one the lender takes.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_LOAN_LIMIT" Language="pl_PL"><Text>six loans are open already.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_LENDER" Language="pl_PL"><Text>that lender is gone.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_BORROWER" Language="pl_PL"><Text>that borrower is gone.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_NO_OFFER" Language="pl_PL"><Text>the lender won't lend to you right now.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REASON_TERM_STAGE" Language="pl_PL"><Text>terms beyond 10 turns need Public debt.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REASON_TERM_BANKING" Language="pl_PL"><Text>a civilization lends beyond 10 turns only with a bank.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TERM_STAGE" Language="pl_PL"><Text>20-turn terms need Moneylending, and 30-turn terms need Public debt.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TERM_BANKING" Language="pl_PL"><Text>a civilization lends over 30 turns only with a bank.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_TERM_REPUDIATION" Language="pl_PL"><Text>while a repudiation counts against you, terms stay at 10 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_PARTIES" Language="pl_PL"><Text>that isn't something you can ask of them.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_AI_OFF" Language="pl_PL"><Text>the computer players aren't borrowing or lending in this game.</Text></Replace>
@@ -348,7 +354,12 @@
         <Replace Tag="LOC_ECONOMICS_REASON_BUILD" Language="pl_PL"><Text>that city isn't working on anything that needs production.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_SAME_TURN" Language="pl_PL"><Text>you've already given them aid this turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_RELATION" Language="pl_PL"><Text>you can't invest in a civilization you're at war with or that's Unfriendly to you; aid only needs peace.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REASON_HOST_DEFAULT" Language="pl_PL"><Text>they're in default and won't take general investment.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_HOST_DEFAULT" Language="pl_PL"><Text>they're in default and won't take general investment. A development loan on one of their builds is still open to you.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED_PROJECT" Language="pl_PL"><Text>You can still put {2_Amount} Gold into one of {1_Host}'s builds as a development loan from the Trade tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CLOSE" Language="pl_PL"><Text>Close</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_PROJECT_INSTEAD" Language="pl_PL"><Text>Set up a development loan instead</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_PROJECT_FOR" Language="pl_PL"><Text>A development loan to {1_Host}: {2_Amount} Gold into one build</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_PROJECT_NONE" Language="pl_PL"><Text>None of their cities is building anything a loan can back right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_OFFER_GONE" Language="pl_PL"><Text>that offer has lapsed.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_TARIFF" Language="pl_PL"><Text>tariff change</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_INVEST" Language="pl_PL"><Text>investment</Text></Replace>
@@ -415,14 +426,26 @@
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_REPUDIATION" Language="pl_PL"><Text>a repudiated debt</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_NEW" Language="pl_PL"><Text>a new trade route</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_ENDED" Language="pl_PL"><Text>a trade route ending</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_STANDING" Language="pl_PL"><Text>trade routes standing</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_INCOME_UP" Language="pl_PL"><Text>the world's income rising</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_INCOME_DOWN" Language="pl_PL"><Text>the world's income falling</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_INCOME_UP" Language="pl_PL"><Text>the world's income growing faster than usual</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_INCOME_DOWN" Language="pl_PL"><Text>the world's income growing slower than usual</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_OVERHEATING" Language="pl_PL"><Text>a long boom running out of steam</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CREDIT_GROWTH" Language="pl_PL"><Text>credit growing fast</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_UNKNOWN" Language="pl_PL"><Text>events</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_WAR_DECLARED_MANY" Language="pl_PL"><Text>{1_Count} wars declared</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_PEACE_MANY" Language="pl_PL"><Text>{1_Count} peace treaties</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CAPTURE_MANY" Language="pl_PL"><Text>{1_Count} settlements captured</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_RAZE_MANY" Language="pl_PL"><Text>{1_Count} settlements razed</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_DISASTER_MANY" Language="pl_PL"><Text>{1_Count} disasters</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_DEFAULT_MANY" Language="pl_PL"><Text>{1_Count} defaults</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_REPUDIATION_MANY" Language="pl_PL"><Text>{1_Count} repudiated debts</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_NEW_MANY" Language="pl_PL"><Text>{1_Count} new trade routes</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_ROUTE_ENDED_MANY" Language="pl_PL"><Text>{1_Count} trade routes ending</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LIST_AND" Language="pl_PL"><Text>and</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_SYSTEM" Language="pl_PL"><Text>Your economic system is now the {1_System}. Its numbers move over from the {2_Old} during the next 10 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_PHASE" Language="pl_PL"><Text>Business cycle: {1_Phase}, after {2_Causes}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_PHASE_QUIET" Language="pl_PL"><Text>Business cycle: {1_Phase}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_AGE_GOLD" Language="pl_PL"><Text>The age change kept {1_Kept} of your {2_Held} Gold. The game caps the Gold a civilization carries into a new age, and the figure before it is what you held at the start of the last turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_AGE_GOLD" Language="pl_PL"><Text>The age change kept {2_Kept} of {1_Civ}'s {3_Held} Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_PANIC" Language="pl_PL"><Text>A financial Panic: for 5 turns civilizations stop lending to each other and bond rates jump. A slump usually follows.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_PLAN" Language="pl_PL"><Text>The plan put {1_Amount} Gold into the builds of {2_Count} of your cities.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_SYSTEM" Language="pl_PL"><Text>{1_Civ} changed its economic system to the {2_System}.</Text></Replace>
@@ -456,8 +479,8 @@
         <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_NOTE" Language="pl_PL"><Text>Only civilizations with Public debt take part. Gold above twenty turns of income loses this much each turn, and bond rates rise with it. Paying bond debt down brings it back.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_DEBT" Language="pl_PL"><Text>World debt</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_OUTSTANDING" Language="pl_PL"><Text>All loans outstanding</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_LEVERAGE" Language="pl_PL"><Text>Against the Gold the civilizations hold</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_NOTE" Language="pl_PL"><Text>From the Banking stage, a boom with loans above one and a half times the Gold held can turn into a Panic.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_LEVERAGE" Language="pl_PL"><Text>In turns of the world's income</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_NOTE" Language="pl_PL"><Text>From the Banking stage, a boom with loans above {1_Turns} turns of the world's income can turn into a Panic.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY" Language="pl_PL"><Text>Old buildings</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_POINTS" Language="pl_PL"><Text>Legacy</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_CUSHION" Language="pl_PL"><Text>Slump cushion</Text></Replace>
@@ -468,6 +491,7 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_FROM_IDEOLOGY" Language="pl_PL"><Text>Set by your ideology.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_FROM_NONE" Language="pl_PL"><Text>A mixed economy until you choose a government.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_BLEND" Language="pl_PL"><Text>Moving over from the {1_Old}: {2_Turns} more turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_BLEND_ONE" Language="pl_PL"><Text>Moving over from the {1_Old}: one more turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_PLAN" Language="pl_PL"><Text>The plan this turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_PLAN_NOTE" Language="pl_PL"><Text>A fifth of your Gold income goes into your cities' builds, split by population, at 3 Gold a point of production.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_TAX_NOTE" Language="pl_PL"><Text>Your government's changes to the tax cards show on each city's yields while the card is slotted.</Text></Replace>

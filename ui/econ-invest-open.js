@@ -172,9 +172,24 @@ export function investRequestRefusal(ctx, request) {
     cityId: typeof request.cityId === "string" ? request.cityId : null, asAid: request.asAid === true };
   if (!isHuman(ctx, spec.investor) || isHuman(ctx, spec.host)) return "parties";
   const refused = investRefusal(ctx, spec) || aiHostRefusal(ctx, spec);
+  // A host in default turns general investment down; nothing else is sent in its place (DESIGN 4.12). The refusal
+  // names the development loan when one is still open, so the player can choose it.
+  if (refused === "host-default") {
+    return { reason: refused, fields: { host: spec.host, cents: spec.cents, project: projectOpen(ctx, spec) ? 1 : 0 } };
+  }
   if (refused) return refused;
   openInvestment(ctx, spec, "request");
   return null;
+}
+
+/**
+ * Whether a development loan of the same Gold on one of the host's current builds would open this turn.
+ * @param {TurnContext} ctx
+ * @param {InvestSpec} spec
+ */
+function projectOpen(ctx, spec) {
+  return (ctx.civ.get(spec.host)?.cities || []).some((city) => !investRefusal(ctx, { ...spec, form: "project",
+    cityId: city.id }));
 }
 
 /**

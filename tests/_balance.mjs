@@ -82,9 +82,13 @@ function relationsAt(game, turn) {
 function civsAt(game, turn, balances) {
   return game.civs.map((c) => {
     const { incomeCents, atWar } = c.income(turn);
+    // Three cities, each with a build at the head of its queue, so the AI's build loans (DESIGN 6) have something to
+    // back; a build is never finished here, which is the most an AI could borrow for.
+    const cities = [0, 1, 2].map((k) => ({ id: `${c.id}:${k}`, build: "BUILDING_LIBRARY", neededProgress: 200,
+      population: 3 + k, roleBuilding: k === 0 }));
     return { id: c.id, alive: true, human: c.human, balanceCents: balances.get(c.id), incomeCents,
       upkeepCents: Math.round(Math.abs(incomeCents) * 0.5) + 300, stages: c.stages, atWar,
-      depthTurns: turn >= c.banking ? 2 : 0, depthFactorPct: turn >= c.banking ? 90 : 100 };
+      depthTurns: turn >= c.banking ? 2 : 0, depthFactorPct: turn >= c.banking ? 90 : 100, cities };
   });
 }
 
@@ -111,6 +115,8 @@ function humanRequests(game, turn, civs, ledger, age, lend) {
 export function runGame(game, { on = true, lend = true, roundTrip = true } = {}) {
   let balances = new Map(game.civs.map((c) => [c.id, c.startCents]));
   let ledger;
+  // The markets envelope carries the AI's aid-once-an-age and investment turns, as the glue's save does.
+  let markets;
   const facts = { balances: new Map(game.civs.map((c) => [c.id, []])), events: [], maxBytes: 0, planMs: [],
     lostResend: 0, lent: 0, received: 0, writtenOffToHuman: 0, capBreaches: 0, capHits: [] };
   const me = game.civs.find((c) => c.human).id;
@@ -120,7 +126,8 @@ export function runGame(game, { on = true, lend = true, roundTrip = true } = {})
     const relations = relationsAt(game, turn);
     const requests = on ? humanRequests(game, turn, civs, ledger, age, lend) : [];
     const t0 = process.hrtime.bigint();
-    const plan = planTurn({ turn, age, civs, relations, requests, params: PARAMS, options: { loans: on, cycle: "off", systems: false }, ledger });
+    const plan = planTurn({ turn, age, civs, relations, requests, params: PARAMS, options: { loans: on, cycle: "off", systems: false }, ledger, markets });
+    markets = plan.markets;
     facts.planMs.push(Number(process.hrtime.bigint() - t0) / 1e6);
     const incomes = new Map(civs.map((c) => [c.id, c.incomeCents]));
     const earned = new Map([...balances].map(([id, b]) => [id, b + incomes.get(id)]));

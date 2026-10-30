@@ -18,7 +18,8 @@ const OTHER = 9;
 const city = (id, over = {}) => ({ id, build: "BUILDING_LIBRARY", neededProgress: 200, ...over });
 const me = (over = {}) => civ(ME, { human: true, incomeCents: 10000, balanceCents: 100000, stages: OPEN_ALL, ...over });
 const ai = (id, over = {}) => civ(id, { incomeCents: 10000, balanceCents: 300000, stages: OPEN_ALL, ...over });
-const prices = { RESOURCE_IRON: 1000, RESOURCE_WINE: 600 };
+// Prices 20 times a real copy's, so a route bills whole Gold at the 2.5% share (DESIGN 4.10).
+const prices = { RESOURCE_IRON: 20000, RESOURCE_WINE: 12000 };
 const markets = (over = {}) => ({ ...emptyMarkets(), prices, ...over });
 const route = (importer, exporter, resources) => ({ importer, exporter, resources });
 const refusal = (plan, request) => plan.events.find((e) => e.kind === "refused" && e.request === request)?.reason;
@@ -26,7 +27,8 @@ const refusal = (plan, request) => plan.events.find((e) => e.kind === "refused" 
 /** A plan that must pass the commit checks. */
 function plan(over) {
   const civs = over.civs;
-  const out = planTurn(input({ markets: markets(), ...over }));
+  // Loans off unless a test asks: the AI's build loans would otherwise join the investment rows these tests read.
+  const out = planTurn(input({ markets: markets(), ...over, options: { loans: false, ...(over.options || {}) } }));
   assert.deepEqual(checkPlan({ plan: out, civs }), [], "commit checks");
   return out;
 }
@@ -170,6 +172,14 @@ test("general investment: a Gold pair, a dividend that moves with the host, refu
   const declined = plan({ civs, ledger: inDefault, requests: [{ kind: "invest", investor: ME, host: AI, form: "general",
     cents: 20000 }] });
   assert.equal(refusal(declined, "invest"), "host-default");
+  const event = declined.events.find((e) => e.kind === "refused");
+  assert.deepEqual([event.host, event.cents, event.project], [AI, 20000, 0], "no build to back: nothing named");
+  assert.deepEqual([declined.transfers, declined.progress, declined.ledger.investments], [[], [], []],
+    "nothing goes in its place");
+  const withBuild = plan({ civs: [me(), ai(AI, { incomeCents: 2000, cities: [city("6:1")] })], ledger: inDefault,
+    requests: [{ kind: "invest", investor: ME, host: AI, form: "general", cents: 20000 }] });
+  assert.equal(withBuild.events.find((e) => e.kind === "refused").project, 1, "a development loan is still open");
+  assert.deepEqual([withBuild.transfers, withBuild.progress], [[], []], "the player still chooses");
 });
 
 test("aid: no record, no return, the relationship at +1 per 2.5 turns of the host's income", () => {

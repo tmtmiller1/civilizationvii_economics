@@ -155,6 +155,11 @@ function neededProgress(queue, hash, type) {
   return Math.max(0, Math.round((cost * speed) / 100) - progress);
 }
 
+// How much of a point sent by addProgress lands in a city, in percent; the plan and the AI's build loans divide the
+// points they send by it. 100: the lab found a grant lands times the city's own production multiplier, as its own
+// production does, and the lead kept the price at the purchase rate (NOTES finding L).
+export const PROGRESS_SCALE_PCT = 100;
+
 /**
  * One city's 1.1 read: its current build, what it still needs, whether that build has an economic role, and its
  * Trade buildings.
@@ -172,12 +177,13 @@ function readCity(city, rolesFor, trade) {
   const type = !queue || empty || hash === null ? null : buildType(hash);
   if (!type) {
     return { id, build: null, neededProgress: 0, roleBuilding: false, tradeBuildings: trade, purchaseCents: null,
-      population: readPopulation(city) };
+      population: readPopulation(city), progressScalePct: PROGRESS_SCALE_PCT };
   }
   const roles = rolesFor(type);
   return { id, build: type, neededProgress: neededProgress(queue, hash, type),
     roleBuilding: roles ? isRoleBuilding(roles) : false, tradeBuildings: trade,
-    purchaseCents: roles ? readPurchaseCents(city, type) : null, population: readPopulation(city) };
+    purchaseCents: roles ? readPurchaseCents(city, type) : null, population: readPopulation(city),
+    progressScalePct: PROGRESS_SCALE_PCT };
 }
 
 /**

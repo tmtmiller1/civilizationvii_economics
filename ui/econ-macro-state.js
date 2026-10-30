@@ -1,8 +1,9 @@
 // econ-macro-state.js - Economics: the macro envelope (DESIGN 9), saved beside the ledger and the markets: the
 // business cycle's state (E and its last 30 turns, each civ's L and phase, last turn's wars and routes, the crisis
-// stage, the income and credit series, the Panic turns, the cycle's recent events), each civ's economic system with
-// the turn it changed, and the last inflation reading. Its own Configuration key keeps the markets envelope as 1.1
-// left it. At most 32 KB; load refuses anything that isn't ours without throwing, and save(load(x)) is a fixed point.
+// stage, the income and credit series, the income trend, the turns in Boom, the Panic turns, the cycle's recent
+// events), each civ's economic system with the turn it changed, and the last inflation reading. Its own Configuration
+// key keeps the markets envelope as 1.1 left it. At most 32 KB; load refuses anything that isn't ours without
+// throwing, and save(load(x)) is a fixed point.
 
 import { CYCLE_K_PCT, CYCLE_RULES } from "./econ-params.js";
 import { effectiveL, emptyCycle, phaseOf, spreadPct } from "./econ-cycle.js";
@@ -73,6 +74,18 @@ function cleanEvents(raw) {
 }
 
 /**
+ * The income and credit series, the income trend and the turns in Boom.
+ * @param {CycleState} out
+ * @param {Record<string, any>} raw
+ */
+function cleanSeries(out, raw) {
+  out.credit = cleanInts(raw.credit, 11);
+  out.income = cleanInts(raw.income, 11);
+  out.trend = isInt(raw.trend) && Math.abs(raw.trend) <= 100 * CYCLE_RULES.one ? raw.trend : null;
+  out.boomTurns = isInt(raw.boomTurns) && raw.boomTurns >= 0 ? Math.min(raw.boomTurns, 9999) : 0;
+}
+
+/**
  * @param {unknown} input
  * @returns {CycleState}
  */
@@ -88,8 +101,7 @@ export function sanitizeCycle(input) {
   out.wars = Array.isArray(raw.wars) ? [...new Set(raw.wars.filter(isPair))].sort() : [];
   out.routes = Array.isArray(raw.routes) ? [...new Set(raw.routes.filter(isPair))].sort() : [];
   out.crisis = inRange(raw.crisis, -1, 9) ? raw.crisis : -1;
-  out.credit = cleanInts(raw.credit, 11);
-  out.income = cleanInts(raw.income, 11);
+  cleanSeries(out, raw);
   out.panicUntil = isInt(raw.panicUntil) ? raw.panicUntil : null;
   out.lastPanic = isInt(raw.lastPanic) ? raw.lastPanic : null;
   out.atWar = cleanByPid(raw.atWar, (v) => typeof v === "boolean");

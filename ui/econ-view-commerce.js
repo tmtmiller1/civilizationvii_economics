@@ -8,7 +8,7 @@ import { baseDividend, isOpenInvestment, progressFor, relationshipGain, returnMi
   from "./econ-invest.js";
 import { hasStage } from "./econ-stages.js";
 import { relationLevel } from "./econ-lenders.js";
-import { investRefusal } from "./econ-invest-open.js";
+import { aiHostRefusal, investRefusal } from "./econ-invest-open.js";
 import { viewContext } from "./econ-view-model.js";
 import { emptyMarkets } from "./econ-markets.js";
 
@@ -113,8 +113,12 @@ export function investForecast({ form, cents, asAid, hostIncomeCents, city = nul
 export function investTargets(input, me, cents) {
   const ctx = viewContext(input);
   return ctx.civs.filter((civ) => civ.alive === true && civ.id !== me).map((civ) => {
-    const spec = (/** @type {InvestKind} */ form, /** @type {string | null} */ cityId, /** @type {boolean} */ asAid) =>
-      investRefusal(ctx, { investor: me, host: civ.id, form, cents, cityId, asAid });
+    // The AI host's acceptance rule too, so a host in default shows its refusal before the player asks (DESIGN 4.12).
+    /** @type {(form: InvestKind, cityId: string | null, asAid: boolean) => string | null} */
+    const spec = (form, cityId, asAid) => {
+      const q = { investor: me, host: civ.id, form, cents, cityId, asAid };
+      return investRefusal(ctx, q) || (civ.human === true ? null : aiHostRefusal(ctx, q));
+    };
     const cities = (civ.cities || []).filter((city) => city.build && city.neededProgress > 0)
       .map((city) => ({ city, refusal: spec("project", city.id, false), aidRefusal: spec("project", city.id, true) }));
     return { pid: civ.id, level: relationLevel(ctx.relations, me, civ.id), incomeCents: civ.incomeCents,

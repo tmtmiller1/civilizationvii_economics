@@ -36,7 +36,7 @@ test("civ lenders only: no bond offer, and after Public debt the emergency lende
   const ctx = ctxOf({ civs: [me()], macro: macroWith({}, { systems: tribute }) });
   assert.equal(offersFor(offerQuery(ctx, ME, { principal: 1000 })).length, 0);
   assert.deepEqual(emergencyOffersFor(offerQuery(ctx, ME, { principal: 1000 })).map((o) => [o.lender, o.ratePpm]),
-    [["temple", 40000]]);
+    [["temple", 20000]]);
   const mixed = ctxOf({ civs: [me()] });
   assert.deepEqual(emergencyOffersFor(offerQuery(mixed, ME, { principal: 1000 })).map((o) => o.lender), ["bond"]);
   const panic = ctxOf({ civs: [me()], macro: macroWith({ panicUntil: 55 }) });
@@ -51,7 +51,7 @@ test("the citizens: none with Loans off or another system; their room shrinks by
   const owed = { ...emptyLedger(), loans: [makeLoan({ id: "L1", lender: "citizens", borrower: ME, principal: 30000,
     ratePpm: 15000, term: 10, turn: 40 })], nextId: 2 };
   const ctx = ctxOf({ civs, ledger: owed, macro: macroWith({}, { systems: cr }) });
-  assert.deepEqual(citizensFor(ctx, ME), { ratePpm: 15000, roomCents: 70000 });
+  assert.deepEqual(citizensFor(ctx, ME), { ratePpm: 7500, roomCents: 70000 });
   assert.equal(citizensFor(ctxOf({ civs, macro: macroWith({}, { systems: cr }), options: { loans: false } }), ME), null);
   assert.equal(citizensFor(ctxOf({ civs }), ME), null);
   assert.equal(citizensFor(ctx, 77), null);
@@ -69,11 +69,11 @@ test("the plan's progress joins a development loan's row for the same city, one 
   const out = plan({ civs: [me(), ai(AI, { ideology: "IDEOLOGY_COMMUNISM", cities })], relations,
     requests: [{ kind: "invest", investor: ME, host: AI, form: "project", cents: 3000, cityId: "6:1" }] });
   assert.equal(out.progress.length, 1);
-  assert.equal(out.progress[0].amount, 10 + 6, "10 points of loan and 6 of the plan's 2000");
-  assert.ok(out.transfers.some((t) => t.reason === "plan" && t.cents === 1800));
+  assert.equal(out.progress[0].amount, 10 + 5, "10 points of loan and 5 of the plan's 2000 at the purchase rate");
+  assert.ok(out.transfers.some((t) => t.reason === "plan" && t.cents === 2000));
   assert.ok(out.notices.length === 0 || out.notices.every((n) => n.kind !== "plan"), "the plan's notice is the AI's");
   const mine = plan({ civs: [me({ ideology: "IDEOLOGY_COMMUNISM", cities: [{ id: "3:1", build: "B", neededProgress: 2 }] })] });
-  assert.deepEqual(mine.notices.filter((n) => n.kind === "plan").map((n) => [n.cents, n.cities]), [[600, 1]],
+  assert.deepEqual(mine.notices.filter((n) => n.kind === "plan").map((n) => [n.cents, n.cities]), [[800, 1]],
     "capped by what the build needs");
   const empty = plan({ civs: [me({ ideology: "IDEOLOGY_COMMUNISM", cities: [] })] });
   assert.equal(empty.transfers.some((t) => t.reason === "plan"), false);
