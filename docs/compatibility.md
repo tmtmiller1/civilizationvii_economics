@@ -46,13 +46,13 @@ every mod applied, so a mod that adds a resource gets it a price, and one that g
 | Reads Gold per turn or balances (Demographics, Emigration, Partisans) | The grants show as balance moves, not as income (`getNetYield` doesn't include a grant, P2), so a per-turn Gold chart sees no change and a balance chart sees the loan | Read from the probe, not run with the mods |
 | Books grievances or moves relationships (Emigration's war refugees, diplomacy mods) | Additive: the game sums them | Known engine behaviour |
 | Adds a dock button (Demographics, Emigration, Mod Commons) | One more button; Mod Commons isn't released, so the button is Economics' own decorator | Read from code, not run |
-| Adds its own setup options | Both sets show; `ECONOMICS_*` ids and sort indexes 2200 to 2211 collide with nothing found | Read from code, not run |
+| Adds its own setup options | Both sets show; `ECONOMICS_*` ids and sort indexes 2200 to 2211 don't collide with any found | Read from code, not run |
 | Adds or renames governments, or changes their modifiers (government mods, Leugi's Government Flavour) | A government the mod's table doesn't list runs a mixed economy; the systems' modifiers attach only to governments that exist and stack with any a mod adds | Read from code and the database copies, not run |
 | Removes `AGELESS` from a building (Warehouse Overbuilding) | The building ages and fades by its roles, as DESIGN 4.16 says it should | Read from code, not run |
 | Adds resources or changes resource classes | A new resource gets a price from its class; a removed one drops out of the Markets tab and the bills | Read from code, not run |
 | Changes trade routes or Trade Income (route mods, Port-of-Nations-style cards) | The engine's own Trade Income is untouched and shown beside the bill; the bill follows the imports the game reports, wherever they came from | Read from code, not run |
 | Sets city production by script | A development loan's `addProgress` adds to the same build; both land | Read from code, not run |
-| Two copies of Economics installed at once | `INSERT OR IGNORE` keeps the setup rows from rolling back; two bootstraps find the harness global and the second does nothing | Read from code, not run |
+| Two copies of Economics installed at once | `INSERT OR IGNORE` keeps the setup rows from rolling back; two bootstraps find the harness global and the second stands down | Read from code, not run |
 
 ## Known interactions
 
