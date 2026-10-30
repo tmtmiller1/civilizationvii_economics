@@ -305,8 +305,8 @@ export function cycleGoldCents(index, incomeCents) {
 }
 
 /**
- * Whether a Panic starts this turn (DESIGN 4.11): open from the Banking stage, leverage above 1.5, E above 1.05, and
- * none in the last 20 turns.
+ * Whether a Panic starts this turn (DESIGN 4.11): open from the Banking stage, leverage above its line (in hundredths
+ * of a turn of world income), E above 1.05, and none in the last 20 turns.
  * @param {{ allowed: boolean, leverPct: number, e: number, lastPanic: number | null, turn: number }} q
  */
 export function panicStarts({ allowed, leverPct, e, lastPanic, turn }) {
@@ -315,12 +315,13 @@ export function panicStarts({ allowed, leverPct, e, lastPanic, turn }) {
 }
 
 /**
- * Leverage: all outstanding loans over the Gold the civs hold (each balance floored at 0, at least 1000), in percent.
+ * Leverage: all outstanding loans in turns of the world's income (each civ's income floored at 0, the sum at least 10
+ * Gold), in hundredths of a turn. Gold held doesn't enter: an AI that hoards would hide any amount of debt.
  * @param {number} outstandingCents
- * @param {number[]} balancesCents
+ * @param {number[]} incomesCents
  */
-export function leverPct(outstandingCents, balancesCents) {
-  let money = 0;
-  for (const cents of balancesCents) money += Math.max(0, cents);
-  return Math.floor((Math.max(0, outstandingCents) * 100) / Math.max(R.minLeverCents, money));
+export function leverPct(outstandingCents, incomesCents) {
+  let income = 0;
+  for (const cents of incomesCents) income += Math.max(0, cents);
+  return Math.floor((Math.max(0, outstandingCents) * 100) / Math.max(R.minLeverIncomeCents, income));
 }

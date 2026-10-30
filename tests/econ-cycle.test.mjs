@@ -107,7 +107,7 @@ test("the income trend: the first growth read sets it, then it moves 4% of the w
   assert.equal(nextTrendBp(500, -500), 460);
 });
 
-test("world income against its own trend: +-0.005 per 5 points above or below it, at most +-0.01", () => {
+test("world income against its own trend: +-0.005 per 5 points above or below it, at most +-0.01; credit +0.015", () => {
   const flat = Array(11).fill(1000);
   const up7 = [1000, ...Array(9).fill(1000), 1070];
   assert.deepEqual(trendEvents(flat, flat, 0), []);
@@ -122,7 +122,7 @@ test("world income against its own trend: +-0.005 per 5 points above or below it
   assert.deepEqual(trendEvents(up7, flat, null), [], "no trend yet weighs nothing");
   assert.deepEqual(trendEvents(Array(10).fill(1000), [1, 2], 0), [], "a short series weighs nothing");
   assert.deepEqual(trendEvents(flat, [1000, ...Array(9).fill(0), 1101], 0).map((e) => [e.kind, e.w]),
-    [["credit-growth", 50]]);
+    [["credit-growth", 150]]);
   assert.deepEqual(trendEvents(flat, [1000, ...Array(9).fill(0), 1100], 0), [], "exactly 10% isn't more than 10%");
   assert.deepEqual(trendEvents(flat, [0, ...Array(9).fill(0), 50], 0), [], "no credit 10 turns ago");
   assert.deepEqual(trendEvents([0, ...Array(9).fill(0), 50], flat, 0), [], "no income 10 turns ago");
@@ -177,16 +177,16 @@ test("the spread is 2 - (E + L), +0.5 in a Panic; cycle Gold follows E + L - 1 o
   assert.equal(cycleGoldCents(9000, -500), 0, "nothing on negative income");
 });
 
-test("Panic: from the Banking stage, leverage above 1.5, E above 1.05, none in the last 20 turns", () => {
-  const base = { allowed: true, leverPct: 151, e: 10501, lastPanic: null, turn: 80 };
+test("Panic: from the Banking stage, leverage above 1.7 turns of world income, E above 1.05, none in 60 turns", () => {
+  const base = { allowed: true, leverPct: 171, e: 10501, lastPanic: null, turn: 80 };
   assert.equal(panicStarts(base), true);
   assert.equal(panicStarts({ ...base, allowed: false }), false);
-  assert.equal(panicStarts({ ...base, leverPct: 150 }), false);
+  assert.equal(panicStarts({ ...base, leverPct: 170 }), false);
   assert.equal(panicStarts({ ...base, e: 10500 }), false);
-  assert.equal(panicStarts({ ...base, lastPanic: 61 }), false);
-  assert.equal(panicStarts({ ...base, lastPanic: 60 }), true);
-  assert.equal(leverPct(300000, [100000, 100000, -500000]), 150, "balances floor at 0");
-  assert.equal(leverPct(150000, [0]), 150, "the Gold held counts as at least 1000");
+  assert.equal(panicStarts({ ...base, lastPanic: 21 }), false);
+  assert.equal(panicStarts({ ...base, lastPanic: 20 }), true);
+  assert.equal(leverPct(300000, [100000, 100000, -500000]), 150, "1.5 turns of income; a negative income counts 0");
+  assert.equal(leverPct(1500, [0]), 150, "the world's income counts as at least 10 Gold");
   assert.equal(leverPct(-5, [100000]), 0);
 });
 

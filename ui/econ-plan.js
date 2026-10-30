@@ -18,7 +18,7 @@ import { cloneLedger, emptyLedger, prune } from "./econ-state.js";
 import { emptyMarkets } from "./econ-markets.js";
 import { isAlive, closeLoan, emit, event, notice, replaceLoan, turnContext } from "./econ-turn.js";
 import { runRequests } from "./econ-requests.js";
-import { aiBorrow, aiRepudiate, aiRestructure, guardFor, isInsolventCiv } from "./econ-shortfall.js";
+import { aiBorrow, aiBuildBorrow, aiRepudiate, aiRestructure, guardFor, isInsolventCiv } from "./econ-shortfall.js";
 import { aiAid, aiInvest, aiTariff, investWriteOffs, marketStep, payDividendsFor, settleTradeFor, tradeNotices,
   tradeStep } from "./econ-commerce.js";
 import { aiMacro, cycleInflows, macroPayerSteps, macroSnapshot } from "./econ-macro.js";
@@ -89,6 +89,7 @@ function proposeStep(ctx) {
   const extras = runRequests(ctx);
   aiCommerce(ctx, ai);
   aiMacro(ctx, ai);
+  if (ctx.options.loans) for (const civ of ai) aiBuildBorrow(ctx, civ);
   cycleInflows(ctx);
   if (ctx.options.taxFallback) for (const civ of live) taxOne(ctx, civ);
   for (const civ of live) payerSteps(ctx, civ.id, extras);

@@ -14,8 +14,8 @@ export const VERSION = 3;
 /** @returns {Ledger} */
 export function emptyLedger() {
   return { age: null, nextId: 1, lastTurn: null, batchSeq: 0, loans: [], blocks: [], misses: [], repudiations: [],
-    guardTurns: [], capHits: [], lowIncome: [], taxes: [], events: [], lastBatch: null, investments: [], offers: [],
-    nextInvestId: 1 };
+    guardTurns: [], buildTurns: [], capHits: [], lowIncome: [], taxes: [], events: [], lastBatch: null, investments: [],
+    offers: [], nextInvestId: 1 };
 }
 
 /**
@@ -34,6 +34,7 @@ export function cloneLedger(ledger) {
     age: ledger.age, nextId: ledger.nextId, lastTurn: ledger.lastTurn, batchSeq: ledger.batchSeq,
     loans: copyRows(ledger.loans), blocks: copyRows(ledger.blocks), misses: copyRows(ledger.misses),
     repudiations: copyRows(ledger.repudiations), guardTurns: copyRows(ledger.guardTurns),
+    buildTurns: copyRows(ledger.buildTurns || []),
     capHits: copyRows(ledger.capHits), lowIncome: copyRows(ledger.lowIncome), taxes: copyRows(ledger.taxes),
     events: copyRows(ledger.events),
     lastBatch: ledger.lastBatch ? { ...ledger.lastBatch, civs: copyRows(ledger.lastBatch.civs) } : null,
@@ -291,12 +292,13 @@ function nextIdFor(raw, loans) {
 }
 
 /**
- * The per-civ counters: guard turns, cap hits, turns of low income.
+ * The per-civ counters: guard turns, AI build-loan turns, cap hits, turns of low income.
  * @param {Ledger} ledger
  * @param {Raw} raw
  */
 function cleanCounters(ledger, raw) {
   ledger.guardTurns = /** @type {TurnRow[]} */ (cleanPidRows(raw.guardTurns, "turn", true));
+  ledger.buildTurns = /** @type {TurnRow[]} */ (cleanPidRows(raw.buildTurns, "turn", true));
   ledger.capHits = /** @type {TurnRow[]} */ (cleanPidRows(raw.capHits, "turn", true));
   ledger.lowIncome = /** @type {LowIncomeRow[]} */ (cleanPidRows(raw.lowIncome, "turns", true));
 }

@@ -33,7 +33,7 @@ test("a dead civ takes no part: no L, no phase, no cycle Gold, nothing in the in
     principal: 400000, ratePpm: 40000, term: 30, turn: 40 })] };
   const panic = plan({ civs: [me({ stages: OPEN_MACRO, balanceCents: 100000 }), ai(AI, { balanceCents: 100000 }), dead()],
     ledger: panicLedger, macro: macroWith({ e: 12000 }) });
-  assert.ok(panic.events.some((e) => e.kind === "panic"), "a dead civ's debt-free Gold doesn't hide the leverage");
+  assert.ok(panic.events.some((e) => e.kind === "panic"), "a dead civ's income doesn't hide the leverage");
 });
 
 test("the World tab's list leaves out what repeats every turn, and the list and E's history keep their caps", () => {

@@ -10,7 +10,7 @@ declare global {
   /** `project` and `general` are 1.1's investment records; 1.0 only writes `loan`. */
   type LoanKind = "loan" | "project" | "general";
   /** Who opened the record: a player's borrow or lend request, the guard, or an AI rule. */
-  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens";
+  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens" | "ai-build";
   type RelationLevel = "war" | "unfriendly" | "neutral" | "friendly" | "unmet";
   type BlockReason = "default" | "repudiation";
 
@@ -74,6 +74,8 @@ declare global {
     misses: MissRow[];
     repudiations: RepudiationRow[];
     guardTurns: TurnRow[];
+    /** The last turn each AI took a build loan (DESIGN 6). */
+    buildTurns: TurnRow[];
     capHits: TurnRow[];
     lowIncome: LowIncomeRow[];
     taxes: TaxRow[];

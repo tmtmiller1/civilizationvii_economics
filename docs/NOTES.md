@@ -116,6 +116,9 @@ so, with the DESIGN section that now holds the rule.
 | 103 | The plan's price a point, and finding L (DESIGN 4.17) | `GOLD_PURCHASE_MULTIPLIER` from GlobalParameters in cents, read once a session by the glue with the engine's lines (other mods' rows win); 4 Gold when it's missing or not positive. Game speed isn't read again: it scales a build's cost and its price alike, and the points the glue reads are already at the game's speed. Each city's `progressScalePct` (glue constant `PROGRESS_SCALE_PCT`, 100) multiplies the price, so the points sent are divided by the share that lands. Whole points round down per city; what's left buys points in the biggest cities first, so a small take isn't lost to rounding | `econ-params`: "the purchase rate..."; `econ-citizens`: "the plan takes 20%...", "a city where sent points land bigger..."; `econ-session`: "every major is read..." |
 | 104 | `base_rate`, the debt-service limit and the 20-turn term (DESIGN 4.2, 4.3) | The owner's decision of 2026-10-30, at the lead's recommendation: `base_rate` 0.015 / 0.01 / 0.0075 (half the first rates; a Market, Bazaar and Bank then pay their interest within the term, finding G), `service_cap` half of income, and 20-turn terms from Moneylending with 30-turn terms and the bond market at Public debt. A civ lender needs a Banking building for 30-turn terms only: Antiquity has no Banking building, so the 20-turn tier would otherwise open in name only | `econ-limits` (all six); `econ-lenders`: "terms (DESIGN 4.3)..."; `econ-params`: "base rates..." |
 | 105 | What a refused borrow says | The most that lender would lend over that term, in whole Gold: within `credit_cap`, with the first payment inside the service limit, and from a civ at most half its balance (the 2 * P test). The batch's refusal event carries `most`, `lender` and `term`, the notification adds a line from it, and the Loans tab shows it under the offer with "Borrow that instead". Nothing to offer reads as "your payments already take all your limits allow" | `econ-limits`: "300 Gold at 20 Gold of income..."; `econ-views`: "a borrow over a limit shows the most..."; `econ-notice-text`: "a borrow over a limit adds the most..." |
+| 106 | The AI's build loan (DESIGN 6) | Once per 10 turns per AI (`ledger.buildTurns`, ledger version unchanged: a save without it loads with none), income of 10 Gold or more, solvent, no default, its own phase Boom, Steady or outside the cycle. The cheapest bond or AI lender over 10 turns (its citizens keep their own rule); up to 5 turns of income, capped by what the build still needs at the plan's point price and by the most the 4.2 limits allow. A 10-turn term means about one open at a time; with the longest term the AI took, leverage ran to 7 or 8 turns of world income and inflation sat at its cap for up to 34 turns. The principal goes from the lender straight to the progress account, since Gold from a civ counts in the borrower's funds only the next turn (4.14, debt-6); the city's progress row is shared with a development loan's or the plan's | `econ-build-loan` (all seven) |
+| 107 | Leverage and the Panic line (DESIGN 4.11) | Outstanding debt over the living civs' positive income, in hundredths of a turn (at least 10 Gold of income); the line is 1.7 turns, with 60 turns between Panics. Tuned in the 1.2 run: at 3 turns no Panic came in a boom; at 1.5 to 2 with 20 turns between them, three to five a game | `econ-cycle`: "Panic: from the Banking stage..."; `econ-build-loan`: "leverage is debt in turns..." |
+| 108 | Credit growth's weight (DESIGN 4.11) | +0.015 a turn, from +0.005: with the AI borrowing, +0.005 and +0.01 gave no Boom or at most 6 turns of it a game, +0.02 gave a Panic too many in the peaceful game | `econ-cycle`: "world income against its own trend..." |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 
@@ -152,7 +155,8 @@ rare is the owner's read (DESIGN 10, "Repudiation").
 I. **The guard's income condition empties the AI's "short but solvent" branch at `TurnBegin`.** With positive income
 the engine wipes a negative balance at the roll, so at `TurnBegin` a civ with positive income is at or above 0 and
 its projected balance (payments never overdraw) stays there: the standard-loan branch of DESIGN 6 only fires in the
-simulation, where balances are generated. It stays as written in case the engine's wipe is ever found not to hold.
+simulation, where balances are generated. It stays as written in case the engine's wipe is ever found not to hold. Since 2026-10-30 the AI borrows without being short too: the build loan (DESIGN 6, choice 106) is
+its door to credit while it's cheap, and the short branch stays for the case the wipe doesn't hold.
 
 J. **Previous-age buildings carry no tags in a later age's database.** From the 1.1 fixtures (`../tests/fixtures/
 commerce-*.json`, read from the compiled 1.5.0 Exploration and Modern databases): in Exploration the Market has no
@@ -197,7 +201,9 @@ against its own trend, and overheating pulls a long boom down (DESIGN 4.11).
 
 Q. **A Panic needs borrowing the AI doesn't do.** Leverage peaked at 5% of the Gold held in the balance games against
 the 150% a Panic needs: the AI rules borrow only when short, and with positive income at `TurnBegin` an AI is never
-short (finding I). As written a Panic comes only from a player who borrows heavily.
+short (finding I). As written a Panic comes only from a player who borrows heavily. Settled 2026-10-30 (choices 106 to 108): the AI's build loan, leverage in
+turns of world income and a 1.7-turn line give one or two Panics a game in the 1.2 run, the peaceful game's
+included.
 
 R. **The plan buys production cheaply.** At the development loan's 3 Gold a point the plan's production is worth 1.33
 times the Gold it takes at the game's purchase price (4 a point), before production bonuses scale `addProgress` up
@@ -238,6 +244,17 @@ the fixes). The simulation's incomes grow at a steady pace with noise, so above-
 new routes and peace are one-off kicks that reversion takes back within a few turns. Raising the income and route
 weights two or three times over gave at most 6 turns of Boom a game. So in this model a boom is a credit boom, which
 the AI's productive borrowing (DESIGN 6) supplies.
+
+W. **The 1.0 harness didn't carry the markets envelope.** `tests/_balance.mjs` passed no `markets` between turns, so
+the AI's "aid once per age" read a fresh envelope every turn: a Friendly AI aided a civ in default every turn with all
+its funds. It hid behind the 1.0 rows because no AI with positive income owed anything; the build loan made it show
+(128 of 175 such AIs defaulted). The harness now carries the envelope as the glue does. With the fix alone, the AIs'
+turns below 0 in the On run rise from 491 to 1,854 of the Off run's 2,848 (the aid had been propping up deficit
+civs); the build loans add 84 more. The game was never affected: the glue saves the envelope each turn.
+
+X. **AI borrowing raises inflation.** With build loans from the bond market, the 1.2 run's `pi` is a median 0.02 to
+0.06% a turn and at worst 0.36% (was 0.01 to 0.04%, worst 0.1%), and 63 to 155 Gold is eroded a game (was 30 to 75).
+It stays under its cap; with the longest term the AI took, it sat at the cap for up to 34 turns (choice 106).
 
 ## Balance run and mutation
 

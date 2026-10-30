@@ -72,6 +72,10 @@ release is generated from the matching section below by `scripts/steam-changelog
 - The business cycle no longer leans to Boom. A trade route that stands and income that grows at its usual pace don't
   move the world any more; only growth faster or slower than usual does, and a long boom wears itself out, so a
   growing world still has slumps.
+- The computer players borrow to build: while their credit is cheap, each takes a loan now and then and puts it
+  straight into the building it's working on, within the same limits you have. Easy credit in a boom now leads to
+  more borrowing, and from Banking a boom carried on too much debt can end in a Panic. World leverage is now counted in
+  turns of the world's income, and the World tab shows it against the line where a Panic can start.
 - Interest rates are half what they were: 1.5 percent a turn in Antiquity, 1 in Exploration and 0.75 in Modern, so a
   Market, Bazaar or Bank bought with a loan pays its own interest within ten turns. Your payments can take up to half
   your income instead of 35 percent, and 20-turn loans from other civilizations open with Moneylending; 30-turn loans

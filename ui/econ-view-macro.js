@@ -11,7 +11,7 @@ import { IDEOLOGY_SYSTEMS, systemFor, termsOf } from "./econ-systems.js";
 import { planTakeCents } from "./econ-planned.js";
 import { isOpen } from "./econ-loan.js";
 import { hasStage } from "./econ-stages.js";
-import { SYSTEM_BLEND_TURNS } from "./econ-params.js";
+import { CYCLE_RULES, SYSTEM_BLEND_TURNS } from "./econ-params.js";
 
 /** @param {PlanInput} input */
 const optionsOf = (input) => ({ ...DEFAULT_OPTIONS, ...(input.options || {}) });
@@ -35,7 +35,8 @@ export function worldView(input, me) {
     events: [...macro.cycle.events].reverse().slice(0, 12), history: [...macro.cycle.history],
     inflation: { on: options.inflation === true, piPpm: readings.piPpm, bondCents, moneyCents, top,
       ratioPct: moneyCents > 0 ? Math.round((bondCents * 100) / moneyCents) : 0 },
-    debt: { outstandingCents: outstanding, leverPct: leverPct(outstanding, live.map((civ) => civ.balanceCents)) },
+    debt: { outstandingCents: outstanding, leverPct: leverPct(outstanding, live.map((civ) => civ.incomeCents)),
+      panicLeverPct: CYCLE_RULES.panicLeverPct },
     banking: live.some((civ) => hasStage(civ, "banking", input.turn, options)) };
 }
 

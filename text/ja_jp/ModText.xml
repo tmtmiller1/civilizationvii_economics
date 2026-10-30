@@ -461,8 +461,8 @@
         <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_NOTE" Language="ja_JP"><Text>Only civilizations with Public debt take part. Gold above twenty turns of income loses this much each turn, and bond rates rise with it. Paying bond debt down brings it back.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_DEBT" Language="ja_JP"><Text>World debt</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_OUTSTANDING" Language="ja_JP"><Text>All loans outstanding</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_LEVERAGE" Language="ja_JP"><Text>Against the Gold the civilizations hold</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_NOTE" Language="ja_JP"><Text>From the Banking stage, a boom with loans above one and a half times the Gold held can turn into a Panic.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_LEVERAGE" Language="ja_JP"><Text>In turns of the world's income</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_NOTE" Language="ja_JP"><Text>From the Banking stage, a boom with loans above {1_Turns} turns of the world's income can turn into a Panic.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY" Language="ja_JP"><Text>Old buildings</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_POINTS" Language="ja_JP"><Text>Legacy</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_CUSHION" Language="ja_JP"><Text>Slump cushion</Text></Replace>

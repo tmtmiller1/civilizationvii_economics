@@ -53,8 +53,11 @@ export const TERMS = [10, 20, 30];
 export const SHORT_TERM = 10;
 // DESIGN 4.3: 20-turn terms open with Moneylending, 30-turn terms with Public debt.
 export const MID_TERM = 20;
+// The build loan (DESIGN 6): an AI with positive income borrows to put progress on its own current build while its
+// credit is cheap (Boom or Steady), at most once per 10 turns, up to 5 turns of income over 10 turns and within the
+// 4.2 limits.
 export const AI = { lendIncomeMultiple: 20, acceptRatePct: 120, restructureAt: 2, repudiateEveryTurns: 20,
-  repudiateDebtMultiple: 10, minIncomeCents: 1000 };
+  repudiateDebtMultiple: 10, minIncomeCents: 1000, buildEveryTurns: 10, buildSizeTurns: 5, buildTerm: 10 };
 // openPerBorrower and closedLoans are not in DESIGN: they bound the saved envelope (debt-5) with the event log DESIGN
 // 9 asks for; see docs/NOTES.md choice 25.
 export const LIMITS = { events: 100, closedLoans: 32, envelopeBytes: 65536, openPerBorrower: 6 };
@@ -89,21 +92,23 @@ export const INVEST = { goldPerProgress: 3, term: 25, projectMille: 50, roleProj
   offerTurns: 3, incomeHistoryTurns: 10 };
 
 // DESIGN 4.11, in basis points (1/10000) so every weight is an integer: E starts at 10000 (1.0) and L at 0, and
-// war declared, -0.02, is -200. k is the Business cycle option; s the world stage scale (DESIGN 4.15).
+// war declared, -0.02, is -200. k is the Business cycle option; s the world stage scale (DESIGN 4.15). Leverage is
+// all outstanding loans in hundredths of a turn of the world's positive income: panicLeverPct 170 is 1.7 turns.
 /** @type {Record<string, number>} */
 export const CYCLE_K_PCT = { off: 0, mild: 50, standard: 100, strong: 150 };
 export const CYCLE_RULES = { one: 10000, reversionPct: 10, worldClamp: 1000, eMin: 7000, eMax: 13000, lMax: 2000,
-  lDecayPct: 80, depression: 8000, slump: 9500, boom: 10500, panicLeverPct: 150, panicDrop: 2000, panicTurns: 5,
-  panicEveryTurns: 20, panicSpreadPct: 50, goldPct: 20, historyTurns: 30, eventsKept: 24, warehouseBp: 300,
+  lDecayPct: 80, depression: 8000, slump: 9500, boom: 10500, panicLeverPct: 170, panicDrop: 2000, panicTurns: 5,
+  panicEveryTurns: 60, panicSpreadPct: 50, goldPct: 20, historyTurns: 30, eventsKept: 24, warehouseBp: 300,
   warehouseMaxBp: 3000, cushionMaxBp: 1000, cutMaxBp: 3500, scaleEarlyPct: 25, scalePublicDebtPct: 60,
-  scaleCapitalismPct: 100, minLeverCents: 100000 };
+  scaleCapitalismPct: 100, minLeverIncomeCents: 1000 };
 // Event weights in basis points (DESIGN 4.11's table). The caps bound a sum of one kind in a turn. World income is
 // read against its own trend, an average of its 10-turn growth that moves 4% of the way to each new read (about 50
 // turns); each turn the world has spent in Boom pulls E down by 0.002 more, up to the cap.
 export const CYCLE_WEIGHTS = { warDeclared: -200, warOngoing: -40, warOngoingCap: -200, capture: -100, raze: -200,
   disaster: -50, disasterPopulation: -100, crisisStart: -200, crisisOngoing: -50, default: -300, repudiation: -300,
   peace: 100, routeNew: 50, routeEnded: -50, incomePer5Pct: 50, incomeCap: 100, trendPct: 4, overheatPerTurn: -20,
-  overheatCap: -300, creditGrowth: 50, creditGrowthPct: 10, reform: -300, corporatistWar: 100, corporatistPeace: -300 };
+  overheatCap: -300, creditGrowth: 150, creditGrowthPct: 10, reform: -300, corporatistWar: 100,
+  corporatistPeace: -300 };
 // DESIGN 4.8: pi = min(0.005, 0.02 * B / max(M, 1000)) a turn in ppm; reserve 20 turns of max(income, 10); bond rate
 // up 50 * pi, at most 25%.
 export const INFLATION_RULES = { capPpm: 5000, factorPpm: 20000, minMoneyCents: 100000, reserveTurns: 20,

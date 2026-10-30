@@ -110,7 +110,7 @@ function turnEvents(ctx, input) {
     ...trendEvents(incomeSeries, creditSeries, state.trend), ...overheatEvents(state.boomTurns)];
   Object.assign(state, { wars: now.wars, routes: ctx.options.markets ? now.routes : state.routes, crisis,
     income: incomeSeries, credit: creditSeries, trend: nextTrendBp(state.trend, growthBp(incomeSeries)) });
-  return { events, outstanding };
+  return { events, outstanding, income };
 }
 
 /**
@@ -125,11 +125,11 @@ function cycleStep(ctx, input, reforms) {
   if (kPct === 0) { ctx.macro.cycle = emptyCycle(); return; }
   const state = ctx.macro.cycle;
   const boomBefore = state.boomTurns;
-  const { events, outstanding } = turnEvents(ctx, input);
+  const { events, outstanding, income } = turnEvents(ctx, input);
   const stage = worldStage(ctx);
   state.e = nextE(state.e, worldSum(events), kPct, stageScalePct(stage));
   const panicked = panicStarts({ allowed: stage.banking, e: state.e, lastPanic: state.lastPanic, turn: ctx.turn,
-    leverPct: leverPct(outstanding, ctx.civs.filter((civ) => civ.alive === true).map((civ) => civ.balanceCents)) });
+    leverPct: leverPct(outstanding, [income]) });
   if (panicked) startPanic(ctx);
   state.boomTurns = nextBoomTurns(state.boomTurns, state.e);
   for (const civ of ctx.civs) if (civ.alive === true) civCycle(ctx, civ, { events, kPct, reform: reforms.has(civ.id),

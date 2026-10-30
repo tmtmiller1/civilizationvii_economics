@@ -162,7 +162,7 @@ export function runMacroGame(game, options = ALL_ON) {
   let markets = emptyMarkets();
   let macro = emptyMacro();
   const facts = { e: [], phases: [], panics: 0, pi: [], gold: new Map(), systems: new Map(), maxMacroBytes: 0,
-    planMs: [], lever: [] };
+    planMs: [], lever: [], buildLoans: 0, defaults: 0 };
   for (let turn = 1; turn <= MACRO_TURNS; turn += 1) {
     const civs = game.civs.map((c) => civAt(game, c, turn, balances.get(c.id)));
     const routes = game.routes.filter((r) => turn >= r.from && turn < r.from + r.length);
@@ -194,8 +194,12 @@ function record(facts, plan, civs) {
   for (const c of civs) facts.systems.set(c.id, plan.macro.systems[String(c.id)]?.system);
   let outstanding = 0;
   for (const loan of plan.ledger.loans) if (loan.state === "active" || loan.state === "default") outstanding += loan.outstanding;
-  facts.lever.push(leverPct(outstanding, civs.map((c) => c.balanceCents)));
+  facts.lever.push(leverPct(outstanding, civs.map((c) => c.incomeCents)));
   facts.bondLoans = plan.ledger.loans.filter((loan) => loan.lender === "bond").length;
+  for (const e of plan.events) {
+    if (e.kind === "open" && e.source === "ai-build") facts.buildLoans += 1;
+    if (e.kind === "default") facts.defaults += 1;
+  }
 }
 
 /** Each civ keeps its own number of turns of income and spends the rest, as the game's AI spends its Gold. */

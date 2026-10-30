@@ -3,17 +3,19 @@
 // end balance after the resolve step, and an emergency loan stops at emergency_cap with one notice per spell.
 // An AI's emergency loan is the human's guard loan: the same line, the same sizing (back to the line plus one turn of
 // upkeep) and the same cap, through the one guardDecision. The AI differs only in trying a standard loan first while
-// it is short but solvent (DESIGN 6), which the human does by asking.
+// it is short but solvent (DESIGN 6), which the human does by asking. The AI's build loan is its door to "borrow to
+// build", which the player has through the Gold it spends: cheap credit puts progress on its own current build.
 
-import { SHORT_TERM, isWorldAccount } from "./econ-params.js";
+import { AI, CITIZENS, PROGRESS, SHORT_TERM, isWorldAccount } from "./econ-params.js";
 import { isOpen } from "./econ-loan.js";
 import { activeDefaults, emergencyOutstandingOf, outstandingOf } from "./econ-credit.js";
 import { emergencyOffersFor, offersFor, relationLevel } from "./econ-lenders.js";
-import { aiRepudiationTarget, aiRestructures, aiShortfall } from "./econ-ai.js";
+import { aiBuildBorrowWanted, aiRepudiationTarget, aiRestructures, aiShortfall } from "./econ-ai.js";
 import { emergencyCap, guardDecision, isInsolvent } from "./econ-guard.js";
 import { projected } from "./econ-batch.js";
 import { aiLendersFor, event, incomeOf, isHuman, notice, offerQuery, openLoan } from "./econ-turn.js";
-import { isAtLoanLimit, limitRefusal, repudiateFor, restructureLoan } from "./econ-requests.js";
+import { isAtLoanLimit, limitRefusal, mostBorrowCents, repudiateFor, restructureLoan } from "./econ-requests.js";
+import { pointPriceCents } from "./econ-planned.js";
 
 /**
  * @param {TurnContext} ctx
@@ -164,4 +166,74 @@ export function aiRepudiate(ctx, civ) {
     atCap: lastCapHit(ctx, civ.id) === ctx.turn - 1, lastRepudiationTurn: last, turn: ctx.turn });
   if (lender === null || lender === undefined) return;
   repudiateFor(ctx, civ.id, lender);
+}
+
+/**
+ * The city an AI's build loan backs: its first city with a build that still needs progress, role buildings first
+ * (DESIGN 4.13), with what this turn's other progress rows already send it taken off.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ */
+function buildCity(ctx, civ) {
+  const left = (/** @type {CityRead} */ city) => city.neededProgress
+    - (ctx.out.progress.find((row) => row.cityId === city.id)?.amount ?? 0);
+  const open = (civ.cities || []).filter((city) => city && city.build && left(city) > 0);
+  const city = open.find((row) => row.roleBuilding === true) || open[0];
+  return city ? { city, need: left(city) } : null;
+}
+
+/**
+ * The cheapest bond or civ offer over the build loan's term, so an AI has about one open at a time; its citizens have
+ * their own rule.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ * @param {number} principal
+ */
+function buildOffer(ctx, pid, principal) {
+  const term = AI.buildTerm;
+  const offer = offersFor(offerQuery(ctx, pid, { principal, term, lenders: aiLendersFor(ctx, pid) }))
+    .find((row) => row.lender !== CITIZENS);
+  return offer ? { ...offer, term } : null;
+}
+
+/**
+ * The city an AI's build loan would back this turn, or null when the rule says no or its loans are at the limit.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @param {TurnRow | undefined} last
+ */
+function buildTarget(ctx, civ, last) {
+  const target = buildCity(ctx, civ);
+  const wanted = aiBuildBorrowWanted({ incomeCents: civ.incomeCents, phase: ctx.readings.civ.get(civ.id)?.phase ?? "",
+    insolvent: isInsolventCiv(ctx, civ.id), inDefault: activeDefaults(ctx.ledger, civ.id) > 0, hasBuild: !!target,
+    lastTurn: last?.turn, turn: ctx.turn });
+  return wanted && !isAtLoanLimit(ctx, civ.id) ? target : null;
+}
+
+/**
+ * DESIGN 6 build loan: up to 5 turns of income, within the 4.2 limits by the same sizing the player's refusal names,
+ * in whole points at the game's purchase rate; the Gold goes straight into the build as addProgress, beside any
+ * development loan's or the plan's row for the same city.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ */
+export function aiBuildBorrow(ctx, civ) {
+  const last = ctx.ledger.buildTurns.find((row) => row.pid === civ.id);
+  const target = buildTarget(ctx, civ, last);
+  if (!target) return;
+  const price = pointPriceCents(ctx.params.goldPerPointCents, target.city.progressScalePct);
+  const want = Math.min(AI.buildSizeTurns * civ.incomeCents, target.need * price);
+  const offer = buildOffer(ctx, civ.id, want);
+  if (!offer) return;
+  const most = Math.min(want, mostBorrowCents(ctx, civ.id, offer));
+  const points = Math.floor(most / price);
+  if (points * price < AI.minIncomeCents) return;
+  // The principal goes from the lender straight to the progress account: Gold from a civ counts in the borrower's
+  // funds only next turn (DESIGN 4.14), and the borrower never holds it.
+  const loan = openLoan(ctx, { lender: offer.lender, borrower: civ.id, principal: points * price,
+    ratePpm: offer.ratePpm, term: offer.term, source: "ai-build", payee: PROGRESS });
+  const same = ctx.out.progress.find((row) => row.cityId === target.city.id);
+  if (same) same.amount += points;
+  else ctx.out.progress.push({ host: civ.id, cityId: target.city.id, amount: points, investmentId: loan.id });
+  if (last) last.turn = ctx.turn; else ctx.ledger.buildTurns.push({ pid: civ.id, turn: ctx.turn });
 }

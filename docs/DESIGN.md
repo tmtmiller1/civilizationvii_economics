@@ -514,7 +514,7 @@ trend   = an average of growth that moves 4% of the way to each turn's reading (
 boom_n  = turns in a row the world has spent in Boom; any other phase sets it back to 0
 k       = Business cycle option: Off 0, Mild 0.5, Standard 1.0, Strong 1.5
 s       = world stage scale (4.15): 0.25, 0.6, 1.0; world index only
-lev     = (all outstanding loans) / max(M, 1000)              M: 4.8, over all civs here
+lev     = (all outstanding loans) / max(world income, 10)      in turns; world income: the civs' positive income
 ```
 
 "Took part" means both sides of a war, the civ that lost the settlement, or the civ whose land was hit. `L` decays at
@@ -529,7 +529,7 @@ them while it lasts:
 | Slump | 0.8 to below 0.95 | |
 | Steady | 0.95 to 1.05 | |
 | Boom | above 1.05 | |
-| Panic | a state, 5 turns | from the Banking stage (4.15). Starts when `lev > 1.5` and `E > 1.05`, with no Panic in the last 20 turns: `E -= 0.2` once, its own notification and chronicle entry. While it lasts the phase reads Panic, civ lenders stop offering (4.3), `cycle_spread` rises by 0.5, and Market and Merchant oligarchy civs take -0.05 on `L` once (4.17). After 5 turns the phase goes back to the range `E` is in, usually a Slump |
+| Panic | a state, 5 turns | from the Banking stage (4.15). Starts when `lev > 1.7` turns and `E > 1.05`, with no Panic in the last 60 turns: `E -= 0.2` once, its own notification and chronicle entry. While it lasts the phase reads Panic, civ lenders stop offering (4.3), `cycle_spread` rises by 0.5, and Market and Merchant oligarchy civs take -0.05 on `L` once (4.17). After 5 turns the phase goes back to the range `E` is in, usually a Slump |
 
 | Event | Weight | Source (probe) |
 | --- | --- | --- |
@@ -547,7 +547,7 @@ them while it lasts:
 | Route between civs ends | -0.005 | same |
 | World income: `growth` against `trend` | ±0.005 per 5 points above or below the trend, at most ±0.01/turn | ledger history of `income` |
 | Overheating: the world in Boom | -0.002 per turn of `boom_n`, at most -0.03/turn | `E` |
-| Credit growth: all outstanding loans up more than 10% on 10 turns ago | +0.005/turn | ledger; this is the boom a Panic follows |
+| Credit growth: all outstanding loans up more than 10% on 10 turns ago | +0.015/turn | ledger; this is the boom a Panic follows |
 
 Effects:
 
@@ -577,7 +577,14 @@ peaceful one included, because each standing route added +0.001 a turn and incom
 positive in nearly every growing game, which held `E` near 1.1. Standing routes now weigh nothing, income counts only
 against its own trend, and overheating pulls a long boom down. The trend and `boom_n` are kept in the macro envelope.
 Overheating is the world's only: a civ's `L` already decays by a fifth a turn, so a civ's own boom fades without it,
-and the World tab lists it every fifth turn of a boom rather than every turn. Section 10 has the new shape.
+and the World tab lists it every fifth turn of a boom rather than every turn.
+
+Changed 2026-10-30 (offline only), finding Q: no Panic fired in the first 1.2 run, because the AI borrowed only when
+short, which it never is at `TurnBegin` (NOTES finding I), and leverage was measured against the Gold held, which AIs
+hoard. The AI now takes build loans while its credit is cheap (section 6), leverage is outstanding debt in turns of
+the world's income, and the Panic line is 1.7 turns with 60 turns between Panics. Credit growth weighs +0.015 a turn,
+three times the first figure, so a borrowing wave lifts the world into Boom: at +0.005 the same games never boomed.
+The World tab shows leverage in turns against the line. Section 10 has the shape.
 
 ### 4.12 Foreign investment
 
@@ -966,6 +973,7 @@ numbers. The AI's native spending doesn't know about them, so they follow three 
 | Part | Rule |
 | --- | --- |
 | Borrowing | short: a standard bond or AI loan for the shortfall, 10 turns, within the 4.2 limits; insolvent, or past the limits: an emergency loan within `emergency_cap` (4.6); past the cap: none |
+| Build loan | income of 10 Gold or more, solvent, in no default, its own phase Boom or Steady (or outside the cycle), a city with a build at the head of its queue, at most once per 10 turns: the cheapest bond or AI loan over 10 turns for up to 5 turns of its income, no more than the build still needs at the game's purchase rate (4.17) and no more than the most the 4.2 limits allow (the sizing a player's refusal names). The principal goes from the lender straight to the build as `addProgress`, through the progress account a development loan uses, role buildings first. No native lever carries a loan (P18), so this is the AI's door to borrowing to build, which the player has through the Gold it spends. Cheap credit in a boom means more of it, which is what builds the leverage a Panic needs (4.11) |
 | Restructuring | an overdue loan with income > 0 is restructured at `m = 2` |
 | Repudiation | at most once per 20 turns, never against a Friendly lender. Repudiates what it owes a civ it's at war with; or, when insolvent or in default, what it owes a lender it's Unfriendly or worse with, if that debt is above `10 * max(|income|, 10)`; or the bond market, when insolvent and at `emergency_cap` |
 | After a repudiation | doesn't lend to, invest in or aid the repudiator while the repudiation counts against its standing (4.5) |
@@ -998,6 +1006,10 @@ Where the AI and the player are treated differently, and why:
   row for Classical Republic AIs is the owner's call.
 - The player can choose a government for its system; the AI chooses without knowing the mod (M2). Bias lists would
   steer it, but by fixed preference; left to the owner.
+- Borrowing to build: the player borrows when it likes and spends the Gold as it chooses, buying at the game's
+  price; the AI borrows by the build-loan rule above, sized and limited the same way, and the loan's Gold lands on
+  its current build at the same price. The AI's door is narrower (once per 10 turns, only while its own credit is
+  cheap, 10-turn terms) because its native spending can't see what it owes; the player's is the Loans tab.
 - Citizen loans: the player borrows when it likes, the AI by the rule above. The AI never repudiates its citizens
   (among the world accounts its repudiation rule reaches the bond market and temple treasuries only), while the
   player can.
@@ -1216,9 +1228,14 @@ figures). No game was launched.
 | Check | Before | After | Against the target |
 | --- | --- | --- | --- |
 | Cycle shape (1.2 run, cycle fix alone) | Steady 55 to 70% of turns and Boom the rest in every game, no Slump; the peaceful game Boom on 63%; no Depression, no Panic | Slump 14 to 24% of turns and Steady the rest in every game, no Boom; `E` 0.87 to 1.03; the peaceful game Steady throughout (lowest 0.96), with 17 civ-turns of Slump; no Depression, no Panic | Half met: the lean is gone and wars, crises and below-trend income now slump the world, but nothing lifts it into Boom without credit (NOTES finding V); the credit boom comes with the AI's borrowing below |
+| Cycle shape (1.2 run, with the AI's build loans) | as above | Steady 83 to 92% of turns, Slump 6 to 15% and Boom 1 to 5% in every game; `E` 0.85 to 1.08; the peaceful game Steady 87%, Boom 9%, Slump 4% (after its Panic) with 84 civ-turns of Slump; no Depression | Met: both Slump and Boom in all six games, Steady most common, and the peaceful game slumps |
+| Panics a game (1.2 run) | 0 in every game; leverage at most 5% of the Gold held | 1 or 2 in every game, 1 in the peaceful one; leverage up to 3.9 to 4.7 turns of world income; 262 to 277 AI build loans a game, no default | Met: at most twice, and from booms with borrowing |
 | The plan (1.2 run) | 450 Gold into 150 points in 50 turns at 3 Gold a point, worth 600 Gold at the purchase price: 1.33 times the Gold | 400 Gold into 100 points at the game's 4 Gold a point (read from the GlobalParameters fixture), worth 400 Gold: 1.0 times the Gold, with each sent point landing as one | Met on the Gold: the plan buys at the price a player pays. It still keeps its tax cards, and finding L's scaling is the glue's `progressScalePct` for the lead to set |
 | Borrowing pays (1.0 table) | interest at 0.03 / 0.02 / 0.015: Market 59.4 Gold against 30 to 50 of yield, Bazaar 88 against 60 to 80, Bank 125 against 80 to 100 | at 0.015 / 0.01 / 0.0075: Market 29.7 against 30 to 50, Bazaar 44 against 60 to 80, Bank 62.7 against 80 to 100; the Granary pays no Gold | Met on the strict reading in every age, the Market by a hair at its lowest yield |
 | AI solvency (1.0 run, with the new rates and limits) | 175 AIs with positive income in the Off run: 0 defaults, 0 emergency loans | the same 175: 0 defaults, 0 emergency loans; penalty turns On 491 against 2,848 Off (509 before) | Met: 0 games in 20 |
+| AI solvency (1.0 run, with build loans and three cities a civ) | as above | the same 175: 0 defaults, 0 emergency loans, about 290 build loans a game; penalty turns On 1,938 against 2,848 Off. 1,854 of them come from the harness now carrying the markets envelope (NOTES finding W), 84 from the build loans | Met: 0 games in 20 |
+| Inflation (1.2 run) | median 0.01 to 0.04%, worst 0.1% a turn; 30 to 75 Gold eroded a game | median 0.02 to 0.06%, worst 0.36%; 63 to 155 Gold eroded (NOTES finding X) | Met: never at its cap |
+| System diversity (1.2 run) | Corporatist +7.7 Gold of cycle Gold against Mixed's +4.2 | Corporatist -10.5 against Mixed's -14.0: the controlled world's routes no longer lift it, so every system's cycle Gold is a charge; credit and swing as before | Unchanged in shape: Corporatist still ahead on three of four |
 | Lending pays (1.0 run) | +9.4% median return, 8 of 9 lending games positive | +4.8% median, 8 of 9 positive: the player's neutral rate is half what it was | Met |
 | Development loan ratio (1.1 run) | 1.125 times the purchase price on a role building, 0.94 on another | unchanged: it was measured against the purchase rate already, and a development loan's return carries the rest | Met, so `G / 3` stays; finding L applies to it as well, and the plan's `progressScalePct` is the read to use if the lab finds the scaling large |
 

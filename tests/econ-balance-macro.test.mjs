@@ -66,7 +66,8 @@ test(`balance ladder 1.2: ${GAMES} seeded 12-civ ${MACRO_TURNS}-turn games, a pe
     times.push(...facts.planMs);
     maxBytes = Math.max(maxBytes, facts.maxMacroBytes);
     report.cycle.push({ game: i, worldPhases: phaseShares(facts.e), minE: Math.min(...facts.e), maxE: Math.max(...facts.e),
-      panics: facts.panics, maxLeverPct: Math.max(...facts.lever), bondLoans: facts.bondLoans, ...civFacts });
+      panics: facts.panics, maxLeverPct: Math.max(...facts.lever), bondLoans: facts.bondLoans,
+      buildLoans: facts.buildLoans, defaults: facts.defaults, ...civFacts });
     const pi = facts.pi.filter((x) => x > 0);
     report.inflation.push({ game: i, turnsWithInflation: pi.length, medianPiPpm: median(pi), worstPiPpm: Math.max(0, ...pi) });
     const gold = [...facts.gold.values()];

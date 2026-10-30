@@ -98,7 +98,7 @@ test("the engine's events and the crisis reach E, and a phase change tells the p
   assert.equal(out.macro.cycle.phases[ME], "slump");
 });
 
-test("Panic: from Banking, leverage above 1.5 in a boom; E drops 0.2, civ lenders stop, bond spread +0.5", () => {
+test("Panic: from Banking, leverage above 1.7 turns of world income in a boom; E drops 0.2, civ lenders stop, bond +0.5", () => {
   const civs = [me({ stages: OPEN_MACRO }), ai(AI, { stages: OPEN_MACRO, balanceCents: 100000 })];
   const ledger = { ...emptyLedger(), nextId: 2, loans: [makeLoan({ id: "L1", lender: "bond", borrower: AI,
     principal: 400000, ratePpm: 30000, term: 30, turn: 40 })] };

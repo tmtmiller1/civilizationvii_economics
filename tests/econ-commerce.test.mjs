@@ -26,7 +26,8 @@ const refusal = (plan, request) => plan.events.find((e) => e.kind === "refused" 
 /** A plan that must pass the commit checks. */
 function plan(over) {
   const civs = over.civs;
-  const out = planTurn(input({ markets: markets(), ...over }));
+  // Loans off unless a test asks: the AI's build loans would otherwise join the investment rows these tests read.
+  const out = planTurn(input({ markets: markets(), ...over, options: { loans: false, ...(over.options || {}) } }));
   assert.deepEqual(checkPlan({ plan: out, civs }), [], "commit checks");
   return out;
 }

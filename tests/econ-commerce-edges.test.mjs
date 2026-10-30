@@ -19,7 +19,9 @@ const me = (over = {}) => civ(ME, { human: true, incomeCents: 10000, balanceCent
 const ai = (id, over = {}) => civ(id, { incomeCents: 10000, balanceCents: 300000, stages: OPEN_ALL, ...over });
 const city = (id, over = {}) => ({ id, build: "BUILDING_LIBRARY", neededProgress: 200, ...over });
 const plan = (over) => {
-  const out = planTurn(input({ markets: { ...emptyMarkets(), prices }, ...over }));
+  // Loans off unless a test asks: the AI's build loans would otherwise join the investment rows these tests read.
+  const out = planTurn(input({ markets: { ...emptyMarkets(), prices }, ...over,
+    options: { loans: false, ...(over.options || {}) } }));
   assert.deepEqual(checkPlan({ plan: out, civs: over.civs }), []);
   return out;
 };
