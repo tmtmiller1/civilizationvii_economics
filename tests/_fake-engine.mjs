@@ -95,7 +95,7 @@ export function installFakeEngine(spec = {}) {
   const fake = {
     Players: players,
     Game: {
-      get turn() { return world.turn; }, age: 7, getHash: (s) => `#${s}`,
+      get turn() { return world.turn; }, get age() { return world.ageHash ?? 7; }, getHash: (s) => `#${s}`,
       // A held entry's origin, from the civ spec's `held` rows: "pid/k" is civ pid's k-th row.
       Resources: { getOriginCity: (value) => {
         const [pid, k] = String(value).split("/").map(Number);

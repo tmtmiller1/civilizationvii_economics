@@ -14,6 +14,7 @@ import { checkPlan } from "./econ-invariants.js";
 import { modelStages } from "./econ-stage-rules.js";
 import { readStageTurns } from "./econ-stage-read.js";
 import { logDebug, logLine } from "./econ-log.js";
+import { countTurn, emptyTurnCount, gameTurnOf, sanitizeTurnCount } from "./econ-turn-count.js";
 import { MARKETS_KEY, loadMarkets, saveMarkets } from "./econ-markets.js";
 import { countRoles } from "./econ-depth.js";
 import { cityKey, makeRolesFor, readCities, readMarket, readRoutes, readTradeIncomeCents, sendProgress }
@@ -24,21 +25,21 @@ import { aliveMajorIds, ageType, bankGoldYield, bookGrievance, bookRelationship,
   writeEnvelope } from "./econ-engine.js";
 
 export const GLUE_KEY = "tower-economics-glue";
-export const GLUE_VERSION = 1;
+export const GLUE_VERSION = 2;
 const REQUEST_KINDS = ["borrow", "lend", "repay", "restructure", "repudiate", "tax", "tariff", "invest",
   "accept-offer", "decline-offer"];
 const MAX_REQUESTS = 16;
 
 /**
  * @typedef {{ v: number, stages: Record<string, StageTurns>, seen: number[], requests: PlanRequest[],
- *   guardOn: boolean | null }} GlueState
+ *   guardOn: boolean | null, turns: import("./econ-turn-count.js").TurnCount }} GlueState
  * @typedef {{ ledger: Ledger, glue: GlueState, lastPlan: PlanOutput | null, params: EngineParams | null,
  *   markets: MarketsState }} Session
  */
 
 /** @returns {GlueState} */
 export function emptyGlue() {
-  return { v: GLUE_VERSION, stages: {}, seen: [], requests: [], guardOn: null };
+  return { v: GLUE_VERSION, stages: {}, seen: [], requests: [], guardOn: null, turns: emptyTurnCount() };
 }
 
 /**
@@ -72,6 +73,7 @@ export function sanitizeGlue(raw) {
   out.seen = Array.isArray(value.seen) ? value.seen.filter((id) => Number.isInteger(id) && id >= 0) : [];
   out.requests = Array.isArray(value.requests) ? value.requests.filter(isRequest).slice(0, MAX_REQUESTS) : [];
   out.guardOn = typeof value.guardOn === "boolean" ? value.guardOn : null;
+  out.turns = sanitizeTurnCount(value.turns);
   return out;
 }
 
@@ -175,13 +177,33 @@ export function readCommerce(majors) {
 }
 
 /**
+ * This turn on the count that keeps rising across the ages (econ-turn-count.js); the first read in a new age moves
+ * the count's base. Every turn the plan, the ledger and the glue keep is on this count.
+ * @param {Session} session
+ */
+export function turnNow(session) {
+  const next = countTurn(session.glue.turns, ageType(), gameTurn(), session.ledger.lastTurn);
+  session.glue.turns = next.count;
+  return next.turn;
+}
+
+/**
+ * The game's own turn for a counted one, or null for a turn of an earlier age (for the screens).
+ * @param {Session} session
+ * @param {number} turn
+ */
+export function displayTurn(session, turn) {
+  return gameTurnOf(session.glue.turns, turn);
+}
+
+/**
  * The plan input for this turn: every major ever seen, stages carried forward, the engine's lines read once.
  * Updates the glue's seen list and stage turns.
  * @param {Session} session
  * @returns {PlanInput}
  */
 export function buildInput(session) {
-  const turn = gameTurn();
+  const turn = turnNow(session);
   const majors = aliveMajorIds();
   const seen = [...new Set([...session.glue.seen, ...majors])].sort((a, b) => a - b);
   session.glue.seen = seen;
@@ -274,7 +296,7 @@ export function runTurn(session, why) {
  */
 export function resendLostBatch(session) {
   const batch = session.ledger.lastBatch;
-  if (!batch || batch.turn !== gameTurn()) return [];
+  if (!batch || batch.turn !== turnNow(session)) return [];
   const balances = new Map(batch.civs.map((row) => [row.pid, readBalanceCents(row.pid)]));
   const lost = batchStatus(batch, balances).filter((row) => row.status === "lost");
   for (const row of lost) {

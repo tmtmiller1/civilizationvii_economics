@@ -103,6 +103,7 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_FLOWS" Language="de_DE"><Text>What moved, and why</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_NO_FLOWS" Language="de_DE"><Text>Loans haven't moved any of your Gold yet.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_FLOWS_NOTE" Language="de_DE"><Text>The newest lines first; the last batch ran on turn {1_Turn}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TURN_EARLIER_AGE" Language="de_DE"><Text>Last age</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_BUILDINGS" Language="de_DE"><Text>Buildings and financial depth</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_ROLE_COMMERCE" Language="de_DE"><Text>Commerce buildings</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_ROLE_BANKING" Language="de_DE"><Text>Banking buildings</Text></Replace>

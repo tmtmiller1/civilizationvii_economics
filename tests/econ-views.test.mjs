@@ -52,6 +52,7 @@ function makeApi(over = {}) {
     buildName: (type) => `build:${type}`,
     cityName: (id) => `city:${id}`,
     possibleRoutes: () => [{ owner: 6, city: "6:3", resources: ["RESOURCE_IRON"] }, { owner: 8, city: "8:1", resources: [] }],
+    turnLabel: (turn) => (turn > 40 ? turn - 40 : null),
     ...over,
   };
 }

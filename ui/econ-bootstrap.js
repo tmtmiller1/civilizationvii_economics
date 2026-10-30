@@ -6,8 +6,8 @@
 import { logLine } from "./econ-log.js";
 import { aliveMajorIds, gameTurn, isMultiplayer, listen, loc, localId, readAtWar, readBuildings, readDepth, safe }
   from "./econ-engine.js";
-import { buildInput, dropRequest, loadSession, queueRequest, readOptions, resendLostBatch, runTurn, setGuard }
-  from "./econ-session.js";
+import { buildInput, displayTurn, dropRequest, loadSession, queueRequest, readOptions, resendLostBatch, runTurn,
+  setGuard, turnNow } from "./econ-session.js";
 import { flushNotice, holdNotice, installClickHandler, nameOf } from "./econ-notify.js";
 import { stageOpenerName } from "./econ-stage-read.js";
 import { canSwap, readCards, readFiscal, swapTo } from "./econ-fiscal.js";
@@ -65,6 +65,7 @@ function screenApi(session) {
     buildName: (type) => loc(readTypeName(type)),
     cityName: (cityId) => loc(readCityName(cityId)),
     possibleRoutes: () => readPossibleRoutes(localId(), aliveMajorIds()),
+    turnLabel: (turn) => displayTurn(session, turn),
   };
 }
 
@@ -75,7 +76,7 @@ function screenApi(session) {
  */
 function catchUp(session) {
   const last = session.ledger.lastTurn;
-  if (!Number.isInteger(last) || /** @type {number} */ (last) >= gameTurn()) return;
+  if (!Number.isInteger(last) || /** @type {number} */ (last) >= turnNow(session)) return;
   const plan = safe(() => runTurn(session, `load catch-up from turn ${last}`), null);
   if (plan) holdNotice(plan, state);
 }
@@ -93,7 +94,7 @@ function onTurnBegin() {
 function onPlayerTurnActivated(data) {
   const pid = data && (data.player ?? data.Player);
   if (pid !== localId()) return;
-  state.activeTurn = gameTurn();
+  state.activeTurn = state.session ? turnNow(state.session) : gameTurn();
   flushNotice();
 }
 
@@ -122,7 +123,7 @@ function boot() {
   state.session = session;
   const lost = resendLostBatch(session);
   // A loaded game opens on the local player's own turn, and no PlayerTurnActivated follows for it.
-  if (safe(() => Players.get(localId()).isTurnActive === true, false)) state.activeTurn = gameTurn();
+  if (safe(() => Players.get(localId()).isTurnActive === true, false)) state.activeTurn = turnNow(session);
   catchUp(session);
   setScreenApi(screenApi(session));
   installDock(pillSource);

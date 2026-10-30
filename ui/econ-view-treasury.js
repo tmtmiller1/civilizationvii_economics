@@ -58,11 +58,15 @@ function flowsSection(api) {
   const events = (ledger?.events || []).filter((event) => eventConcerns(event, api.me)).slice(-12).reverse();
   const lines = events.map((event) => {
     const line = describeEvent(event, { ledger: /** @type {Ledger} */ (ledger), nameOf: api.nameOf });
-    return line ? el("div", "econ-line", `${event.turn}: ${api.loc(line.key, ...line.args)}`) : null;
+    const shown = api.turnLabel(event.turn);
+    const when = shown === null ? api.loc("LOC_ECONOMICS_TURN_EARLIER_AGE") : String(shown);
+    return line ? el("div", "econ-line", `${when}: ${api.loc(line.key, ...line.args)}`) : null;
   }).filter((line) => line !== null);
   const block = section(api.loc("LOC_ECONOMICS_TREASURY_FLOWS"), /** @type {HTMLElement[]} */ (lines));
   if (!lines.length) block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_NO_FLOWS")));
-  else if (turn !== null) block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_FLOWS_NOTE", turn)));
+  else if (turn !== null) {
+    block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_FLOWS_NOTE", api.turnLabel(turn) ?? turn)));
+  }
   return block;
 }
 

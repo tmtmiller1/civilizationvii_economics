@@ -27,6 +27,8 @@
  * @property {(cityId: string) => string} cityName a city's name by its component id key
  * @property {() => { owner: number, city: string, resources: string[] }[] | null} possibleRoutes the routes the game
  *   would let the player make now, or null when that read doesn't answer
+ * @property {(turn: number) => number | null} turnLabel the game's own turn for a counted one (econ-turn-count.js),
+ *   null for a turn of an earlier age
  */
 
 export {};

@@ -107,8 +107,8 @@ test("the glue envelope keeps requests, stage turns, seen civs and the guard swi
   assert.ok(world.config[GLUE_KEY].includes("repay"));
   const clean = sanitizeGlue({ v: 1, stages: { 4: { moneylending: 3, publicDebt: "x" }, bad: {} }, seen: [1, -2, "3"],
     requests: [{ kind: "borrow" }, 5], guardOn: "yes" });
-  assert.deepEqual(clean, { v: 1, stages: { 4: { moneylending: 3, publicDebt: null } }, seen: [1], requests: [{ kind: "borrow" }],
-    guardOn: null });
+  assert.deepEqual(clean, { v: 2, stages: { 4: { moneylending: 3, publicDebt: null } }, seen: [1], requests: [{ kind: "borrow" }],
+    guardOn: null, turns: { age: null, base: 0, last: 0 } });
   assert.deepEqual(sanitizeGlue("junk"), emptyGlue());
   removeFakeEngine();
 });

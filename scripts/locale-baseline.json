@@ -99,6 +99,7 @@
  "LOC_ECONOMICS_TREASURY_FLOWS": "What moved, and why",
  "LOC_ECONOMICS_TREASURY_NO_FLOWS": "Loans haven't moved any of your Gold yet.",
  "LOC_ECONOMICS_TREASURY_FLOWS_NOTE": "The newest lines first; the last batch ran on turn {1_Turn}.",
+ "LOC_ECONOMICS_TURN_EARLIER_AGE": "Last age",
  "LOC_ECONOMICS_TREASURY_BUILDINGS": "Buildings and financial depth",
  "LOC_ECONOMICS_ROLE_COMMERCE": "Commerce buildings",
  "LOC_ECONOMICS_ROLE_BANKING": "Banking buildings",

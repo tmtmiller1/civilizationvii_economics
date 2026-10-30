@@ -204,6 +204,7 @@
                     <Item>ui/econ-tax-cards.js</Item>
                     <Item>ui/econ-tax.js</Item>
                     <Item>ui/econ-trade.js</Item>
+                    <Item>ui/econ-turn-count.js</Item>
                     <Item>ui/econ-turn.js</Item>
                     <Item>ui/econ-view-borrow.js</Item>
                     <Item>ui/econ-view-commerce.js</Item>
