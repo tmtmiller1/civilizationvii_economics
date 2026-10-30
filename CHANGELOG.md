@@ -14,8 +14,8 @@ release is generated from the matching section below by `scripts/steam-changelog
 - The tax policy cards: Light Taxation, Heavy Taxation and War Levy in each age, in the game's own policy slots, with
   one extra slot granted by each age's first civic, unlocked through the civics tree, and two AI strategies that
   steer the computer players toward them. The game's AI picks them like any card.
-- The Economics screen (Treasury, Loans and Fiscal tabs) from its own dock button, with a debt pill beside the
-  button. Borrow, repay, restructure, repudiate and lend from the Loans tab. Each loan offer shows its payment, the
+- The Economics screen (Treasury, Loans and Fiscal tabs) from its own dock button, with a debt pill in the
+  resource bar after the settlement limit. Borrow, repay, restructure, repudiate and lend from the Loans tab. Each loan offer shows its payment, the
   interest in all and how much of your income your payments would take with it, and a repudiation or a restructure
   shows what it costs before you confirm. Slot or clear a tax card from the Fiscal tab, which shows each card's
   change to your Gold and Happiness and when your next celebration would come.
@@ -72,6 +72,12 @@ release is generated from the matching section below by `scripts/steam-changelog
   Economic systems (On).
 
 ### Changed
+- The debt pill sits in the top resource bar, after the settlement limit.
+- Heavy Taxation opens in Antiquity at Code of Laws, after Priesthood's civic, so Priesthood is the first Gold card
+  you can pick. Light still opens at Chiefdom.
+- The Rates setup option is now called Base Interest Rate, and its tooltip says what it sets: the rate every loan
+  starts from in each age, which each loan's payment record, relationship, banking buildings and the world economy
+  then move.
 - The business cycle no longer leans to Boom. A trade route that stands and income that grows at its usual pace don't
   move the world any more; only growth faster or slower than usual does, and a long boom wears itself out, so a
   growing world still has slumps.

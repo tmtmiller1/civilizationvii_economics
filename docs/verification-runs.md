@@ -475,6 +475,14 @@ here: Economics alone, Antiquity seed 4242, `--setup fast --quick`, `lab drive` 
 | TD.5 | An AI Friendly with the player doesn't answer the player's tariff, and drops one it already answered at once | Exploration or Modern, the human Friendly with a trading AI | same |
 | TD.6 | A 0.5.0 save loaded into 0.5.1 with AIs at High: they drop about 20 turns after the load | a Modern save from the merged watch, if one was kept | `ui/econ-markets.js` `sanitizeMarkets` |
 
+## Owed: Heavy after Priesthood and the bar pill (0.5.2)
+
+- HP.1 Antiquity: Heavy Taxation shows in the policy list only once Code of Laws is done; Light at Chiefdom as before.
+- HP.2 The AIs' first Heavy picks come after their Code of Laws, and Priesthood gets slotted by some.
+- BP.1 The debt pill sits in the top resource bar after the settlement limit, in the world view and the city view,
+  and redraws after a turn and after a borrow; the dock button still opens the screen.
+- BR.1 The setup screen reads "Base Interest Rate" with the new tooltip.
+
 ## Owed: model fixes
 
 Built 2026-10-30 on the `model-fixes` branch, offline only (NOTES findings P to U and W to Y, choices from 102). Nothing here has

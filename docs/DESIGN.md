@@ -359,7 +359,7 @@ lets anyone change it, player or AI (section 3), so taxes use the game's own slo
 | Card | Unlocked by | Effect in each settlement | Partisans hardship |
 | --- | --- | --- | --- |
 | Light Taxation | each age's root civic | Gold -1; Happiness +6 in Antiquity, +4 in Exploration, +3 in Modern | 0 |
-| Heavy Taxation | each age's root civic | Gold +4, Happiness -2 | +1 |
+| Heavy Taxation | each age's root civic; in Antiquity the civic after Priesthood's (Code of Laws in 1.5.0) | Gold +4, Happiness -2 | +1 |
 | War Levy | the node that unlocks the Coinage anchor (4.15), and each later age's root civic | Gold +2, Happiness -1; while at war with a major civ, Gold +8, Happiness -4 | +2 |
 
 Flat amounts, 2026-10-29: the cards were Gold -15% and Happiness +20% (Light), the mirror (Heavy) and +30% / -40% (War
@@ -1104,7 +1104,7 @@ Where the AI and the player are treated differently, and why:
 | Loans | Off, On | On | 1.0 |
 | Auto-loan guard | Off, On; the player can also switch it on the Loans tab (4.6) | On | 1.0 |
 | AI borrowing and lending | Off, On | On | 1.0 |
-| Rates | Low 0.75×, Standard 1.0×, High 1.25× every rate (NOTES choice 19) | Standard | 1.0 |
+| Base Interest Rate | Low 0.75×, Standard 1.0×, High 1.25× the base rate and the cap (NOTES choice 19) | Standard | 1.0 |
 | Taxes | Off, On | On | 1.0 |
 | Economic stages | Off (each part opens at its age's start), On (4.15) | On | 1.0, covering the stages of the parts shipped |
 | Markets and trade bills | Off, On | On | 1.1 |
