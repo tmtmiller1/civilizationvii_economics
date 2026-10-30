@@ -144,6 +144,14 @@ balance run is the lower bound. Owed: one grant on a city with no production bon
   `econ-conservation.js` 98.6, `econ-stage-rules.js` 97.5, `econ-credit.js` 97.4, `econ-payments.js` 89.9,
   `econ-depth.js` 88.4, `econ-tax-cards.js` 88.2, `econ-plan.js` 75.3. The survivors in `econ-plan.js` are mostly
   event and notice field values and the order of equivalent branches; `../reports/mutation/mutation.json` lists each.
+- The 1.1 balance rows ran 2026-10-29 in `../tests/econ-balance-commerce.test.mjs` (10 seeded 12-civ 200-turn
+  Exploration games, Markets On against Off, plus the price, ratio and wide-tall tables from the compiled 1.5.0 rows);
+  figures in `../reports/balance-1.1.json`, findings K and L above.
+- Mutation on the 1.1 modules and the flat tax cards (2026-10-30, the same house bar): `econ-invest.js` 94.7,
+  `econ-trade.js` 93.9, `econ-commerce.js` 92.4 (74.0 on the first run, before the edge tests in
+  `../tests/econ-commerce-edges.test.mjs`), `econ-prices.js` 91.4, `econ-tax-cards.js` 91.3, `econ-view-commerce.js`
+  86.2, `econ-markets.js` 83.9, `econ-invest-open.js` 82.5. The survivors are mostly event field strings and
+  sort tie-breaks that no rule reads.
 
 ## Not done here
 

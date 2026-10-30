@@ -17,7 +17,6 @@ import { withBlock } from "./econ-payments.js";
 import { hasStage } from "./econ-stages.js";
 import { addInfluence, funds, lenderBalance } from "./econ-batch.js";
 import { emit, event, incomeOf, isAlive, notice } from "./econ-turn.js";
-import { isInsolventCiv } from "./econ-shortfall.js";
 import { openInvestment, investRefusal } from "./econ-invest-open.js";
 
 /**
@@ -202,13 +201,13 @@ export function aiTariff(ctx, civ) {
 }
 
 /**
- * Whether an AI can spare Gold for others: income above 0, balance above 20 turns of it, and solvent (DESIGN 6).
+ * Whether an AI can spare Gold for others: income above 0 and a balance above 20 turns of it (DESIGN 6). A civ with
+ * income above 0 this turn is never insolvent, so the "never when insolvent" rule needs no check of its own.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 function canSpare(ctx, civ) {
-  return civ.incomeCents > 0 && lenderBalance(ctx.batch, civ.id) > 20 * civ.incomeCents
-    && !isInsolventCiv(ctx, civ.id);
+  return civ.incomeCents > 0 && lenderBalance(ctx.batch, civ.id) > 20 * civ.incomeCents;
 }
 
 /**
@@ -313,7 +312,7 @@ function offerTo(ctx, spec) {
  * @param {Civ} civ
  */
 export function aiAid(ctx, civ) {
-  if (!ctx.options.investment || !(civ.incomeCents > 0) || isInsolventCiv(ctx, civ.id)) return;
+  if (!ctx.options.investment || !(civ.incomeCents > 0)) return;
   if (ctx.markets.aidAge[String(civ.id)] === ctx.age) return;
   const cents = Math.min(INVEST.aiSizeTurns * civ.incomeCents, Math.max(0, funds(ctx.batch, civ.id)));
   for (const host of friendlyHosts(ctx, civ)) {
