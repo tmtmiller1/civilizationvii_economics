@@ -954,8 +954,17 @@ numbers. The AI's native spending doesn't know about them, so they follow three 
 A setup option turns all AI rules off. The balance checks (section 10) measure how often an AI defaults, chains
 emergency loans or loses units to the game's penalties because of the mod's charges, against a game without the mod.
 
-Where 1.2 treats the AI and the player differently, and what offsets it:
+Where the AI and the player are treated differently, and why:
 
+- Choices the player makes freely run on limits for the AI: investment once per 10 turns into Friendly hosts, aid
+  once per age, lending only above 20 turns of income. The AI's native spending doesn't see the mod's flows, so these
+  limits keep it from giving away Gold it needs (the first principle above). What a deal does once made, and whether
+  a host accepts it, is the same for both sides.
+- Tariffs: the player can set Low or High first; the AI only answers a High tariff. No native lever tells the AI
+  when a trade war pays, so it doesn't start one, and answering in kind keeps a player's tariff from being free. An
+  AI that tariffs first is the owner's call.
+- The guard is the player's, with a switch on the Loans tab; an AI gets the same emergency loan by rule (4.6), with
+  the AI option as its switch.
 - A system's tax line pays every civ alike, but the AI's card pass can't see it (P17); the player sees it on the
   Fiscal tab and the yield breakdown. Most lines point the way the card's face value already does (Heavy under
   Tribute), so the AI rarely loses by it; Civic market's richer Light is the exception, and a Light-steering strategy
