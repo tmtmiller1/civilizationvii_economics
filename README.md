@@ -1,8 +1,9 @@
 # Economics
 
-A Civilization VII mod. In development: version 0.3.0 carries the 1.0 Finance and 1.1 Commerce mechanics, built and
-checked offline; none of it has been watched in a game yet ([docs/verification-runs.md](docs/verification-runs.md) lists
-what's owed). The design is [docs/DESIGN.md](docs/DESIGN.md).
+A Civilization VII mod. In development: version 0.4.0 carries the 1.0 Finance, 1.1 Commerce and 1.2 Macro mechanics,
+built and checked offline; none of it has been watched in a game yet
+([docs/verification-runs.md](docs/verification-runs.md) lists what's owed). The design is
+[docs/DESIGN.md](docs/DESIGN.md).
 
 ## What it does
 
@@ -11,8 +12,10 @@ brings in, lend to a neighbour who's short and collect the interest, and set a t
 payment costs you; three in a row is default; and you can always repudiate a debt outright, keep the Gold, and pay in
 reputation instead. Resources get a world price, and the civilizations you trade with settle the difference in what
 you import from each other every turn; you can tariff a partner, or put Gold into a neighbour's build or treasury and
-collect a return. The computer players borrow, lend, restructure, repudiate, tariff and invest under the same rules,
-and pick the tax cards the way they pick any card.
+collect a return. Wars, disasters, defaults and trade move the world's economy through booms and slumps, your
+government sets how your own economy runs, and the markets and banks of an earlier age fade as newer ones take over.
+The computer players borrow, lend, restructure, repudiate, tariff and invest under the same rules, and pick the tax
+cards the way they pick any card.
 
 ## Loans
 
@@ -77,12 +80,54 @@ follows the host's income. Aid of either kind asks nothing back. Each raises the
 host's income. Computer players invest in and aid their friends, and their offers to you wait on the Trade tab for an
 answer. With this option on, a civilization that sends Military Aid pays the 2 Gold a turn its target gets.
 
+## The business cycle
+
+The world has an economic index that starts at 1.00 and drifts back toward it between events. A war declared, a
+settlement captured or razed, a disaster, the age's crisis, a default or a repudiated debt pulls it down; peace, new
+trade routes and the world's rising income lift it. Your own economy is the world's index plus how the events you took
+part in moved you, so the two sides of a war feel it most. Below 0.95 is a slump and below 0.80 a depression; above
+1.05 is a boom. A boom pays you a little Gold each turn and makes bond loans cheaper; a slump takes a little and makes
+them dearer. Warehouses and old economic buildings soften a slump for you. Once a civilization reaches Banking, a boom
+built on too much borrowing can turn into a Panic: for five turns civilizations stop lending to each other and bond
+rates jump, and a slump usually follows. The World tab shows the index, your phase, what moved it lately and its last
+30 turns, and the turn notification names the causes when your phase changes.
+
+## Inflation
+
+Off by default. When it's on, civilizations with Public debt share the bond market, and the more they owe it beside
+the Gold they hold, the more their idle Gold loses value: anything above a reserve of twenty turns of your income
+shrinks a little each turn, and bond loans cost more. Spending, paying bond debt down, lending or investing abroad all
+help. The Treasury tab shows your reserve and what you'd lose next turn, and the World tab names the cause.
+
+## Economic systems
+
+Your government sets how your economy runs, and in the Modern age your ideology does. Despotism runs a palace economy:
+Heavy Taxation and War Levy bring more Gold and your aid buys twice the goodwill, but you borrow only from other
+civilizations. A Classical Republic runs a civic market: you can borrow from your own citizens, and the interest you
+pay them comes back as celebration. Oligarchy is a merchant oligarchy with cheaper credit and bigger swings; Feudal
+Monarchy is manorial, sheltered from the world's swings with taxes paid in kind; Plutocracy is mercantile and earns
+more on its exports; Theocracy's usury law turns its loans into partnerships that follow the borrower's income;
+Authoritarian governments and Fascism are corporatist, and War Levy pays them in peace too; Democracy is a market
+economy with the cheapest bonds; and Communism plans: a fifth of your Gold income goes into your cities' builds each
+turn and the world's booms and slumps pass you by. Other governments run a mixed economy. The tax changes show on your
+cities' yields under the system's name, and the Fiscal tab names your system and what it changes. A new system blends
+in over ten turns.
+
+## Old buildings across the ages
+
+The game lets you build over an earlier age's buildings. Here they fade instead of switching off. A Market keeps its
+full weight until you reach the stage that replaces it (Guild patronage for its trade, Public debt for its commerce),
+then fades to half, and to a quarter in the age after; a newer building of the same kind in the same city drops it to
+its floor at once. What it loses becomes a cushion against slumps, 1 percent a point and 10 percent at most. The
+Treasury tab lists each old building with its weight and what moves it.
+
 ## Economic stages
 
 Each part opens when a civilization reaches the civic or tech that historically brought it in: loans between
 civilizations with Commerce (Moneylending), the bond market and 20- and 30-turn terms with the Economics civic (Public
 debt), War Levy with Currency (Coinage), trade bills with Code of Laws (Trade), development loans with Guilds (Guild
-patronage), general investment with Colonialism (Chartered companies) and tariffs with Imperialism. Until then the Loans
+patronage), general investment with Colonialism (Chartered companies), tariffs with Imperialism, Panics and a deeper
+credit market with Urban Planning (Banking), and wider returns on investment with Capitalism. Until then the Loans
 tab greys the part and names what opens it. A later age opens the stages of the ages before it. With the Economic stages
 option off, everything is open from the start.
 
@@ -99,6 +144,9 @@ option off, everything is open from the start.
 | Markets and trade bills | On | World prices and the trade bills between partners |
 | Tariffs | On | The tariff setting; needs Markets and trade bills |
 | Foreign investment | On | Development loans, general investment and aid |
+| Inflation | Off | Bond debt erodes idle Gold above the reserve and raises bond rates |
+| Business cycle | Standard | Off, Mild (half), Standard or Strong (half again): how far events move the economy |
+| Economic systems | On | Government and ideology set each civilization's economic system; Off runs everyone mixed |
 
 ## Compatibility
 

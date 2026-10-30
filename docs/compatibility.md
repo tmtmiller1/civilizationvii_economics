@@ -13,7 +13,7 @@ Everything a conflict could come through. A mod has to touch one of these to con
 
 | Surface | What Economics does with it |
 | --- | --- |
-| Setup screen (shell scope) | Adds nine options under Game Options, ids `ECONOMICS_*` (`config/econ-setup.sql`) |
+| Setup screen (shell scope) | Adds twelve options under Game Options, ids `ECONOMICS_*` (`config/econ-setup.sql`) |
 | Database (game scope), Taxes on | Three policy cards per age (`TRADITION_ECONOMICS_<LEVEL>_<AGE>`) in the game's own `POLICY_CULTURE_SLOT`, six flat-yield modifiers (`MOD_ECONOMICS_*`), one extra policy slot granted by each age's root civic, unlock rows on the root civics and on the node that unlocks the Market, two AI strategies with a Gold and a Happiness yield bias. Every unlock row selects through the tree tables, so a mod that moves or renames a civic moves the cards with it |
 | Database (game scope), always | One notification type, `NOTIFICATION_ECONOMICS_TURN` |
 | Civilopedia text | The four Civilopedia History Corrections files every Tower mod carries, only with Civilopedia Expanded: Independents in use |
@@ -22,9 +22,11 @@ Everything a conflict could come through. A mod has to touch one of these to con
 | The policy change | `CHANGE_TRADITION` for the local player only, from the Fiscal tab, and only when `canSwapCultureSlot` allows |
 | Scripts (game scope) | `ui/econ-bootstrap.js` and what it imports; `Controls.define("screen-economics")`, `Controls.decorate("panel-sub-system-dock")` for the button and pill |
 | Shared settings | The `economics` slice of the `modSettings` `localStorage` entry: the last tab and the dock-button switch |
-| Saved game state | Two configuration values: `tower-economics` (the ledger, at most 64 KB) and `tower-economics-glue` (stage turns, civs seen, queued requests, the guard switch) |
+| Saved game state | Two configuration values: `tower-economics` (the ledger, at most 64 KB) and `tower-economics-glue` (stage turns, civs seen, queued requests, the guard switch, the turn count across ages, the roles each building type had in its own age, the cycle's events since the last batch) |
 | Globals | `globalThis.__towerEconomics` (the console surface) |
-| Engine events | `TurnBegin`, `PlayerTurnActivated`, `TraditionChanged` (listened to only during a swap) |
+| Engine events | `TurnBegin`, `PlayerTurnActivated`, `TraditionChanged` (listened to only during a swap), and from 1.2 `CityTransfered`, `CityRazingStarted`, `RandomEventOccurred` |
+| Database (game scope), Economic systems and Taxes on (1.2) | 19 flat-yield modifiers (`MOD_ECONOMICS_SYS_*`) gated on a slotted tax card, attached as `GovernmentModifiers` to Despotism, Classical Republic, Feudal Monarchy, Revolutionary Authoritarianism, Authoritarianism and Bureaucratic Monarchy, and as `KIND_MODIFIER` unlocks on the node that unlocks Dirigisme; each row selects through `Governments`, `Traditions` and `Modifiers`, so a government or card a game lacks skips its rows |
+| Governments, ideologies, buildings and events (1.2) | Reads each major's `Culture.getGovernmentType` and `getChosenIdeology`, `GameInfo.Governments`, `Ideologies`, `Buildings` (the unique trait) and each building's `Age` and `AGELESS` tag, `Game.CrisisManager`, `GameplayMap.getOwner` and `getOwningCityFromXY` for a disaster's plot, and each city's population; listens to `CityTransfered`, `CityRazingStarted` and `RandomEventOccurred`; writes one more configuration value, `tower-economics-macro` (the business cycle and each civ's system, at most 32 KB) |
 | Trade, resources and builds (1.1) | Reads each major's `Resources.getResources()` with `Game.Resources.getOriginCity`, its routes, its cities' build queues and Trade Income, `GameInfo.Resources` and `Units.StrategicResource`; writes `BuildQueue.addProgress` on a city's current build for a development loan, and one more configuration value, `tower-economics-markets` (prices, tariffs, at most 32 KB) |
 
 ## Reads of other mods' state
@@ -44,7 +46,9 @@ every mod applied, so a mod that adds a resource gets it a price, and one that g
 | Reads Gold per turn or balances (Demographics, Emigration, Partisans) | The grants show as balance moves, not as income (`getNetYield` doesn't include a grant, P2), so a per-turn Gold chart sees no change and a balance chart sees the loan | Read from the probe, not run with the mods |
 | Books grievances or moves relationships (Emigration's war refugees, diplomacy mods) | Additive: the game sums them | Known engine behaviour |
 | Adds a dock button (Demographics, Emigration, Mod Commons) | One more button; Mod Commons isn't released, so the button is Economics' own decorator | Read from code, not run |
-| Adds its own setup options | Both sets show; `ECONOMICS_*` ids and sort indexes 2200 to 2208 collide with nothing found | Read from code, not run |
+| Adds its own setup options | Both sets show; `ECONOMICS_*` ids and sort indexes 2200 to 2211 collide with nothing found | Read from code, not run |
+| Adds or renames governments, or changes their modifiers (government mods, Leugi's Government Flavour) | A government the mod's table doesn't list runs a mixed economy; the systems' modifiers attach only to governments that exist and stack with any a mod adds | Read from code and the database copies, not run |
+| Removes `AGELESS` from a building (Warehouse Overbuilding) | The building ages and fades by its roles, as DESIGN 4.16 says it should | Read from code, not run |
 | Adds resources or changes resource classes | A new resource gets a price from its class; a removed one drops out of the Markets tab and the bills | Read from code, not run |
 | Changes trade routes or Trade Income (route mods, Port-of-Nations-style cards) | The engine's own Trade Income is untouched and shown beside the bill; the bill follows the imports the game reports, wherever they came from | Read from code, not run |
 | Sets city production by script | A development loan's `addProgress` adds to the same build; both land | Read from code, not run |

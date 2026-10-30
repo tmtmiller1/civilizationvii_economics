@@ -252,3 +252,87 @@ lines in one game.
 | The Markets and Trade tabs and the tariff row | `tests/econ-views.test.mjs`, `tests/econ-view-commerce.test.mjs` | each draws; Accept, invest and tariff queue the requests the model expects |
 | The 1.1 balance rows | `tests/econ-balance-commerce.test.mjs`, `reports/balance-1.1.json` | bills sum to zero, no payer past 10% of income, markets envelope about 10 KB, a turn in about 0.1 ms; the cap binds on most settlement rows (NOTES finding K) |
 | Military Aid's initiator charge against the compiled database | `tests/econ-data.test.mjs` with `CIV7_GAMEPLAY_DB` | the stage row lands once on 1.5.0 Exploration and Modern copies, foreign keys clean; a copy without Military Aid's stage skips the row |
+
+## Owed: 1.2 Macro (0.4.0)
+
+Built 2026-10-30, offline only, against the M-probe results of the same night
+(`mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-macro-results.md`). Nothing below has been watched in a
+game. Antiquity seed 4242 is the M-probes' seed; "transition" means `lab age-change` across one or both changes, as the
+M3 and M4 run did. Each line says what the player sees when it works, the setup it needs, and where the code is.
+
+### Data, load and the turn count
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| M.1 | The three 1.2 options show under Game Options with Inflation Off, Business cycle Standard and Economic systems On; the boot line `[Economics] v0.4.0 loaded` names them in its options | vanilla, shell | `config/econ-setup.sql`, `ui/econ-bootstrap.js` |
+| M.2 | The systems group loads with Economic systems and Taxes on in each age (`Database.log` clean), and is absent with either off; `GovernmentModifiers` holds the age's `MOD_ECONOMICS_SYS_*` rows | Antiquity 4242, then each transition | `data/econ-systems*.{xml,sql}` |
+| M.3 | Against a database with every DLC row removed, `PRAGMA foreign_key_check` lists the same rows before and after the systems SQL | the release check, all three ages | same |
+| M.4 | The first turn of a new age runs a batch (a `turn N` log line with N past the old age's last), and the ledger's windows carry on: a miss from the old age's last turns still counts in standing | transition, a player loan open across it | `ui/econ-turn-count.js`, `ui/econ-session.js` `turnNow` |
+| M.5 | A save made after a change in 0.3.0, loaded in 0.4.0, runs its next batch | a 0.3.0 save past an age change, if one exists | `ui/econ-turn-count.js` `countTurn` |
+
+### The business cycle
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| M.6 | A war between two AIs: the World tab's index drops the turn after it starts (by 0.005 before any civ has Public debt, 0.012 from it, 0.02 from Capitalism), both warring civs' own index lower than the others', "a war declared" listed with both names | Exploration, two AIs at war (the transition game's wars) | `ui/econ-macro.js` `cycleStep` |
+| M.7 | Peace lifts both; the index drifts back toward 1.00 between events | same | `ui/econ-cycle.js` |
+| M.8 | A capture by combat weighs on the civ that lost the settlement; a city-state incorporated (`BY_INCORPORATE_CITY_STATE`) weighs nothing | a war with a capture | `ui/econ-macro-read.js` `captureEvent` |
+| M.9 | A flood or eruption on a civ's land: "a disaster" on the World tab for that civ, twice the weight when its settlement lost population by the next turn, half with a Granary-type food warehouse there | the M6 `disasters` overlay | `ui/econ-macro-read.js` `disasterEvent` |
+| M.10 | The age's crisis: "the age's crisis" on its first turn, then a small weight each turn it runs | an age past progress 84 | `ui/econ-cycle.js` `crisisEvents` |
+| M.11 | A boom pays cycle Gold and a slump charges it (`Player_Treasury.csv` against the turn's ledger transfer `CY<pid>`); bond rates on the Loans tab move with the player's own index | any game with the index off 1.00 | `ui/econ-macro.js` `cycleInflows`, `macroPayerSteps` |
+| M.12 | The turn notification names the new phase and its causes when the player's phase changes, and only then | same | `ui/econ-macro.js` `phaseNotices`, `ui/econ-notify.js` |
+| M.13 | A reload replays the same index and events (save, reload, compare the World tab and `__towerEconomics.session().macro`) | any | `ui/econ-macro-state.js` |
+| M.14 | A Panic: the World tab's red pill, its notification, civ lenders refusing for five turns, bond rates up by half. Needs leverage above 1.5 in a boom from Banking, which the balance run never reached (NOTES finding Q): the player borrowing heavily in a boom, or a scripted ledger | Exploration past Urban Planning, a heavy borrower | `ui/econ-macro.js` `startPanic` |
+| M.15 | The pill reads "debt · phase" with the cycle on, plus inflation with Inflation on | any | `ui/econ-bootstrap.js` `pillSource` |
+
+### Inflation (option On)
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| M.16 | Bond debt beside idle Gold: the World tab shows a rate above 0 with its cause; the Treasury tab shows the reserve and next turn's erosion; the balance above the reserve shrinks by that each turn (transfer `IN<pid>`); bond rates rise | Exploration 9001, Inflation On, the player borrowing from the bond market with a large balance | `ui/econ-macro.js` `inflationStep`, `erodeFor` |
+| M.17 | Repaying the bond loan takes the rate back to 0; with the option Off nothing erodes and the World tab says so | same | same |
+| M.18 | Whether `DefaultGoldOnTransition` (3,000) caps a larger treasury at the change (M4 had nobody above 3,000) | transition with a civ holding more than 3,000 | engine fact |
+
+### Old buildings
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| M.19 | Antiquity Markets in Exploration: the Treasury tab lists each at 1.00 "full until you reach" Guilds or Economics, then fading 0.05 a turn to 0.50 after the civic; Commerce reads through the remembered roles though the Market's `GOLD` tag is gone (NOTES finding J) | Antiquity 4242 into Exploration with Markets standing | `ui/econ-macro-read.js` `cityEconomy`, `ui/econ-legacy.js` |
+| M.20 | A Guildhall built in a Market city drops that Market to its floor at once, "a newer building with its role stands in this city" | same | `ui/econ-legacy.js` `roleWeight` |
+| M.21 | Into Modern: Antiquity Markets at 0.50 fading to 0.25, Exploration Banks full until Capitalism; the World tab's legacy and cushion grow | the second transition | same |
+| M.22 | Depth and the credit limit follow the weights (`__towerEconomics.input().civs[k].depthFactorPct` before and after a fade) | same | `ui/econ-depth.js` `computeDepth` |
+| M.23 | Warehouse Overbuilding alongside: a warehouse it strips of `AGELESS` ages and fades | usual set with Warehouse Overbuilding | `ui/econ-legacy.js` `isOld` |
+
+### Economic systems
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| M.24 | The Fiscal tab names the system from the government (Classical Republic: Civic market), keeps it through the first turn of an age when the government reads none, and shows the blend's turns after a change; each AI's system in `__towerEconomics.session().macro.systems` | Antiquity 4242 and the transition (M4: none on turn 1, picks on turn 2) | `ui/econ-systems.js` `nextSystems`, `ui/econ-view-fiscal.js` |
+| M.25 | With Heavy Taxation slotted under Despotism, a city's Gold breakdown shows +1 "Palace economy" beside the card's +4; under Classical Republic, Light Taxation shows +1 Happiness "Civic market"; War Levy under Authoritarianism pays in peace | a person hovering, or `city.Yields` before and after a swap | `data/econ-systems-gameeffects.xml` |
+| M.26 | An ideology takes over in Modern: Communism reads Planned, the Corporatist government rows stand aside for a Democracy, and Fascism's branch-root rows pay War Levy in peace | Modern, the M5 game's ideologies | same, `ui/econ-macro-read.js` `readIdeology` |
+| M.27 | Citizen loans: a Classical Republic player sees "your citizens" on the Loans tab within its cap; the meter rises by twice each turn's interest; a miss costs celebration, not Influence; repudiating them costs the meter 10 turns of its gain and closes them 30 turns | Antiquity 4242 as Classical Republic with two market towns | `ui/econ-lenders.js` `withCitizens`, `ui/econ-citizens.js` |
+| M.28 | A Classical Republic AI holding under 10 turns of income borrows from its citizens (ledger loan with source `ai-citizens`) and clears it | soak | `ui/econ-macro.js` `aiMacro` |
+| M.29 | The plan: a Communist civ's cities' builds advance by its take each turn (`addProgress` log lines, one per city), the Fiscal tab shows the take, and its bills use the class prices | Modern, a Communist civ | `ui/econ-macro.js` `planFor` |
+| M.30 | A Theocracy's loan to the player: its interest follows the player's income (payment parts before and after the player's income moves) | Exploration, a Theocracy lending | `ui/econ-plan.js` `payOne` |
+| M.31 | Tribute borrows from civs only (no bond offer on the Loans tab); a Corporatist host refuses general investment with the reason "their economic system takes development loans only" | Exploration and Modern | `ui/econ-lenders.js`, `ui/econ-invest-open.js` |
+| M.32 | The AI aids a Friendly civ in its own Depression (ledger `invest` with aid 1) | soak with a war-torn civ | `ui/econ-commerce.js` `aiAid` |
+
+### Soak and other mods
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| M.33 | 100 turns of `lab drive` across a transition with every 1.2 part on (Inflation On), and the same seed with Inflation, Business cycle and Economic systems Off: no crash or hang; per turn E and each civ's phase, system, cycle Gold, erosion, citizen loans and the plan; `tower-bench cost tower-economics --yes` | Antiquity 4242, vanilla | `ui/econ-bootstrap.js` |
+| M.34 | Whether the world leans to Boom in play as in the simulation (NOTES finding P): the share of turns in each phase over that soak | same | `ui/econ-cycle.js` |
+| M.35 | M.6, M.19 and M.24 once with the usual set: Demographics charts the cycle Gold as balance moves, Partisans and Emigration read the celebration meter's moves | Antiquity 4242, usual set | `docs/compatibility.md` |
+| M.36 | The World tab, the Fiscal system section and the Treasury's old buildings at 720p, and `tower-bench lint` on the live screen | a person, or `lab` captures | `ui/econ-view-world.js` |
+
+### The model (offline), 2026-10-30
+
+| Check | Where | Observation |
+| --- | --- | --- |
+| The cycle, inflation, old buildings, systems, citizen loans and the plan | `tests/econ-{cycle,inflation,legacy,systems,citizens,macro-state}.test.mjs` | pass |
+| The 1.2 batch steps | `tests/econ-macro.test.mjs` | pass; every plan passes the commit checks (debt-1, debt-6, debt-7, alive-target, econ-3) |
+| The 1.2 glue against a fake engine | `tests/econ-macro-read.test.mjs`, `tests/econ-turn-count.test.mjs` | governments and ideologies, old-building weights with remembered roles, the engine events kept to the batch, the macro envelope written, a new age's first batch runs |
+| The World tab, the Fiscal system section, the Treasury's inflation lines and old buildings | `tests/econ-view-macro.test.mjs` | each draws the keys and numbers expected |
+| The systems' data against the compiled databases | `tests/econ-data.test.mjs` with `CIV7_GAMEPLAY_DB` on 1.5.0 Antiquity, Exploration and Modern copies | each age attaches only its own rows (6, 7 and 4 government rows, 2 on Fascism's root), foreign keys clean; a copy missing a government and two cards skips their rows |
+| The 1.2 balance rows | `tests/econ-balance-macro.test.mjs`, `reports/balance-1.2.json` | the hard rows pass; the cycle-shape, system-diversity and plan rows miss their starting targets (DESIGN 10) |

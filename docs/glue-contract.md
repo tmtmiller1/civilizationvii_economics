@@ -105,6 +105,30 @@ The requests the player can add: `tariff` (`pid`, `level` none, low or high), `i
 project or general, `cents`, `cityId` for a development loan, `asAid`), `accept-offer` and `decline-offer`
 (`offerId`).
 
+## The 1.2 fields (Macro)
+
+Read for every major by the same calls (`ui/econ-macro-read.js`, `ui/econ-session.js`), whichever 1.2 options are on.
+
+| Field | Shape | Source | If missing |
+| --- | --- | --- | --- |
+| `input.turn` | integer | the glue's count across ages, `base + Game.turn` (`ui/econ-turn-count.js`); a new age moves the base to the last turn counted | the plan reads a new age's turns as already planned |
+| `civ.government` | type string or null | `Culture.getGovernmentType()` named through `GameInfo.Governments`; null for -1 (the first turn of an age, M4) | the civ keeps its last system, or runs Mixed |
+| `civ.ideology` | type string or null | `Culture.getChosenIdeology()` through `GameInfo.Ideologies`, else the first ideology whose `FirstTreeNode` the civ has (M5 found the two agree) | the government decides |
+| `civ.depthTurns`, `civ.depthFactorPct` | as 1.0 | from the civ's economy: old buildings weighted by role (`econ-legacy.js`), Civic market's 1.25 Commerce share, Banking's 0.4 cap | 0 and 100 |
+| `civ.warehouses` | weighted count | the Warehouse role over the civ's standing buildings | 0: no cut on a negative `L` |
+| `civ.cushionBp` | basis points, 0 to 1000 | `cushionBp` of the legacy its old buildings carry | 0 |
+| `civ.commerceSettlements` | integer | settlements with a standing Commerce building | 0: no citizen loans |
+| `civ.cities[].population` | integer | `city.population` (1 when it doesn't read) | the plan splits evenly |
+| `input.macro` | the macro envelope | `Configuration` key `tower-economics-macro` | a fresh cycle at 1.0 and no systems |
+| `input.cycleEvents` | `[{ kind, pid, populationLost?, foodWarehouse? }]` | captures by combat (`CityTransfered`, the loser), razes (`CityRazingStarted`, the holder), disasters on a major's land (`RandomEventOccurred`; population against the last batch; `FOOD_WAREHOUSE` in the plot's settlement), kept in the glue envelope between batches | those events weigh nothing |
+| `input.crisisStage` | -1 to 3 | `Game.CrisisManager.getCurrentCrisisStage(0)` (P12) | last turn's stage |
+
+What comes back adds `macro` (write it with the ledger, before the grants) and progress rows for the plan
+(`investmentId` `PL<pid>`), merged with a development loan's row for the same city so each city gets one
+`addProgress` a turn (econ-3). The world accounts `citizens`, `inflation`, `cycle` and `plan` never reach `grantYield`.
+The setup keys `ECONOMICS_INFLATION` (only `_ON` turns it on), `ECONOMICS_CYCLE` (`_OFF`, `_MILD`, `_STANDARD`,
+`_STRONG`) and `ECONOMICS_SYSTEMS` join the options.
+
 ## Persistence
 
 `save(ledger)` returns the envelope string (≤ 64 KB, events then settled loans dropped first, never an open loan);

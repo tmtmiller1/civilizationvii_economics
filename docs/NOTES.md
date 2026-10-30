@@ -1,10 +1,11 @@
 # Economics: model notes
 
-Status: engine-free model built 2026-10-06 and brought up to the revised design on 2026-10-29, tested offline under
-Node (`npm run verify`); the engine glue and the screens built the same day against prompt 1's probe results (DESIGN
-10), none of it watched in a game yet. This file records where DESIGN left a choice open, the choice the model or the
-glue makes, and the test that pins it. Test names are quoted; files are under `../tests/`. The 2026-10-24 revision settled or replaced some of the
-2026-10-06 choices; those rows say so, with the DESIGN section that now holds the rule.
+Status: engine-free model built 2026-10-06 and brought up to the revised design on 2026-10-29, tested offline under Node
+(`npm run verify`); the engine glue and the screens built the same day against prompt 1's probe results (DESIGN 10), the
+1.1 parts the same night and the 1.2 parts on 2026-10-30, none of it watched in a game yet. This file records where
+DESIGN left a choice open, the choice the model or the glue makes, and the test that pins it. Test names are quoted;
+files are under `../tests/`. The 2026-10-24 revision settled or replaced some of the 2026-10-06 choices; those rows say
+so, with the DESIGN section that now holds the rule.
 
 ## Ambiguities and the choice made
 
@@ -78,6 +79,36 @@ glue makes, and the test that pins it. Test names are quoted; files are under `.
 | 66 | The 1.1 options and Loans Off | Loans Off no longer skips the batch: it stops the loan rules, the guard and loan requests, and the batch skips only with Loans, Markets and Foreign investment all off. Tariffs act only with Markets on | `econ-plan`: "every part Off: no write of any kind; Loans Off alone..." |
 | 67 | The markets envelope | Its own `Configuration` key (`tower-economics-markets`), at most 32 KB: prices, 30 turns of history, tariffs, ten turns of each civ's income, the age each AI last gave aid, the turn each last invested. Past the cap the histories are halved first. Written with the ledger, before the grants | `econ-markets`: "econ-5..." |
 | 68 | The AI's aid as Military Aid | With Foreign investment on, Military Aid's completion stage gets a second modifier charging the initiator the target's 2 Gold a turn (scaled by age), in the probe's shape (C1 compiled it). It's the one diplomatic action the AI was watched starting (C13). The section 6 aid rule (a Friendly civ in default) runs beside it, since Military Aid's AI doesn't look at defaults | `econ-data`: "Military Aid's initiator pays..." |
+| 69 | How turns are counted across ages | `Game.turn` restarts at 1 in each age while the ledger carries over, so the glue keeps `{ age, base, last }` and gives the plan `base + Game.turn`; a new age moves the base to the last turn counted. A save from 0.3.0 with no count, whose ledger's last turn is ahead of the game's turn, starts the base there | `econ-turn-count`: "a new age moves the base...", "a save from before the count existed..."; "in game: the first batch of a new age runs..." |
+| 70 | The cycle's units | `E` and `L` in basis points (10000 is 1.0), every weight an integer (war declared -200), so a reload replays the same cycle to the point | `econ-cycle`: "E reverts a tenth...", "E: k * s * the clamped sum..." |
+| 71 | When a default or repudiation weighs | The turn after, from the ledger's last batch: the snapshot comes before the steps that make them, and the cycle shouldn't depend on their order | `econ-cycle`: "defaults weigh on both parties..." |
+| 72 | Where wars, peace and routes come from | Wars and peace from the relations between majors against last turn's (M9: the declared-war event also names Independents); routes from the plan's own routes, which are read only with Markets on | `econ-macro`: "a war moves E...", "routes between civs are events..." |
+| 73 | Who a raze weighs on | The civ holding the settlement it razes: the one that lost it took the capture's weight | `econ-macro-read`: "the cycle's engine events..." |
+| 74 | "Population lost" in a disaster | The settlement has fewer people at the next batch than at the batch before (M6: the drop lands at the event or a turn later); a population that didn't read counts as not lost | `econ-macro-read`: "the cycle's engine events..." |
+| 75 | The caps on ongoing wars and standing routes for one civ | The same -0.02 and +0.01 caps on each civ's own sum as on the world's | `econ-cycle`: "ongoing wars cap at -0.02..." |
+| 76 | "From the Banking stage" for a Panic | Once any living civ has Banking (the world stage, 4.15); every human gets the notice | `econ-macro`: "Panic: from Banking..." |
+| 77 | A Planned civ and the cycle | Outside it: no `L`, no cycle Gold, no erosion, a bond spread of 1.0, phase "outside" | `econ-macro`: "a Planned importer pays the class price..."; `econ-macro-state`: "readings..." |
+| 78 | Cycle Off | The state rests at 1.0 every turn, with no events kept and no shock | `econ-macro`: "a boom pays cycle Gold...; the cycle Off moves nothing" |
+| 79 | How cycle Gold moves | A boom's Gold is a world inflow counted in the payers' funds before their charges (4.14 step 3); a slump's charge is step 5, paid in full from the payer's funds or skipped, never carried | `econ-macro`: "a boom pays cycle Gold as a world inflow..." |
+| 80 | A government that reads none, and the first system | None (the first turn of an age, M4) keeps the last system; a civ's first system isn't a change; a number blends from the turn after the change, so the turn of the change runs on the old numbers; a yes-or-no term switches at once | `econ-systems`: "next systems: ...", "a change blends each number..." |
+| 81 | The -0.03 reform shock and k | Every `L` term, the shock and Corporatist's war boom included, is scaled by the option's `k`, so Off has no shock | `econ-macro`: "systems come from the government..." |
+| 82 | The systems' tax lines in flat yields | DESIGN's percentage of each card's flat amount, rounded to a whole yield a settlement (DESIGN 4.17's table); Tribute's 15% cheaper celebration rounds to nothing on Heavy's -2 | `econ-data`: "the systems' tax lines..." |
+| 83 | "No tax levels; the plan instead" for Planned | A Planned civ keeps the tax cards, the game's own policies its AI plays, and the plan runs beside them; "no tax levels" came from the script tax version | `econ-macro`: "a Planned importer pays the class price; the plan..." |
+| 84 | A Religious lender's partnership | Every loan a Religious civ makes (emergency ones too) records the borrower's income; each turn's interest is the loan's rate times growth (income now over then, 0.5 to 2.0, counted from 10 Gold), the principal paid as scheduled | `econ-macro`: "a Religious lender's loan is a partnership..." |
+| 85 | Whose rate a system changes | The borrower's share (`borrowPct`: Tribute 1.2 from civs, Merchant oligarchy 0.8) applies to its civ and bond loans; the lender's (`lendPct`, Merchant oligarchy 0.8) to what it lends; `bondPct` to the bond market only; temple treasuries take none | `econ-macro`: "system terms in the rates and credit..." |
+| 86 | "Civ lenders only" and emergencies | No bond offers; after Public debt the guard's world lender is temple treasuries instead of the bond market (DESIGN 4.6 says such a civ still gets them) | `econ-lenders` via `econ-macro` |
+| 87 | Citizen loans' place among lenders | Offered beside the civ lenders at 10-turn terms, cheapest first, within `citizen_cap` (settlements with a standing Commerce building); the 4.2 limits on top; so an AI's shortfall borrowing can take them too | `econ-macro`: "citizen loans: offered to a Civic market civ..." |
+| 88 | Repudiating the citizens | Recorded as a repudiation at the 0.15 standing cost (`atWar`), so it also counts in `credit_cap`'s repudiation turns and the 10-turn term limit; no witnesses, no grudge, the citizens closed 30 turns, the meter -10 turns of its gain | `econ-macro`: "repudiating the citizens..." |
+| 89 | Mercantile's investment and tariff lines | "Dividends +1 point" is 10 thousandths more on the records a Mercantile investor opens; "High tariff relationship cost ½" is the cost every 10 turns instead of 5 | `econ-macro`: "a Corporatist host takes development loans only; Mercantile..." |
+| 90 | How Manorial's and Mercantile's bill terms combine | Both multiply what's owed after the tariff: a Manorial importer pays 0.8, a Mercantile exporter is owed 1.1 | `econ-macro`: "bills between systems..." |
+| 91 | A Planned importer's fixed prices | The class price (DESIGN 4.9's `base_c`) of each copy, from the turn's market read; no scarcity, demand or `E` | `econ-macro`: "a Planned importer pays the class price..." |
+| 92 | Where Civic market's Commerce share and Corporatist's Industry count apply | In the glue's depth and Factory-demand reads, with last batch's systems at this turn's blend (one turn behind a change) | `econ-macro-read`: "the roles a building had in its own age..." |
+| 93 | Capitalism's world effects | Prices smooth at 0.5 once a Market or Mixed civ has the stage; equity growth applies on a Market or Mixed host past it; an AI investor of those systems past it also invests in Neutral hosts that are too | `econ-macro`: "the AI aids a Friendly civ in its own Depression; from Capitalism..." |
+| 94 | Old buildings without stored state | Each weight from the building's age, the current age, the successor stage's turn, the age's first turn and the city's current-age buildings of the role; the roles a building type had in its own age are remembered in the glue envelope; a unique is a `Buildings.TraitType` row | `econ-legacy`; `econ-macro-read`: "an old Market fades from Public debt..." |
+| 95 | Where the cycle and systems are saved | Their own envelope, `tower-economics-macro` (32 KB, econ-6), so the markets envelope stays as 1.1 left it; events go first past the cap, then E's history halves | `econ-macro-state`: "past 32 KB..." |
+| 96 | The AI's aid "in its own Depression" | The host's own phase (`E + L` below 0.8), as the readings give it this turn | `econ-macro`: "the AI aids a Friendly civ in its own Depression..." |
+| 97 | The phase notice | Only on a change, not a civ's first reading; its causes are the turn's three heaviest events the civ took part in, else the world's | `econ-macro`: "the engine's events and the crisis reach E..." |
+| 98 | Engine events between batches | Kept in the glue envelope, at most 32, weighed once at the next batch | `econ-macro-read`: "in game: an event kept between batches..." |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 
@@ -135,6 +166,42 @@ from 0 to 76.5 progress 3 s later (12% to 30%), and it read 45.9 at the next ste
 "scaled up by the city's production bonuses", but nearly 4 times is more than a bonus, and the two reads disagree.
 Until it's read again, a development loan may buy a host far more than `G / 3` production; the ratio row in the
 balance run is the lower bound. Owed: one grant on a city with no production bonuses, its percent before and after.
+
+M. **The AI's citizen rule as written can't pass the debt-service limit.** Five turns of income over 10 turns makes
+the first slice alone half a turn of income, past 4.2's 35%. The rule now borrows the most whose first payment fits,
+about three turns of income at the base rate (`econ-citizens` `servicePrincipalCents`); a player asking for five gets
+the `service-cap` refusal. DESIGN 6's citizen row says so.
+
+N. **War Levy shipped in 0.3.0 asking for eight wars.** The change to flat amounts wrote the card's +8 Gold and -4
+Happiness into its war requirement's `Amount` (the first one after the modifier's id) and left +30 and -40 on the
+yields, so a slotted War Levy cost 40 Happiness in every settlement and paid nothing. Fixed in `sync-tax-cards.mjs`
+and the data; `econ-data` now reads the modifier's own Amount.
+
+O. **A new age stopped the batch until its turn passed the old age's last.** `Game.turn` restarts at 1 while the ledger
+carries over, so 0.3.0's "already planned" check read every turn of the second age as planned. Fixed by counting turns
+across ages (choice 69); a 0.3.0 save made after an age change picks up from its ledger's last turn.
+
+P. **The world leans to Boom.** From the 1.2 balance run (DESIGN 10): each standing route's +0.001 a turn and the
+world-income term rise with ordinary growth, so `E` sat in Steady or Boom in every game and a peaceful game never
+slumped. Without the two terms the same games slump on 7 to 20% of turns. The owner reads it against "a peaceful game
+still slumps sometimes".
+
+Q. **A Panic needs borrowing the AI doesn't do.** Leverage peaked at 5% of the Gold held in the balance games against
+the 150% a Panic needs: the AI rules borrow only when short, and with positive income at `TurnBegin` an AI is never
+short (finding I). As written a Panic comes only from a player who borrows heavily.
+
+R. **The plan buys production cheaply.** At the development loan's 3 Gold a point the plan's production is worth 1.33
+times the Gold it takes at the game's purchase price (4 a point), before production bonuses scale `addProgress` up
+(finding L), and a Planned civ keeps its tax cards (choice 83).
+
+S. **The AI clusters on a few governments, so on a few systems.** In the M-probe transition game every AI took Feudal
+Monarchy or Theocracy in Exploration and Authoritarianism in Modern (Corporatist until an ideology); in Antiquity five
+of six took Classical Republic. System diversity in play is narrower than DESIGN 4.17's table, and the mod doesn't
+steer the pick (M2: only bias lists do).
+
+T. **The government pick ignores government modifiers.** M2 moved no civ with +10 Gold, +5 Production and +5 Science
+a settlement; a bias row moved four. DESIGN 4.17's "the AI weighs them when it picks a government" is out: the
+modifiers change what a system pays, not who picks it.
 
 ## Balance run and mutation
 

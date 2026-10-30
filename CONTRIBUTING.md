@@ -140,6 +140,14 @@ ui/econ-plan.js              one turn of the ledger; imports the model below
 ui/econ-{money,params,loan,credit,stages,lenders,payments,guard,ai,repudiation,tax,conservation,batch,state,
          invariants,turn,requests,shortfall}.js   the engine-free loan model (DESIGN 4.1 to 4.6, 4.14)
 ui/econ-{format,stage-rules,depth,notice-text,view-model}.js   engine-free helpers the glue and the tabs share
+ui/econ-{prices,trade,invest,invest-open,commerce,markets}.js   the 1.1 model: prices, bills, investment (DESIGN
+                             4.9 to 4.12); econ-commerce-read.js its engine reads, econ-view-{commerce,markets,
+                             trade}.js its tabs
+ui/econ-{cycle,inflation,legacy,systems,citizens,planned,macro,macro-state}.js   the 1.2 model: the business cycle,
+                             inflation, old buildings, economic systems (DESIGN 4.8, 4.11, 4.16, 4.17);
+                             econ-macro-read.js its engine reads, econ-view-{macro,world}.js the World tab and the
+                             system lines
+ui/econ-turn-count.js        one turn count across the ages (Game.turn restarts at 1 in each age)
 images/econ-dock-icon.svg    the dock button's silhouette
 text/<locale>/ModText.xml    the strings (12 locales)
 history-corrections/         the Civilopedia History Corrections text every Tower mod carries

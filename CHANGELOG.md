@@ -44,6 +44,29 @@ release is generated from the matching section below by `scripts/steam-changelog
 - The project: the engine-free loan model (loans, credit, lenders and rates, payments and misses, default and
   garnish, repudiation, the auto-loan guard, AI rules, the saved ledger) with its tests, the six 1.0 setup options,
   the 12 text folders, the gates and the release script.
+- The business cycle: a world economic index that wars, captures, razes, disasters, the age's crisis, defaults,
+  repudiations, peace, trade routes and the world's income move, and drifts back between them, with each
+  civilization's own economy on top. A boom pays a little Gold each turn and makes bonds cheaper; a slump takes a
+  little and makes them dearer. Warehouses and old economic buildings soften a slump. From Banking, a boom built on
+  too much borrowing can turn into a five-turn Panic. The turn notification names what changed your phase.
+- Inflation, off by default: civilizations with Public debt lose a little of the Gold they hold above twenty turns
+  of income when they owe the bond market a lot beside it, and bond loans cost more.
+- Economic systems: each civilization's government, or its ideology in the Modern age, sets its system (palace
+  economy, civic market, merchant oligarchy, manorial, mercantile, usury law, corporatist, market, planned or mixed),
+  which changes its rates, credit, trade bills, investment and how hard booms and slumps swing it. The tax-card
+  changes are policy-card yields the game shows on each city's breakdown. A new system blends in over ten turns.
+- Citizen loans for a Classical Republic: borrow from your own citizens from the start of the game, and the
+  interest comes back as celebration. The computer players take them too.
+- The plan for a Communist civilization: a fifth of its Gold income goes into its cities' builds each turn.
+- A Theocracy lends as a partnership: what it's paid follows the borrower's income.
+- Old buildings fade across the ages instead of switching off, role by role, and what they lose becomes a slump
+  cushion. The Treasury tab lists each with its weight and what moves it.
+- The Banking stage (Urban Planning) and the Capitalism stage, with a deeper credit market, Panics, wider returns on
+  investment and computer players investing in each other.
+- The World tab: the index, your phase, what moved it, its last 30 turns, inflation and its cause, world debt and your
+  legacy. The Fiscal tab names your economic system and what it changes.
+- Three setup options for these: Inflation (Off), Business cycle (Off, Mild, Standard, Strong; Standard) and
+  Economic systems (On).
 
 ### Changed
 - The tax cards add flat amounts in each settlement instead of percentages: Light Taxation -2 Gold and +4 Happiness,
@@ -53,3 +76,10 @@ release is generated from the matching section below by `scripts/steam-changelog
 - Loans Off now turns off the loans alone; trade bills and investment keep their own options.
 - The auto-loan guard only borrows while your income is at or below 0: with positive income the game wipes a
   negative balance to 0 at the turn roll and charges nothing, so a loan there would be Gold the game gives for free.
+
+### Fixed
+- War Levy's yields: the card had kept its old +30 Gold and -40 Happiness and asked for eight wars at once before it
+  paid, so slotting it cost Happiness in every settlement and brought nothing. It now pays +8 Gold and -4 Happiness
+  while you're at war with anyone.
+- From the first turn of a new age the mod stopped working until that age's turn count passed the old age's last
+  turn. Turns now count on across the ages.
