@@ -62,11 +62,11 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_ON" Language="de_DE"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_ON_DESCRIPTION" Language="de_DE"><Text>Development loans open with Guild patronage (Guilds), general investment with Chartered companies (Colonialism), and aid is open from the start.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_NAME" Language="de_DE"><Text>Light Taxation</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION" Language="de_DE"><Text>-2 Gold and +4 Happiness in each settlement.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_LIGHT_DESCRIPTION" Language="de_DE"><Text>-1 Gold and +6 Happiness in each settlement.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_HEAVY_NAME" Language="de_DE"><Text>Heavy Taxation</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_HEAVY_DESCRIPTION" Language="de_DE"><Text>+4 Gold and -2 Happiness in each settlement.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CARD_WAR_LEVY_NAME" Language="de_DE"><Text>War Levy</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION" Language="de_DE"><Text>While you're at war: +8 Gold and -4 Happiness in each settlement. In peacetime it doesn't pay or cost anything.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CARD_WAR_LEVY_DESCRIPTION" Language="de_DE"><Text>+2 Gold and -1 Happiness in each settlement. While you're at war it's +8 Gold and -4 Happiness instead.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TAX_SLOT_DESCRIPTION" Language="de_DE"><Text>+1 Policy slot, for a tax card or any other.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPEN" Language="de_DE"><Text>Economics</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TAB_TREASURY" Language="de_DE"><Text>Treasury</Text></Replace>
@@ -182,7 +182,7 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_EFFECT_ROW" Language="de_DE"><Text>Gold {1_Gold}, Happiness {2_Happiness}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST" Language="de_DE"><Text>Change for you, about</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST_ROW" Language="de_DE"><Text>{1_Gold} Gold and {2_Happiness} Happiness a turn</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FISCAL_LEVY_PEACE" Language="de_DE"><Text>only while you're at war</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR" Language="de_DE"><Text>While you're at war</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SLOT" Language="de_DE"><Text>Slot this card</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CLEAR" Language="de_DE"><Text>Clear the tax card</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_NO_SWAP" Language="de_DE"><Text>The game isn't allowing a policy change right now.</Text></Replace>
@@ -395,7 +395,7 @@
         <Replace Tag="LOC_ECONOMICS_SYSTEM_MANORIAL_LINE" Language="de_DE"><Text>Local stability over money: taxes come in kind, half the Gold and half the Happiness cost. You pay 20 percent less on trade bills, your warehouses shelter twice as much from a slump, the world's swings reach you less, and your credit limit is 4 turns lower.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SYSTEM_MERCANTILE_LINE" Language="de_DE"><Text>You get rich exporting: you're owed 10 percent more on bills, a High tariff costs relationship half as often, bonds cost 20 percent less, your investments earn a point more, and booms and slumps swing you harder.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SYSTEM_RELIGIOUS_LINE" Language="de_DE"><Text>Interest is forbidden: what you lend comes back as a share that follows the borrower's income, and your aid buys twice the goodwill.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SYSTEM_CORPORATIST_LINE" Language="de_DE"><Text>Capital goes to industry and war: War Levy pays in peace, a war booms your own economy and peace brings it down, your credit limit is half again as large and bonds cost 25 percent less, idle Gold erodes twice as fast, your factories count twice for demand, and you take development loans only.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_CORPORATIST_LINE" Language="de_DE"><Text>Capital goes to industry and war: War Levy pays its full wartime amount in peace too, a war booms your own economy and peace brings it down, your credit limit is half again as large and bonds cost 25 percent less, idle Gold erodes twice as fast, your factories count twice for demand, and you take development loans only.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SYSTEM_PLANNED_LINE" Language="de_DE"><Text>The treasury becomes production: a fifth of your Gold income goes into your cities' builds each turn, you buy at fixed prices, the world's booms and slumps pass you by, you borrow only from other civilizations and you take development loans only.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PHASE_DEPRESSION" Language="de_DE"><Text>Depression</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PHASE_SLUMP" Language="de_DE"><Text>Slump</Text></Replace>

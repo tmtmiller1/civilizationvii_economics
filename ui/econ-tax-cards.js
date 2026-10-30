@@ -3,20 +3,24 @@
 // modifiers (data/econ-tax-gameeffects.xml) and the cards' description text, and tests/econ-data.test.mjs fails
 // while the two disagree. Each card adds a flat amount to every settlement's Gold and Happiness, the shape of the
 // base game's Priesthood, because the AI's card pass rates a card by its face value and passed over percentages of
-// small Antiquity yields (P17 arms, DESIGN 10). The forecast multiplies the difference between the active card and
-// the one forecast by the civ's settlements. Nothing here reads the engine.
+// small Antiquity yields (P17 arms, DESIGN 10). War Levy pays a small part in peace and the rest only at war. The
+// forecast multiplies the difference between the active card and the one forecast by the civ's settlements. Nothing
+// here reads the engine.
 
 export const CARD_PREFIX = "TRADITION_ECONOMICS_";
 
 /**
- * Each card's change to every settlement's Gold and Happiness yield, a flat amount a turn. War Levy's apply only
- * while its owner has a formal war (the modifiers' requirement).
- * @type {Record<string, { gold: number, happiness: number, needsWar: boolean, nameKey: string }>}
+ * Each card's change to every settlement's Gold and Happiness yield, a flat amount a turn, and what it adds on top
+ * while its owner has a formal war (`atWar`, the war-gated modifiers' requirement), or null.
+ * Light at -1 / +6 is the Light arms' arm 10 (2026-10-30): the first shape that three of five AIs took, each once grown
+ * and short of Happiness, while Heavy and War Levy kept the others (DESIGN 4.7).
+ * @type {Record<string, { gold: number, happiness: number, atWar: { gold: number, happiness: number } | null,
+ *   nameKey: string }>}
  */
 export const CARD_LEVELS = {
-  LIGHT: { gold: -2, happiness: 4, needsWar: false, nameKey: "LOC_ECONOMICS_CARD_LIGHT_NAME" },
-  HEAVY: { gold: 4, happiness: -2, needsWar: false, nameKey: "LOC_ECONOMICS_CARD_HEAVY_NAME" },
-  WAR_LEVY: { gold: 8, happiness: -4, needsWar: true, nameKey: "LOC_ECONOMICS_CARD_WAR_LEVY_NAME" },
+  LIGHT: { gold: -1, happiness: 6, atWar: null, nameKey: "LOC_ECONOMICS_CARD_LIGHT_NAME" },
+  HEAVY: { gold: 4, happiness: -2, atWar: null, nameKey: "LOC_ECONOMICS_CARD_HEAVY_NAME" },
+  WAR_LEVY: { gold: 2, happiness: -1, atWar: { gold: 6, happiness: -3 }, nameKey: "LOC_ECONOMICS_CARD_WAR_LEVY_NAME" },
 };
 
 /**
@@ -29,14 +33,25 @@ export function levelOf(type) {
 }
 
 /**
- * The amounts a level adds to each settlement right now: War Levy's are 0 in peace, no card is 0.
+ * The amounts a level adds to each settlement right now: War Levy's peacetime part in peace and both parts at war,
+ * no card 0.
  * @param {string | null} level
  * @param {boolean} atWar
  */
 export function appliedAmounts(level, atWar) {
   const card = level ? CARD_LEVELS[level] : undefined;
-  if (!card || (card.needsWar && !atWar)) return { gold: 0, happiness: 0 };
-  return { gold: card.gold, happiness: card.happiness };
+  if (!card) return { gold: 0, happiness: 0 };
+  const extra = atWar && card.atWar ? card.atWar : { gold: 0, happiness: 0 };
+  return { gold: card.gold + extra.gold, happiness: card.happiness + extra.happiness };
+}
+
+/**
+ * What a level adds to each settlement while its owner is at war, both parts together: Light and Heavy the same as in
+ * peace, War Levy +8 / -4.
+ * @param {string} level
+ */
+export function atWarAmounts(level) {
+  return appliedAmounts(level, true);
 }
 
 /**
@@ -62,7 +77,7 @@ export function turnsToCelebration(left, perTurn) {
 
 /**
  * What `level` would do against the card active now (`activeLevel`, or null): the change in Gold and Happiness a
- * turn, the turns to the next celebration under it, and whether it pays at all today.
+ * turn, and the turns to the next celebration under it. Every card pays in peace, War Levy only its smaller part.
  * @param {string | null} level the card to forecast, or null for no tax card
  * @param {string | null} activeLevel
  * @param {FiscalRead} read
@@ -74,8 +89,7 @@ export function cardForecast(level, activeLevel, read) {
   // `|| 0` keeps a change of nothing at 0 rather than -0.
   const goldDeltaCents = (then.gold - now.gold) * settlements * 100 || 0;
   const happinessDeltaCents = (then.happiness - now.happiness) * settlements * 100 || 0;
-  const card = level ? CARD_LEVELS[level] : undefined;
-  return { goldDeltaCents, happinessDeltaCents, paysNow: !card || !card.needsWar || read.atWar,
+  return { goldDeltaCents, happinessDeltaCents,
     turnsToCelebration: read.celebrating ? null
       : turnsToCelebration(read.celebrationLeftCents, read.netHappinessCents + happinessDeltaCents) };
 }

@@ -7,7 +7,7 @@ import { button, chips, el, note, pill, row, section } from "./econ-dom.js";
 import { canChangeTariff } from "./econ-trade.js";
 import { hasStage } from "./econ-stages.js";
 import { formatGold } from "./econ-format.js";
-import { CARD_LEVELS, cardForecast } from "./econ-tax-cards.js";
+import { CARD_LEVELS, atWarAmounts, cardForecast } from "./econ-tax-cards.js";
 import { systemView } from "./econ-view-macro.js";
 import { systemKey } from "./econ-notice-text.js";
 
@@ -115,6 +115,11 @@ function cardBlock(card, activeLevel, read, canSwap, api) {
   box.appendChild(head);
   box.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_EFFECT"), api.loc("LOC_ECONOMICS_FISCAL_EFFECT_ROW",
     formatGold(level.gold * 100, { signed: true }), formatGold(level.happiness * 100, { signed: true }))));
+  if (level.atWar) {
+    const war = atWarAmounts(card.level);
+    box.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR"), api.loc("LOC_ECONOMICS_FISCAL_EFFECT_ROW",
+      formatGold(war.gold * 100, { signed: true }), formatGold(war.happiness * 100, { signed: true }))));
+  }
   if (!card.active) {
     for (const line of forecastRows(card.level, activeLevel, read, api)) box.appendChild(line);
     box.appendChild(button(api.loc("LOC_ECONOMICS_FISCAL_SLOT"), () => swap(card.type, api),
@@ -143,7 +148,6 @@ function lockedText(card, api) {
 function forecastRows(level, activeLevel, read, api) {
   const forecast = cardForecast(level, activeLevel, read);
   const label = api.loc("LOC_ECONOMICS_FISCAL_FORECAST");
-  if (!forecast.paysNow) return [row(label, api.loc("LOC_ECONOMICS_FISCAL_LEVY_PEACE"))];
   const gold = formatGold(forecast.goldDeltaCents, { signed: true });
   const happiness = formatGold(forecast.happinessDeltaCents, { signed: true });
   return [
