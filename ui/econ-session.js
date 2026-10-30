@@ -41,7 +41,8 @@ const MAX_REQUESTS = 16;
  *   guardOn: boolean | null, turns: import("./econ-turn-count.js").TurnCount, roles: Record<string, string>,
  *   cycleEvents: import("./econ-macro-read.js").PendingCycleEvent[] }} GlueState
  * @typedef {{ ledger: Ledger, glue: GlueState, lastPlan: PlanOutput | null, params: EngineParams | null,
- *   markets: MarketsState, macro: import("./econ-macro-state.js").MacroState, pops: Map<string, number> }} Session
+ *   markets: MarketsState, macro: import("./econ-macro-state.js").MacroState, pops: Map<string, number>,
+ *   skipsLogged: Set<string> }} Session
  */
 
 /** @returns {GlueState} */
@@ -119,7 +120,7 @@ export function loadSession() {
   const macroRead = loadMacro(readEnvelope(MACRO_KEY));
   if (!macroRead.ok) logLine(`macro envelope refused (${macroRead.reason}); starting empty`);
   return { ledger: ledgerRead.ledger, glue: parseGlue(readEnvelope(GLUE_KEY)), lastPlan: null, params: null,
-    markets: marketsRead.markets, macro: macroRead.macro, pops: new Map() };
+    markets: marketsRead.markets, macro: macroRead.macro, pops: new Map(), skipsLogged: new Set() };
 }
 
 /** @param {Session} session */
@@ -355,6 +356,21 @@ function commitSession(session, plan) {
 }
 
 /**
+ * A skipped batch says why once a session at the normal level, so a game with every option off shows it in the log
+ * without the debug switch (the lab's build check C.2), and only at debug after that.
+ * @param {Session} session
+ * @param {number} turn
+ * @param {string} why
+ * @param {string} reason
+ */
+function logSkip(session, turn, why, reason) {
+  const line = `turn ${turn} (${why}): skipped, ${reason}`;
+  if (session.skipsLogged.has(reason)) { logDebug(line); return; }
+  session.skipsLogged.add(reason);
+  logLine(line);
+}
+
+/**
  * The turn batch: snapshot, plan, write the ledger, send. Returns the plan, or null when nothing ran.
  * @param {Session} session
  * @param {string} why
@@ -363,7 +379,7 @@ export function runTurn(session, why) {
   const started = Date.now();
   const input = buildInput(session);
   const plan = planTurn(input);
-  if (plan.skipped) { logDebug(`turn ${input.turn} (${why}): skipped, ${plan.skipped}`); writeGlue(session); return null; }
+  if (plan.skipped) { logSkip(session, input.turn, why, plan.skipped); writeGlue(session); return null; }
   commitSession(session, plan);
   const sent = sendPlan(plan);
   const marketsText = saveMarkets(plan.markets);

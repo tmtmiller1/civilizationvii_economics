@@ -110,6 +110,7 @@ so, with the DESIGN section that now holds the rule.
 | 97 | The phase notice | Only on a change, not a civ's first reading; its causes are the turn's three heaviest events the civ took part in, else the world's | `econ-macro`: "the engine's events and the crisis reach E..." |
 | 98 | Engine events between batches | Kept in the glue envelope, at most 32, weighed once at the next batch | `econ-macro-read`: "in game: an event kept between batches..." |
 | 99 | What the Fiscal tab's "now" shows | The civ's net Gold and Happiness a turn (`Stats.getNetYield`, the top bar's figure, P2), not the settlements' summed `Yields.getYield`, which read 0 Gold in the lab while the civ's net was positive (build check 5.2a, 2026-10-30). The card's change is still its flat amount times the settlements | `econ-fiscal`: "the forecast read takes the civ's net Gold and Happiness..." |
+| 100 | "All off" and its log line | The batch skips only when Loans, Markets, Foreign investment, Inflation, Business cycle and Economic systems are all off: the cycle and the systems move Gold on their own. The lab's all-off game (build check C.2, 0.3.0) couldn't set the 1.2 options, which read their defaults (cycle Standard, systems On), so its batch ran as it should; the skip line itself went only to the debug log, so a released copy never showed it. It now goes to the log once a session | `econ-session`: "every option off, the 1.2 ones too..." |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 

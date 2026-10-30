@@ -114,3 +114,25 @@ test("the glue envelope keeps requests, stage turns, seen civs and the guard swi
   assert.deepEqual(sanitizeGlue("junk"), emptyGlue());
   removeFakeEngine();
 });
+
+test("every option off, the 1.2 ones too: the batch is skipped and says so in the log once", () => {
+  const off = Object.fromEntries(["LOANS", "GUARD", "AI", "TAXES", "STAGES", "MARKETS", "TARIFFS", "INVESTMENT", "INFLATION",
+    "CYCLE", "SYSTEMS"].map((key) => [`ECONOMICS_${key}`, `ECONOMICS_${key}_OFF`]));
+  fresh({ config: off });
+  const lines = [];
+  const saved = console.error;
+  console.error = (line) => lines.push(String(line));
+  try {
+    const session = loadSession();
+    assert.equal(runTurn(session, "TurnBegin 10"), null);
+    assert.equal(runTurn(session, "TurnBegin 10"), null);
+    assert.equal(lines.filter((line) => line.includes("skipped, all-off")).length >= 1, true, lines.join("\n"));
+    const loud = lines.filter((line) => line === "[Economics] turn 10 (TurnBegin 10): skipped, all-off");
+    assert.ok(loud.length >= 1);
+  } finally {
+    console.error = saved;
+  }
+  fresh({ config: { ...off, ECONOMICS_CYCLE: "ECONOMICS_CYCLE_STANDARD" } });
+  assert.ok(runTurn(loadSession(), "TurnBegin 10"), "with the cycle on there's still a batch to run");
+  removeFakeEngine();
+});
