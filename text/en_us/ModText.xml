@@ -32,14 +32,14 @@
         <Row Tag="LOC_ECONOMICS_SETUP_AI_ON_DESCRIPTION"><Text>Computer players borrow, lend, restructure and repudiate by the same rules you play under.</Text></Row>
 
         <!-- Setup: Rates -->
-        <Row Tag="LOC_ECONOMICS_SETUP_RATES_NAME"><Text>Rates</Text></Row>
-        <Row Tag="LOC_ECONOMICS_SETUP_RATES_DESCRIPTION"><Text>Scales every interest rate in the game, the rate cap included. Standard is 1.5 percent a turn in Antiquity, 1 in Exploration and 0.75 in Modern before standing and relationship adjust it.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SETUP_RATES_NAME"><Text>Base Interest Rate</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SETUP_RATES_DESCRIPTION"><Text>The rate every loan starts from: 1.5 percent a turn in Antiquity, 1 in Exploration and 0.75 in Modern at Standard. Each loan's actual rate then moves with the borrower's payment record, its relationship with the lender, its banking buildings and the world economy. The rate cap scales with it.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_RATES_LOW"><Text>Low</Text></Row>
-        <Row Tag="LOC_ECONOMICS_SETUP_RATES_LOW_DESCRIPTION"><Text>Three quarters of the standard rates. Borrowing is cheap and lending pays less.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SETUP_RATES_LOW_DESCRIPTION"><Text>Three quarters of the standard base rate. Borrowing is cheap and lending pays less.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_RATES_STANDARD"><Text>Standard</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_RATES_STANDARD_DESCRIPTION"><Text>The rates the mod is balanced around.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SETUP_RATES_HIGH"><Text>High</Text></Row>
-        <Row Tag="LOC_ECONOMICS_SETUP_RATES_HIGH_DESCRIPTION"><Text>A quarter above the standard rates. Debt bites sooner and lending pays more.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SETUP_RATES_HIGH_DESCRIPTION"><Text>A quarter above the standard base rate. Debt bites sooner and lending pays more.</Text></Row>
 
         <!-- Setup: Taxes -->
         <Row Tag="LOC_ECONOMICS_SETUP_TAXES_NAME"><Text>Taxes</Text></Row>

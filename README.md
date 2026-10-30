@@ -148,7 +148,7 @@ option off, everything is open from the start.
 | Loans | On | Off turns the loans and the guard off |
 | Auto-loan guard | On | Emergency loans before the game's penalties, up to the cap |
 | AI borrowing and lending | On | Whether the computer players borrow, lend, restructure and repudiate |
-| Rates | Standard | Low (three quarters), Standard, High (a quarter more) on every rate |
+| Base Interest Rate | Standard | Low (three quarters), Standard, High (a quarter more) on the rate every loan starts from |
 | Taxes | On | Adds the three tax cards and their slot |
 | Economic stages | On | Parts open with their civic or tech; Off opens everything at the age's start |
 | Markets and trade bills | On | World prices and the trade bills between partners |

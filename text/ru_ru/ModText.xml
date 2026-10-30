@@ -23,14 +23,14 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_AI_OFF_DESCRIPTION" Language="ru_RU"><Text>Only you borrow and lend. The computer players keep their treasuries as the base game runs them.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_AI_ON" Language="ru_RU"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_AI_ON_DESCRIPTION" Language="ru_RU"><Text>Computer players borrow, lend, restructure and repudiate by the same rules you play under.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_NAME" Language="ru_RU"><Text>Rates</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_DESCRIPTION" Language="ru_RU"><Text>Scales every interest rate in the game, the rate cap included. Standard is 1.5 percent a turn in Antiquity, 1 in Exploration and 0.75 in Modern before standing and relationship adjust it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_NAME" Language="ru_RU"><Text>Base Interest Rate</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_DESCRIPTION" Language="ru_RU"><Text>The rate every loan starts from: 1.5 percent a turn in Antiquity, 1 in Exploration and 0.75 in Modern at Standard. Each loan's actual rate then moves with the borrower's payment record, its relationship with the lender, its banking buildings and the world economy. The rate cap scales with it.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_LOW" Language="ru_RU"><Text>Low</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_LOW_DESCRIPTION" Language="ru_RU"><Text>Three quarters of the standard rates. Borrowing is cheap and lending pays less.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_LOW_DESCRIPTION" Language="ru_RU"><Text>Three quarters of the standard base rate. Borrowing is cheap and lending pays less.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_STANDARD" Language="ru_RU"><Text>Standard</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_STANDARD_DESCRIPTION" Language="ru_RU"><Text>The rates the mod is balanced around.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_RATES_HIGH" Language="ru_RU"><Text>High</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_HIGH_DESCRIPTION" Language="ru_RU"><Text>A quarter above the standard rates. Debt bites sooner and lending pays more.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_RATES_HIGH_DESCRIPTION" Language="ru_RU"><Text>A quarter above the standard base rate. Debt bites sooner and lending pays more.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_NAME" Language="ru_RU"><Text>Taxes</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_DESCRIPTION" Language="ru_RU"><Text>Adds the tax policy cards: Light Taxation, Heavy Taxation and War Levy. Each trades Gold against happiness in one of your ordinary policy slots, and the computer players choose among them as they do any card.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_TAXES_OFF" Language="ru_RU"><Text>Off</Text></Replace>
