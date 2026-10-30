@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Economics, a Civilization VII mod: loans between civilizations and from a bond market, an auto-loan guard, taxes
-  as policy cards, and the economic stages that open each part (docs/DESIGN.md). In development: the 1.0 Finance
-  mechanics are built and gated offline; the in-game checks are owed (docs/verification-runs.md).
+  as policy cards, world prices, trade bills and tariffs, foreign investment and aid, and the economic stages that
+  open each part (docs/DESIGN.md). In development: the 1.0 Finance and 1.1 Commerce mechanics are built and gated
+  offline; the in-game checks are owed (docs/verification-runs.md).
   Groups: the setup options and the text at the main menu; the scripts and the text in every game; the level 1
   gameplay rows (DESIGN section 1, "Native first") in their own groups, each gated on the setup option that owns it;
   and the four Civilopedia History Corrections groups every Tower mod carries.
@@ -15,9 +16,10 @@
         <Package>Economics</Package>
         <PackageSortIndex>1000</PackageSortIndex>
         <ShowInBrowser>1</ShowInBrowser>
-        <Version>0.2.0</Version>
-        <!-- The ledger (every loan, block, miss and repudiation) lives in the save, and the setup options are fixed
-             when the game is created, so a save made with the mod needs it to load the same game. -->
+        <Version>0.3.0</Version>
+        <!-- The ledger (every loan, investment, block, miss and repudiation) and the markets envelope live in the
+             save, and the setup options are fixed when the game is created, so a save made with the mod needs it to
+             load the same game. -->
         <AffectsSavedGames>1</AffectsSavedGames>
     </Properties>
     <Dependencies>

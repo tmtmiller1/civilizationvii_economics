@@ -153,3 +153,92 @@ owner's usual mod set, Exploration and Modern, seed 4242, turns 1 to 6. Lines in
   `parentNode.replaceChild`; the fake page in the tests no longer offers `replaceWith`, and a gate test rejects the
   call in `ui/`). Watched the same evening in a Partisans Modern usual-set game, seed 4242, turns 1 to 8: 9 `[Economics]` lines,
   no dock error (`modern-seed4242-turns1-8-dockfix.log`). The pill drawing beside the button is still to see on screen.
+
+## Owed: 1.1 Commerce and the flat tax cards (0.3.0)
+
+Built 2026-10-29 and checked offline only (`npm run release:gate`, Stryker on the 1.1 modules, the 1.1 balance rows).
+Each line says what the player sees when it works, the setup it needs, and where the code is. The 1.1 probe run
+(`mod_ideas_tested/economics/devtools/RUN-SHEET-1.1.md`, Exploration seed 9001) can reach most of the data and AI
+lines in one game.
+
+### Tax cards as flat amounts
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| T.1 | Each card's line on a settlement's Gold and Happiness breakdown reads the flat amount (Light -2 Gold +4 Happiness, Heavy +4 -2, War Levy +8 -4 at war), not a percentage (hover). Replaces 5.4's "right percentage" | Antiquity 4242, vanilla | `data/econ-tax-gameeffects.xml` |
+| T.2 | Over 80 driven turns on the arms' seed, AIs slot Heavy at fresh slots as arm 3 did, and with the steering bias at 300 the Short of Gold civs take Heavy or War Levy more than Light; the picks per civ and turn against arm 3's table (`probe-runs/2026-10-29-p17-analysis.md`) | Antiquity 4242, vanilla, `AIVerboseLogging 1`, `Game_Gossip.csv` kept | `data/econ-tax-cards.sql` (bias 300) |
+| T.3 | The Fiscal tab's forecast under each card equals the card's amounts times your settlements, and after a swap the settlements' summed Gold and Happiness move by that much | Antiquity 4242 | `ui/econ-tax-cards.js` `cardForecast`, `ui/econ-fiscal.js` `readFiscal` |
+| T.4 | A peaceful AI holding War Levy gets nothing from it (the breakdown shows no levy line), since the card pass slots it on face value | same, an AI at peace with War Levy slotted | `data/econ-tax-gameeffects.xml` requirement |
+
+### Data and load
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| C.1 | The setup screen shows Markets and trade bills, Tariffs and Foreign investment, all On; the boot line `[Economics] v0.3.0 loaded; ...` lists `markets`, `tariffs` and `investment` in its options | any, vanilla, then the usual set | `config/econ-setup.sql`, `ui/econ-bootstrap.js` |
+| C.2 | With each option Off: Markets Off shows the Markets tab's off note and no bills; Tariffs Off hides the tariff row; Foreign investment Off greys the Trade tab's investment block; all three plus Loans Off and the batch logs `skipped, all-off` | any, each option Off in turn | `ui/econ-session.js` `readOptions`, `ui/econ-plan.js` `skipReason` |
+| C.3 | The markets envelope survives a save and reload: the Markets tab's prices and history and your tariff are the same after the reload | Exploration 9001 | `ui/econ-markets.js`, `ui/econ-session.js` `writeMarkets` |
+| C.4 | A 0.2.0 save loads into 0.3.0 with its loans intact and no investments (ledger version 2 read as 3) | a 0.2.0 save | `ui/econ-state.js` `sanitizeLedger` |
+| C.5 | The per-turn cost with the 1.1 reads on, at 8 civs: `tower-bench cost tower-economics --yes` under 50 ms | Exploration 9001 | `ui/econ-session.js` `readCommerce` |
+
+### Prices
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| C.6 | The Markets tab lists this age's resources with a price, the copies held and a history bar per turn; a hand count of the copies of three resources on the map matches "copies held" (counted once at the origin, imports not again) | Exploration 9001, after 10 turns | `ui/econ-commerce-read.js` `readMarket`, `ui/econ-prices.js` |
+| C.7 | A war between two majors lifts the price of this age's strategic resources over the next turns, and it eases after peace (smoothing 0.8, so a few percent a turn). In vanilla Exploration no unit names a strategic resource, so this needs Modern or Strategic Resources That Matter | Modern 4242, or the usual set | `ui/econ-prices.js` `demandPct` |
+
+### Trade settlement
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| C.8 | With a route importing from an AI and the AI importing from you, the Trade tab shows one bill per partner, the side owing more pays, and both balances move by the same amount at the next `TurnBegin` (`UI.log` turn line counts the transfer); the turn notification has the trade line | Exploration 9001, a route each way | `ui/econ-commerce.js` `settleTradeFor`, `ui/econ-view-trade.js` |
+| C.9 | The bill never passes a tenth of the payer's income; at income 0 or below nothing is paid; anything over the cap shows as waived and isn't owed next turn | same, the player's income pushed low | `ui/econ-trade.js` `capPayments` |
+| C.10 | The imports read for AI pairs: an AI importing from another AI shows a bill between them in `__towerEconomics.session().lastPlan.trade` (the read is the AI's own `getResources` with origins, not P7's per-route list) | same | `ui/econ-commerce-read.js` `readRoutes` |
+| C.11 | The Trade tab's "Trade Income the game pays your cities" equals the city yield tooltips' Trade Income, and the exporter's figure per route matches `TradeYields` (3 a copy by land, 6 by sea in Exploration) | same | `ui/econ-commerce-read.js` `readTradeIncomeCents` |
+| C.12 | A Bazaar or Guildhall in the exporting city raises that route's bill by 10 percent; one in the importing city lowers it | same | `ui/econ-commerce-read.js` `routeEnds` |
+| C.13 | "Routes you could make" lists foreign cities with what a route would bring and the bill it would add, or says the game didn't answer (`projectPossibleTradeRoutes`) | same | `ui/econ-commerce-read.js` `readPossibleRoutes` |
+| C.14 | Bills follow a war: a route a war ends drops out of the next turn's bill | same, a declared war | `ui/econ-commerce-read.js` |
+
+### Tariffs
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| C.15 | The tariff row reads "Tariffs open with Imperialism" until that civic, then offers None, Low and High; a change shows "takes effect next turn", then the wait note for five turns | Exploration 9001, Imperialism granted | `ui/econ-view-fiscal.js` `tariffRows` |
+| C.16 | Low and High lower what you pay that partner by 10 and 25 percent on the Trade tab and in the balances | same, a route importing | `ui/econ-trade.js` `owedByPair` |
+| C.17 | A High tariff costs 1 relationship with each exporter you bill every five turns (`getRelationshipLevel` before and after) and the notification says why | same | `ui/econ-trade.js` `highTariffCosts` |
+| C.18 | When you set High, each AI you import from sets High two turns later (a `tariff` event in the ledger) and drops back to None after you do | same | `ui/econ-trade.js` `aiTariffWanted` |
+
+### Investment and aid
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| C.19 | A development loan on an AI city's current build: the build's progress jumps (by the points shown, scaled up by the city's production bonuses), only the Gold the progress used leaves your treasury, and the return arrives each turn for 25 turns; relationship up by the shown points | Exploration 9001, Guilds on both sides, a Neutral AI | `ui/econ-invest-open.js` `openInvestment`, `ui/econ-commerce-read.js` `sendProgress` |
+| C.20 | P8: the AI keeps the build the progress landed on for the next 3 turns, or finishes it; if it switches, the return still runs | same | DESIGN 4.12, P8 |
+| C.21 | A city with nothing queued has no development loan button; at war or Unfriendly the buttons say why | same | `ui/econ-view-commerce.js` `investTargets` |
+| C.22 | General investment: the Gold lands in the AI's treasury; the return each turn moves with its income (higher when it grows) | Exploration 9001, Colonialism on both sides | `ui/econ-invest.js` `dividendDue` |
+| C.23 | Aid: Gold to the AI, nothing back, relationship up by the shown points | any, at peace | `ui/econ-invest-open.js` |
+| C.24 | An AI Friendly with you offers an investment: the notification names it, the Trade tab shows it with Accept and Decline; Accept opens it (Gold or progress arrives next turn), Decline drops it, an unanswered offer is gone after three turns | Exploration 9001, a Friendly AI with 20 turns of income in hand | `ui/econ-commerce.js` `aiInvest` |
+| C.25 | A host losing the city a development loan backs: the record closes, the notice names the Gold lost | a captured city | `ui/econ-invest.js` `lostCityWriteOff` |
+| C.26 | Missing a return three times puts the record in default, the investor's later investments in you are refused, and the garnish runs | the player hosting, balance held low | `ui/econ-commerce.js` `payDividend` |
+| C.27 | Repudiating an investor from the Loans tab closes what you host from it, with the grievance and witness costs of a loan repudiation | the player hosting | `ui/econ-repudiation.js` |
+| C.28 | AI aid: an AI Friendly with a civ in default sends it 5 turns of its income once in the age (ledger event `invest` with aid 1) | soak | `ui/econ-commerce.js` `aiAid` |
+
+### Roles, other mods, soak
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| C.29 | The Treasury tab counts Trade, Warehouse and Industry buildings: a Bazaar counts as Trade, a Granary as Warehouse, a Factory as Industry | Exploration then Modern | `ui/econ-depth.js` `rolesOf` |
+| C.30 | NOTES finding J: an Exploration civ with Antiquity Markets standing reads them as Trade but not Commerce (the Market's `GOLD` tag is gone in Exploration's database); read `__towerEconomics.input().civs[k].depthTurns` and the Treasury block | Antiquity 4242 into Exploration | `ui/econ-engine.js` `readBuildings` |
+| C.31 | A test mod that adds a Gold building, retags another and removes a resource: depth, the Trade count and the Markets list follow it | a small test mod | `ui/econ-engine.js` `buildingData`, `ui/econ-commerce-read.js` `readMarket` |
+| C.32 | Warehouse Overbuilding alongside: building over a warehouse changes the Warehouse count and nothing else | usual set with Warehouse Overbuilding | `ui/econ-depth.js` |
+| C.33 | 100 turns of `lab drive` in Exploration with 0.3.0 on, and the same seed with Markets, Tariffs and Foreign investment Off: no crash or hang; per civ the bills paid and received, tariffs set, investments, aid and returns, against each AI's balance; route counts on and off (whether the bill changes how many merchants the AI sends) | Exploration 9001, vanilla | `ui/econ-bootstrap.js` |
+| C.34 | Phases C.8, C.17, C.19 once with the usual set: Demographics' Gold chart shows the bills as balance moves | Exploration 9001, usual set | `docs/compatibility.md` |
+
+### The model (offline), 2026-10-29
+
+| Check | Where | Observation |
+| --- | --- | --- |
+| Prices, bills, tariffs, investment, the 1.1 plan steps and AI rules | `tests/econ-{prices,trade,invest,commerce,markets}.test.mjs` | pass; every plan in `econ-commerce` passes the commit checks (debt-1, debt-6, debt-7, alive-target, econ-3) |
+| The 1.1 glue against a fake engine | `tests/econ-commerce-read.test.mjs` | imports grouped by origin city, majors only; copies at the origin; builds and what's left; progress on the city found by its key; the markets envelope written with the ledger |
+| The Markets and Trade tabs and the tariff row | `tests/econ-views.test.mjs`, `tests/econ-view-commerce.test.mjs` | each draws; Accept, invest and tariff queue the requests the model expects |
+| The 1.1 balance rows | `tests/econ-balance-commerce.test.mjs`, `reports/balance-1.1.json` | bills sum to zero, no payer past 10% of income, markets envelope about 10 KB, a turn in about 0.1 ms; the cap binds on most settlement rows (NOTES finding K) |

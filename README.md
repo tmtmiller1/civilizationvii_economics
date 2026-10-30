@@ -1,16 +1,18 @@
 # Economics
 
-A Civilization VII mod. In development: version 0.2.0 carries the 1.0 Finance mechanics, built and checked offline;
-none of it has been watched in a game yet ([docs/verification-runs.md](docs/verification-runs.md) lists what's owed).
-The design is [docs/DESIGN.md](docs/DESIGN.md).
+A Civilization VII mod. In development: version 0.3.0 carries the 1.0 Finance and 1.1 Commerce mechanics, built and
+checked offline; none of it has been watched in a game yet ([docs/verification-runs.md](docs/verification-runs.md) lists
+what's owed). The design is [docs/DESIGN.md](docs/DESIGN.md).
 
 ## What it does
 
 Gold gets a market. You can borrow from other civilizations or from a bond market and pay it back from what the Gold
 brings in, lend to a neighbour who's short and collect the interest, and set a tax level as a policy card. A missed
 payment costs you; three in a row is default; and you can always repudiate a debt outright, keep the Gold, and pay in
-reputation instead. The computer players borrow, lend, restructure and repudiate under the same rules, and pick the
-tax cards the way they pick any card.
+reputation instead. Resources get a world price, and the civilizations you trade with settle the difference in what
+you import from each other every turn; you can tariff a partner, or put Gold into a neighbour's build or treasury and
+collect a return. The computer players borrow, lend, restructure, repudiate, tariff and invest under the same rules,
+and pick the tax cards the way they pick any card.
 
 ## Loans
 
@@ -54,23 +56,50 @@ like any card, and the Fiscal tab slots or clears one for you. Under each card i
 Happiness a turn would change and when your next celebration would come; a card you haven't unlocked yet names the
 civic or tech that opens it.
 
+## Markets, trade bills and tariffs
+
+Every resource has a world price, set by its class, how many copies the civilizations hold, and whether this age's
+units need it (more so in wartime). The Markets tab lists the prices and their last 30 turns. Each pair of
+civilizations that trade then settles the difference between what they import from each other: half the price of
+each copy, up 10 percent for each Trade building in the exporting city and down 10 percent for each in the importing
+one. Only the side that owes more pays, and never more than a tenth of its income; anything over that is waived. This
+comes on top of the Trade Income the game already pays the exporter, which the Trade tab shows beside the bill.
+
+From Imperialism you can set a tariff on the Fiscal tab: Low or High holds back 10 or 25 percent of what you owe the
+civilizations you import from. A High tariff costs 1 relationship with each of them every five turns, and a computer
+player you tariff High answers in kind two turns later.
+
+## Foreign investment and aid
+
+From the Trade tab you can put Gold into another civilization. A development loan (from Guilds) goes into the build a
+city is working on right now, 3 Gold for each point of production, and comes back at 5 percent a turn for 25 turns,
+6 percent on an economic building. General investment (from Colonialism) goes into the treasury and its return
+follows the host's income. Aid of either kind asks nothing back. Each raises the relationship, in proportion to the
+host's income. Computer players invest in and aid their friends, and their offers to you wait on the Trade tab for an
+answer.
+
 ## Economic stages
 
 Each part opens when a civilization reaches the civic or tech that historically brought it in: loans between
 civilizations with Commerce (Moneylending), the bond market and 20- and 30-turn terms with the Economics civic (Public
-debt), War Levy with Currency (Coinage). Until then the Loans tab greys the part and names what opens it. A later age
-opens the stages of the ages before it. With the Economic stages option off, everything is open from the start.
+debt), War Levy with Currency (Coinage), trade bills with Code of Laws (Trade), development loans with Guilds (Guild
+patronage), general investment with Colonialism (Chartered companies) and tariffs with Imperialism. Until then the Loans
+tab greys the part and names what opens it. A later age opens the stages of the ages before it. With the Economic stages
+option off, everything is open from the start.
 
 ## Setup options
 
 | Option | Default | What it does |
 | --- | --- | --- |
-| Loans | On | Off turns the whole loan system off; the screen shows balances only |
+| Loans | On | Off turns the loans and the guard off |
 | Auto-loan guard | On | Emergency loans before the game's penalties, up to the cap |
 | AI borrowing and lending | On | Whether the computer players borrow, lend, restructure and repudiate |
 | Rates | Standard | Low (three quarters), Standard, High (a quarter more) on every rate |
 | Taxes | On | Adds the three tax cards and their slot |
 | Economic stages | On | Parts open with their civic or tech; Off opens everything at the age's start |
+| Markets and trade bills | On | World prices and the trade bills between partners |
+| Tariffs | On | The tariff setting; needs Markets and trade bills |
+| Foreign investment | On | Development loans, general investment and aid |
 
 ## Compatibility
 

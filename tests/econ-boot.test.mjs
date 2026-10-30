@@ -43,7 +43,7 @@ test.afterEach(() => { removeFakeEngine(); removeFakeDom(); delete globalThis.__
 
 test("single player: one boot line, the batch at TurnBegin, the notification at the local turn and only once", async () => {
   const { world, lines, harness } = await boot("sp", {});
-  assert.equal(lines.filter((line) => line.startsWith("[Economics] v0.2.0 loaded; turn 10,")).length, 1, lines.join("\n"));
+  assert.equal(lines.filter((line) => line.startsWith("[Economics] v0.3.0 loaded; turn 10,")).length, 1, lines.join("\n"));
   assert.deepEqual([...world.handlers.keys()].sort(), ["PlayerTurnActivated", "TurnBegin"]);
   assert.equal(harness.multiplayer, false);
   assert.equal(harness.request({ kind: "borrow", borrower: 0, lender: "bond", principal: 3000, term: 10 }), true);
@@ -74,7 +74,7 @@ test("a save from before its turn's batch runs that batch once at load, and the 
 
 test("multiplayer: the mod says once that it's off and listens to nothing", async () => {
   const { world, lines, harness } = await boot("mp", { multiplayer: true });
-  assert.deepEqual(lines, ["[Economics] v0.2.0 loaded; multiplayer game, the mod is off"]);
+  assert.deepEqual(lines, ["[Economics] v0.3.0 loaded; multiplayer game, the mod is off"]);
   assert.equal(world.handlers.size, 0);
   assert.equal(harness.multiplayer, true);
   assert.equal(world.calls.length, 0);

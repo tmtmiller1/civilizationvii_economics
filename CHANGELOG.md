@@ -23,6 +23,23 @@ release is generated from the matching section below by `scripts/steam-changelog
   opened, missed or defaulted, and any request that was refused and why. A click opens the screen.
 - Economic stages: loans between civilizations open with Moneylending, the bond market and longer terms with Public
   debt, War Levy with Coinage; each closed part is greyed with the civic or tech that opens it.
+- World prices: every resource gets a price from its class, how many copies the civilizations hold and who needs
+  it, and the Markets tab lists them with the last 30 turns.
+- Trade bills: each pair of civilizations settles the net value of what they import from each other every turn, on
+  top of the Trade Income the game already pays the exporter. The side that owes more pays, never more than a tenth
+  of its income, and anything over that is waived. Trade buildings at either end move the bill. The Trade tab shows
+  each partner's bill, the cap and what a new route would add.
+- Tariffs, from Imperialism: Low or High holds back 10 or 25 percent of what you owe the civilizations you import
+  from. A High tariff costs 1 relationship with each of them every five turns, and the computer players answer one
+  in kind. Set it on the Fiscal tab, once every five turns.
+- Foreign investment and aid from the Trade tab: a development loan puts Gold into the build a city is working on now
+  (from Guilds) and is repaid with interest over 25 turns, more on an economic building; general investment (from
+  Colonialism) goes into the treasury and its return follows the host's income; aid of either kind asks nothing back.
+  Each raises the relationship. Computer players invest in and aid their friends, and offer to invest in you; you
+  accept or decline on the Trade tab.
+- The Trade, Warehouse and Industry building roles beside Commerce and Banking, read from the game's data with other
+  mods applied; the Treasury tab counts them.
+- Three setup options for these: Markets and trade bills, Tariffs, and Foreign investment, all on by default.
 - The project: the engine-free loan model (loans, credit, lenders and rates, payments and misses, default and
   garnish, repudiation, the auto-loan guard, AI rules, the saved ledger) with its tests, the six 1.0 setup options,
   the 12 text folders, the gates and the release script.
@@ -32,5 +49,6 @@ release is generated from the matching section below by `scripts/steam-changelog
   Heavy Taxation +4 Gold and -2 Happiness, War Levy +8 Gold and -4 Happiness while you're at war. The computer
   players took flat cards in test games where they passed over the percentage ones. The two AI strategies that steer
   them are stronger.
+- Loans Off now turns off the loans alone; trade bills and investment keep their own options.
 - The auto-loan guard only borrows while your income is at or below 0: with positive income the game wipes a
   negative balance to 0 at the turn roll and charges nothing, so a loan there would be Gold the game gives for free.

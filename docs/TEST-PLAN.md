@@ -142,6 +142,14 @@ As the ladder's T10, with P1 and P3 recorded in `engine-closed.md`.
 
 ### 12.1 Unit tests (T1)
 
+Status 2026-10-29: the 1.1 rows are built and pass offline. `econ-prices`, `econ-trade` and `econ-invest` have the
+names below; the plan steps and AI rules are `econ-commerce` and `econ-invest-open`, the markets envelope
+`econ-markets`, the roles live in `econ-depth` (there's no separate `econ-buildings`), and the glue's reads are
+`econ-commerce-read`. Their tests are `tests/econ-{prices,trade,invest,commerce,markets,depth,commerce-read,
+view-commerce}.test.mjs`; the balance rows are `tests/econ-balance-commerce.test.mjs`. Not built: the Industry demand
+term reads a world-wide count but no Factory resource exists before Modern, and the Food warehouse's disaster halving
+and the Warehouse cut wait for the cycle (1.2).
+
 Taxes are policy cards the game pays (DESIGN 4.7), so there is no tax module in the batch: the card data is tested
 by the data gates (compile, foreign keys, unlock rows) and P17. The script fallback is `econ-tax.js` in section 1.
 Inflation ships Off by default (1.2); trade settlement is netted per pair and capped; development loans back only a

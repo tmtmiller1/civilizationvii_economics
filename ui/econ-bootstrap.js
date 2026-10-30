@@ -17,7 +17,7 @@ import { formatGold } from "./econ-format.js";
 import { outstandingOf } from "./econ-credit.js";
 import { readCityName, readPossibleRoutes, readTypeName } from "./econ-commerce-read.js";
 
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 const KEY = "__towerEconomics";
 /** @type {Record<string, any>} */
 const G = globalThis;

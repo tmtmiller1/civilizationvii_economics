@@ -83,6 +83,28 @@ Each refused request comes back as an event `{ kind: "refused", request, reason 
   snapshot plus net; a lost batch's nets are re-sent (DESIGN 4.14; P15 decides whether the window exists).
 - `skipped`: `"loans-off"` or `"already-planned"` (the same turn twice: a reload after the write); send nothing.
 
+## The 1.1 fields (Commerce)
+
+Read only with Markets and trade bills or Foreign investment on, for every major by the same calls
+(`ui/econ-commerce-read.js`).
+
+| Field | Shape | Source | If missing |
+| --- | --- | --- | --- |
+| `civ.cities` | `[{ id, build, neededProgress, roleBuilding, tradeBuildings, purchaseCents }]` | each settlement's component id as `"owner:id"`, `BuildQueue.currentProductionTypeHash` named through `GameInfo`, what's left from `currentBuildProgress` and `getPercentComplete` (else the row's `Cost` times the speed), the build's roles, the Trade-role buildings standing, `Gold.getBuildingPurchaseCost` | no city read: no development loan on that civ, and nothing written off for a lost city |
+| `civ.tradeIncomeCents` | cents | `city.Yields.getTradeYields()` Gold summed, the engine's own exporter payment | 0 on the Trade tab |
+| `input.routes` | `[{ importer, exporter, resources, importerTradeBuildings, exporterTradeBuildings }]` | the importer's `Resources.getResources()` with `Game.Resources.getOriginCity` per entry, grouped by the foreign major city they come from; the importer's city at the other end from `Trade.getCurrentTradeRoutes()` | no bills |
+| `input.market` | `{ resources, copies, strategic, industry }` | `GameInfo.Resources` (class), each major's own copies counted at the origin, `GameInfo.Units.StrategicResource`, the Industry buildings world-wide | no prices: bills are 0 |
+| `input.markets` | the markets envelope | `Configuration` key `tower-economics-markets` | an empty market |
+
+What comes back adds `markets` (write it with the ledger, before the grants), `trade` (the settlement rows, for the
+screens) and `progress`: `{ host, cityId, amount, investmentId }`, landed with `city.BuildQueue.addProgress(amount)`
+on the city found again by its key, after re-reading that its queue isn't empty. The progress account (`progress`) is
+a world account like `bond`: it never reaches `grantYield`.
+
+The requests the player can add: `tariff` (`pid`, `level` none, low or high), `invest` (`investor`, `host`, `form`
+project or general, `cents`, `cityId` for a development loan, `asAid`), `accept-offer` and `decline-offer`
+(`offerId`).
+
 ## Persistence
 
 `save(ledger)` returns the envelope string (≤ 64 KB, events then settled loans dropped first, never an open loan);

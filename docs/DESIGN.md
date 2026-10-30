@@ -1,11 +1,11 @@
 # Economics: design
 
-Status 2026-10-24. Loans (4.1 to 4.6): designed 2026-10-06, engine-free model built and tested offline
-([NOTES.md](NOTES.md)); revised 2026-10-24 (misses in a row, capitalised interest, restructuring,
-debt-service limit, emergency cap), and the model doesn't have those yet (section 11 lists the changes). All other
-parts: designed only, and split across three releases (section 11). No probe run. Engine claims are watched
-(`engine-closed.md`) or unverified and listed in section 10. Corpus: none of 1249 reference mods add debt, inflation
-or markets.
+Status 2026-10-29. 1.0 Finance (loans, the guard, taxes, the 1.0 stages) and 1.1 Commerce (prices, trade bills,
+tariffs, investment, the other roles and stages) are built and gated offline, versions 0.2.0 and 0.3.0
+([NOTES.md](NOTES.md)); none of it has been watched in a game. 1.2 Macro is designed only. The 1.0 probes ran
+2026-10-29 (section 10); the 1.1 probes are prepared (`mod_ideas_tested/economics/devtools/RUN-SHEET-1.1.md`). Engine
+claims are watched (`engine-closed.md`) or unverified and listed in section 10. Corpus: none of 1249 reference mods
+add debt, inflation or markets.
 
 - Name: Economics, in game and in the folder name (`economics`).
 - Section numbers are fixed: `ui/` and `NOTES.md` cite 1, 4.1 to 4.6, 5, 8 and 10.
@@ -85,8 +85,8 @@ other-mods rules: SQL that selects through parent tables, gated by a setup param
 | Economic systems | 1 for yield effects, 3 for rates and credit | government modifiers (4.17) |
 | Repudiation | 2 | grievances booked on the repudiator, which the AI acts on (4.5) |
 | Loans, guard, garnish, payments | 2 | `grantYield`; borrowing choices are section 6 rules until P18 finds a diplomatic action that can carry a loan |
-| Aid, investment | 2, maybe 1 | `grantYield` and `addProgress`; P18 checks whether a data-made diplomatic action, of the kind the AI already picks (Military Aid, Cultural Exchange), can carry them |
-| Trade bills | 2 | `grantYield`; 1.1 looks for a native trade-route yield effect first |
+| Aid, investment | 2, maybe 1 | `grantYield` and `addProgress`; the 1.1 probes (C12, C13) check whether a rewritten diplomatic action the AI already starts (Military Aid paying both ways, Hinder Finances as Development Aid) carries them |
+| Trade bills | 2, on top of 1 | the engine already pays each exporting city Trade Income per route (`TradeYields`), which stays as it is; the bill between the pair is `grantYield`, because netting per pair and the 10% cap need a script (the native per-import charge is player-wide) |
 | Inflation, cycle, prices | 3, felt through 2 | the mod's own state, paid out through `grantYield` |
 
 ## 2. Precedents
@@ -366,8 +366,8 @@ peaceful AI's slot, where it pays nothing. This is the owner's to confirm; the n
   SQL writes by selecting the node through the progression tree tables, so a mod that changes a tree moves the card
   with it.
 - The modifiers copy the shape of a base-game card that adds a flat yield to each settlement (Priesthood), as the
-  note under the table says. Lower Happiness means a later celebration, and it can also make a settlement unhappy, which is
-  the game's own cost of taxing hard. The balance checks (section 10) watch both.
+  note under the table says. Lower Happiness means a later celebration, and it can also make a settlement unhappy,
+  which is the game's own cost of taxing hard. The balance checks (section 10) watch both.
 - A card never grants a slot, its own or another (section 3).
 - Partisans reads which card is active through `Culture.isTraditionActive`, after checking the type exists in this
   age's `Traditions` table (that call reads true for a type the age doesn't have).
@@ -456,6 +456,15 @@ paid      = min(net, 0.10 * max(0, payer's income))            0 when the payer'
   says so in those words.
 - A High tariff costs the importer 1 relationship with each exporter it bills, every 5 turns. The mod tells the player
   why, because a script change shows in the diplomacy breakdown as a bare number.
+
+Built 2026-10-29 (version 0.3.0, offline only). The bill is made from the importer's resources whose origin city a major
+owns (`Resources.getResources` with `Game.Resources.getOriginCity`), grouped by that city, so it doesn't wait on P7's
+per-route read; the routes only place the importer's Trade buildings. The engine's own Trade Income for the exporter
+stays untouched and the Trade tab shows it beside the bill. A payment the payer's funds can't cover is waived like the
+over-cap part. The AI matches a High tariff two turns after it's set and is bound by the same 5-turn limit as the
+player. In the 1.1 balance run the cap paid out on nearly every settlement row at Exploration incomes (NOTES finding K),
+so the bill behaves like "a tenth of income to the partners you buy more from"; the owner reads that against open
+question 6.
 
 ### 4.11 Business cycle
 
@@ -559,6 +568,15 @@ Other rules:
 - Keep the city component id and re-resolve each turn, never the city object (engine-closed: a stale city object
   crashed the game, 2026-10-23).
 
+Built 2026-10-29 (version 0.3.0, offline only). A development loan's Gold goes to a world account, `progress`, and only
+the Gold its progress uses leaves the investor (3 Gold a point), so "the rest is returned" is the rest never sent. The
+records sit in `ledger.investments` (ledger version 3) beside the loans, with the loan rules for misses, default, the
+lender block and garnish; the dividend doesn't step up on a miss. General investment's growth counts its base from 10
+Gold a turn. One gift's relationship gain is capped at 10 points (ours, NOTES choice 63). The AI's investment and aid
+are 5 turns of its own income; an AI's investment in the player is an offer kept 3 turns. In the balance run a fully
+backed build costs its host 1.125 times the game's purchase price on a role building and 0.94 times on another, before
+production bonuses scale the progress up (`reports/balance-1.1.json`).
+
 ### 4.13 Economic buildings and financial depth
 
 Roles are read at load from the compiled DB with other mods applied (`TypeTags`, `Constructible_Advisories`,
@@ -588,6 +606,11 @@ depth_turns   = min(12, 2 * sum of w over Banking buildings)
 - A wide empire reaches the caps sooner (`depth_turns` at 6 Banking buildings, `depth_factor` at depth 15, 20 from
   the Banking stage). The credit limit itself is in turns of income, so it already scales with the empire. Whether
   tall and wide civs end up too far apart is a balance check (section 10) before any per-city scaling goes in.
+
+From the 1.5.0 compiled databases (2026-10-29, `../tests/fixtures/commerce-*.json`): a previous age's buildings carry no
+tags in the next age's database (the Market has no `GOLD` tag in Exploration; the Bazaar, Guildhall and Bank none in
+Modern), so they drop out of Commerce and Banking at the transition while Trade still finds them by
+`ADVISORY_CLASS_TRADE` (NOTES finding J). 4.16 should start from this.
 
 ### 4.14 Order of a turn
 
@@ -840,7 +863,7 @@ numbers. The AI's native spending doesn't know about them, so they follow three 
 | Lending | income > 0 and balance > `20 * income`: lends to a short civ at the 4.3 rate, cheapest first; never to an insolvent one |
 | Taxes | native: the AI slots the tax cards in its own policy pass, steered by War Levy's requirement and the two strategy rows (4.7). Only in the script fallback: Heavy if balance < `5 * max(|income|, 10)` and falling, or insolvent (War Levy at war); Light if income > 0 and balance > `30 * income`; else Standard |
 | Tariffs | option On only; stays None unless tariffed; matches a High tariff within 2 turns, drops back when the other side does |
-| Investment | income > 0 and balance > `20 * income`, at most once per 10 turns, Friendly host only: general if the host's income is growing, else a development loan on a city's current build; to the player it's an offer |
+| Investment | income > 0 and balance > `20 * income`, at most once per 10 turns, Friendly host only, `5 * its own income`: general if the host's income is growing, else a development loan on a city's current build; to the player it's an offer |
 | Aid | income > 0; to a Friendly civ in default or in its own Depression, at most once per age, up to `5 * its own income` |
 | Accepting | player loans at `r <= 1.2 * bond rate` with income > 0 and within its 4.2 limits; development loans on any current build; general unless in default; aid always |
 
@@ -1019,8 +1042,8 @@ what play showed. Stages (4.15) and building roles (4.13) ship with the parts th
 | 1.1 Commerce | markets (4.9); trade settlement and tariffs (4.10); development loans, general investment and aid (4.12); the other roles in 4.13; the Trade, Guild patronage, Chartered companies and Tariffs stages | Markets, Trade |
 | 1.2 Macro | inflation (4.8); business cycle (4.11); old buildings (4.16); economic systems (4.17); the Banking and Capitalism stages | World |
 
-The engine-free loan model (4.1 to 4.6) is the only part built so far. It follows the 2026-10-06 rules, and 1.0 needs
-these changes to it:
+1.0 and 1.1 are built and gated offline (versions 0.2.0 and 0.3.0, 2026-10-29); every in-game check is owed
+(`verification-runs.md`). The list below is what 1.0 changed in the 2026-10-06 loan model, kept for the record:
 
 - Misses: `m` counts misses in a row and a paid turn resets it; missed interest is added to `O` (replaces NOTES choice
   1, and answers finding D); rates stop at `r_cap`.
