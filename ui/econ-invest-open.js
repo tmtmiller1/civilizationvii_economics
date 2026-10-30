@@ -10,7 +10,7 @@ import { activeDefaults } from "./econ-credit.js";
 import { isBlocked, relationLevel } from "./econ-lenders.js";
 import { hasStage } from "./econ-stages.js";
 import { funds } from "./econ-batch.js";
-import { emit, event, incomeOf, isAlive, isHuman, notice, termsFor } from "./econ-turn.js";
+import { emit, event, haveNotMet, incomeOf, isAlive, isHuman, notice, termsFor } from "./econ-turn.js";
 
 /**
  * @typedef {{ investor: number, host: number, form: InvestKind, cents: number, cityId: string | null,
@@ -45,6 +45,7 @@ function partiesRefusal(ctx, spec) {
   if (!ctx.options.investment) return "investment-off";
   if (!areParties(ctx, spec)) return "parties";
   if (!isInvestKind(spec.form) || !Number.isInteger(spec.cents) || spec.cents <= 0) return "terms";
+  if (haveNotMet(ctx, spec.investor, spec.host)) return "unmet";
   return relationAllows(relationLevel(ctx.relations, spec.investor, spec.host), spec.asAid === true) ? null : "relation";
 }
 

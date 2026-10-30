@@ -431,6 +431,7 @@
         <Replace Tag="LOC_ECONOMICS_LENDER_INFLATION" Language="it_IT"><Text>inflation</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_CYCLE" Language="it_IT"><Text>the business cycle</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_PLAN" Language="it_IT"><Text>the plan</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_UNMET" Language="it_IT"><Text>you haven't met them yet.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_HOST_SYSTEM" Language="it_IT"><Text>their economic system takes development loans only.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TAB_WORLD" Language="it_IT"><Text>World</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_NOW" Language="it_IT"><Text>The world economy</Text></Replace>

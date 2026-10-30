@@ -302,7 +302,8 @@ export function readRelations(majors) {
   for (let i = 0; i < majors.length; i += 1) {
     for (let j = i + 1; j < majors.length; j += 1) {
       const [a, b] = [majors[i], majors[j]];
-      if (haveMet(a, b)) out.push({ a, b, level: readRelation(a, b) });
+      // An unmet pair has a row of its own, so the model can tell it from a met pair it reads as neutral.
+      out.push(haveMet(a, b) ? { a, b, level: readRelation(a, b) } : { a, b, level: "unmet" });
     }
   }
   return out;

@@ -464,6 +464,7 @@
         <Row Tag="LOC_ECONOMICS_LENDER_INFLATION"><Text>inflation</Text></Row>
         <Row Tag="LOC_ECONOMICS_LENDER_CYCLE"><Text>the business cycle</Text></Row>
         <Row Tag="LOC_ECONOMICS_LENDER_PLAN"><Text>the plan</Text></Row>
+        <Row Tag="LOC_ECONOMICS_REASON_UNMET"><Text>you haven't met them yet.</Text></Row>
         <Row Tag="LOC_ECONOMICS_REASON_HOST_SYSTEM"><Text>their economic system takes development loans only.</Text></Row>
         <Row Tag="LOC_ECONOMICS_TAB_WORLD"><Text>World</Text></Row>
         <Row Tag="LOC_ECONOMICS_WORLD_NOW"><Text>The world economy</Text></Row>

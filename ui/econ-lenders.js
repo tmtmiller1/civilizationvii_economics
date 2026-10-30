@@ -161,7 +161,7 @@ function civOffers(query) {
   const out = [];
   if (query.civLendersClosed || !hasStage(borrowerCiv, "moneylending", turn, options)) return out;
   for (const lender of lenders) {
-    if (!hasStage(lender, "moneylending", turn, options)) continue;
+    if (!hasStage(lender, "moneylending", turn, options) || query.unmet?.(lender.id)) continue;
     const level = relationLevel(relations, lender.id, borrower);
     if (civLenderRefusal({ ledger, lender: lender.id, borrower, principal, balanceCents: lender.balanceCents, level,
       turn })) continue;

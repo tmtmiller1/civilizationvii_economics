@@ -15,8 +15,8 @@ import { canChangeTax, isTaxLevel } from "./econ-tax.js";
 import { canChangeTariff, isTariffLevel, withTariff } from "./econ-trade.js";
 import { hasStage } from "./econ-stages.js";
 import { investRequestRefusal, offerAnswerRefusal } from "./econ-invest-open.js";
-import { isAlive, event, incomeOf, isHuman, lendersFor, notice, offerQuery, openLoan, replaceLoan, standing,
-  termsFor } from "./econ-turn.js";
+import { haveNotMet, isAlive, event, incomeOf, isHuman, lendersFor, notice, offerQuery, openLoan, replaceLoan,
+  standing, termsFor } from "./econ-turn.js";
 
 // A request as the glue hands it over: the fields each kind carries are read where the kind is handled.
 /** @typedef {Record<string, any>} Request */
@@ -125,6 +125,7 @@ function lendPartiesRefusal(ctx, { lender, borrower }) {
   if (!isHuman(ctx, lender) || !isAlive(ctx, lender) || !isAlive(ctx, borrower) || isHuman(ctx, borrower)) {
     return "parties";
   }
+  if (haveNotMet(ctx, lender, borrower)) return "unmet";
   return ctx.options.ai ? null : "ai-off";
 }
 

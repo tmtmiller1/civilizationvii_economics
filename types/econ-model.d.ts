@@ -11,7 +11,7 @@ declare global {
   type LoanKind = "loan" | "project" | "general";
   /** Who opened the record: a player's borrow or lend request, the guard, or an AI rule. */
   type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens";
-  type RelationLevel = "war" | "unfriendly" | "neutral" | "friendly";
+  type RelationLevel = "war" | "unfriendly" | "neutral" | "friendly" | "unmet";
   type BlockReason = "default" | "repudiation";
 
   interface Loan {
@@ -333,6 +333,8 @@ declare global {
     civLendersClosed?: boolean;
     /** A "civ lenders only" system (DESIGN 4.17): no bond market, temple treasuries for emergencies. */
     noBond?: boolean;
+    /** Whether the borrower hasn't met a civ, which then makes no offer. */
+    unmet?: (lender: number) => boolean;
     /** A Civic market civ's citizens, with what they'd lend and at what rate (DESIGN 4.17). */
     citizens?: { ratePpm: number; roomCents: number } | null;
   }
@@ -360,6 +362,8 @@ declare global {
     owed: { importer: number; exporter: number; gross: number; owed: number }[];
     macro: import("../ui/econ-macro-state.js").MacroState;
     readings: import("../ui/econ-macro-state.js").MacroReadings;
+    /** The pairs that haven't met, as "a:b" with a < b; `relations` holds only the pairs that have. */
+    unmet: Set<string>;
     /** Each resource's class price (DESIGN 4.9's base_c), for a Planned importer's fixed prices (4.17). */
     basePrices: Record<string, number>;
   }

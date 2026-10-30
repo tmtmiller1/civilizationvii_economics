@@ -27,7 +27,12 @@ const byId = (a, b) => a.id - b.id;
  * @returns {TurnContext}
  */
 export function turnContext(input, options, out) {
-  const { turn, age, relations = [], requests = [], params = {} } = input;
+  const { turn, age, requests = [], params = {} } = input;
+  // The glue sends unmet pairs as rows of their own; the rules read only the met ones, and nobody deals with a civ
+  // it hasn't met.
+  const relations = (input.relations || []).filter((row) => row.level !== "unmet");
+  const unmet = new Set((input.relations || []).filter((row) => row.level === "unmet")
+    .map((row) => (row.a < row.b ? `${row.a}:${row.b}` : `${row.b}:${row.a}`)));
   // Civs are held sorted by id so every pass runs in one order whatever order the glue listed them in.
   const civs = [...(input.civs || [])].sort(byId);
   const rates = ratesPct(options.rates);
@@ -36,8 +41,17 @@ export function turnContext(input, options, out) {
     capPpm: rateCapPpm(age, rates) ?? Infinity, civ: new Map(civs.map((civ) => [civ.id, civ])),
     batch: createBatch(civs), routes: Array.isArray(input.routes) ? input.routes : [],
     markets: input.markets ? cloneMarkets(input.markets) : emptyMarkets(), trade: [], owed: [], macro,
-    readings: macroReadings(macro, { civs, turn, options }), basePrices: {} };
+    readings: macroReadings(macro, { civs, turn, options }), basePrices: {}, unmet };
 }
+
+/**
+ * Whether two civs haven't met (the glue's unmet rows).
+ * @param {TurnContext} ctx
+ * @param {Party} a
+ * @param {Party} b
+ */
+export const haveNotMet = (ctx, a, b) => typeof a === "number" && typeof b === "number"
+  && ctx.unmet.has(a < b ? `${a}:${b}` : `${b}:${a}`);
 
 /**
  * A civ's system terms this turn (DESIGN 4.17); Mixed for a civ the readings don't hold.
@@ -188,6 +202,7 @@ export function offerQuery(ctx, borrower, extra = {}) {
     depthFactorPct: civ?.depthFactorPct ?? 100, bondPct,
     civPct: (lender) => Math.round((own.borrowPct * termsFor(ctx, lender).lendPct) / 100),
     civLendersClosed: ctx.readings.panic, noBond: own.civLendersOnly, citizens: citizensFor(ctx, borrower),
+    unmet: (lender) => haveNotMet(ctx, lender, borrower),
     ...extra };
 }
 

@@ -431,6 +431,7 @@
         <Replace Tag="LOC_ECONOMICS_LENDER_INFLATION" Language="zh_Hant_HK"><Text>inflation</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_CYCLE" Language="zh_Hant_HK"><Text>the business cycle</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_PLAN" Language="zh_Hant_HK"><Text>the plan</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_UNMET" Language="zh_Hant_HK"><Text>you haven't met them yet.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_HOST_SYSTEM" Language="zh_Hant_HK"><Text>their economic system takes development loans only.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TAB_WORLD" Language="zh_Hant_HK"><Text>World</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_NOW" Language="zh_Hant_HK"><Text>The world economy</Text></Replace>

@@ -427,6 +427,7 @@
  "LOC_ECONOMICS_LENDER_INFLATION": "inflation",
  "LOC_ECONOMICS_LENDER_CYCLE": "the business cycle",
  "LOC_ECONOMICS_LENDER_PLAN": "the plan",
+ "LOC_ECONOMICS_REASON_UNMET": "you haven't met them yet.",
  "LOC_ECONOMICS_REASON_HOST_SYSTEM": "their economic system takes development loans only.",
  "LOC_ECONOMICS_TAB_WORLD": "World",
  "LOC_ECONOMICS_WORLD_NOW": "The world economy",
