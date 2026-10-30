@@ -195,7 +195,7 @@
         <Row Tag="LOC_ECONOMICS_FISCAL_ACTIVE"><Text>Slotted</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_LOCKED"><Text>Not unlocked yet</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_LOCKED_BY"><Text>Opens with {1_Node}</Text></Row>
-        <Row Tag="LOC_ECONOMICS_FISCAL_NOW"><Text>Your settlements now</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FISCAL_NOW"><Text>Your civilization now</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_GOLD_NOW"><Text>Gold a turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_HAPPINESS_NOW"><Text>Happiness a turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_CELEBRATION"><Text>Next celebration</Text></Row>

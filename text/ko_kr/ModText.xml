@@ -170,7 +170,7 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_ACTIVE" Language="ko_KR"><Text>Slotted</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_LOCKED" Language="ko_KR"><Text>Not unlocked yet</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_LOCKED_BY" Language="ko_KR"><Text>Opens with {1_Node}</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FISCAL_NOW" Language="ko_KR"><Text>Your settlements now</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_NOW" Language="ko_KR"><Text>Your civilization now</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_GOLD_NOW" Language="ko_KR"><Text>Gold a turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_HAPPINESS_NOW" Language="ko_KR"><Text>Happiness a turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION" Language="ko_KR"><Text>Next celebration</Text></Replace>

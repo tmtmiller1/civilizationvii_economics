@@ -55,7 +55,8 @@ export function turnsToCelebration(left, perTurn) {
 /**
  * @typedef {{ goldCents: number, happinessCents: number, netHappinessCents: number, settlements: number,
  *   celebrationLeftCents: number | null, celebrating: boolean, atWar: boolean }} FiscalRead
- *   the settlements' summed Gold and Happiness yields, the civ's net Happiness a turn, how many settlements it has,
+ *   the civ's net Gold and Happiness a turn (the second twice, as the shown figure and the meter's gain), how many
+ *   settlements it has,
  *   what the celebration meter still needs, whether a celebration is running, and whether the civ has a formal war
  */
 

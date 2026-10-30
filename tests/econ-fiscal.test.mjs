@@ -53,13 +53,15 @@ test("a swap with a card active is Deactivate, then after TraditionChanged, Acti
   removeFakeEngine();
 });
 
-test("the forecast read sums the settlements' yields and reads the meter the way the policies button does", () => {
-  installFakeEngine({ civs: [{ id: 0, human: true, cityYields: { gold: 23, happiness: 8 }, threshold: 150, lifetime: 109.4 }] });
-  assert.deepEqual(readFiscal(0, true), { goldCents: 2300, happinessCents: 800, netHappinessCents: 200, settlements: 1,
+test("the forecast read takes the civ's net Gold and Happiness and reads the meter the way the policies button does", () => {
+  // The settlements' own Gold yields sum to 0 here, as the lab read them (build check 5.2a); the civ's net is 12.
+  installFakeEngine({ civs: [{ id: 0, human: true, income: 12, cityYields: { gold: 0, happiness: 8 }, threshold: 150,
+    lifetime: 109.4 }] });
+  assert.deepEqual(readFiscal(0, true), { goldCents: 1200, happinessCents: 200, netHappinessCents: 200, settlements: 1,
     celebrationLeftCents: 4000, celebrating: false, atWar: true });
   removeFakeEngine();
   installFakeEngine({ civs: [{ id: 0, human: true, celebrating: true }] });
-  assert.deepEqual(readFiscal(0, false), { goldCents: 0, happinessCents: 0, netHappinessCents: 200, settlements: 0,
+  assert.deepEqual(readFiscal(0, false), { goldCents: 500, happinessCents: 200, netHappinessCents: 200, settlements: 0,
     celebrationLeftCents: 10000, celebrating: true, atWar: false });
   removeFakeEngine();
   assert.equal(readFiscal(0, false).celebrationLeftCents, null, "no engine: nothing to count from");

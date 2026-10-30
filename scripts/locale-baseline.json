@@ -166,7 +166,7 @@
  "LOC_ECONOMICS_FISCAL_ACTIVE": "Slotted",
  "LOC_ECONOMICS_FISCAL_LOCKED": "Not unlocked yet",
  "LOC_ECONOMICS_FISCAL_LOCKED_BY": "Opens with {1_Node}",
- "LOC_ECONOMICS_FISCAL_NOW": "Your settlements now",
+ "LOC_ECONOMICS_FISCAL_NOW": "Your civilization now",
  "LOC_ECONOMICS_FISCAL_GOLD_NOW": "Gold a turn",
  "LOC_ECONOMICS_FISCAL_HAPPINESS_NOW": "Happiness a turn",
  "LOC_ECONOMICS_FISCAL_CELEBRATION": "Next celebration",

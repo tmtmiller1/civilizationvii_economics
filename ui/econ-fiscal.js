@@ -53,29 +53,26 @@ function openerName(type) {
 }
 
 /**
- * What the Fiscal tab's forecast needs for one civ (econ-tax-cards.js cardForecast): its settlements' Gold and
- * Happiness yields summed, how many settlements it has, its net Happiness a turn, and the celebration meter, read
- * the way the game's own policies button reads it (threshold less the lifetime Happiness). Screen-only: the turn
- * batch never reads it.
+ * What the Fiscal tab's forecast needs for one civ (econ-tax-cards.js cardForecast): its net Gold and Happiness a
+ * turn, how many settlements it has, and the celebration meter, read the way the game's own policies button reads it
+ * (threshold less the lifetime Happiness). The Gold is the civ's net, the top bar's figure (P2), since the
+ * settlements' summed `Yields.getYield` read 0 Gold in the lab while the civ's net was positive (build check 5.2a).
+ * Screen-only: the turn batch never reads it.
  * @param {number} pid
  * @param {boolean} atWar
  * @returns {import("./econ-tax-cards.js").FiscalRead}
  */
 export function readFiscal(pid, atWar) {
   const p = safe(() => Players.get(pid), null);
-  const cityYield = (/** @type {number} */ yieldType) => safe(() => {
-    let sum = 0;
-    for (const city of p.Cities.getCities() || []) sum += Number(city.Yields.getYield(yieldType)) || 0;
-    return sum;
-  }, 0);
+  const net = (/** @type {number} */ yieldType) => safe(() => Number(p.Stats.getNetYield(yieldType)) || 0, 0);
   const gold = safe(() => YieldTypes.YIELD_GOLD, -1);
   const happiness = safe(() => YieldTypes.YIELD_HAPPINESS, -1);
   const threshold = safe(() => Number(p.Happiness.nextGoldenAgeThreshold), NaN);
   const lifetime = safe(() => Math.ceil(Number(p.Stats.getLifetimeYield(happiness))), NaN);
   const settlements = safe(() => (p.Cities.getCities() || []).length, 0);
   const left = Number.isFinite(threshold) && Number.isFinite(lifetime) ? toCents(threshold - lifetime) : null;
-  return { goldCents: toCents(cityYield(gold)), happinessCents: toCents(cityYield(happiness)),
-    netHappinessCents: toCents(safe(() => p.Stats.getNetYield(happiness), 0)), settlements,
+  return { goldCents: toCents(net(gold)), happinessCents: toCents(net(happiness)),
+    netHappinessCents: toCents(net(happiness)), settlements,
     celebrationLeftCents: left,
     celebrating: safe(() => p.Happiness.isInGoldenAge() === true, false), atWar };
 }

@@ -109,6 +109,7 @@ so, with the DESIGN section that now holds the rule.
 | 96 | The AI's aid "in its own Depression" | The host's own phase (`E + L` below 0.8), as the readings give it this turn | `econ-macro`: "the AI aids a Friendly civ in its own Depression..." |
 | 97 | The phase notice | Only on a change, not a civ's first reading; its causes are the turn's three heaviest events the civ took part in, else the world's | `econ-macro`: "the engine's events and the crisis reach E..." |
 | 98 | Engine events between batches | Kept in the glue envelope, at most 32, weighed once at the next batch | `econ-macro-read`: "in game: an event kept between batches..." |
+| 99 | What the Fiscal tab's "now" shows | The civ's net Gold and Happiness a turn (`Stats.getNetYield`, the top bar's figure, P2), not the settlements' summed `Yields.getYield`, which read 0 Gold in the lab while the civ's net was positive (build check 5.2a, 2026-10-30). The card's change is still its flat amount times the settlements | `econ-fiscal`: "the forecast read takes the civ's net Gold and Happiness..." |
 
 ## Findings: where DESIGN looked wrong, and what the revision did
 
