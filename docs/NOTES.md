@@ -239,6 +239,14 @@ civ with about 120 Gold of income at 10 turns, or a smaller loan, as the lab's 5
   86.2, `econ-markets.js` 83.9, `econ-invest-open.js` 82.5. The survivors are mostly event field strings and
   sort tie-breaks that no rule reads.
 
+- The 1.2 balance rows ran 2026-10-30 in `../tests/econ-balance-macro.test.mjs`; figures in DESIGN 10's dated note and
+  `../reports/balance-1.2.json`, findings P to R above.
+- Mutation on the 1.2 modules (2026-10-30, the same house bar, 1,624 mutants): `econ-legacy.js` 94.3, `econ-cycle.js`
+  93.4, `econ-inflation.js` 93.0, `econ-systems.js` 92.6, `econ-turn-count.js` 87.7, `econ-macro.js` 87.1 (65.2 on
+  the first run, before the edge tests in `../tests/econ-macro-edges.test.mjs` and `econ-macro-cycle-edges.test.mjs`),
+  `econ-view-macro.js` 85.8, `econ-citizens.js` 83.5, `econ-planned.js` 77.6, `econ-macro-state.js` 76.1. The
+  survivors are mostly event and notice fields, the envelope's size fallbacks and sort tie-breaks no rule reads.
+
 ## Not done here
 
 - Watching any of it in a game: `docs/verification-runs.md` lists each check under "Owed".

@@ -26,7 +26,17 @@
     "ui/econ-invest-open.js",
     "ui/econ-commerce.js",
     "ui/econ-markets.js",
-    "ui/econ-view-commerce.js"
+    "ui/econ-view-commerce.js",
+    "ui/econ-cycle.js",
+    "ui/econ-inflation.js",
+    "ui/econ-legacy.js",
+    "ui/econ-systems.js",
+    "ui/econ-citizens.js",
+    "ui/econ-planned.js",
+    "ui/econ-macro.js",
+    "ui/econ-macro-state.js",
+    "ui/econ-view-macro.js",
+    "ui/econ-turn-count.js"
   ],
   "reporters": [
     "clear-text",
