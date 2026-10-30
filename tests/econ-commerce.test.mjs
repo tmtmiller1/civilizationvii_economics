@@ -262,6 +262,11 @@ test("an AI host in default turns down another AI's general investment, as it tu
     emergency: false, restructured: false, opened: 1, closedTurn: null, writtenOff: 0, source: "borrow" }] };
   const out = plan({ civs: [ai(AI), host], relations, ledger: inDefault, markets: markets({ incomes: growing }) });
   assert.equal(out.events.some((e) => e.kind === "invest" && e.form === "general" && e.aid !== 1), false);
+  const meInDefault = { ...inDefault, loans: [{ ...inDefault.loans[0], borrower: ME }] };
+  const offered = plan({ civs: [ai(AI), me({ incomeCents: 2000, cities: [city("3:1")] })],
+    relations: [{ a: AI, b: ME, level: "friendly" }], ledger: meInDefault,
+    markets: markets({ incomes: { [ME]: growing[OTHER] } }) });
+  assert.deepEqual(offered.ledger.offers.map((o) => o.kind), ["general"], "the player answers an offer for itself");
 });
 
 test("to the player an AI investment is an offer: accepted it opens, declined or left it goes", () => {
