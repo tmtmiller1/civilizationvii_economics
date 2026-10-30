@@ -46,7 +46,7 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_NAME" Language="ja_JP"><Text>Markets and trade bills</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_DESCRIPTION" Language="ja_JP"><Text>Gives every resource a world price, set by how many copies there are and who needs them. Each pair of civilizations then settles the net value of what they import from each other every turn, and a civilization pays at most a tenth of its income this way.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_OFF" Language="ja_JP"><Text>Off</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_OFF_DESCRIPTION" Language="ja_JP"><Text>Resources have no price, and a route costs the importer what it does in the base game.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_OFF_DESCRIPTION" Language="ja_JP"><Text>Resources don't get a world price, and a route costs the importer what it does in the base game.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_ON" Language="ja_JP"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_MARKETS_ON_DESCRIPTION" Language="ja_JP"><Text>Bills open with the Trade stage (Code of Laws in Antiquity) and show on the Trade tab.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_NAME" Language="ja_JP"><Text>Tariffs</Text></Replace>
@@ -56,7 +56,7 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_ON" Language="ja_JP"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_TARIFFS_ON_DESCRIPTION" Language="ja_JP"><Text>Tariffs open with Imperialism, on the Fiscal tab. The computer players answer a High tariff in kind.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_NAME" Language="ja_JP"><Text>Foreign investment</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_DESCRIPTION" Language="ja_JP"><Text>Lets civilizations put Gold into each other: a development loan on a city's current build, a general investment in its treasury, or either as aid with nothing asked back.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_DESCRIPTION" Language="ja_JP"><Text>Lets civilizations put Gold into each other: a development loan on a city's current build, a general investment in its treasury, or either one as aid, which isn't paid back.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_OFF" Language="ja_JP"><Text>Off</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_OFF_DESCRIPTION" Language="ja_JP"><Text>Each civilization keeps its Gold at home.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INVESTMENT_ON" Language="ja_JP"><Text>On</Text></Replace>
@@ -152,7 +152,7 @@
         <Replace Tag="LOC_ECONOMICS_LEND_RULE" Language="ja_JP"><Text>They accept while they're short of Gold, their income is positive and the payments fit their limits. If they default or repudiate, the loss is yours.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RISK_LOW" Language="ja_JP"><Text>low. They repudiate a debt to an enemy at war, or to a civilization they dislike while insolvent or in default.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RISK_WAR" Language="ja_JP"><Text>high: you're at war with them, and they repudiate debts to enemies.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RISK_INSOLVENT" Language="ja_JP"><Text>they've had no income for {1_Turns} turns; they can't take your loan and may repudiate what they owe.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RISK_INSOLVENT" Language="ja_JP"><Text>their income has been at or below 0 for {1_Turns} turns; they can't take your loan and may repudiate what they owe.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RISK_NO_INCOME" Language="ja_JP"><Text>their income is at or below 0, so they won't accept.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RISK_DEFAULT" Language="ja_JP"><Text>they're in default on another loan.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RISK_UNFRIENDLY" Language="ja_JP"><Text>they dislike you: a debt over {1_Amount} Gold is one they'd repudiate while in trouble.</Text></Replace>
@@ -161,7 +161,7 @@
         <Replace Tag="LOC_ECONOMICS_GUARD_ALLOWANCE" Language="ja_JP"><Text>Emergency allowance left</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GUARD_SWITCH_ON" Language="ja_JP"><Text>Switch the guard on</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GUARD_SWITCH_OFF" Language="ja_JP"><Text>Switch the guard off</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_GUARD_NOTE" Language="ja_JP"><Text>The guard borrows for you when your balance would go below 0 while your income is at or below 0, which is when the game disbands units. A dip with positive income costs nothing, so it leaves that alone.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD_NOTE" Language="ja_JP"><Text>The guard borrows for you when your balance would go below 0 while your income is at or below 0, which is when the game disbands units. A dip with positive income doesn't cost you anything, so it leaves that alone.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_PENDING" Language="ja_JP"><Text>Queued for next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_PENDING_NONE" Language="ja_JP"><Text>Nothing queued.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_PENDING_NOTE" Language="ja_JP"><Text>Requests run at the start of the next turn, in this order. The turn's notice says what was refused and why.</Text></Replace>
@@ -182,7 +182,7 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_EFFECT_ROW" Language="ja_JP"><Text>Gold {1_Gold}, Happiness {2_Happiness}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST" Language="ja_JP"><Text>Change for you, about</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST_ROW" Language="ja_JP"><Text>{1_Gold} Gold and {2_Happiness} Happiness a turn</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FISCAL_LEVY_PEACE" Language="ja_JP"><Text>nothing until you're at war</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_LEVY_PEACE" Language="ja_JP"><Text>only while you're at war</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SLOT" Language="ja_JP"><Text>Slot this card</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CLEAR" Language="ja_JP"><Text>Clear the tax card</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_NO_SWAP" Language="ja_JP"><Text>The game isn't allowing a policy change right now.</Text></Replace>
@@ -266,18 +266,18 @@
         <Replace Tag="LOC_ECONOMICS_MARKETS_OFF" Language="ja_JP"><Text>The Markets and trade bills option is off for this game.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MARKETS_NONE" Language="ja_JP"><Text>No prices yet. They're set at the start of the next turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MARKETS_ROW" Language="ja_JP"><Text>{1_Holders} copies held; {2_Change} Gold over the last {3_Turns} turns</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_MARKETS_NOTE" Language="ja_JP"><Text>A price sets what an import adds to the trade bills. Holding a resource earns nothing by itself.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_NOTE" Language="ja_JP"><Text>A price sets what an import adds to the trade bills. Holding a resource doesn't earn anything by itself.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_SETTLEMENT" Language="ja_JP"><Text>This turn's trade bills</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_INCOME" Language="ja_JP"><Text>Trade Income the game pays your cities</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_CAP" Language="ja_JP"><Text>The most you pay in bills a turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_STAGE" Language="ja_JP"><Text>Trade bills open with {1_Node}.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TRADE_NONE" Language="ja_JP"><Text>You have no bills with anyone this turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_NONE" Language="ja_JP"><Text>You don't have a bill with anyone this turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_OWE" Language="ja_JP"><Text>You owe for your imports</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_OWED" Language="ja_JP"><Text>They owe for theirs</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_PAY" Language="ja_JP"><Text>You pay</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_RECEIVE" Language="ja_JP"><Text>You receive</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_WAIVED" Language="ja_JP"><Text>{1_Amount} Gold over the cap is waived.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TRADE_NOTE" Language="ja_JP"><Text>Each pair settles the difference between what they import from each other, and only the side that owes more pays. Anything over a tenth of the payer's income is waived and never carried to the next turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_NOTE" Language="ja_JP"><Text>Each pair settles the difference between what they import from each other, and only the side that owes more pays. Anything over a tenth of the payer's income is waived; it doesn't carry over to the next turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_OFFERS" Language="ja_JP"><Text>Offers to you</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_NO_OFFERS" Language="ja_JP"><Text>Nobody is offering to invest in you right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OFFER_PROJECT_ROW" Language="ja_JP"><Text>{1_Investor} offers {2_Amount} Gold toward the build in {3_City}, repaid with interest over 25 turns.</Text></Replace>
@@ -291,7 +291,7 @@
         <Replace Tag="LOC_ECONOMICS_INVEST_AID" Language="ja_JP"><Text>Aid</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_PROJECT" Language="ja_JP"><Text>Development loan: {1_Build} in {2_City}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_GENERAL_FORECAST" Language="ja_JP"><Text>About {1_Amount} Gold a turn back for 25 turns, more if their income grows; relationship +{2_Points}</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_INVEST_AID_FORECAST" Language="ja_JP"><Text>{1_Amount} Gold given, nothing back; relationship +{2_Points}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_AID_FORECAST" Language="ja_JP"><Text>{1_Amount} Gold as a gift; relationship +{2_Points}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_PROJECT_FORECAST" Language="ja_JP"><Text>{1_Progress} production for {2_Amount} Gold, {3_Return} Gold a turn back for 25 turns ({4_Total} in all); relationship +{5_Points}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_NOTE" Language="ja_JP"><Text>A development loan goes into the build a city is working on now, and the Gold it doesn't need stays with you. If the host loses the city, what's still to come is lost.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_PREVIEW" Language="ja_JP"><Text>Routes you could make</Text></Replace>
