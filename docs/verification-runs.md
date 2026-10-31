@@ -568,7 +568,8 @@ One lab game, seed 4242, Antiquity, the usual mod set, full screen on the Retina
 - WG.2: a UI reload on turn 15 logged `0 re-sent`; the same reload on 0.5.3 that morning logged 5.
 - WG.3: `glue.landed` named the civs paid on turns 11 and 14 (player 3; players 1 and 3), and nobody on turns with
   nothing paid.
-- SG.2: turn 1 "Unmet civilizations hidden: 5", turn 55 "2"; the Trade tab listed only Greece, Goryeo and Dai Viet,
+- SG.2: turn 1 the pill read "Unmet civilizations hidden: 5", turn 55 "2" (the owner dropped the pill afterwards: it
+  crowded the title); the Trade tab listed only Greece, Goryeo and Dai Viet,
   and neither unmet civ (Persia, Hawai'i) appeared anywhere.
 - UP.1: turn 1 Treasury with no loan rows, no scale, one balance line and no Debt figure.
 - UP.2: after Commerce (set through the game's civic operation and granted Culture, turn 101) the Debt figure, the
@@ -578,8 +579,8 @@ One lab game, seed 4242, Antiquity, the usual mod set, full screen on the Retina
   aid on the Trade tab.
 - UP.9: the citizens' offer card titled "Your citizens".
 - Found and fixed after the run: on turn 101, with nothing owed, the chart still compared "with your loans" against
-  "without them", a 13 Gold gap that was only the cycle's share. The comparison now waits for a loan the player owes;
-  the pill also sat against "Steady" and has a gap now. Both fixes are built, not watched.
+  "without them", a 13 Gold gap that was only the cycle's share. The comparison now waits for a loan the player owes
+  (built, not watched).
 
 ## Owed: whole-Gold payments
 
@@ -598,10 +599,10 @@ Built 2026-10-31, offline only (`ui/econ-spoil.js`, `ui/econ-options.js`). Nothi
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
 | SG.1 | Options, Mods shows an Economics group with a Spoil Guard checkbox, ticked, from the main menu and in a game | any | `ui/econ-options.js` |
-| SG.2 | With civs unmet: the pill under the title reads "Unmet civilizations hidden: N", the Trade tab and the lending chips list only met civs, and a World event between unmet civs reads "an unmet civilization" | Antiquity, early turns | `ui/econ-spoil.js`, `ui/econ-view-summary.js` |
-| SG.3 | Unticked, the pill goes and every civ is listed (the unmet ones with "you haven't met them yet"); ticked again after a game restart, the choice is kept | any | `ui/econ-settings.js` |
+| SG.2 | With civs unmet: the Trade tab and the lending chips list only met civs, and a World event between unmet civs reads "an unmet civilization" | Antiquity, early turns | `ui/econ-spoil.js`, `ui/econ-view-summary.js` |
+| SG.3 | Unticked, every civ is listed (the unmet ones with "you haven't met them yet"); ticked again after a game restart, the choice is kept | any | `ui/econ-settings.js` |
 | SG.4 | With Demographics installed and its guard on, unticking ours still hides unmet civs | Demographics on | `ui/econ-spoil.js` `combinedPolicy` |
-| SG.5 | Meeting a civ adds it to the Trade tab and drops the pill's count on the next redraw | first contact | `ui/econ-spoil.js` `civHidden` |
+| SG.5 | Meeting a civ adds it to the Trade tab on the next redraw | first contact | `ui/econ-spoil.js` `civHidden` |
 
 ## Owed: ui-pass
 

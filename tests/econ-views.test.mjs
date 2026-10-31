@@ -522,8 +522,7 @@ test("a request says it was sent beside its control, and says so when the list i
   assert.ok(line.textContent.startsWith("LOC_ECONOMICS_SENT_FAILED") && line.classList.contains("econ-feedback--failed"));
 });
 
-test("the Spoil Guard: a hidden civ is left off the Trade tab and the lending list, and the subtitle says how many", async () => {
-  const { renderSubtitle } = await import("../ui/econ-view-summary.js");
+test("the Spoil Guard: a hidden civ is left off the Trade tab and the lending list", () => {
   const shown = document.createElement("div");
   renderTrade(shown, commerceApi());
   assert.ok(textOf(shown).includes("LOC_ECONOMICS_INVEST_GENERAL"), "civ 6 is a target while it shows");
@@ -535,10 +534,4 @@ test("the Spoil Guard: a hidden civ is left off the Trade tab and the lending li
     planInput: { civs: [civ(ME, { human: true, stages: OPEN_ALL }), civ(6), civ(8)] } }));
   const chips = byClass(loans, "econ-chip").map((node) => node.textContent);
   assert.ok(chips.includes("Civ 6") && !chips.includes("Civ 8"), `lend chips: ${chips}`);
-  const sub = document.createElement("div");
-  renderSubtitle(sub, makeApi({ hidden: (pid) => pid === 8 }));
-  assert.ok(textOf(sub).includes("LOC_ECONOMICS_SPOIL_PILL|1"));
-  const none = document.createElement("div");
-  renderSubtitle(none, makeApi());
-  assert.equal(textOf(none).includes("LOC_ECONOMICS_SPOIL_PILL"), false, "no pill when nothing is hidden");
 });

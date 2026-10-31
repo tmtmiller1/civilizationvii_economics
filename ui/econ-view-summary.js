@@ -4,7 +4,7 @@
 // rule), the cycle's phase, and the requests waiting for the next turn. Each figure is on the face; its tooltip only
 // explains it.
 
-import { amount, el, pill, stat } from "./econ-dom.js";
+import { amount, el, stat } from "./econ-dom.js";
 import { formatGold } from "./econ-format.js";
 import { outstandingOf } from "./econ-credit.js";
 import { phaseKey, systemKey } from "./econ-notice-text.js";
@@ -19,7 +19,7 @@ import { rulesFor } from "./econ-view-common.js";
 const tone = (cents) => (cents > 0 ? 1 : cents < 0 ? -1 : 0);
 
 /**
- * The line under the title: "Civic market · Steady", with a pill when the Spoil Guard is hiding civilizations.
+ * The line under the title: "Civic market · Steady".
  * @param {HTMLElement} host
  * @param {ScreenApi} api
  */
@@ -35,12 +35,6 @@ export function renderSubtitle(host, api) {
     if (index > 0) host.appendChild(el("div", "econ-subtitle-dot", "·"));
     host.appendChild(el("div", "font-title uppercase", text));
   });
-  const hidden = input.civs.filter((civ) => civ.alive === true && civ.id !== api.me && api.hidden?.(civ.id)).length;
-  if (hidden > 0) {
-    const note = pill(api.loc("LOC_ECONOMICS_SPOIL_PILL", hidden), false);
-    note.setAttribute("data-tooltip-content", api.loc("LOC_ECONOMICS_SPOIL_PILL_TIP"));
-    host.appendChild(note);
-  }
 }
 
 /**

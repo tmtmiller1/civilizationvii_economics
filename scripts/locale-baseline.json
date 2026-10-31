@@ -590,8 +590,6 @@
  "LOC_ECONOMICS_OPTIONS_SPOIL_GUARD": "Spoil Guard",
  "LOC_ECONOMICS_OPTIONS_SPOIL_GUARD_DESCRIPTION": "Keeps civilizations you haven't met off the Economics screen. They're left out of the Trade tab and the list of civilizations you can lend to, and anything that would name one says \"an unmet civilization\" instead. On by default. With Demographics installed, the stricter of the two guards wins, so you'll only see everyone once both are off.",
  "LOC_ECONOMICS_UNMET_CIV": "an unmet civilization",
- "LOC_ECONOMICS_SPOIL_PILL": "Unmet civilizations hidden: {1_Count}",
- "LOC_ECONOMICS_SPOIL_PILL_TIP": "The Spoil Guard is on. You can turn it off under Options, Mods, Economics. With Demographics installed, the stricter of the two guards wins.",
  "LOC_ECONOMICS_REASON_HOST_SYSTEM": "their economic system takes development loans only.",
  "LOC_ECONOMICS_TAB_WORLD": "World",
  "LOC_ECONOMICS_WORLD_NOW": "The world economy",

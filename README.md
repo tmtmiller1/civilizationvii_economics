@@ -163,8 +163,7 @@ option off, everything is open from the start.
 
 Under Options, Mods, Economics, the Spoil Guard is on by default. It keeps civilizations you haven't met off the
 Economics screen: they're left out of the Trade tab and the list of civilizations you can lend to, and a line that
-would name one, like a world event on the World tab, says "an unmet civilization" instead. A pill under the screen's
-title says how many are hidden. With Demographics installed, the stricter of the two guards wins, so you'll only see
+would name one, like a world event on the World tab, says "an unmet civilization" instead. With Demographics installed, the stricter of the two guards wins, so you'll only see
 everyone once both are off. The guard only changes what the screen shows; the computer players deal with each other
 the same either way.
 
