@@ -732,6 +732,44 @@ place. Every AI also took its own build loans at turns 2, 12 and 22. No invarian
   puts every AI there. Whether that's wanted, or the threshold should sit above the build loan's own service, is a
   call for the balance run and the owner.
 
+## Watched 2026-10-31, seventh run (AI plan stage C: the look-ahead, early repayment, restructuring from no misses)
+
+One lab game, seed 4242, Modern, the same setup as the fifth run, the stage C build (commit `b046831`) in
+`Mods/economics`, 20 turns (`~/.tower-bench/runs/2026-10-31T18-42-52`; drive log, dump and `UI.log` under
+`mod_ideas_tested/economics/devtools/probe-runs/2026-10-31-stage-c/`). The script (`devtools/econ-stage-c-sample.js`)
+wrote at turn 2 a 20-turn bond loan at 2% a turn to Hawai'i while it held well above its reserve, a 3-turn loan of 13
+turns of income to Persia, and a 10-turn loan whose payment was 1.5 turns of income to the human seat, whose
+treasury was emptied each turn from turn 3; at turn 12 a 3-turn loan of 8.6 turns of income to the Ottomans with
+their treasury emptied; at turn 17 the same again with the bond market and the temple treasuries blocked for them
+in the ledger. No invariant line in `UI.log`.
+
+- An AI repays early: at turn 3 all five AIs, each above its reserve, put half its surplus into its dearest loan
+  through the payment's extra (`repay-early` events with the reserve; Hawai'i's L7 at 2%: 596.70 paid with 555.75
+  of extra, closed; the four build loans closed the same way); at turn 4 Persia put 696 into its 2,100 Gold loan and
+  Hawai'i closed its last build loan. The extra rode on the regular payment, as the player's does.
+- The notice: the seat, paying 140 a turn on 92 to 113 of income, was carried by the escrow for seven turns (each
+  turn's hold shrank), then at turn 10 the look-ahead said next turn's 140.07 wouldn't fit the 135.77 it was on
+  course to have (`short-ahead`, gap 4.30), and at turn 11 the guard refinanced the 0.18 missing and the notice
+  repeated for the turn after (gap 26.05); turn 12 refinanced 20.65.
+- An AI restructures before a miss: at turn 13 the Ottomans' gap sat inside their credit room (Modern banks add up
+  to 12 turns of income to the cap), so they refinanced instead, 463.27 and 270.58, as the order says. With the
+  lenders blocked, at turn 18 they restructured the new 1,066 Gold loan at `m = 0` first (the biggest payment), the
+  `restructure` event before the `miss`, and the payment went on the new schedule.
+- Found and fixed after the run: with nothing in hand (the Ottomans' balance sat at -123 from the script's own
+  emptying, with income 124, so their funds were about a Gold), the rule went on to restructure every loan it had,
+  six in one turn, which no schedule could fix. It now restructures one loan a turn (commit `90b27d0`).
+- The seat's own refinancing and the escrow meant the player never saw a `short` notice with the guard off (the
+  guard was on); the restructure button from `m = 0` and the reserve rows on the Loans tab weren't drawn (owed below).
+
+## Owed: AI plan stage C
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| C.1 | The Loans tab's limits panel shows "Reserve" and "You hold this much above it" (or "under it"), and, when next turn's payments won't fit, the line naming them against what you're on course to have | any, a player loan | `ui/econ-view-loans.js` `reserveRows` |
+| C.2 | A loan with no misses has its Restructure button enabled; after one restructure the button is greyed with "a loan can be restructured once"; a defaulted loan's says a default can't be | a player loan | `ui/econ-view-loans.js` `loanActions` |
+| C.3 | With the guard off and a payment bigger than the treasury, the turn notice reads "Your payments of X pass the Y you have by Z, and the guard is off", then the paid-part-of line | a player loan, the guard switched off | `ui/econ-shortfall.js` `guardRefinance` |
+| C.4 | A human lender asked to let an AI restructure from no misses: the "asks to restructure" notice and the Loans tab's "Let them restructure" button on a loan that's on time | a player loan to a short AI with the lenders blocked | `ui/econ-shortfall.js` `aiDecide` |
+
 ## Owed: AI plan stage B
 
 | # | What the player sees when it works | Setup | Source |
