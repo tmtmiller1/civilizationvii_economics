@@ -34,6 +34,33 @@ function solvency(game, on, off) {
   return rows;
 }
 
+/**
+ * What the AI plan's rules did across the games (AI-PLAN 4.1 to 4.5), as counts of the ledger's events: how
+ * refinancing, early repayment, restructuring, misses, defaults, repudiations (and against whom), investment and
+ * aid now spread, for the report against the earlier runs' numbers.
+ */
+function aiRules(games) {
+  const counts = {};
+  const add = (key, n = 1) => { counts[key] = (counts[key] || 0) + n; };
+  for (const { game, on } of games) {
+    const me = game.civs[0].id;
+    for (const e of on.events) {
+      if (e.kind === "refinance") add("refinance");
+      else if (e.kind === "short") add(`short:${e.reason}`);
+      else if (e.kind === "repay-early") add("repay-early");
+      else if (e.kind === "restructure") add("restructure");
+      else if (e.kind === "miss") add(e.paid > 0 ? "miss:partial" : "miss:nothing");
+      else if (e.kind === "default") add("default");
+      else if (e.kind === "repudiation") add(`repudiation:${e.lender === "bond" || e.lender === "temple" ? "world" : e.lender === me ? "human" : "civ"}`);
+      else if (e.kind === "invest") add(e.aid === 1 ? "aid" : `invest:${e.form}`);
+      else if (e.kind === "aid-cleared") add("aid-cleared");
+      else if (e.kind === "offer") add("offer");
+      else if (e.kind === "credit-rep") add(`credit-rep:${e.why}`);
+    }
+  }
+  return Object.fromEntries(Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)));
+}
+
 function persistence(game, on) {
   const out = [];
   const seen = new Set();
@@ -52,9 +79,11 @@ test(`balance ladder 1.0: ${GAMES} seeded 12-civ ${TURNS}-turn games, On against
   const report = { games: GAMES, turns: TURNS, civs: 12, solvency: [], persistence: [], lending: [], repudiation: [],
     envelopeMaxBytes: 0, planMs: { median: 0, max: 0 }, saveIntegrity: { lostRowsResent: 0 }, capBreaches: 0 };
   const planTimes = [];
+  const games = [];
   for (let i = 0; i < GAMES; i += 1) {
     const game = makeGame(7000 + i);
     const on = runGame(game, { on: true });
+    games.push({ game, on });
     const off = runGame(makeGame(7000 + i), { on: false });
     report.solvency.push(...solvency(game, on, off).map((r) => ({ game: i, ...r })));
     report.persistence.push(...persistence(game, on).map((r) => ({ game: i, ...r })));
@@ -75,6 +104,7 @@ test(`balance ladder 1.0: ${GAMES} seeded 12-civ ${TURNS}-turn games, On against
   }
   report.planMs = { median: median(planTimes), max: Math.max(...planTimes) };
   report.borrowingPays = borrowingPays();
+  report.aiRules = aiRules(games);
   const positive = report.solvency.filter((r) => r.offPositive && r.meanIncomeGold > 0);
   const defaulted = positive.filter((r) => r.defaults > 0);
   const gamesWithDefault = new Set(defaulted.map((r) => r.game)).size;
@@ -100,6 +130,7 @@ test(`balance ladder 1.0: ${GAMES} seeded 12-civ ${TURNS}-turn games, On against
   mkdirSync(new URL("../reports/", import.meta.url), { recursive: true });
   writeFileSync(new URL("../reports/balance-1.0.json", import.meta.url), JSON.stringify(report, null, 2));
   t.diagnostic(JSON.stringify(report.summary));
+  t.diagnostic(`AI rules: ${JSON.stringify(report.aiRules)}`);
   t.diagnostic(`envelope max ${report.envelopeMaxBytes} bytes; plan median ${report.planMs.median.toFixed(3)} ms, max`
     + ` ${report.planMs.max.toFixed(3)} ms`);
   for (const r of report.borrowingPays) t.diagnostic(JSON.stringify(r));

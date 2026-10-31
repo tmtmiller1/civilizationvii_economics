@@ -388,6 +388,9 @@ what put the refinancing loan at 818 Gold against 265 of dues in that run. Not a
   `econ-view-macro.js` 85.8, `econ-citizens.js` 83.5, `econ-planned.js` 77.6, `econ-macro-state.js` 76.1. The
   survivors are mostly event and notice fields, the envelope's size fallbacks and sort tie-breaks no rule reads.
 
+- The AI plan's run (2026-10-31, stages A to E) is DESIGN 10's dated note of that day: the ledger's events counted
+  (`report.aiRules`), the investment stages open in the harness, the engine's level numbers behind the relations.
+
 ## Not done here
 
 - Watching any of it in a game: `docs/verification-runs.md` lists each check under "Owed".

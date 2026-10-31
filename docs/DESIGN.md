@@ -1382,6 +1382,28 @@ figures). No game was launched.
 | Lending pays (1.0 run) | +9.4% median return, 8 of 9 lending games positive | +4.8% median, 8 of 9 positive: the player's neutral rate is half what it was | Met |
 | Development loan ratio (1.1 run) | 1.125 times the purchase price on a role building, 0.94 on another | unchanged: it was measured against the purchase rate already, and a development loan's return carries the rest | Met, so `G / 3` stays: the lab found grants aren't scaled up beyond the city's own production (finding L) |
 
+Balance run, 2026-10-31, after the AI plan's stages A to E (`../tests/econ-balance.test.mjs`, the same 20 seeded
+12-civ 500-turn games; the harness now opens the investment stages in Exploration, gives each relation the engine's
+level number behind its name as the lab read them, and lends the human's Gold to an AI whose dues pass its funds; the
+report carries an `aiRules` count of the ledger's events; `../reports/balance-1.0.json`). No game was launched for
+these numbers; the rules themselves were watched in the lab (`verification-runs.md`, the fifth to ninth runs).
+
+| What | Before (2026-10-30) | After | Reading |
+| --- | --- | --- | --- |
+| Defaults | 235 | 207 | the deficit civs' spells, as before; a short turn now pays what there is (4 partial payments, 672 with nothing in hand) |
+| Restructures | 1 | 7 | the decision rule finds few candidates here: a short AI with income above 0 hardly exists in this harness, where every AI holds five turns of income and the escrow holds its next payment |
+| Refinancing loans | (none existed) | 0 | the same reason: the 385 `short` reads were insolvent civs (364) or civs past their credit cap (21) |
+| Early repayments | (none existed) | 288 | flush AIs putting half their surplus into their dearest loan |
+| Repudiations | 77, all of the bond market or the temple treasuries | 41, all of the bond market or the temple treasuries | the weighing asks for four turns of income kept; no AI-to-civ loan met a war or a weaker hostile lender in these games (NOTES finding H stands) |
+| Investments | not counted (the stages were closed) | 211 (128 general, 83 development loans) and 24 offers to the human | by stake, one open per host |
+| Aid | not counted | 6 | a host with a stake of 10 in default is rare here: Friendly pairs at the engine's 30 sit exactly at the line, and defaults fall on civs in a deficit spell |
+| AI solvency | 0 of 175 positive-income AIs defaulted | the same | met |
+| Lending pays | 18 of 20 games lent, +9.7% | no game lent: no AI with income above 0 was short | the row has no data in this harness now, for the reason the restructure row gives |
+
+Nothing in `econ-params.js` was changed on this run: no row shows a clear problem, and the two thin rows (restructures,
+refinancing) are the harness's reserve rule, not the AI's. The owner's reading is owed on the Gold bias threshold the
+sixth run raised (every AI's build loans put its debt service past a tenth of income).
+
 ## 11. Versions
 
 Three releases. Each one ships when its probes and its balance checks (section 10) pass, and the next starts from

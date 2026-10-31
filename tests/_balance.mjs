@@ -19,6 +19,9 @@ import { PARAMS } from "./_fixtures.mjs";
 export const TURNS = 500;
 export const AGES = [[1, "AGE_ANTIQUITY"], [151, "AGE_EXPLORATION"], [331, "AGE_MODERN"]];
 const LEVELS = ["friendly", "neutral", "neutral", "neutral", "unfriendly"];
+// The engine's level numbers behind each name, as the lab read them (the ninth run: Friendly pairs at 30 to 44,
+// Neutral at 10 to 22); the stake (AI-PLAN 4.5) reads the number.
+const LEVEL_NUMS = { friendly: 30, neutral: 10, unfriendly: -15, war: -30 };
 
 export function ageAt(turn) {
   let age = AGES[0][1];
@@ -57,11 +60,15 @@ export function makeGame(seed, civCount = 12) {
   const civs = ids.map((id, i) => ({ id, human: i === 0, factor: 0.6 + g.next() * 0.9,
     income: incomePath(g, 0.6 + g.next() * 0.9, deficitProne.has(id)), startCents: g.int(2000, 40000),
     depthTurns: 0, depthFactorPct: 100,
-    stages: { moneylending: g.int(30, 80), publicDebt: g.int(170, 260) },
+    // The investment stages open in Exploration, so the AI's stake-driven investment and aid (AI-PLAN 4.5) show
+    // in the run beside the loans.
+    stages: { moneylending: g.int(30, 80), publicDebt: g.int(170, 260), guildPatronage: g.int(160, 240),
+      charteredCompanies: g.int(200, 300) },
     banking: g.int(260, 400) }));
   const relations = [];
   for (let i = 0; i < civCount; i += 1) for (let j = i + 1; j < civCount; j += 1) {
-    relations.push({ a: ids[i], b: ids[j], level: g.pick(LEVELS) });
+    const level = g.pick(LEVELS);
+    relations.push({ a: ids[i], b: ids[j], level, levelNum: LEVEL_NUMS[level] });
   }
   const wars = [];
   for (let k = 0; k < 6; k += 1) {
@@ -75,7 +82,7 @@ function relationsAt(game, turn) {
   return game.relations.map((r) => {
     const war = game.wars.some((w) => turn >= w.from && turn < w.from + w.length
       && ((w.a === r.a && w.b === r.b) || (w.a === r.b && w.b === r.a)));
-    return war ? { ...r, level: "war" } : r;
+    return war ? { ...r, level: "war", levelNum: LEVEL_NUMS.war } : r;
   });
 }
 
