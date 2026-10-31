@@ -70,11 +70,13 @@ test("the repudiation preview says what DESIGN 5 asks: Gold kept, grudge, witnes
 });
 
 test("the restructure preview shows the new 10-turn schedule and whether the loan may take it", () => {
-  const ledger = ledgerWith([loan("L1", { missed: 1, outstanding: 20000 }), loan("L2")]);
+  const ledger = ledgerWith([loan("L1", { missed: 1, outstanding: 20000 }), loan("L2", { restructured: true }),
+    loan("L3")]);
   const p = restructurePreview(ledger, "L1");
   assert.deepEqual([p.outstanding, p.term, p.allowed], [20000, 10, true]);
   assert.equal(p.paymentCents, 800 + 2000);
-  assert.equal(restructurePreview(ledger, "L2").allowed, false);
+  assert.equal(restructurePreview(ledger, "L2").allowed, false, "once per loan");
+  assert.equal(restructurePreview(ledger, "L3").allowed, true, "from no misses on (AI-PLAN 4.3)");
   assert.equal(restructurePreview(ledger, "L9"), null);
 });
 
@@ -84,4 +86,13 @@ test("borrower risk reads the AI rule's conditions", () => {
     relations: [{ a: ME, b: 6, level: "unfriendly" }] }), ME, 6);
   assert.deepEqual([risk.level, risk.insolvent, risk.thresholdCents, risk.owedCents, risk.wouldLendByRule],
     ["unfriendly", true, 10000, 9000, false]);
+});
+
+test("the Loans tab's reserve reading (AI-PLAN 4.3): the AI's yardstick, what the player holds above it, the look-ahead", () => {
+  const civs = [civ(ME, { human: true, balanceCents: 50000, incomeCents: 3000, upkeepCents: 1000 })];
+  const view = loansView(input({ ledger: ledgerWith([loan("L1")]), civs }), ME);
+  assert.equal(view.reserveCents, 30000, "10 turns of income beats three turns' dues (about 62) plus upkeep");
+  assert.equal(view.aboveReserveCents, 50000 + 3000 - 30000, "funds this turn less the reserve");
+  assert.equal(view.ahead.length, 4, "this turn and the next three");
+  assert.ok(view.ahead.every((row) => row.gap === 0));
 });

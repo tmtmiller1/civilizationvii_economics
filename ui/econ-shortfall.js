@@ -7,12 +7,13 @@
 // repudiation rules (section 6) are here too, and its build loan, its door to "borrow to build", which the player has
 // through the Gold it spends: cheap credit puts progress on its own current build.
 
-import { AI, CITIZENS, PROGRESS, REFINANCE, SHORT_TERM, isWorldAccount } from "./econ-params.js";
+import { AI, CITIZENS, PROGRESS, REFINANCE, RESERVE, SHORT_TERM, isWorldAccount } from "./econ-params.js";
 import { isOpen } from "./econ-loan.js";
 import { activeDefaults, emergencyOutstandingOf, outstandingOf } from "./econ-credit.js";
 import { emergencyOffersFor, offersFor, relationLevel } from "./econ-lenders.js";
-import { distressOf } from "./econ-distress.js";
-import { aiBuildBorrowWanted, aiRepudiationTarget, aiRestructures, aiShortfall } from "./econ-ai.js";
+import { distressOf, lookAhead, reserveOf } from "./econ-distress.js";
+import { paymentDue } from "./econ-loan.js";
+import { aiBuildBorrowWanted, aiChoice, aiRepudiationTarget, aiShortfall, loanToRestructure } from "./econ-ai.js";
 import { emergencyCap, guardDecision, isInsolvent } from "./econ-guard.js";
 import { projected } from "./econ-batch.js";
 import { aiLendersFor, event, incomeOf, isHuman, notice, offerQuery, openLoan } from "./econ-turn.js";
@@ -120,7 +121,9 @@ export function refinanceFor(ctx, civ) {
     lenders: aiLendersFor(ctx, civ.id) }))[0];
   const reason = refused || (best ? null : "no-offer");
   if (reason) {
-    event(ctx, { kind: "short", pid: civ.id, dues: read.dues, funds: read.funds, cents: read.gap, reason });
+    const fields = { kind: "short", pid: civ.id, dues: read.dues, funds: read.funds, cents: read.gap, reason };
+    event(ctx, fields);
+    notice(ctx, civ.id, fields);
     return { read, loan: null, reason };
   }
   const offer = /** @type {Offer} */ (best);
@@ -162,7 +165,14 @@ export function inDistress(ctx, pid) {
  * @param {Civ} civ
  */
 export function guardRefinance(ctx, civ) {
-  if (!ctx.options.guard) return;
+  if (!ctx.options.guard) {
+    const read = distressOf(ctx, civ.id);
+    if (!read.short) return;
+    noteDistress(ctx, civ.id);
+    notice(ctx, civ.id, { kind: "short", pid: civ.id, dues: read.dues, funds: read.funds, cents: read.gap,
+      reason: "guard-off" });
+    return;
+  }
   refinanceFor(ctx, civ);
 }
 
@@ -185,19 +195,83 @@ export function aiBorrow(ctx, civ) {
 }
 
 /**
- * DESIGN 6: an AI restructures at m = 2 by rule; a human lender is asked instead.
+ * Whether a refinancing loan for `gap` would be offered to the civ now, without taking it (AI-PLAN 4.3: the
+ * refinancing step comes before the payments; this is the decision step's dry run of it).
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @param {number} gap
+ */
+function refinanceOpen(ctx, civ, gap) {
+  if (!(gap > 0) || !(civ.incomeCents > 0) || isInsolventCiv(ctx, civ.id) || isAtLoanLimit(ctx, civ.id)) return false;
+  if (gap > creditRoom(ctx, civ.id)) return false;
+  return offersFor(offerQuery(ctx, civ.id, { principal: gap, term: REFINANCE.term,
+    lenders: aiLendersFor(ctx, civ.id) })).length > 0;
+}
+
+/**
+ * AI-PLAN 4.3: the AI's ordered choice on the look-ahead. Pay when this turn and the next fit; a refinancing loan
+ * when short and one's on offer (the refinancing step takes it); otherwise, with income above 0, restructure the
+ * loan whose payment doesn't fit, once per loan, and again if still short; a human lender is asked instead. What's
+ * still short after that is a miss, paid as far as the funds go. Returns the choice made.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
-export function aiRestructure(ctx, civ) {
-  for (const loan of ctx.ledger.loans) {
-    if (loan.borrower !== civ.id || !aiRestructures({ loan, incomeCents: civ.incomeCents })) continue;
+export function aiDecide(ctx, civ) {
+  const mine = () => ctx.ledger.loans.filter((loan) => loan.borrower === civ.id && loan.state === "active");
+  const read = () => {
+    const ahead = lookAhead(ctx, civ.id, 1);
+    const gapNow = ahead[0].gap;
+    return aiChoice({ gapNow, gapAhead: ahead[1].gap, refinanceOpen: refinanceOpen(ctx, civ, gapNow),
+      incomeCents: civ.incomeCents, restructurable: mine().some((loan) => !loan.restructured) });
+  };
+  let choice = read();
+  for (let step = 0; choice === "restructure" && step < 6; step += 1) {
+    const loan = loanToRestructure(mine(), (row) => paymentDue(row).total);
+    if (!loan) break;
     if (isHuman(ctx, loan.lender)) {
       notice(ctx, loan.lender, { kind: "restructure-ask", loanId: loan.id, borrower: civ.id });
-      continue;
+      break;
     }
-    restructureLoan(ctx, loan, civ.id);
+    if (restructureLoan(ctx, loan, civ.id)) break;
+    choice = read();
   }
+  return choice;
+}
+
+/**
+ * AI-PLAN 4.3: an AI with no distress and funds above its reserve (10 turns of income, or the next three turns'
+ * dues plus a turn of upkeep, whichever is more) puts half the surplus into its dearest loan, the same way the
+ * player's early repayment rides on the turn's payment. A loan opened this turn, or one the civ is about to
+ * repudiate (closed by the repudiation step before this), is never chosen.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @param {Map<string, number>} extras
+ */
+export function aiRepayEarly(ctx, civ, extras) {
+  const reserve = reserveOf(ctx, civ.id);
+  if (reserve.aboveCents <= 0 || reserve.ahead.some((row) => row.gap > 0)) return;
+  const open = ctx.ledger.loans.filter((loan) => loan.borrower === civ.id && loan.state === "active"
+    && loan.opened < ctx.turn);
+  open.sort((a, b) => b.ratePpm - a.ratePpm || a.id.localeCompare(b.id));
+  const dearest = open[0];
+  if (!dearest) return;
+  const cents = Math.floor((reserve.aboveCents * RESERVE.repaySharePct) / 100 / 100) * 100;
+  if (cents <= 0) return;
+  extras.set(dearest.id, (extras.get(dearest.id) || 0) + Math.min(cents, dearest.outstanding));
+  event(ctx, { kind: "repay-early", pid: civ.id, loanId: dearest.id, cents: Math.min(cents, dearest.outstanding),
+    reserve: reserve.reserveCents });
+}
+
+/**
+ * AI-PLAN 4.3, the human's side of the same read: a notice when next turn's payments won't fit what the player is
+ * on course to have, with the three choices (restructure, borrow, or let it miss) on the Loans tab.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ */
+export function lookAheadNotice(ctx, civ) {
+  const ahead = lookAhead(ctx, civ.id, 1);
+  if (ahead[1].gap <= 0) return;
+  notice(ctx, civ.id, { kind: "short-ahead", dues: ahead[1].dues, funds: ahead[1].funds, gap: ahead[1].gap });
 }
 
 /**

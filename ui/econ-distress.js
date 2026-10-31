@@ -15,6 +15,7 @@ import { incomeOf, termsFor } from "./econ-turn.js";
 import { cycleGoldCents, swingFor } from "./econ-cycle.js";
 import { planTakeCents } from "./econ-planned.js";
 import { erosionCents } from "./econ-inflation.js";
+import { RESERVE } from "./econ-params.js";
 
 /**
  * A partnership's interest moves with the borrower's income since it opened (DESIGN 4.17); any other loan's is flat.
@@ -103,6 +104,80 @@ function dividendDues(ctx, pid) {
 }
 
 /**
+ * A civ's funds for the read: what the batch gives it, plus what it still holds in escrow for this turn's payments
+ * when the read comes before the escrow's release (the row reads 0 once released, so nothing is counted twice).
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ */
+export function fundsOf(ctx, pid) {
+  return funds(ctx.batch, pid) + (ctx.ledger.escrow.find((row) => row.pid === pid)?.cents || 0);
+}
+
+/**
+ * The scheduled payments on a loan over the next `turns` turns, as if each were paid in full.
+ * @param {TurnContext} ctx
+ * @param {Loan} loan
+ * @param {number} turns
+ */
+function scheduleAhead(ctx, loan, turns) {
+  /** @type {number[]} */
+  const out = [];
+  let next = loan;
+  for (let k = 0; k < turns; k += 1) {
+    if (next.state !== "active" || next.outstanding <= 0) { out.push(0); continue; }
+    const due = paymentDue(next, loanGrowth(ctx, loan));
+    out.push(due.total);
+    next = { ...next, outstanding: next.outstanding - due.amortisation, paid: next.paid + 1 };
+  }
+  return out;
+}
+
+/**
+ * AI-PLAN 4.3: the next `turns` turns' dues against the funds the civ is on course to have, income held flat and
+ * this turn's dues met first (or missed, which leaves the Gold). Entry 0 is this turn (the distress read), entry k
+ * the k-th turn after. Dividends and bills are held at this turn's figures; a loan's payments follow its schedule.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ * @param {number} [turns]
+ * @returns {{ dues: number, funds: number, gap: number }[]}
+ */
+export function lookAhead(ctx, pid, turns = RESERVE.aheadTurns) {
+  const now = distressOf(ctx, pid);
+  const mine = ctx.ledger.loans.filter((loan) => loan.borrower === pid && loan.state === "active");
+  const schedules = mine.map((loan) => scheduleAhead(ctx, loan, turns + 1));
+  const other = now.parts.dividends + now.parts.trade + now.parts.macro;
+  const income = incomeOf(ctx, pid);
+  /** @type {{ dues: number, funds: number, gap: number }[]} */
+  const out = [{ dues: now.dues, funds: now.funds, gap: now.gap }];
+  let have = Math.max(0, now.funds - now.dues);
+  for (let k = 1; k <= turns; k += 1) {
+    let loans = 0;
+    for (const [i, loan] of mine.entries()) loans += loan.opened < ctx.turn ? schedules[i][k] : schedules[i][k - 1];
+    const dues = loans + other;
+    const available = have + income;
+    out.push({ dues, funds: available, gap: dues > 0 ? Math.max(0, dues - available) : 0 });
+    have = Math.max(0, available - dues);
+  }
+  return out;
+}
+
+/**
+ * AI-PLAN 4.3: a civ's reserve, 10 turns of income or the next three turns' dues plus a turn of upkeep, whichever is
+ * more; what it holds above it is what it can spare for early repayment.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ */
+export function reserveOf(ctx, pid) {
+  const civ = ctx.civ.get(pid);
+  const ahead = lookAhead(ctx, pid);
+  let dues = 0;
+  for (const row of ahead.slice(1)) dues += row.dues;
+  const reserve = Math.max(RESERVE.incomeTurns * Math.max(0, civ?.incomeCents || 0),
+    dues + Math.max(0, civ?.upkeepCents || 0));
+  return { reserveCents: reserve, aboveCents: fundsOf(ctx, pid) - reserve, ahead };
+}
+
+/**
  * The distress read for one civ: its dues against its funds now. `gap` is what's missing to pay everything due;
  * `short` is true when a payment, dividend or bill is due and the funds don't reach it with the macro charges taken
  * first. A civ with nothing of those due is never short, however low its balance: a dip with nothing to pay is the
@@ -114,7 +189,7 @@ function dividendDues(ctx, pid) {
  */
 export function distressOf(ctx, pid) {
   const parts = duesOf(ctx, pid);
-  const have = funds(ctx.batch, pid);
+  const have = fundsOf(ctx, pid);
   const owed = parts.loans + parts.dividends + parts.trade;
   const gap = owed > 0 ? Math.max(0, parts.total - have) : 0;
   return { dues: parts.total, parts, funds: have, gap, short: gap > 0 };

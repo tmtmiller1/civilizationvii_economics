@@ -183,7 +183,7 @@
         <Replace Tag="LOC_ECONOMICS_LOAN_LEFT" Language="zh_Hans_CN"><Text>Payments left</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOAN_PART_INTEREST" Language="zh_Hans_CN"><Text>Interest at {1_Rate}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOAN_PART_PRINCIPAL" Language="zh_Hans_CN"><Text>Paying down the loan</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESTRUCTURE_WHY_ON_TIME" Language="zh_Hans_CN"><Text>Only an overdue loan can be restructured.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESTRUCTURE_WHY_DEFAULT" Language="zh_Hans_CN"><Text>A loan in default can't be restructured; the lender collects what it can each turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESTRUCTURE_WHY_DONE" Language="zh_Hans_CN"><Text>This loan has been restructured once already.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REPAY_NOTE" Language="zh_Hans_CN"><Text>If your treasury is short next turn, you pay what it holds and the rest stays on the loan.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REPUDIATE_KEEP" Language="zh_Hans_CN"><Text>You keep</Text></Replace>
@@ -216,6 +216,10 @@
         <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE" Language="zh_Hans_CN"><Text>Payments per turn, of the limit</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE_OF" Language="zh_Hans_CN"><Text>{1_Used} of {2_Cap} Gold</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_STANDING" Language="zh_Hans_CN"><Text>Standing (1.00 is clean)</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_RESERVE" Language="zh_Hans_CN"><Text>Reserve (10 turns of income, or the next three turns' payments and a turn of upkeep)</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_ABOVE_RESERVE" Language="zh_Hans_CN"><Text>You hold this much above it; the computer players repay early with half of theirs</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_UNDER_RESERVE" Language="zh_Hans_CN"><Text>You're this much under it</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_AHEAD_SHORT" Language="zh_Hans_CN"><Text>Next turn's payments of {1_Dues} Gold won't fit the {2_Funds} Gold you're on course to have. Restructure a loan, borrow, or let it miss.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENS_NEXT" Language="zh_Hans_CN"><Text>Opens next: {1_Part}, with {2_Node}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENS_NEXT_AGE" Language="zh_Hans_CN"><Text>Opens next: {1_Part}, in the next age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PART_CIV_LOANS" Language="zh_Hans_CN"><Text>loans from other civilizations, for up to 20 turns</Text></Replace>
@@ -343,6 +347,12 @@
         <Replace Tag="LOC_ECONOMICS_NOTICE_LENT" Language="zh_Hans_CN"><Text>Your loan of {1_Amount} Gold to {2_Borrower} has gone out.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_MISS" Language="zh_Hans_CN"><Text>You couldn't pay anything on loan {1_Loan} ({2_Count} missed in a row). The {4_Due} Gold due joins the debt and the rate rises; three in a row is default.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_MISS_PART" Language="zh_Hans_CN"><Text>Paid {3_Paid} of {4_Due} Gold on loan {1_Loan}. {5_Short} Gold was added to the loan ({2_Count} missed in a row); the rate rises, and three in a row is default. You can restructure the loan or borrow on the Loans tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_AHEAD" Language="zh_Hans_CN"><Text>Next turn's payments of {1_Dues} Gold won't fit the {2_Funds} Gold you're on course to have, {3_Gap} short. Restructure a loan, borrow, or let it miss, on the Loans tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_GUARD_OFF" Language="zh_Hans_CN"><Text>Your payments of {1_Dues} Gold pass the {2_Funds} Gold you have by {3_Gap}, and the guard is off. You can restructure a loan, borrow, or switch the guard on, on the Loans tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_CREDIT_CAP" Language="zh_Hans_CN"><Text>Your payments of {1_Dues} Gold pass the {2_Funds} Gold you have by {3_Gap}, and the guard couldn't borrow the difference: it's over your credit limit. Restructure a loan on the Loans tab, or pay what you can.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_NO_OFFER" Language="zh_Hans_CN"><Text>Your payments of {1_Dues} Gold pass the {2_Funds} Gold you have by {3_Gap}, and no lender would cover the difference. Restructure a loan on the Loans tab, or pay what you can.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_INCOME" Language="zh_Hans_CN"><Text>Your payments of {1_Dues} Gold pass the {2_Funds} Gold you have by {3_Gap}, and with income at or below 0 nobody refinances. The emergency loan covers a dip; cut upkeep or raise Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_LOAN_LIMIT" Language="zh_Hans_CN"><Text>Your payments of {1_Dues} Gold pass the {2_Funds} Gold you have by {3_Gap}, and six loans are open already. Restructure one on the Loans tab, or pay what you can.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REFINANCE" Language="zh_Hans_CN"><Text>Your payments of {3_Dues} Gold passed what you had, so the guard borrowed the {1_Amount} Gold missing from {2_Lender} over 10 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_DEFAULT" Language="zh_Hans_CN"><Text>Loan {1_Loan} is in default. The lender takes what it can each turn and won't lend to you again this age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_DEFAULTED_ON" Language="zh_Hans_CN"><Text>{1_Borrower} has defaulted on your loan {2_Loan}. You collect what you can each turn.</Text></Replace>
@@ -378,7 +388,8 @@
         <Replace Tag="LOC_ECONOMICS_REASON_AI_OFF" Language="zh_Hans_CN"><Text>the computer players aren't borrowing or lending in this game.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_BALANCE" Language="zh_Hans_CN"><Text>you don't hold that much Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_DECLINED" Language="zh_Hans_CN"><Text>they declined: the rate is too high, they aren't short, or the payments don't fit their limits.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REASON_NOT_OVERDUE" Language="zh_Hans_CN"><Text>only an overdue loan can be restructured, and only once.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NOT_ACTIVE" Language="zh_Hans_CN"><Text>only a loan still being paid can be restructured.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_RESTRUCTURED" Language="zh_Hans_CN"><Text>a loan can be restructured once, and this one has been.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_INCOME" Language="zh_Hans_CN"><Text>a civilization with income at or below 0 can't restructure.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_NOTHING_OWED" Language="zh_Hans_CN"><Text>nothing is owed to that lender.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_TAXES_NATIVE" Language="zh_Hans_CN"><Text>taxes are policy cards in this game; use the Fiscal tab.</Text></Replace>
@@ -387,6 +398,7 @@
         <Replace Tag="LOC_ECONOMICS_EVENT_OPEN" Language="zh_Hans_CN"><Text>Loan {1_Loan} opened: {2_Amount} Gold from {3_Lender} to {4_Borrower}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_MISS" Language="zh_Hans_CN"><Text>Nothing paid on {1_Loan}, {4_Due} Gold added to it ({2_Count} missed in a row).</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_MISS_PART" Language="zh_Hans_CN"><Text>{1_Loan}: paid {3_Paid} of {4_Due} Gold, {5_Short} added to the loan ({2_Count} missed in a row).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_REPAY_EARLY" Language="zh_Hans_CN"><Text>{1_Civ} repaid {2_Amount} Gold of {3_Loan} early, from what it held above its reserve.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_REFINANCE" Language="zh_Hans_CN"><Text>{1_Civ} refinanced: {2_Amount} Gold from {3_Lender} to meet the turn's payments.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_AID_CLEARED" Language="zh_Hans_CN"><Text>Aid from {1_Giver} cleared {2_Amount} Gold of {3_Loan}, which {4_Borrower} had defaulted on.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_DEFAULT" Language="zh_Hans_CN"><Text>{1_Loan} went into default ({2_Borrower}).</Text></Replace>

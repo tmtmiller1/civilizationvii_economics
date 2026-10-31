@@ -5,7 +5,7 @@
 
 import { BOND, CITIZENS, LIMITS, SHORT_TERM, TERMS, isWorldAccount } from "./econ-params.js";
 import { citizenRepudiation, servicePrincipalCents } from "./econ-citizens.js";
-import { firstPayment, isOpen, isOverdue, restructure } from "./econ-loan.js";
+import { firstPayment, isOpen, restructure } from "./econ-loan.js";
 import { addMiss, creditCap, fitsService, outstandingOf, recentRepudiations, serviceCap, serviceOf }
   from "./econ-credit.js";
 import { bondRatePpm, civLenderRefusal, offersFor, relationLevel, termRefusal } from "./econ-lenders.js";
@@ -202,13 +202,15 @@ function lendRefusal(ctx, request) {
 }
 
 /**
- * DESIGN 4.4: once per loan, overdue only, borrower income above 0; the borrower or a human lender can ask.
+ * DESIGN 4.4, AI-PLAN 4.3: once per loan, any active loan (from no misses on), borrower income above 0; the borrower
+ * or a human lender can ask.
  * @param {TurnContext} ctx
  * @param {Loan | undefined} loan
  * @param {unknown} by
  */
 export function restructureLoan(ctx, loan, by) {
-  if (!loan || !isOverdue(loan) || loan.restructured) return "not-overdue";
+  if (!loan || loan.state !== "active") return "not-active";
+  if (loan.restructured) return "restructured";
   if (!(incomeOf(ctx, loan.borrower) > 0)) return "income";
   if (by !== loan.borrower && by !== loan.lender) return "parties";
   replaceLoan(ctx, restructure(loan));

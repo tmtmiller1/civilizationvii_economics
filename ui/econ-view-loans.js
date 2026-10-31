@@ -61,7 +61,27 @@ function limitsSection(view, income, limit, api) {
       formatGold(view.serviceCents), formatGold(view.serviceCapCents))),
     row(api.loc("LOC_ECONOMICS_LOANS_STANDING"), (view.standingPct / 100).toFixed(2),
       view.standingPct < 100 ? "econ-negative" : ""),
+    ...reserveRows(view, api),
   ]);
+}
+
+/**
+ * AI-PLAN 4.3: the reserve the AI keeps (10 turns of income, or the next three turns' dues plus a turn of upkeep)
+ * and what the player holds above it, the AI's own yardstick for repaying early; and next turn's payments against
+ * what the player is on course to have, when they won't fit.
+ * @param {ReturnType<typeof loansView>} view
+ * @param {ScreenApi} api
+ */
+function reserveRows(view, api) {
+  if (!view.mine.length) return [];
+  const above = view.aboveReserveCents;
+  const rows = [row(api.loc("LOC_ECONOMICS_LOANS_RESERVE"), gold(api, view.reserveCents)),
+    row(api.loc(above >= 0 ? "LOC_ECONOMICS_LOANS_ABOVE_RESERVE" : "LOC_ECONOMICS_LOANS_UNDER_RESERVE"),
+      gold(api, Math.abs(above)), above >= 0 ? "econ-positive" : "")];
+  const next = view.ahead[1];
+  if (next && next.gap > 0) rows.push(note(api.loc("LOC_ECONOMICS_LOANS_AHEAD_SHORT", formatGold(next.dues),
+    formatGold(next.funds))));
+  return rows;
 }
 
 /**
@@ -156,11 +176,12 @@ function loanActions(loan, api) {
     () => { setConfirming(`repay:${loan.id}:all`); api.rerender(); }));
   actions.appendChild(button(api.loc("LOC_ECONOMICS_LOANS_REPAY_HALF"),
     () => { setConfirming(`repay:${loan.id}:half`); api.rerender(); }));
-  const canRestructure = loan.overdue && !loan.restructured;
+  // AI-PLAN 4.3: any active loan can be restructured once, misses or not; a defaulted one can't.
+  const canRestructure = loan.state === "active" && !loan.restructured;
   actions.appendChild(button(api.loc("LOC_ECONOMICS_LOANS_RESTRUCTURE"),
     () => { setConfirming(`restructure:${loan.id}`); api.rerender(); }, { disabled: !canRestructure,
       reason: canRestructure ? null : api.loc(loan.restructured ? "LOC_ECONOMICS_RESTRUCTURE_WHY_DONE"
-        : "LOC_ECONOMICS_RESTRUCTURE_WHY_ON_TIME") }));
+        : "LOC_ECONOMICS_RESTRUCTURE_WHY_DEFAULT") }));
   return actions;
 }
 
@@ -251,7 +272,7 @@ function lentSection(view, api) {
       stat(api.loc("LOC_ECONOMICS_RATE"), formatRate(loan.ratePpm)),
       stat(api.loc("LOC_ECONOMICS_LENT_PAYMENT"), gold(api, loan.paymentCents)),
       stat(api.loc("LOC_ECONOMICS_LOAN_LEFT"), api.loc("LOC_ECONOMICS_TURNS", loan.turnsLeft))]));
-    if (loan.overdue && !loan.restructured) {
+    if (loan.state === "active" && !loan.restructured) {
       card.appendChild(button(api.loc("LOC_ECONOMICS_LOANS_ALLOW_RESTRUCTURE"),
         () => send(api, { kind: "restructure", loanId: loan.id, pid: api.me }, `lent:${loan.id}`)));
     }

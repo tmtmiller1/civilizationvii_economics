@@ -141,6 +141,10 @@ income is positive and no refinancing is offered; otherwise miss. The human gets
 turn's payments of X won't fit; restructure, borrow, or let it miss") with the three choices on the Loans tab, and
 restructuring opens at `m = 0` for both sides at the same standing cost as today.
 
+Built 2026-10-31 (stage C, NOTES choices 126 to 128): the look-ahead, the ordered choice, restructuring from `m = 0`
+for both sides, the AI's early repayment through `extras`, the human's notices (`short-ahead`, and `short` with the
+reason when the guard is off or refused) and the reserve reading on the Loans tab.
+
 Early repayment, the same mechanism the player uses (`extras` on the turn's payment): an AI with no distress and a
 balance above its reserve (10 turns of income, or the next three turns of dues plus upkeep, whichever is more) puts
 half the surplus into its dearest loan, never into one it's about to repudiate. Mirrors the player's "repay early,

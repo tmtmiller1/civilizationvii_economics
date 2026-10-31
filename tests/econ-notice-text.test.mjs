@@ -63,7 +63,7 @@ test("refusals name the request and the reason through keys the English text def
   const line = describeRefusal({ turn: 1, kind: "refused", request: "borrow", reason: "credit-cap" });
   assert.deepEqual([line.requestKey, line.reasonKey], ["LOC_ECONOMICS_REQUEST_BORROW", "LOC_ECONOMICS_REASON_CREDIT_CAP"]);
   for (const reason of ["credit-cap", "service-cap", "terms", "loan-limit", "lender", "borrower", "no-offer", "term-stage",
-    "term-banking", "term-repudiation", "parties", "ai-off", "balance", "declined", "not-overdue", "income",
+    "term-banking", "term-repudiation", "parties", "ai-off", "balance", "declined", "not-active", "restructured", "income",
     "nothing-owed", "taxes-native", "too-soon", "loans-off", "tariffs-off", "tariff-stage", "investment-off",
     "invest-stage", "blocked", "build", "same-turn", "relation", "host-default", "offer-gone", undefined]) {
     assert.ok(english.has(reasonKey(reason)), String(reason));

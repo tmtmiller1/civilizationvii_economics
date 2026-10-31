@@ -18,8 +18,8 @@ import { cloneLedger, emptyLedger, prune } from "./econ-state.js";
 import { emptyMarkets } from "./econ-markets.js";
 import { isAlive, closeLoan, emit, event, notice, replaceLoan, turnContext } from "./econ-turn.js";
 import { runRequests } from "./econ-requests.js";
-import { aiBorrow, aiBuildBorrow, aiRepudiate, aiRestructure, guardFor, guardRefinance, isInsolventCiv, refinanceFor }
-  from "./econ-shortfall.js";
+import { aiBorrow, aiBuildBorrow, aiDecide, aiRepayEarly, aiRepudiate, guardFor, guardRefinance, isInsolventCiv,
+  lookAheadNotice, refinanceFor } from "./econ-shortfall.js";
 import { aiAid, aiInvest, aiTariff, investWriteOffs, marketStep, payDividendsFor, settleTradeFor, tradeNotices,
   tradeStep } from "./econ-commerce.js";
 import { aiMacro, cycleInflows, macroPayerSteps, macroSnapshot } from "./econ-macro.js";
@@ -92,12 +92,28 @@ function snapshotStep(ctx, input) {
 function proposeStep(ctx) {
   const live = ctx.civs.filter((civ) => civ.alive === true);
   const ai = ctx.options.ai ? live.filter((civ) => civ.human !== true) : [];
-  if (ctx.options.loans) for (const civ of ai) { aiRepudiate(ctx, civ); aiRestructure(ctx, civ); }
+  // The AI's loan rules in step 2 (DESIGN 4.14): repudiation, then its decisions on the look-ahead (AI-PLAN 4.3).
+  const borrowers = ctx.options.loans ? ai : [];
+  for (const civ of borrowers) aiRepudiate(ctx, civ);
   tradeStep(ctx);
+  for (const civ of borrowers) aiDecide(ctx, civ);
   const extras = runRequests(ctx);
+  for (const civ of borrowers) aiRepayEarly(ctx, civ, extras);
   aiCommerce(ctx, ai);
   aiMacro(ctx, ai);
-  if (ctx.options.loans) for (const civ of ai) aiBuildBorrow(ctx, civ);
+  for (const civ of borrowers) aiBuildBorrow(ctx, civ);
+  resolveStep(ctx, live, ai, extras);
+}
+
+/**
+ * DESIGN 4.14 step 3 onward: the inflows, the refinancing read, each payer's pass, the escrow's hold, the guard and
+ * the AI's emergency loans, then the AI's preference rows.
+ * @param {TurnContext} ctx
+ * @param {Civ[]} live
+ * @param {Civ[]} ai
+ * @param {Map<string, number>} extras
+ */
+function resolveStep(ctx, live, ai, extras) {
   inflowStep(ctx);
   if (ctx.options.taxFallback) for (const civ of live) taxOne(ctx, civ);
   refinanceStep(ctx, live, ai);
@@ -127,7 +143,7 @@ function inflowStep(ctx) {
  */
 function refinanceStep(ctx, live, ai) {
   if (!ctx.options.loans) return;
-  for (const civ of live) if (civ.human === true) guardRefinance(ctx, civ);
+  for (const civ of live) if (civ.human === true) { guardRefinance(ctx, civ); lookAheadNotice(ctx, civ); }
   const short = ai.map((civ) => ({ civ, gap: distressOf(ctx, civ.id).gap })).filter((row) => row.gap > 0)
     .sort((x, y) => y.gap - x.gap || x.civ.id - y.civ.id);
   for (const row of short) refinanceFor(ctx, row.civ);

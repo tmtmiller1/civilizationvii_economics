@@ -225,11 +225,13 @@ payment       = interest + amortisation, from the borrower to the lender in the 
 - `m` counts misses in a row. Separate misses with paid turns between them cost rate, interest and standing, but they
   don't add up to a default.
 - At `m >= 3` the loan enters default (4.5).
-- Restructuring: an overdue loan (`m` 1 or 2) can be restructured once. What's left of `O` is spread over 10 more
-  turns from now, the rate stays where the misses put it, `m` goes to 0, and standing takes one more miss. It's a
-  new schedule, with no Gold changing hands. The bond market and AI lenders accept by rule; a player lender is
-  asked. It's for a civ that's short for a while, not one losing Gold every turn: a civ with income at or below 0
-  can't restructure.
+- Restructuring: an active loan can be restructured once, from no misses on (AI-PLAN 4.3, 2026-10-31; it was
+  overdue loans only). What's left of `O` is spread over 10 more turns from now, the rate stays where any misses put
+  it, `m` goes to 0, and standing takes one more miss. It's a new schedule, with no Gold changing hands. The bond
+  market and AI lenders accept by rule; a player lender is asked. It's for a civ that's short for a while, not one
+  losing Gold every turn: a civ with income at or below 0 can't restructure. The AI restructures when its look-ahead
+  says this turn's or next turn's payments won't fit and no refinancing loan is on offer (NOTES choice 126); the
+  player is told the same thing a turn ahead and has the same choice on the Loans tab.
 
 ### 4.5 Default and repudiation
 
@@ -1057,8 +1059,11 @@ price; priced at that rate since (choice 104), it's worth the Gold it takes (sec
   the per-turn payment, total interest and how much of income the loans take first. Past a limit, the offer says the
   most that lender would lend over that term, with a "Borrow that instead" button, and a request refused in the
   batch says the same in the turn notification.
-- Repay early: any amount, no penalty.
-- Restructure an overdue loan once (4.4). See the new schedule first.
+- Repay early: any amount, no penalty. The Loans tab shows the reserve the AI keeps (10 turns of income, or the next
+  three turns' payments and a turn of upkeep) and what the player holds above it, the AI's own yardstick (it repays
+  with half of its surplus); and when next turn's payments won't fit what the player is on course to have, the tab
+  and the turn notice say so, with restructure, borrow and let-it-miss as the choices.
+- Restructure a loan once, misses or not (4.4). See the new schedule first.
 - Repudiate what you owe one lender or the bond market (4.5). See the Gold kept and the reputation and credit cost
   first.
 - Switch the guard off or on (4.6) on the Loans tab.
@@ -1092,7 +1097,7 @@ numbers. The AI's native spending doesn't know about them, so they follow three 
 | --- | --- |
 | Borrowing | short (its dues this turn pass its funds, read before the payments) with income above 0: a refinancing loan for the gap from the cheapest bond or AI lender, 10 turns, within the credit cap alone (4.6, AI-PLAN 4.1); below the engine's line with income at or below 0: an emergency loan within `emergency_cap` (4.6); past the cap, or short with no lender or no credit: none, and it pays what it has (4.4) |
 | Build loan | income of 10 Gold or more, solvent, in no default, its own phase Boom or Steady (or outside the cycle), a city with a build at the head of its queue, at most once per 10 turns: the cheapest bond or AI loan over 10 turns for up to 5 turns of its income, no more than the build still needs at the game's purchase rate (4.17) and no more than the most the 4.2 limits allow (the sizing a player's refusal names). The principal goes from the lender straight to the build as `addProgress`, through the progress account a development loan uses, role buildings first. No native lever carries a loan (P18), so this is the AI's door to borrowing to build, which the player has through the Gold it spends. Cheap credit in a boom means more of it, which is what builds the leverage a Panic needs (4.11) |
-| Restructuring | an overdue loan with income > 0 is restructured at `m = 2` |
+| Restructuring, early repayment | the look-ahead (AI-PLAN 4.3): pay when this turn and the next fit; refinance when short and a loan is on offer; else, with income above 0, restructure the loan whose payment doesn't fit, once per loan, from `m = 0`; else miss and pay what there is. Flush (funds above its reserve of 10 turns of income, or the next three turns' dues plus a turn of upkeep) and with no gap ahead, it puts half the surplus into its dearest loan, the way the player repays early |
 | Repudiation | at most once per 20 turns, never against a Friendly lender. Repudiates what it owes a civ it's at war with; or, when insolvent or in default, what it owes a lender it's Unfriendly or worse with, if that debt is above `10 * max(|income|, 10)`; or the bond market, when insolvent and at `emergency_cap` |
 | After a repudiation | doesn't lend to, invest in or aid the repudiator while the repudiation counts against its standing (4.5) |
 | Lending | income > 0 and balance > `20 * income`: lends to a short civ at the 4.3 rate, cheapest first; never to an insolvent one |

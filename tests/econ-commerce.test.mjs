@@ -325,7 +325,8 @@ test("aid to a civ in default to the giver clears that debt first (AI-PLAN 2); t
     closedTurn: null, writtenOff: 0, source: "lend", ...over });
   const ledger = { ...emptyLedger(), nextId: 4, loans: [loan("L1", 3000), loan("L2", 5000, { opened: 2 }),
     loan("L3", 2000, { state: "active", missed: 0, opened: 3 })] };
-  const civs = [me(), ai(AI, { incomeCents: 2000 })];
+  // The host sits under its reserve (10 turns of income), so it doesn't repay L3 early (AI-PLAN 4.3).
+  const civs = [me(), ai(AI, { incomeCents: 2000, balanceCents: 15000 })];
   const aid = { kind: "invest", investor: ME, host: AI, form: "general", cents: 10000, asAid: true };
   const out = plan({ civs, ledger, requests: [aid], options: { loans: true } });
   const cleared = out.events.filter((e) => e.kind === "aid-cleared").map((e) => [e.loanId, e.cents]);
@@ -341,10 +342,10 @@ test("aid to a civ in default to the giver clears that debt first (AI-PLAN 2); t
   assert.deepEqual(partly.transfers.filter((t) => t.reason === "invest"), [], "20 of aid: all of it clears L1");
   assert.equal(partly.transfers.find((t) => t.loanId === "L1").reason, "garnish", "L1's garnish still runs after");
   assert.deepEqual(partly.ledger.loans.find((l) => l.id === "L1").outstanding, 900, "10 left, the 1 Gold garnish");
-  const poor = plan({ civs: [me({ balanceCents: 2500, incomeCents: 0 }), ai(AI, { incomeCents: 2000 })], ledger,
-    requests: [aid], options: { loans: true } });
+  const poor = plan({ civs: [me({ balanceCents: 2500, incomeCents: 0 }), ai(AI, { incomeCents: 2000, balanceCents: 15000 })],
+    ledger, requests: [aid], options: { loans: true } });
   assert.equal(refusal(poor, "invest"), undefined, "the giver only needs the Gold for the part it sends (20)");
-  const broke = plan({ civs: [me({ balanceCents: 1500, incomeCents: 0 }), ai(AI, { incomeCents: 2000 })], ledger,
+  const broke = plan({ civs: [me({ balanceCents: 1500, incomeCents: 0 }), ai(AI, { incomeCents: 2000, balanceCents: 15000 })], ledger,
     requests: [aid], options: { loans: true } });
   assert.equal(refusal(broke, "invest"), "balance");
 });

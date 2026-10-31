@@ -52,6 +52,9 @@ export const GARNISH = { outstandingPct: 10, incomePct: 50, lowOutstandingPct: 5
 // AI-PLAN 4.1: a civ whose dues this turn pass its funds, with income above 0, gets a refinancing loan for the gap
 // over 10 turns, judged by the credit cap alone.
 export const REFINANCE = { term: 10 };
+// AI-PLAN 4.3: the look-ahead reads three turns of dues; a civ's reserve is 10 turns of income or the next three
+// turns' dues plus a turn of upkeep, whichever is more; an AI above it puts half the surplus into its dearest loan.
+export const RESERVE = { aheadTurns: 3, incomeTurns: 10, repaySharePct: 50 };
 // AI-PLAN 4.2: a civ in distress this turn has two turns' dues held.
 export const ESCROW_RULES = { distressTurns: 2 };
 // AI-PLAN 4.2 (watched 4.7): while an AI's debt service is above a tenth of its income, its Gold yield bias is scaled
@@ -73,7 +76,7 @@ export const MID_TERM = 20;
 // The build loan (DESIGN 6): an AI with positive income borrows to put progress on its own current build while its
 // credit is cheap (Boom or Steady), at most once per 10 turns, up to 5 turns of income over 10 turns and within the
 // 4.2 limits.
-export const AI = { lendIncomeMultiple: 20, acceptRatePct: 120, restructureAt: 2, repudiateEveryTurns: 20,
+export const AI = { lendIncomeMultiple: 20, acceptRatePct: 120, repudiateEveryTurns: 20,
   repudiateDebtMultiple: 10, minIncomeCents: 1000, buildEveryTurns: 10, buildSizeTurns: 5, buildTerm: 10 };
 // openPerBorrower and closedLoans are not in DESIGN: they bound the saved envelope (debt-5) with the event log DESIGN
 // 9 asks for; see docs/NOTES.md choice 25.

@@ -52,11 +52,30 @@ export function aiBuildBorrowWanted({ incomeCents, phase, insolvent, inDefault, 
 }
 
 /**
- * DESIGN 6: an overdue loan with income > 0 is restructured at m = 2, once.
- * @param {{ loan: Loan, incomeCents: number }} q
+ * AI-PLAN 4.3: the cheapest way through, in order. Pay when this turn and the next fit; refinance when short and a
+ * loan is on offer; restructure when short with income above 0 and nothing on offer; otherwise miss (pay what there
+ * is). `gapNow` and `gapAhead` are the look-ahead's gaps this turn and next; `refinanceOpen` whether a refinancing
+ * loan would be offered for the gap; `restructurable` whether any active loan hasn't been restructured yet.
+ * @param {{ gapNow: number, gapAhead: number, refinanceOpen: boolean, incomeCents: number, restructurable: boolean }} q
+ * @returns {"pay" | "refinance" | "restructure" | "miss"}
  */
-export function aiRestructures({ loan, incomeCents }) {
-  return loan.state === "active" && !loan.restructured && loan.missed >= AI.restructureAt && incomeCents > 0;
+export function aiChoice({ gapNow, gapAhead, refinanceOpen, incomeCents, restructurable }) {
+  if (gapNow <= 0 && gapAhead <= 0) return "pay";
+  if (gapNow > 0 && refinanceOpen) return "refinance";
+  if (incomeCents > 0 && restructurable) return "restructure";
+  return "miss";
+}
+
+/**
+ * AI-PLAN 4.3: the loan an AI restructures first is the one whose payment doesn't fit: the active, not yet
+ * restructured loan with the biggest payment.
+ * @param {Loan[]} loans the civ's active loans
+ * @param {(loan: Loan) => number} paymentOf
+ */
+export function loanToRestructure(loans, paymentOf) {
+  const open = loans.filter((loan) => loan.state === "active" && !loan.restructured);
+  open.sort((a, b) => paymentOf(b) - paymentOf(a) || a.id.localeCompare(b.id));
+  return open[0] || null;
 }
 
 /**

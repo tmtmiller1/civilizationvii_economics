@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { aiAccepts, aiRepudiationTarget, aiRestructures, aiShortfall, aiWillLend, repudiationThreshold }
-  from "../ui/econ-ai.js";
+import { aiAccepts, aiChoice, aiRepudiationTarget, aiShortfall, aiWillLend, loanToRestructure,
+  repudiationThreshold } from "../ui/econ-ai.js";
 import { makeLoan } from "../ui/econ-loan.js";
 
 test("an AI borrows exactly the shortfall when its balance would fall below zero", () => {
@@ -35,13 +35,20 @@ test("an AI without a shortfall, or without a bond rate, declines", () => {
   assert.equal(aiAccepts({ offerRatePpm: 1, bondRatePpm: null, shortfallCents: 5, incomeCents: 1 }), false);
 });
 
-test("restructuring rule (DESIGN 6): an overdue loan with income > 0 at m = 2, once", () => {
-  const l = makeLoan({ id: "L1", lender: 4, borrower: 2, principal: 100, ratePpm: 1, term: 10, turn: 1 });
-  assert.equal(aiRestructures({ loan: { ...l, missed: 2 }, incomeCents: 1 }), true);
-  assert.equal(aiRestructures({ loan: { ...l, missed: 1 }, incomeCents: 1 }), false);
-  assert.equal(aiRestructures({ loan: { ...l, missed: 2 }, incomeCents: 0 }), false);
-  assert.equal(aiRestructures({ loan: { ...l, missed: 2, restructured: true }, incomeCents: 1 }), false);
-  assert.equal(aiRestructures({ loan: { ...l, missed: 3, state: "default" }, incomeCents: 1 }), false);
+test("the ordered choice (AI-PLAN 4.3): pay, refinance, restructure, miss; the loan whose payment doesn't fit", () => {
+  const base = { gapNow: 0, gapAhead: 0, refinanceOpen: true, incomeCents: 1000, restructurable: true };
+  assert.equal(aiChoice(base), "pay");
+  assert.equal(aiChoice({ ...base, gapNow: 100 }), "refinance");
+  assert.equal(aiChoice({ ...base, gapNow: 100, refinanceOpen: false }), "restructure");
+  assert.equal(aiChoice({ ...base, gapAhead: 100 }), "restructure", "next turn won't fit: restructure now");
+  assert.equal(aiChoice({ ...base, gapNow: 100, refinanceOpen: false, incomeCents: 0 }), "miss");
+  assert.equal(aiChoice({ ...base, gapNow: 100, refinanceOpen: false, restructurable: false }), "miss");
+  const l = (id, over = {}) => ({ ...makeLoan({ id, lender: 4, borrower: 2, principal: 100, ratePpm: 1, term: 10,
+    turn: 1 }), ...over });
+  const paymentOf = (loan) => loan.principal / loan.term;
+  assert.equal(loanToRestructure([l("L1"), l("L2", { principal: 1000 }), l("L3", { principal: 5000, restructured: true })],
+    paymentOf)?.id, "L2", "the biggest payment among those not yet restructured");
+  assert.equal(loanToRestructure([l("L1", { state: "default" })], paymentOf), null);
 });
 
 test("repudiation rule (DESIGN 6): an enemy at war first, then a hostile lender owed enough when insolvent or in"

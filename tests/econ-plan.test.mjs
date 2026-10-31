@@ -156,17 +156,23 @@ test("restructuring (DESIGN 4.4): the player's overdue loan gets a new 10-turn s
   assert.deepEqual(plan.ledger.misses, [{ pid: ME, turn: 50, n: 1 }]);
   assert.equal(plan.events[0].kind, "restructure");
   const why = (ledger, over = {}) => refusal(planTurn(input({ ledger, civs: [me(over)], requests: [req] })));
-  assert.equal(why(ledgerWith([loan("L1")])), "not-overdue");
-  assert.equal(why(ledgerWith([loan("L1", { missed: 1, restructured: true })])), "not-overdue", "once per loan");
+  assert.equal(why(ledgerWith([loan("L1")])), undefined, "from no misses on (AI-PLAN 4.3)");
+  assert.equal(why(ledgerWith([loan("L1", { missed: 1, restructured: true })])), "restructured", "once per loan");
+  assert.equal(why(ledgerWith([loan("L1", { state: "default", missed: 3 })])), "not-active");
   assert.equal(why(ledgerWith([loan("L1", { missed: 1 })]), { incomeCents: 0 }), "income");
   assert.equal(refusal(planTurn(input({ ledger: ledgerWith([loan("L1", { missed: 1 })]), civs: [me(), civ(9)],
     requests: [{ ...req, pid: 9 }] }))), "parties");
 });
 
-test("restructuring by the AI rule: at m = 2 by itself with a bond or AI lender; a human lender is asked", () => {
-  const ai = civ(4, { balanceCents: 0, incomeCents: 500 });
-  const byRule = planTurn(input({ ledger: ledgerWith([loan("L1", { borrower: 4, missed: 2 })]), civs: [me(), ai] }));
-  assert.equal(byRule.ledger.loans[0].restructured, true);
+test("restructuring by the AI rule (AI-PLAN 4.3): short with no refinancing on offer, from no misses on; a human lender is asked", () => {
+  // 5 of income against a payment of 21, no lender in sight: restructure the loan whose payment doesn't fit.
+  const ai = civ(4, { balanceCents: 0, incomeCents: 500, stages: CLOSED });
+  const byRule = planTurn(input({ ledger: ledgerWith([loan("L1", { borrower: 4 })]), civs: [me(), ai] }));
+  assert.equal(byRule.ledger.loans[0].restructured, true, "at m = 0");
+  assert.equal(byRule.transfers.find((t) => t.reason === "payment").cents, 500, "the first payment on the new schedule");
+  const fits = planTurn(input({ ledger: ledgerWith([loan("L1", { borrower: 4 })]), civs: [me(), civ(4, {
+    balanceCents: 0, incomeCents: 2500, stages: CLOSED })] }));
+  assert.equal(fits.ledger.loans[0].restructured, false, "the payment fits this turn and next: pay");
   const owedToMe = ledgerWith([loan("L1", { borrower: 4, lender: ME, missed: 2 })]);
   const asked = planTurn(input({ ledger: owedToMe, civs: [me(), ai] }));
   assert.equal(asked.ledger.loans[0].restructured, false);
@@ -243,7 +249,8 @@ test("the AI repudiates an enemy at war (DESIGN 6), before any payment on the re
   assert.equal(plan.ledger.repudiations[0].atWar, true);
   const calm = planTurn(input({ ledger: ledgerWith([loan("L1", { borrower: 4, lender: 6 })]), civs,
     relations: [{ a: 4, b: 6, level: "unfriendly" }] }));
-  assert.equal(calm.ledger.loans[0].state, "active", "solvent and paying: no repudiation");
+  assert.notEqual(calm.ledger.loans[0].state, "repudiated", "solvent and paying: no repudiation");
+  assert.equal(calm.ledger.loans[0].state, "closed", "flush, it repaid the loan early instead (AI-PLAN 4.3)");
   assert.equal(planTurn(input({ ledger: ledgerWith([loan("L1", { borrower: 4, lender: 6 })]), civs, relations,
     options: { ai: false } })).ledger.loans[0].state, "active");
 });
@@ -629,4 +636,41 @@ test("the age change: the Gold the game cut since the last batch is recorded, fr
   assert.deepEqual(plan.notices.filter((n) => n.kind === "age-gold").map((n) => n.pid), [ME]);
   const same = planTurn(input({ turn: 121, age: "AGE_ANTIQUITY", ledger: { ...ledger }, civs }));
   assert.equal(same.events.some((e) => e.kind === "age-gold"), false, "only at an age change");
+});
+
+test("the look-ahead (AI-PLAN 4.3): three turns of dues against the funds the civ is on course to have", () => {
+  const ledger = ledgerWith([loan("L1", { principal: 10000, outstanding: 10000, ratePpm: 10000, term: 10, opened: 1 })]);
+  const plan = planTurn(input({ ledger, civs: [me({ balanceCents: 500, incomeCents: 600 })], options: { guard: false } }));
+  // 11 due now against 11 in hand (5 and 6 of income), then 10.90 against the 6 of next turn's income: short then.
+  const ahead = plan.notices.find((n) => n.kind === "short-ahead");
+  assert.ok(ahead, "the player is told next turn won't fit");
+  assert.deepEqual([ahead.dues, ahead.funds, ahead.gap], [1090, 600, 490]);
+  assert.equal(plan.notices.some((n) => n.kind === "short"), false, "this turn fits");
+  const tight = planTurn(input({ ledger, civs: [me({ balanceCents: 0, incomeCents: 1000 })], options: { guard: false } }));
+  assert.equal(tight.notices.find((n) => n.kind === "short")?.reason, "guard-off", "this turn's 11 against 10");
+  assert.equal(tight.notices.find((n) => n.kind === "miss")?.short, 100);
+});
+
+test("the AI repays early (AI-PLAN 4.3): half of what it holds above its reserve goes into its dearest loan", () => {
+  const cheap = loan("L1", { borrower: 4, ratePpm: 10000, principal: 10000, outstanding: 10000, term: 10, opened: 1 });
+  const dear = loan("L2", { borrower: 4, ratePpm: 30000, principal: 10000, outstanding: 10000, term: 10, opened: 2 });
+  // Income 10, upkeep 5: the reserve is 100 (10 turns of income beats three turns' dues of about 42 plus 5).
+  const flush = planTurn(input({ ledger: ledgerWith([cheap, dear]), civs: [me(), civ(4, { balanceCents: 30000,
+    incomeCents: 1000 })] }));
+  const repay = flush.events.find((e) => e.kind === "repay-early");
+  assert.deepEqual([repay.loanId, repay.cents, repay.reserve], ["L2", 10000, 10000],
+    "310 of funds less 100 of reserve: half is 105, which clears the dearest loan's 100");
+  const paid = flush.transfers.find((t) => t.loanId === "L2");
+  assert.equal(paid.parts.extra, 10000 - 1000, "the extra rides on the payment, bounded by what's left of the loan");
+  assert.equal(flush.ledger.loans.find((l) => l.id === "L2").state, "closed");
+  const lean = planTurn(input({ ledger: ledgerWith([cheap, dear]), civs: [me(), civ(4, { balanceCents: 5000,
+    incomeCents: 1000 })] }));
+  assert.equal(lean.events.some((e) => e.kind === "repay-early"), false, "under the reserve: nothing extra");
+  const fresh = planTurn(input({ ledger: ledgerWith([{ ...dear, opened: 50 }]), civs: [me(), civ(4, {
+    balanceCents: 30000, incomeCents: 1000 })] }));
+  assert.equal(fresh.events.some((e) => e.kind === "repay-early"), false, "never a loan opened this turn");
+  const human = planTurn(input({ ledger: ledgerWith([{ ...dear, borrower: ME }]), civs: [me({ balanceCents: 1e6 })] }));
+  assert.equal(human.events.some((e) => e.kind === "repay-early"), false, "the player chooses its own amount and turn");
+  assert.ok(planTurn(input({ ledger: ledgerWith([{ ...dear, borrower: ME }]), civs: [me({ balanceCents: 1e6 })] }))
+    .ledger.loans.length, "the Loans tab shows the player the same reserve reading instead");
 });

@@ -20,6 +20,7 @@ import { emptyLedger } from "./econ-state.js";
 import { emptyMarkets } from "./econ-markets.js";
 import { emptyMacro } from "./econ-macro-state.js";
 import { escrowOf } from "./econ-escrow.js";
+import { reserveOf } from "./econ-distress.js";
 
 /**
  * A turn context for reading offers and limits without planning anything.
@@ -145,7 +146,9 @@ export function loansView(input, pid) {
   const mine = rows((loan) => loan.borrower === pid).sort((a, b) => troubled(b) - troubled(a) || a.opened - b.opened);
   const lent = rows((loan) => loan.lender === pid);
   const income = civ?.incomeCents || 0;
+  const reserve = civ ? reserveOf(ctx, pid) : { reserveCents: 0, aboveCents: 0, ahead: [] };
   return { mine, lent, creditRoomCents: civ ? creditRoom(ctx, pid) : 0, serviceCapCents: serviceCap(income),
+    reserveCents: reserve.reserveCents, aboveReserveCents: reserve.aboveCents, ahead: reserve.ahead,
     serviceCents: serviceOf(ledger, pid), standingPct: standingPct(ledger, pid, input.turn),
     emergencyOpenCents: emergencyOutstandingOf(ledger, pid), emergencyCapCents: emergencyCap(income),
     stages: { moneylending: hasStage(civ, "moneylending", input.turn, input.options),
@@ -188,7 +191,7 @@ export function restructurePreview(ledger, loanId) {
   if (!loan) return null;
   const after = restructure(loan);
   return { outstanding: loan.outstanding, ratePpm: loan.ratePpm, term: after.term,
-    paymentCents: paymentDue(after).total, allowed: loan.state === "active" && loan.missed >= 1 && !loan.restructured };
+    paymentCents: paymentDue(after).total, allowed: loan.state === "active" && !loan.restructured };
 }
 
 /**

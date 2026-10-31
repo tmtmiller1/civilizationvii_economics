@@ -128,14 +128,15 @@ test("preference rows (AI-PLAN 4.2): every AI's every turn; the Gold bias up wit
       ["AiBudgetBiases", "AI_BUDGET_EXPANSION", 1]], "no debt: every factor sent as 1");
     assert.deepEqual(rowsOf(quiet, ME), [], "never for the human");
     // Service 2070 on 10000 of income: 20.7%, so 1 + 10 * 0.207 = 3.07 on the Gold bias; not in distress: budgets 1.
+    // Balances under the reserve (10 turns of income), so no early repayment moves the service.
     const owes = planTurn(input({ ledger: ledgerWith([loan("L1", { borrower: AI })]), civs: [me(), civ(AI, {
-      incomeCents: 10000, balanceCents: 100000 })] }));
+      incomeCents: 10000, balanceCents: 50000 })] }));
     assert.deepEqual(rowsOf(owes, AI).map((r) => r[2]), [3.07, 1, 1]);
     const light = planTurn(input({ ledger: ledgerWith([loan("L1", { borrower: AI, principal: 1000, outstanding: 1000,
-      term: 20 })]), civs: [me(), civ(AI, { incomeCents: 10000, balanceCents: 100000 })] }));
+      term: 20 })]), civs: [me(), civ(AI, { incomeCents: 10000, balanceCents: 50000 })] }));
     assert.deepEqual(rowsOf(light, AI).map((r) => r[2]), [1, 1, 1], "service under a tenth of income: 1");
     const heavy = planTurn(input({ ledger: ledgerWith([loan("L1", { borrower: AI, principal: 300000,
-      outstanding: 300000, term: 20 })]), civs: [me(), civ(AI, { incomeCents: 10000, balanceCents: 1e6 })] }));
+      outstanding: 300000, term: 20 })]), civs: [me(), civ(AI, { incomeCents: 10000, balanceCents: 50000 })] }));
     assert.deepEqual(rowsOf(heavy, AI).map((r) => r[2]), [5, 1, 1], "capped at 5");
     // In distress (short this turn): the budgets at 1 / the Gold factor, never below 0.25.
     const due = loan("L1", { borrower: AI, principal: 10000, outstanding: 10000, ratePpm: 20000, term: 10, opened: 1 });

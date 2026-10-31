@@ -173,7 +173,9 @@ test("the Loans tab lists the loans overdue first, queues repay, restructure and
   assert.ok(textOf(again.card).includes("LOC_ECONOMICS_REPUDIATE_PREVIEW|60|Civ 6|"), "the preview shows before the confirm");
   assert.deepEqual(api.requests.at(-1), { kind: "repudiate", borrower: ME, lender: 6 });
   const restructure = by("LOC_ECONOMICS_LOANS_RESTRUCTURE").find((b) => !b.classList.contains("econ-button--disabled"));
-  assert.ok(textOf(host).includes("LOC_ECONOMICS_RESTRUCTURE_WHY_ON_TIME"), "the loan on time says why it can't");
+  assert.equal(by("LOC_ECONOMICS_LOANS_RESTRUCTURE").filter((b) => !b.classList.contains("econ-button--disabled")).length,
+    2, "both active loans can be restructured, misses or not (AI-PLAN 4.3)");
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_LOANS_RESERVE"), "the reserve reading");
   restructure.click();
   const third = confirmOn(api);
   assert.ok(textOf(third.card).includes("LOC_ECONOMICS_RESTRUCTURE_PREVIEW"));
