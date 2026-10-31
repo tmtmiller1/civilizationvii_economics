@@ -786,6 +786,84 @@ fired by script through a Commons topic rather than the game's own narrative con
 first (the proposal: Bank holiday, Public works, Relief and the Hoover trap, since they use what exists, then
 Deposit insurance and the gold standard, then Price supports and Rearmament); and the numbers above.
 
+### 4.11c Crises by age: when they come, what each age can do, what each choice leaves behind (decided 2026-10-31,
+the owner; proposed shape, nothing built)
+
+The owner's brief: bad things happen, the player answers with immediate changes, and the choice leaves a legacy. Three
+age variants, and a crisis can start on any turn of the age, not only at its end the way the game's own crisis does.
+
+**When a crisis comes.** Each kind is read from the model's state every turn (no roll), opens its panel when its
+condition holds and a spacing has passed, and runs while the condition holds. The game's end-of-age crisis stays
+what it is (it already weighs on the index, 4.11); a mod crisis can overlap it. Spacing: a civ has at most one
+crisis of a kind in 30 turns, two kinds at once at most.
+
+| Crisis | Condition, read each turn | Ages |
+| --- | --- | --- |
+| Depression | the civ's phase is Depression (4.11) | all |
+| Credit panic | a Panic (4.11) with the civ holding loans, or two of its lenders closed | Exploration from Banking, Modern |
+| Price shock | a resource class's price index up or down 40% on 10 turns ago, for a civ importing or exporting it | all; Antiquity grain, Exploration bullion and spices, Modern factory resources |
+| Debt crisis | dues over income for 3 turns, or a default on a civ lender | all |
+| Runaway inflation | the rate at its cap (Inflation On) for 5 turns, or a civ off the gold standard for 10 | Exploration from Public debt, Modern |
+| Trade collapse | a third or more of a civ's routes ended within 5 turns (war, piracy, tariffs) | Exploration, Modern |
+
+**Antiquity: the temple, the grain and the debt bondage.** Responses, with the immediate change, then the legacy.
+
+| Response | History | Immediate | Legacy |
+| --- | --- | --- | --- |
+| Cancel the debts | Solon's seisachtheia, 594 BC | every loan the civ's citizens and temples hold on it is written off; `+0.02` on `L`; Happiness +4 a settlement for 5 turns | the citizens' meter (4.17) at 0 for the age; temple treasuries lend at 1.5x for 20 turns; reputation -20 |
+| Grain dole | Cura Annonae | Gold a settlement a turn into the celebration meter; a price floor under this age's food resources | a settlement count the dole has to keep paying: ending it early costs Happiness -2 a settlement for 10 turns (the mob remembers) |
+| Debase the coin | Nero's denarius | one-off Gold equal to 3 turns of income from the temple account; prices +10% over 5 turns | a Debased mark for the age: every loan the civ takes costs 0.25% a turn more, the bond market in the next age opens 10 turns late |
+| Build | Pericles' programme | the Public works card of this age (+10% Production, -2 Gold a settlement) | the builds; a Wonder finished while it runs weighs `+0.01` on `L` |
+| Tribute | the satrapies | a Tribute-system civ (4.17) levies 2 turns of income from each civ Unfriendly or worse with it that it's stronger than; others pay 1 turn of income in Influence instead | grievances with each; the levied civs' trade bills with it double for 10 turns |
+| The temple lends | the first banks | the temple treasuries open a 20-turn loan at the base rate to the civ, outside its cap | the temple's rate for everyone +0.25% for the age |
+
+**Exploration: the bankers, the bullion and the companies.**
+
+| Response | History | Immediate | Legacy |
+| --- | --- | --- | --- |
+| Suspend payments | Philip II's 1557 bankruptcy | a Bank holiday (4.11b) on every loan the civ owes, 3 turns | the lender civs' relationship -3 and grievances; its bond rate 1.5x for 20 turns; the civ lenders refuse it for the age |
+| Recoinage | the Great Recoinage of 1696 | the inflation rate reset to 0 and prices steadied (the price trend reset); costs 2 turns of income | Steadied: its inflation cap halves for the age; its exporters' prices -5% for 10 turns |
+| Charter a company | the East India companies | the civ's Trade buildings count 1.5x for depth (4.13) and its routes' bills -20% for 20 turns; needs Chartered companies (4.15) | a company the civ can't close: a fifth of its route income goes to the company's dividends for the age |
+| Navigation acts | mercantilism | the High tariff without the relationship cost, and importers answering in kind can't (the acts are law) for 10 turns | the trade war weight of 4.11b counts the civ double for the age |
+| Bullion fleets | the treasure fleets | a one-off grant of 3 turns of income from the market account; prices +15% over 5 turns (the price revolution) | the civ's own inflation +0.25% a turn for 10 turns; pirates: a Trade collapse crisis becomes more likely (the condition's threshold halves) for 20 turns |
+| Lend to the crown | the Fuggers | the civ's lenders (the AIs Friendly with it) extend its cap by 4 turns of income for the age | each such lender's stake in it +4 for the age (they're in deep); a default to them weighs double on the index |
+| Public works | the Royal Exchange, the canals | the age's card (+10% Production, -4 Gold a settlement) | the builds |
+
+**Modern: the New Deal and the Hoover trap** as in 4.11b, plus two with legacies: the gold standard left stays
+left (inflation runs at +0.25% a turn for the rest of the age), and deposit insurance carried in from a Market
+economy. Rearmament's legacy is the army's upkeep and the neighbours' agenda rows.
+
+**Legacies as a rule.** A legacy is a row in the civ's ledger (`legacies: [{ kind, from, until, ... }]`) with an
+end turn or "the age", read by the rule it changes (the lender rates, the cap, the tariff answer, the inflation cap,
+the dole's settlements) and listed on the Fiscal tab under "What your choices left" with the turns left. It survives
+the age change when it says "next age"; the rest clear at the change, the way the ledger's windows do (4.14).
+
+**Events by age**, read from the state each turn as in 4.11b: Antiquity: a famine (a disaster on a food resource
+tile during a Price shock) doubles the grain dole's cost; a temple sacked (a capture of a settlement with a temple
+treasury loan) writes the loan off against the treasury. Exploration: a bubble (credit growing fast 5 turns running
+with the index above 1.05 and a resource class up 40%) that bursts into a Credit panic when the class turns; a
+bankruptcy cascade (two civs suspending payments within 5 turns closes the bond market 5 turns). Modern: 4.11b's.
+
+**The AI**, by system as in 4.11b, with the age's menu: Antiquity Civic market civs cancel debts or dole, Tribute
+civs levy, Palace economies debase; Exploration Mercantile civs charter and pass navigation acts, Manorial ones
+suspend, Religious ones dole; Modern as 4.11b.
+
+**Build order** (each stage a release's worth, each watched in a lab game before the next):
+
+1. The crisis panel and the ledger's `legacies`, with the Depression crisis and three responses that use what
+   exists in every age: Public works (the card per age, native yields), Relief or the Grain dole (the celebration
+   meter), and the Bank holiday or Suspend payments. The Hoover trap's trade war weight.
+2. The Debt crisis and the Credit panic with their responses: Cancel the debts, Deposit insurance, Lend to the
+   crown, the temple lending; the bank run and bank failure events.
+3. The Price shock and Runaway inflation with Debase, Recoinage, Bullion fleets, Off the gold standard, Price
+   supports; the bubble and famine events.
+4. Trade collapse with Charter a company, Navigation acts, Rearmament, Tribute; the AI's full menu; the balance run
+   against 4.11b's targets.
+
+Open: the panel's home (the World tab, or the game's narrative dialog fired by script), the first numbers above, and
+whether a crisis should also be able to come from nothing but a long calm (a bubble that builds while nothing goes
+wrong is in stage 3; a crisis with no cause at all isn't proposed, since the model has no randomness).
+
 ### 4.12 Foreign investment
 
 | | Development loan | General | Aid (either kind) |
