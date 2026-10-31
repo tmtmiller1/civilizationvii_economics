@@ -206,7 +206,8 @@ r_cap           = 4 * base_rate; rates stop there, including after miss steps
 
 ### 4.4 Term and payments
 
-Each turn an active loan charges one payment, all or nothing (NOTES choice 3):
+Each turn an active loan charges one payment; a borrower that can't cover it pays what it has (NOTES choice 3,
+2026-10-31):
 
 ```
 interest      = O * r
@@ -215,9 +216,12 @@ payment       = interest + amortisation, from the borrower to the lender in the 
 ```
 
 - Paid: `O -= amortisation`, `m = 0`.
-- Missed, when the borrower's funds for the turn (4.14) can't cover the payment: the borrower keeps the Gold and the
-  lender waits. The interest is added to `O`, the slice moves to the next turn so the loan runs one turn longer,
-  `m += 1`, `r = min(r * 1.25, r_cap)`, `-5 Influence`, and the miss counts toward standing for 20 turns.
+- Short, when the borrower's funds for the turn (4.14) can't cover the payment: it pays what it has, interest first,
+  and the rest of the payment is added to `O`, so the lender gets what there was and the loan grows by what it
+  didn't. The slice moves to the next turn so the loan runs one turn longer and the next payment is the same number
+  on a slightly bigger loan; `m += 1`, `r = min(r * 1.25, r_cap)`, `-5 Influence`, and the miss counts toward
+  standing. With nothing to pay it's the plain miss of before: the interest alone joins `O`. The turn's notice reads
+  "Paid 80 of 100. 20 added to the loan." Nothing is carried as arrears (the owner's call of 2026-10-31).
 - `m` counts misses in a row. Separate misses with paid turns between them cost rate, interest and standing, but they
   don't add up to a default.
 - At `m >= 3` the loan enters default (4.5).

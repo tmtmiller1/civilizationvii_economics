@@ -94,11 +94,15 @@ purpose is to meet payments already inside the service figure is tested on total
 offer is accepted on the same test, so lending to a short AI becomes possible. Over the credit cap, or insolvent: the
 emergency loan as now.
 
-Decided (the owner asked for whatever plays the same for both sides; this is my call under that): arrears replace
-all-or-nothing misses, NOTES choice 3 retired. When funds are short the borrower pays what it has and carries the
-rest as arrears, collected first the next turn from the post-income balance, which the wipe can't touch. A miss still
-counts (`m`, rate step, Influence, standing); it stops meaning "keep the Gold". The same for the human and the AI,
-and the Loans tab shows arrears on the loan.
+Decided (2026-10-31, the owner): a loan's payment stays one number each turn. When a borrower can't cover it, it
+pays what it has, and the shortfall joins the loan's principal at the penalty rate, the way a missed payment's
+interest is capitalised today; next turn's payment is the same number as before, on a slightly bigger loan. A short
+turn still counts as a miss (`m`, the rate step, Influence, standing), so restructuring, default at `m >= 3` and the
+garnish keep working as they are. There's no arrears field and no carried line: the Loans tab keeps one line per
+loan, and a short turn's notice reads "Paid 80 of 100. 20 added to the loan." with the restructure and refinance
+choices under it. The same for the human and the AI. An earlier draft carried the shortfall as arrears collected
+first the next turn; the owner found that too complicated for the player, and NOTES choice 3 now records the partial
+payment instead.
 
 ### 4.2 Escrow: the native AI can't spend what's set aside (question 6)
 
