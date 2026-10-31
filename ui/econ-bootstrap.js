@@ -5,8 +5,8 @@
 
 import { logLine } from "./econ-log.js";
 import { aliveMajorIds, gameTurn, isMultiplayer, listen, loc, localId, readAtWar, safe } from "./econ-engine.js";
-import { buildInput, displayTurn, dropRequest, economyOf, loadSession, noteCycleEvent, queueRequest, readOptions,
-  resendLostBatch, runTurn, setGuard, turnNow } from "./econ-session.js";
+import { buildInput, displayTurn, dropRequest, economyOf, loadSession, markSeen, noteCycleEvent, noteOpened,
+  queueRequest, readOptions, resendLostBatch, runTurn, setGuard, stageTurnsOf, turnNow } from "./econ-session.js";
 import { captureEvent, disasterEvent, razeEvent, readPopulations } from "./econ-macro-read.js";
 import { phaseKey } from "./econ-notice-text.js";
 import { formatRate } from "./econ-format.js";
@@ -14,7 +14,7 @@ import { flushNotice, holdNotice, installClickHandler, nameOf } from "./econ-not
 import { stageOpenerName } from "./econ-stage-read.js";
 import { canSwap, readCards, readFiscal, swapTo } from "./econ-fiscal.js";
 import { openScreen, rerenderScreen, setScreenApi } from "./econ-screen.js";
-import { installDock, refreshPill } from "./econ-dock.js";
+import { installDock, refreshDock, refreshPill } from "./econ-dock.js";
 import { formatGold } from "./econ-format.js";
 import { outstandingOf } from "./econ-credit.js";
 import { readCityName, readPossibleRoutes, readTypeName } from "./econ-commerce-read.js";
@@ -77,7 +77,30 @@ function screenApi(session) {
     cityName: (cityId) => loc(readCityName(cityId)),
     possibleRoutes: () => readPossibleRoutes(localId(), aliveMajorIds()),
     turnLabel: (turn) => displayTurn(session, turn),
+    stageTurns: () => stageTurnsOf(session, localId()),
+    seenTab: (tab) => { if (markSeen(session, tab)) refreshDock(); },
   };
+}
+
+/**
+ * The dock button's unseen marker: the tabs with a part the player hasn't opened yet, by name.
+ * @param {Session} session
+ */
+function markerSource(session) {
+  return session.glue.fresh.map((tab) => loc(`LOC_ECONOMICS_TAB_${tab.toUpperCase()}`));
+}
+
+/**
+ * After a batch (or a skipped one): the parts of the screen that opened this turn lead the notification, and the
+ * dock button's marker follows them.
+ * @param {Session} session
+ * @param {PlanOutput | null} plan
+ */
+function afterBatch(session, plan) {
+  const me = localId();
+  const opened = me < 0 ? [] : safe(() => noteOpened(session, buildInput(session), me), /** @type {string[]} */ ([]));
+  if (plan || opened.length) holdNotice(plan, state, opened.map((key) => loc(key)), turnNow(session));
+  refreshDock();
 }
 
 /**
@@ -89,14 +112,14 @@ function catchUp(session) {
   const last = session.ledger.lastTurn;
   if (!Number.isInteger(last) || /** @type {number} */ (last) >= turnNow(session)) return;
   const plan = safe(() => runTurn(session, `load catch-up from turn ${last}`), null);
-  if (plan) holdNotice(plan, state);
+  afterBatch(session, plan);
 }
 
 function onTurnBegin() {
   const session = state.session;
   if (!session) return;
   const plan = safe(() => runTurn(session, `TurnBegin ${gameTurn()}`), null);
-  if (plan) holdNotice(plan, state);
+  afterBatch(session, plan);
   refreshPill();
   rerenderScreen();
 }
@@ -149,7 +172,9 @@ function boot() {
   if (safe(() => Players.get(localId()).isTurnActive === true, false)) state.activeTurn = turnNow(session);
   catchUp(session);
   setScreenApi(screenApi(session));
-  installDock(pillSource);
+  installDock(pillSource, () => markerSource(session));
+  // The first look in a game notes what's open without telling, so only later openings make a notification line.
+  if (session.glue.told === null) safe(() => noteOpened(session, buildInput(session), localId()), []);
   installClickHandler(() => openScreen());
   listen("TurnBegin", onTurnBegin);
   listen("PlayerTurnActivated", onPlayerTurnActivated);

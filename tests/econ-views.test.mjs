@@ -58,13 +58,26 @@ function makeApi(over = {}) {
 }
 
 test("the Treasury tab shows the balance block, the projection, the flows and the buildings", () => {
-  const api = makeApi();
+  const api = makeApi({ stageTurns: () => ({ coinage: 0 }) });
   const host = document.createElement("div");
   renderTreasury(host, api);
   const text = textOf(host);
   for (const key of ["LOC_ECONOMICS_TREASURY_BALANCE", "LOC_ECONOMICS_TREASURY_PROJECTION", "LOC_ECONOMICS_TREASURY_FLOWS",
     "LOC_ECONOMICS_EVENT_OPEN|L1|30|Civ 6|Civ 2", "LOC_ECONOMICS_ROLE_BANKING"]) assert.ok(text.includes(key), key);
   assert.equal(byClass(host, "econ-bar-pair").length, 20);
+  assert.equal(text.includes("LOC_ECONOMICS_GUARD_STATE"), false, "the guard lives on the Loans tab once it's open");
+});
+
+test("before Coinage the Treasury tab leaves out financial depth and says what opens next", () => {
+  const api = makeApi({ planInput: { age: "AGE_ANTIQUITY", civs: [civ(ME, { human: true, stages: { moneylending: null,
+    publicDebt: null } }), civ(6)], ledger: emptyLedger() } });
+  const host = document.createElement("div");
+  renderTreasury(host, api);
+  const text = textOf(host);
+  assert.equal(text.includes("LOC_ECONOMICS_ROLE_BANKING"), false, "no depth before Coinage");
+  assert.equal(text.includes("LOC_ECONOMICS_TREASURY_OLD"), false, "no old buildings in the first age");
+  assert.ok(text.includes("LOC_ECONOMICS_GUARD_STATE"), "the guard switch is here until the Loans tab opens");
+  assert.ok(text.includes("LOC_ECONOMICS_OPENS_NEXT|LOC_ECONOMICS_PART_TAB_TRADE|LOC_CIVIC_ECONOMICS_NAME"));
 });
 
 test("the Loans tab lists the loans overdue first, queues repay, restructure and repudiation after a confirm, and switches the guard", () => {
@@ -132,7 +145,8 @@ test("stages closed show the node that opens them; the Fiscal tab draws the card
   const closed = makeApi({ planInput: { civs: [civ(ME, { human: true, stages: { moneylending: null, publicDebt: null } })] } });
   const host = document.createElement("div");
   renderLoans(host, closed);
-  assert.ok(textOf(host).includes("LOC_ECONOMICS_LOANS_STAGE_CLOSED|LOC_ECONOMICS_PART_CIV_LOANS|LOC_CIVIC_ECONOMICS_NAME"));
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_OPENS_NEXT|LOC_ECONOMICS_PART_CIV_LOANS|LOC_CIVIC_ECONOMICS_NAME"));
+  assert.equal(textOf(host).includes("LOC_ECONOMICS_BORROW"), false, "no borrow form before Moneylending");
   const api = makeApi();
   const empty = document.createElement("div");
   renderFiscal(empty, api);
@@ -150,13 +164,18 @@ test("stages closed show the node that opens them; the Fiscal tab draws the card
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|3"), "the celebration under Light");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|7"), "the celebration now, under Heavy");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-8|+4"), "clearing Heavy");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|+2|-1"), "War Levy's peacetime part");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR"), "and a line for war");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|+8|-4"), "War Levy's amounts at war, both parts");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_LOCKED_BY|LOC_TECH_CURRENCY_NAME"), "a locked card names what opens it");
+  assert.equal(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR"), false, "a locked card isn't drawn");
+  assert.ok(text.includes("LOC_ECONOMICS_OPENS_NEXT|LOC_ECONOMICS_PART_CARD|LOC_ECONOMICS_CARD_WAR_LEVY_NAME"
+    + "|LOC_TECH_CURRENCY_NAME"), "the locked card is the next part, with what opens it");
+  api.state.cards[2].unlocked = true;
+  const open = document.createElement("div");
+  renderFiscal(open, api);
+  const all = textOf(open);
+  assert.ok(all.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|+2|-1"), "War Levy's peacetime part");
+  assert.ok(all.includes("LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR"), "and a line for war");
+  assert.ok(all.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|+8|-4"), "War Levy's amounts at war, both parts");
   const slot = byClass(full, "econ-button").filter((b) => b.textContent === "LOC_ECONOMICS_FISCAL_SLOT");
-  assert.equal(slot.length, 2);
-  assert.ok(slot[1].classList.contains("econ-button--disabled"), "a locked card can't be slotted");
+  assert.equal(slot.length, 1, "only the unlocked card that isn't slotted");
   slot[0].click();
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.deepEqual(api.state.swaps, ["TRADITION_ECONOMICS_LIGHT_EX"]);
@@ -240,7 +259,8 @@ test("the Fiscal tab's tariff row: the choice once the stage opens, the wait aft
   assert.ok(textOf(waiting).includes("LOC_ECONOMICS_TARIFF_WAIT"));
   const closed = document.createElement("div");
   renderFiscal(closed, makeApi());
-  assert.ok(textOf(closed).includes("LOC_ECONOMICS_TARIFF_STAGE"), "no Tariffs stage yet");
+  assert.equal(textOf(closed).includes("LOC_ECONOMICS_TARIFF_NOW"), false, "no tariff row before the Tariffs stage");
+  assert.ok(textOf(closed).includes("LOC_ECONOMICS_OPENS_NEXT|LOC_ECONOMICS_PART_TARIFFS"), "it opens next");
   const off = document.createElement("div");
   renderFiscal(off, commerceApi({ options: { tariffs: false } }));
   assert.equal(textOf(off).includes("LOC_ECONOMICS_TARIFF"), false);

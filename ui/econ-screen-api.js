@@ -30,6 +30,9 @@
  *   would let the player make now, or null when that read doesn't answer
  * @property {(turn: number) => number | null} turnLabel the game's own turn for a counted one (econ-turn-count.js),
  *   null for a turn of an earlier age
+ * @property {() => Record<string, number | null | undefined>} [stageTurns] the turn the player reached each stage,
+ *   coinage included, for the tab rules (econ-view-tabs.js)
+ * @property {(tab: string) => void} [seenTab] the player opened a tab: clears its unseen marker
  */
 
 export {};

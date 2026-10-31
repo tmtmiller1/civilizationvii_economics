@@ -5,8 +5,11 @@
 import { el, note, projectionChart, row, section } from "./econ-dom.js";
 import { formatFactor, formatGold, formatPct } from "./econ-format.js";
 import { composeArgs, describeEvent, eventConcerns } from "./econ-notice-text.js";
-import { treasuryView } from "./econ-view-model.js";
-import { inflationLines } from "./econ-view-macro.js";
+import { loansView, treasuryView } from "./econ-view-model.js";
+import { cycleGoldLine, inflationLines } from "./econ-view-macro.js";
+import { opensNext, rulesFor } from "./econ-view-common.js";
+import { guardSection, mineSection, pendingSection } from "./econ-view-loans.js";
+import { phaseKey } from "./econ-notice-text.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 
@@ -17,6 +20,26 @@ import { inflationLines } from "./econ-view-macro.js";
 export function renderTreasury(host, api) {
   const input = api.input();
   const view = treasuryView(input, api.me);
+  const { rules } = rulesFor(api);
+  host.appendChild(nowSection(input, view, rules, api));
+  host.appendChild(projectionSection(view, api));
+  // Before the Loans tab opens, the player's loans and the guard switch are here.
+  if (rules.sections["treasury.loans"]) earlyLoans(host, input, api);
+  host.appendChild(flowsSection(api));
+  if (rules.sections["treasury.depth"]) host.appendChild(depthSection(api));
+  if (rules.sections["treasury.old"]) host.appendChild(oldSection(api));
+  const next = opensNext(api, rules.next.treasury);
+  if (next) host.appendChild(next);
+}
+
+/**
+ * Balance, income, what's due; the inflation reserve for a member; this turn's cycle Gold before the World tab.
+ * @param {PlanInput} input
+ * @param {ReturnType<typeof treasuryView>} view
+ * @param {import("./econ-view-tabs.js").TabRules} rules
+ * @param {ScreenApi} api
+ */
+function nowSection(input, view, rules, api) {
   const gold = (/** @type {number} */ cents) => api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents));
   const signed = (/** @type {number} */ cents) => api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents, { signed: true }));
   const now = section(api.loc("LOC_ECONOMICS_TREASURY_NOW"), [
@@ -34,11 +57,25 @@ export function renderTreasury(host, api) {
     now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_EROSION"), gold(inflation.erosionCents),
       inflation.erosionCents > 0 ? "econ-negative" : ""));
   }
-  host.appendChild(now);
-  host.appendChild(projectionSection(view, api));
-  host.appendChild(flowsSection(api));
-  host.appendChild(depthSection(api));
-  host.appendChild(oldSection(api));
+  const cycle = rules.sections["treasury.cycle"] ? cycleGoldLine(input, api.me) : null;
+  if (cycle?.on) {
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_CYCLE", api.loc(phaseKey(cycle.phase))), signed(cycle.cents),
+      cycle.cents < 0 ? "econ-negative" : ""));
+  }
+  return now;
+}
+
+/**
+ * The loans and guard blocks of the Loans tab, shown here until that tab opens.
+ * @param {HTMLElement} host
+ * @param {PlanInput} input
+ * @param {ScreenApi} api
+ */
+function earlyLoans(host, input, api) {
+  const loans = loansView(input, api.me);
+  if (loans.mine.length) host.appendChild(mineSection(input, loans, api));
+  host.appendChild(guardSection(loans, api));
+  if (api.pending().length) host.appendChild(pendingSection(api));
 }
 
 /**

@@ -72,6 +72,13 @@ release is generated from the matching section below by `scripts/steam-changelog
   Economic systems (On).
 
 ### Changed
+- The Economics screen grows with your economy. In Antiquity it opens with the Treasury and Fiscal tabs; Markets and
+  World appear with Currency, Trade with Code of Laws, and Loans with Commerce, or sooner if you take an emergency or
+  temple loan or your citizens would lend to you. Until the Loans tab appears, the auto-loan guard and your loans sit
+  on the Treasury tab, along with this turn's business cycle Gold until the World tab opens. Parts you haven't reached
+  are left out instead of greyed, and each tab ends with one line naming what opens next and the civic or tech that
+  opens it. The turn a tab or part opens, the turn notification says so, and the dock button shows a small gold dot
+  until you look. With Economic stages off, every tab is there from the start.
 - The turn notice shows Gold in whole numbers, like the top bar, and only speaks up when Economics moved 2 Gold or
   more that turn.
 - The debt pill sits in the top resource bar, after the settlement limit.

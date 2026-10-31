@@ -64,16 +64,19 @@ function refusalLines(event, ctx) {
 }
 
 /**
- * Keeps this turn's lines until the local player's turn is active; sends at once if it already is.
- * @param {PlanOutput} plan
+ * Keeps this turn's lines until the local player's turn is active; sends at once if it already is. `opened` are the
+ * lines naming a tab or section of the screen that opened this turn, already in the game's language; they lead.
+ * @param {PlanOutput | null} plan
  * @param {{ activeTurn: number }} state
+ * @param {string[]} [opened]
+ * @param {number | null} [turn] the counted turn, for a turn whose batch was skipped
  */
-export function holdNotice(plan, state) {
+export function holdNotice(plan, state, opened = [], turn = null) {
   const me = localId();
   if (me < 0) return;
-  const lines = composeLines(plan, me);
+  const lines = [...opened, ...(plan ? composeLines(plan, me) : [])];
   if (!lines.length) { pending = null; return; }
-  pending = { turn: plan.ledger.lastTurn ?? gameTurn(), lines };
+  pending = { turn: plan?.ledger.lastTurn ?? turn ?? gameTurn(), lines };
   if (state.activeTurn === pending.turn) flushNotice();
 }
 

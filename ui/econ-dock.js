@@ -10,6 +10,7 @@ import { openScreen } from "./econ-screen.js";
 import { pill } from "./econ-dom.js";
 import { logDebug, logLine } from "./econ-log.js";
 import { getSetting } from "./econ-settings.js";
+import { loc } from "./econ-engine.js";
 
 // The game serves a mod's files under its mod id, not its folder name (engine-closed, "UI context has no fetch").
 const ICON_URL = "fs://game/tower-economics/images/econ-dock-icon.svg";
@@ -20,14 +21,42 @@ const STYLE_ID = "econ-dock-icon-style";
 const pillNodes = new Map();
 /** @type {(() => { text: string, warning: boolean }) | null} */
 let pillSource = null;
+/** The dock buttons drawn (one per dock the game attaches). @type {Set<HTMLElement>} */
+const dockButtons = new Set();
+/** The names of the tabs with something the player hasn't opened yet. @type {(() => string[]) | null} */
+let markerSource = null;
 
 function injectIconStyle() {
   if (document.getElementById(STYLE_ID)) return;
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `.ssb__button-icon.economics { background-image: none; background-color: ${ICON_TINT};`
-    + ` mask-image: url("${ICON_URL}"); mask-size: 64%; mask-position: center; mask-repeat: no-repeat; }`;
+    + ` mask-image: url("${ICON_URL}"); mask-size: 64%; mask-position: center; mask-repeat: no-repeat; }`
+    // The unseen marker: a small gold dot on the button's upper right, the way the game marks something new.
+    + " .econ-dock-new { position: absolute; top: 0.15rem; right: 0.15rem; width: 0.7rem; height: 0.7rem;"
+    + " border-radius: 0.35rem; background-color: #f3c34c; border-top: 1px solid #3a2a10;"
+    + " border-right: 1px solid #3a2a10; border-bottom: 1px solid #3a2a10; border-left: 1px solid #3a2a10;"
+    + " pointer-events: none; display: none; }"
+    + " .econ-dock-new--on { display: flex; }";
   document.head.appendChild(style);
+}
+
+/** Shows or hides the dock button's unseen marker, with the tabs it's about in the button's tooltip. */
+export function refreshMarker() {
+  if (!markerSource) return;
+  const tabs = markerSource();
+  for (const button of dockButtons) {
+    const dot = button.querySelector(".econ-dock-new");
+    dot?.classList.toggle("econ-dock-new--on", tabs.length > 0);
+    const tip = tabs.length ? loc("LOC_ECONOMICS_DOCK_NEW", tabs.join(", ")) : loc("LOC_ECONOMICS_OPEN");
+    button.setAttribute("data-tooltip-content", tip);
+  }
+}
+
+/** The pill and the marker, after a batch or an action. */
+export function refreshDock() {
+  refreshPill();
+  refreshMarker();
 }
 
 /** Redraws every banner's pill from its source; called after each batch and when the screen acts. */
@@ -44,10 +73,25 @@ export function refreshPill() {
   }
 }
 
+/**
+ * Puts the unseen marker on a dock button and keeps the button for refreshMarker.
+ * @param {HTMLElement} node
+ */
+function addMarker(node) {
+  const dot = document.createElement("div");
+  dot.className = "econ-dock-new";
+  node.appendChild(dot);
+  dockButtons.add(node);
+  refreshMarker();
+  return node;
+}
+
 class EconomicsDockDecorator {
   /** @param {any} panel */
   constructor(panel) {
     this.panel = panel;
+    /** @type {HTMLElement | null} */
+    this.button = null;
   }
 
   beforeAttach() {}
@@ -60,7 +104,8 @@ class EconomicsDockDecorator {
       const node = this.panel.addButton({ tooltip: "LOC_ECONOMICS_OPEN", modifierClass: "economics",
         callback: () => openScreen(), class: ["economics-dock-button"], audio: "data-audio-tab-selected",
         focusedAudio: "data-audio-focus-small" });
-      if (!node) logDebug("dock: addButton returned nothing");
+      if (!node) { logDebug("dock: addButton returned nothing"); return; }
+      this.button = addMarker(node);
     } catch (error) {
       logLine(`dock button: ${error}`);
     }
@@ -68,7 +113,9 @@ class EconomicsDockDecorator {
 
   beforeDetach() {}
 
-  afterDetach() {}
+  afterDetach() {
+    if (this.button) dockButtons.delete(this.button);
+  }
 }
 
 class EconomicsBannerDecorator {
@@ -107,11 +154,14 @@ class EconomicsBannerDecorator {
 }
 
 /**
- * Registers the dock decorator; `source` gives the pill's text and colour whenever it's redrawn.
+ * Registers the dock decorator; `source` gives the pill's text and colour whenever it's redrawn, `marker` the names
+ * of the tabs the player hasn't opened since something new appeared on them.
  * @param {() => { text: string, warning: boolean }} source
+ * @param {() => string[]} [marker]
  */
-export function installDock(source) {
+export function installDock(source, marker) {
   pillSource = source;
+  markerSource = marker || null;
   try {
     if (typeof Controls !== "undefined" && typeof Controls.decorate === "function") {
       Controls.decorate("panel-sub-system-dock", (/** @type {any} */ panel) => new EconomicsDockDecorator(panel));

@@ -241,11 +241,13 @@
                     <Item>ui/econ-turn.js</Item>
                     <Item>ui/econ-view-borrow.js</Item>
                     <Item>ui/econ-view-commerce.js</Item>
+                    <Item>ui/econ-view-common.js</Item>
                     <Item>ui/econ-view-fiscal.js</Item>
                     <Item>ui/econ-view-loans.js</Item>
                     <Item>ui/econ-view-macro.js</Item>
                     <Item>ui/econ-view-markets.js</Item>
                     <Item>ui/econ-view-model.js</Item>
+                    <Item>ui/econ-view-tabs.js</Item>
                     <Item>ui/econ-view-trade.js</Item>
                     <Item>ui/econ-view-treasury.js</Item>
                     <Item>ui/econ-view-world.js</Item>

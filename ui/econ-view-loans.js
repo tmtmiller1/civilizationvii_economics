@@ -4,6 +4,7 @@
 // or a restructure is queued, the tab shows what DESIGN 5 says to show and asks once more.
 
 import { button, el, note, pill, row, section } from "./econ-dom.js";
+import { opensNext, rulesFor } from "./econ-view-common.js";
 import { formatGold, formatRate } from "./econ-format.js";
 import { loansView, repudiationPreview, restructurePreview } from "./econ-view-model.js";
 import { renderBorrow, renderLend } from "./econ-view-borrow.js";
@@ -26,14 +27,16 @@ const gold = (api, cents) => api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cen
 export function renderLoans(host, api) {
   const input = api.input();
   const view = loansView(input, api.me);
+  const { rules } = rulesFor(api);
   host.appendChild(limitsSection(view, api));
-  host.appendChild(stageSection(view, api));
-  if (view.stages.moneylending || view.stages.publicDebt) host.appendChild(renderBorrow(input, view, api));
+  if (rules.sections["loans.borrow"]) host.appendChild(renderBorrow(input, view, api));
   host.appendChild(mineSection(input, view, api));
   if (view.lent.length) host.appendChild(lentSection(view, api));
-  if (view.stages.publicDebt) host.appendChild(renderLend(input, api));
+  if (rules.sections["loans.lend"]) host.appendChild(renderLend(input, api));
   host.appendChild(guardSection(view, api));
   host.appendChild(pendingSection(api));
+  const next = opensNext(api, rules.next.loans);
+  if (next) host.appendChild(next);
 }
 
 /**
@@ -47,26 +50,6 @@ function limitsSection(view, api) {
       formatGold(view.serviceCents), formatGold(view.serviceCapCents))),
     row(api.loc("LOC_ECONOMICS_LOANS_STANDING"), (view.standingPct / 100).toFixed(2)),
   ]);
-}
-
-/**
- * The parts a civ hasn't reached, greyed with the node that opens them (DESIGN 4.15).
- * @param {ReturnType<typeof loansView>} view
- * @param {ScreenApi} api
- */
-function stageSection(view, api) {
-  /** @type {HTMLElement[]} */
-  const lines = [];
-  const closed = (/** @type {string} */ partKey, /** @type {string} */ stage) => {
-    const opener = api.stageOpener(stage);
-    const by = opener ? api.loc(opener) : api.loc("LOC_ECONOMICS_STAGE_NEXT_AGE");
-    lines.push(el("div", "econ-line econ-muted", api.loc("LOC_ECONOMICS_LOANS_STAGE_CLOSED", api.loc(partKey), by)));
-  };
-  if (!view.stages.moneylending) closed("LOC_ECONOMICS_PART_CIV_LOANS", "moneylending");
-  if (!view.stages.publicDebt) closed("LOC_ECONOMICS_PART_BOND", "publicDebt");
-  const block = section(api.loc("LOC_ECONOMICS_LOANS_STAGES"), lines);
-  if (!lines.length) block.appendChild(note(api.loc("LOC_ECONOMICS_LOANS_STAGES_ALL_OPEN")));
-  return block;
 }
 
 /**
@@ -85,7 +68,7 @@ function statusPill(loan, api) {
  * @param {ReturnType<typeof loansView>} view
  * @param {ScreenApi} api
  */
-function mineSection(input, view, api) {
+export function mineSection(input, view, api) {
   const block = section(api.loc("LOC_ECONOMICS_LOANS_MINE"));
   if (!view.mine.length) { block.appendChild(note(api.loc("LOC_ECONOMICS_LOANS_NONE"))); return block; }
   for (const loan of view.mine) block.appendChild(loanCard(input, loan, api));
@@ -198,7 +181,7 @@ function lentSection(view, api) {
  * @param {ReturnType<typeof loansView>} view
  * @param {ScreenApi} api
  */
-function guardSection(view, api) {
+export function guardSection(view, api) {
   const on = api.guardOn();
   const block = section(api.loc("LOC_ECONOMICS_GUARD"), [
     row(api.loc("LOC_ECONOMICS_GUARD_STATE"), api.loc(on ? "LOC_ECONOMICS_ON" : "LOC_ECONOMICS_OFF")),
@@ -217,7 +200,7 @@ function guardSection(view, api) {
  * The requests waiting for the next batch, each with a way to take it back.
  * @param {ScreenApi} api
  */
-function pendingSection(api) {
+export function pendingSection(api) {
   const pending = api.pending();
   const block = section(api.loc("LOC_ECONOMICS_LOANS_PENDING"));
   if (!pending.length) { block.appendChild(note(api.loc("LOC_ECONOMICS_LOANS_PENDING_NONE"))); return block; }

@@ -8,6 +8,7 @@ import { button, el, goldStepper, note, row, section } from "./econ-dom.js";
 import { formatGold } from "./econ-format.js";
 import { reasonKey } from "./econ-notice-text.js";
 import { investForecast, investTargets, investmentsView, routePreview, tradeView } from "./econ-view-commerce.js";
+import { opensNext, rulesFor } from "./econ-view-common.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 
@@ -19,12 +20,18 @@ const form = { cents: 30000, projectFor: /** @type {number | null} */ (null) };
  */
 export function renderTrade(host, api) {
   const input = api.input();
+  const { rules } = rulesFor(api);
+  const open = { project: rules.sections["trade.project"], general: rules.sections["trade.general"] };
   host.appendChild(settlementSection(input, api));
   host.appendChild(offersSection(input, api));
-  host.appendChild(investSection(input, api));
+  host.appendChild(investSection(input, api, open));
   host.appendChild(previewSection(input, api));
   host.appendChild(holdingsSection(input, api));
+  const next = opensNext(api, rules.next.trade);
+  if (next) host.appendChild(next);
 }
+
+/** @typedef {{ project: boolean, general: boolean }} InvestOpen the investment forms the player's stages open */
 
 /** @param {number} cents @param {ScreenApi} api */
 const goldText = (cents, api) => api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents));
@@ -44,7 +51,6 @@ function settlementSection(input, api) {
     block.appendChild(row(api.loc("LOC_ECONOMICS_TRADE_INCOME"), goldText(view.tradeIncomeCents, api)));
   }
   if (!view.on) { block.appendChild(note(api.loc("LOC_ECONOMICS_MARKETS_OFF"))); return block; }
-  if (!view.stageOpen) block.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_STAGE", api.loc(api.stageOpener("trade") || "LOC_ECONOMICS_STAGE_NEXT_AGE"))));
   if (!view.rows.length) block.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_NONE")));
   for (const line of view.rows) block.appendChild(partnerRow(line, api));
   block.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_NOTE")));
@@ -102,8 +108,9 @@ function ask(api, request) {
 /**
  * @param {PlanInput} input
  * @param {ScreenApi} api
+ * @param {InvestOpen} open
  */
-function investSection(input, api) {
+function investSection(input, api, open) {
   const block = section(api.loc("LOC_ECONOMICS_INVEST"), [
     row(api.loc("LOC_ECONOMICS_INVEST_AMOUNT"), ""),
     goldStepper({ value: form.cents, min: 1000, max: 10000000, format: formatGold,
@@ -111,9 +118,9 @@ function investSection(input, api) {
   ]);
   if (input.options?.investment === false) { block.appendChild(note(api.loc("LOC_ECONOMICS_INVEST_OFF"))); return block; }
   const targets = investTargets(input, api.me, form.cents);
-  const chosen = targets.find((target) => target.pid === form.projectFor);
+  const chosen = open.project ? targets.find((target) => target.pid === form.projectFor) : undefined;
   if (chosen) block.appendChild(projectCard(chosen, api));
-  for (const target of targets) block.appendChild(targetCard(target, api));
+  for (const target of targets) block.appendChild(targetCard(target, api, open));
   block.appendChild(note(api.loc("LOC_ECONOMICS_INVEST_NOTE")));
   return block;
 }
@@ -141,16 +148,21 @@ function projectCard(target, api) {
 /**
  * One civ the player could invest in: general investment and aid, and a development loan on each queued build. A
  * host in default refuses general investment; its line says so and offers the development loan instead.
+ * Forms the player's stages haven't opened are left out (econ-view-tabs.js); aid needs no stage.
  * @param {ReturnType<typeof investTargets>[number]} target
  * @param {ScreenApi} api
+ * @param {InvestOpen} open
  */
-function targetCard(target, api) {
+function targetCard(target, api, open) {
   const box = el("div", "econ-card");
   box.appendChild(el("div", "econ-card-title", api.nameOf(target.pid)));
   const host = { host: target.pid, hostIncomeCents: target.incomeCents };
-  box.appendChild(actionRow(api, { ...host, form: "general", asAid: false, refusal: target.general,
-    caption: "LOC_ECONOMICS_INVEST_GENERAL" }));
-  if (target.general === "host-default" && target.cities.some((row) => row.refusal === null)) {
+  if (open.general) {
+    box.appendChild(actionRow(api, { ...host, form: "general", asAid: false, refusal: target.general,
+      caption: "LOC_ECONOMICS_INVEST_GENERAL" }));
+  }
+  if (open.general && open.project && target.general === "host-default"
+    && target.cities.some((row) => row.refusal === null)) {
     box.appendChild(button(api.loc("LOC_ECONOMICS_INVEST_PROJECT_INSTEAD"), () => {
       form.projectFor = target.pid;
       api.rerender();
@@ -158,6 +170,7 @@ function targetCard(target, api) {
   }
   box.appendChild(actionRow(api, { ...host, form: "general", asAid: true, refusal: target.aid,
     caption: "LOC_ECONOMICS_INVEST_AID" }));
+  if (!open.project) return box;
   for (const { city, refusal } of target.cities) {
     box.appendChild(actionRow(api, { ...host, form: "project", asAid: false, refusal, city,
       caption: "LOC_ECONOMICS_INVEST_PROJECT" }));

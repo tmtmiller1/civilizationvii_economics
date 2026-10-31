@@ -7,6 +7,7 @@ import { formatGold, formatRate } from "./econ-format.js";
 import { cycleEventKey, phaseKey } from "./econ-notice-text.js";
 import { sparkline } from "./econ-view-markets.js";
 import { worldView } from "./econ-view-macro.js";
+import { opensNext, rulesFor } from "./econ-view-common.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 
@@ -41,9 +42,12 @@ export function renderWorld(host, api) {
         [sparkline(view.history, formatIndex)]));
     }
   }
-  host.appendChild(inflationSection(view, api));
+  const { rules } = rulesFor(api);
+  if (rules.sections["world.inflation"]) host.appendChild(inflationSection(view, api));
   host.appendChild(debtSection(view, api));
-  host.appendChild(legacySection(api));
+  if (rules.sections["world.legacy"]) host.appendChild(legacySection(api));
+  const next = opensNext(api, rules.next.world);
+  if (next) host.appendChild(next);
 }
 
 /**

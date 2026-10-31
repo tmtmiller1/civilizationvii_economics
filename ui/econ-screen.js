@@ -12,20 +12,34 @@ import { renderMarkets } from "./econ-view-markets.js";
 import { renderTrade } from "./econ-view-trade.js";
 import { renderWorld } from "./econ-view-world.js";
 import { el } from "./econ-dom.js";
+import { startTab } from "./econ-view-tabs.js";
+import { viewRules } from "./econ-view-model.js";
 import { getSetting, setSetting } from "./econ-settings.js";
 import { logLine } from "./econ-log.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 
 export const SCREEN_ID = "screen-economics";
-const TABS = [
-  { key: "LOC_ECONOMICS_TAB_TREASURY", render: renderTreasury },
-  { key: "LOC_ECONOMICS_TAB_LOANS", render: renderLoans },
-  { key: "LOC_ECONOMICS_TAB_FISCAL", render: renderFiscal },
-  { key: "LOC_ECONOMICS_TAB_MARKETS", render: renderMarkets },
-  { key: "LOC_ECONOMICS_TAB_TRADE", render: renderTrade },
-  { key: "LOC_ECONOMICS_TAB_WORLD", render: renderWorld },
-];
+/** @typedef {import("./econ-view-tabs.js").TabKey} TabKey */
+/** @type {Record<TabKey, { key: string, render: (host: HTMLElement, api: ScreenApi) => void }>} */
+const TABS = {
+  treasury: { key: "LOC_ECONOMICS_TAB_TREASURY", render: renderTreasury },
+  loans: { key: "LOC_ECONOMICS_TAB_LOANS", render: renderLoans },
+  fiscal: { key: "LOC_ECONOMICS_TAB_FISCAL", render: renderFiscal },
+  markets: { key: "LOC_ECONOMICS_TAB_MARKETS", render: renderMarkets },
+  trade: { key: "LOC_ECONOMICS_TAB_TRADE", render: renderTrade },
+  world: { key: "LOC_ECONOMICS_TAB_WORLD", render: renderWorld },
+};
+
+/** The tabs this player sees now (econ-view-tabs.js); every tab when the rules can't be read. @param {ScreenApi} api */
+function shownTabs(api) {
+  try {
+    return viewRules(api.input(), api.me, api.stageTurns?.() ?? null).rules.tabs;
+  } catch (error) {
+    logLine(`tab rules failed: ${error instanceof Error ? error.message : String(error)}`);
+    return /** @type {TabKey[]} */ (Object.keys(TABS));
+  }
+}
 
 /** @type {ScreenApi | null} */
 let screenApi = null;
@@ -71,8 +85,10 @@ function makeTabBar(items, onSelect, start) {
 }
 
 class ScreenEconomics extends Panel {
-  /** @type {number} */
-  tab = 0;
+  /** @type {TabKey} */
+  tab = "treasury";
+  /** @type {TabKey[]} */
+  tabs = [];
 
   onInitialize() {
     super.onInitialize?.();
@@ -86,9 +102,13 @@ class ScreenEconomics extends Panel {
   onAttach() {
     try { super.onAttach?.(); } catch (error) { logLine(`screen attach: ${error}`); }
     openScreenInstance = this;
-    this.tab = Number(getSetting("lastTab")) || 0;
     try {
       this.wireClose();
+      if (screenApi) {
+        this.tabs = shownTabs(screenApi);
+        // A remembered tab that isn't shown now (a closed stage, or a game with the stages on) falls back to Treasury.
+        this.tab = startTab({ tabs: this.tabs }, getSetting("lastTab"));
+      }
       this.buildTabs();
       this.render();
     } catch (error) {
@@ -106,17 +126,33 @@ class ScreenEconomics extends Panel {
     close?.addEventListener?.("action-activate", () => this.close());
   }
 
+  /** Builds the tab bar for the shown tabs. It's rebuilt only when the set of tabs changes (a stage opened while the
+   * screen was up), since a rebuilt fxs-tab-bar flashes its first tab. */
   buildTabs() {
     const host = this.Root?.querySelector?.(".econ-tab-host");
     if (!host || !screenApi) return;
-    const items = TABS.map((tab, index) => ({ id: String(index), label: screenApi?.loc(tab.key) || tab.key }));
-    host.appendChild(makeTabBar(items, (index) => this.selectTab(index), this.tab));
+    while (host.firstChild) host.removeChild(host.firstChild);
+    const tabs = this.tabs;
+    const items = tabs.map((key, index) => ({ id: String(index), label: screenApi?.loc(TABS[key].key) || key }));
+    host.appendChild(makeTabBar(items, (index) => this.selectTab(tabs[index] ?? "treasury"),
+      Math.max(0, tabs.indexOf(this.tab))));
+    screenApi.seenTab?.(this.tab);
   }
 
-  /** @param {number} index */
-  selectTab(index) {
-    this.tab = Math.max(0, Math.min(TABS.length - 1, index));
+  /** A stage opened or a loan closed while the screen was up: the tab bar follows. @param {ScreenApi} api */
+  syncTabs(api) {
+    const tabs = shownTabs(api);
+    if (tabs.join() === this.tabs.join()) return;
+    this.tabs = tabs;
+    if (!tabs.includes(this.tab)) this.tab = "treasury";
+    this.buildTabs();
+  }
+
+  /** @param {TabKey} key */
+  selectTab(key) {
+    this.tab = this.tabs.includes(key) ? key : "treasury";
     setSetting("lastTab", this.tab);
+    screenApi?.seenTab?.(this.tab);
     this.render();
   }
 
@@ -125,6 +161,7 @@ class ScreenEconomics extends Panel {
     if (!host) return;
     while (host.firstChild) host.removeChild(host.firstChild);
     if (!screenApi) { host.appendChild(el("div", "econ-note", "Economics: no session")); return; }
+    this.syncTabs(screenApi);
     try {
       TABS[this.tab].render(host, screenApi);
     } catch (error) {

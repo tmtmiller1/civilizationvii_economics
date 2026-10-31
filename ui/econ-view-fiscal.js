@@ -5,11 +5,11 @@
 
 import { button, chips, el, note, pill, row, section } from "./econ-dom.js";
 import { canChangeTariff } from "./econ-trade.js";
-import { hasStage } from "./econ-stages.js";
 import { formatGold } from "./econ-format.js";
 import { CARD_LEVELS, ageOf, atWarAmounts, cardAmounts, cardForecast } from "./econ-tax-cards.js";
 import { systemView } from "./econ-view-macro.js";
 import { systemKey } from "./econ-notice-text.js";
+import { opensNext, rulesFor } from "./econ-view-common.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 /** @typedef {import("./econ-tax-cards.js").FiscalRead} FiscalRead */
@@ -22,10 +22,18 @@ let lastVerdict = null;
  * @param {ScreenApi} api
  */
 export function renderFiscal(host, api) {
+  const { rules } = rulesFor(api);
   host.appendChild(systemSection(api));
-  renderCards(host, api);
-  const tariff = tariffSection(api);
-  if (tariff) host.appendChild(tariff);
+  const locked = renderCards(host, api);
+  if (rules.sections["fiscal.tariff"]) {
+    const tariff = tariffSection(api);
+    if (tariff) host.appendChild(tariff);
+  }
+  // A card not unlocked yet comes before the tariffs: it opens in this age's early civics.
+  const first = locked ? { text: api.loc("LOC_ECONOMICS_PART_CARD", api.loc(CARD_LEVELS[locked.level].nameKey)),
+    nodeKey: locked.opener || null } : null;
+  const next = opensNext(api, rules.next.fiscal, first);
+  if (next) host.appendChild(next);
 }
 
 /**
@@ -53,26 +61,42 @@ function systemSection(api) {
 }
 
 /**
- * The tax cards block.
+ * The tax cards block: the cards the player has unlocked, and the slotted one. Returns the first card still locked,
+ * for the tab's "Opens next" line.
  * @param {HTMLElement} host
  * @param {ScreenApi} api
+ * @returns {import("./econ-fiscal.js").CardRead | null}
  */
 function renderCards(host, api) {
   const cards = api.cards();
   const block = section(api.loc("LOC_ECONOMICS_FISCAL_CARDS"));
-  if (!cards.length) { block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_TAXES_OFF"))); host.appendChild(block); return; }
+  if (!cards.length) { block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_TAXES_OFF"))); host.appendChild(block); return null; }
   const read = api.fiscal();
   const canSwap = api.canSwap();
   const active = cards.find((card) => card.active) || null;
   // Every card the database holds is this age's, so any card's type names the age whose amounts apply.
   const age = ageOf(cards[0].type);
   host.appendChild(nowSection(read, active ? active.level : null, age, api));
-  for (const card of cards) block.appendChild(cardBlock(card, active ? active.level : null, read, canSwap, api));
+  cardList(block, cards, { active, read, canSwap }, api);
   if (active) block.appendChild(clearBlock(active.level, read, canSwap, age, api));
   if (!canSwap) block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_NO_SWAP")));
   if (lastVerdict) block.appendChild(note(api.loc(verdictKey(lastVerdict))));
   block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_NOTE")));
   host.appendChild(block);
+  return cards.find((card) => !card.unlocked && !card.active) || null;
+}
+
+/**
+ * The cards the player has unlocked (and the slotted one); a card not unlocked yet is left for "Opens next".
+ * @param {HTMLElement} block
+ * @param {import("./econ-fiscal.js").CardRead[]} cards
+ * @param {{ active: import("./econ-fiscal.js").CardRead | null, read: FiscalRead, canSwap: boolean }} now
+ * @param {ScreenApi} api
+ */
+function cardList(block, cards, { active, read, canSwap }, api) {
+  const shown = cards.filter((card) => card.unlocked || card.active);
+  for (const card of shown) block.appendChild(cardBlock(card, active ? active.level : null, read, canSwap, api));
+  if (!shown.length) block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_NONE_YET")));
 }
 
 /**
@@ -117,7 +141,6 @@ function cardBlock(card, activeLevel, read, canSwap, api) {
   const head = el("div", "econ-card-head");
   head.appendChild(el("div", "econ-card-title", api.loc(level.nameKey)));
   if (card.active) head.appendChild(pill(api.loc("LOC_ECONOMICS_FISCAL_ACTIVE"), false));
-  else if (!card.unlocked) head.appendChild(pill(lockedText(card, api), false));
   box.appendChild(head);
   box.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_EFFECT"), api.loc("LOC_ECONOMICS_FISCAL_EFFECT_ROW",
     formatGold(amounts.gold * 100, { signed: true }), formatGold(amounts.happiness * 100, { signed: true }))));
@@ -132,16 +155,6 @@ function cardBlock(card, activeLevel, read, canSwap, api) {
       { disabled: !canSwap || !card.unlocked }));
   }
   return box;
-}
-
-/**
- * "Not unlocked yet", with the civic or tech that opens the card when this age has one (DESIGN 4.15).
- * @param {import("./econ-fiscal.js").CardRead} card
- * @param {ScreenApi} api
- */
-function lockedText(card, api) {
-  return card.opener ? api.loc("LOC_ECONOMICS_FISCAL_LOCKED_BY", api.loc(card.opener))
-    : api.loc("LOC_ECONOMICS_FISCAL_LOCKED");
 }
 
 /**
@@ -180,7 +193,7 @@ function clearBlock(activeLevel, read, canSwap, age, api) {
 }
 
 /**
- * The tariff row (DESIGN 4.10): hidden with Markets or Tariffs off, greyed until the Tariffs stage, one change per 5
+ * The tariff row (DESIGN 4.10): hidden with Markets or Tariffs off and until the Tariffs stage, one change per 5
  * turns, with what a tariff does in words.
  * @param {ScreenApi} api
  */
@@ -208,11 +221,6 @@ function tariffRowOf(input, pid) {
  * @returns {HTMLElement[]}
  */
 function tariffRows(input, api) {
-  const me = input.civs.find((civ) => civ.id === api.me);
-  if (!hasStage(me, "tariffs", input.turn, input.options)) {
-    return [note(api.loc("LOC_ECONOMICS_TARIFF_STAGE",
-      api.loc(api.stageOpener("tariffs") || "LOC_ECONOMICS_STAGE_NEXT_AGE")))];
-  }
   const current = tariffRowOf(input, api.me);
   const level = current ? current.level : "none";
   const name = (/** @type {string} */ id) => api.loc(`LOC_ECONOMICS_TARIFF_${id.toUpperCase()}`);

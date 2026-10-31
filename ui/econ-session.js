@@ -11,6 +11,8 @@ import { batchStatus } from "./econ-batch.js";
 import { grantsFor, netGrants } from "./econ-conservation.js";
 import { engineLines, purchasePointCents } from "./econ-params.js";
 import { checkPlan } from "./econ-invariants.js";
+import { viewRules } from "./econ-view-model.js";
+import { TAB_KEYS, newlyOpened, openParts } from "./econ-view-tabs.js";
 import { modelStages } from "./econ-stage-rules.js";
 import { readStageTurns } from "./econ-stage-read.js";
 import { logDebug, logLine } from "./econ-log.js";
@@ -39,7 +41,8 @@ const MAX_REQUESTS = 16;
  * engine's events since the last batch.
  * @typedef {{ v: number, stages: Record<string, StageTurns>, seen: number[], requests: PlanRequest[],
  *   guardOn: boolean | null, turns: import("./econ-turn-count.js").TurnCount, roles: Record<string, string>,
- *   cycleEvents: import("./econ-macro-read.js").PendingCycleEvent[] }} GlueState
+ *   cycleEvents: import("./econ-macro-read.js").PendingCycleEvent[], told: string[] | null,
+ *   fresh: string[] }} GlueState
  * @typedef {{ ledger: Ledger, glue: GlueState, lastPlan: PlanOutput | null, params: EngineParams | null,
  *   markets: MarketsState, macro: import("./econ-macro-state.js").MacroState, pops: Map<string, number>,
  *   skipsLogged: Set<string> }} Session
@@ -48,7 +51,12 @@ const MAX_REQUESTS = 16;
 /** @returns {GlueState} */
 export function emptyGlue() {
   return { v: GLUE_VERSION, stages: {}, seen: [], requests: [], guardOn: null, turns: emptyTurnCount(), roles: {},
-    cycleEvents: [] };
+    cycleEvents: [], told: null, fresh: [] };
+}
+
+/** @param {unknown} raw @param {(id: string) => boolean} keep */
+function cleanIds(raw, keep) {
+  return Array.isArray(raw) ? [...new Set(raw.filter((id) => typeof id === "string" && keep(id)))].slice(0, 32) : [];
 }
 
 /** @param {unknown} raw */
@@ -96,6 +104,10 @@ export function sanitizeGlue(raw) {
   out.turns = sanitizeTurnCount(value.turns);
   out.roles = cleanRoles(value.roles);
   out.cycleEvents = sanitizePending(value.cycleEvents);
+  // `told`: the screen's parts the player has been told about (null until the first look seeds it); `fresh`: the
+  // tabs with a part the player hasn't opened yet, for the dock button's marker.
+  out.told = Array.isArray(value.told) ? cleanIds(value.told, (id) => /^[a-z]+[:.][A-Za-z]+$/.test(id)) : null;
+  out.fresh = cleanIds(value.fresh, (id) => /** @type {readonly string[]} */ (TAB_KEYS).includes(id));
   return out;
 }
 
@@ -419,6 +431,52 @@ export function resendLostBatch(session) {
     logLine(`batch ${batch.id} re-sent for player ${row.pid}: ${row.cents} cents`);
   }
   return lost;
+}
+
+/**
+ * The local player's stage turns, coinage included (the model's civ record leaves it out), for the screen.
+ * @param {Session} session
+ * @param {number} pid
+ */
+export function stageTurnsOf(session, pid) {
+  return { ...(session.glue.stages[String(pid)] || {}) };
+}
+
+/**
+ * The screen's parts that opened for the player since it was last told (econ-view-tabs.js): the notification keys,
+ * and the tabs marked unseen for the dock button. The first call in a game only notes what's open, so a game that
+ * starts with every tab says nothing.
+ * @param {Session} session
+ * @param {PlanInput} input
+ * @param {number} pid
+ * @returns {string[]}
+ */
+export function noteOpened(session, input, pid) {
+  const { facts, rules } = viewRules(input, pid, stageTurnsOf(session, pid));
+  const now = openParts(rules, facts);
+  if (session.glue.told === null) {
+    session.glue.told = now;
+    writeGlue(session);
+    return [];
+  }
+  const opened = newlyOpened(session.glue.told, now, facts);
+  if (opened.told.length === session.glue.told.length) return [];
+  session.glue.told = opened.told;
+  session.glue.fresh = [...new Set([...session.glue.fresh, ...opened.tabs])];
+  writeGlue(session);
+  return opened.keys;
+}
+
+/**
+ * The player opened a tab: it's no longer marked unseen.
+ * @param {Session} session
+ * @param {string} tab
+ */
+export function markSeen(session, tab) {
+  if (!session.glue.fresh.includes(tab)) return false;
+  session.glue.fresh = session.glue.fresh.filter((key) => key !== tab);
+  writeGlue(session);
+  return true;
 }
 
 /**

@@ -116,12 +116,37 @@
         <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE" Language="ja_JP"><Text>Payments per turn, of the limit</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE_OF" Language="ja_JP"><Text>{1_Used} of {2_Cap} Gold</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_STANDING" Language="ja_JP"><Text>Standing (1.00 is clean)</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOANS_STAGES" Language="ja_JP"><Text>What's open to you</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOANS_STAGES_ALL_OPEN" Language="ja_JP"><Text>Every lender of this age is open to you.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOANS_STAGE_CLOSED" Language="ja_JP"><Text>{1_Part} opens with {2_Node}.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_STAGE_NEXT_AGE" Language="ja_JP"><Text>the next age</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PART_CIV_LOANS" Language="ja_JP"><Text>Loans from other civilizations, and 20-turn terms</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PART_BOND" Language="ja_JP"><Text>The bond market and 30-turn terms</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENS_NEXT" Language="ja_JP"><Text>Opens next: {1_Part}, with {2_Node}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENS_NEXT_AGE" Language="ja_JP"><Text>Opens next: {1_Part}, in the next age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_CIV_LOANS" Language="ja_JP"><Text>loans from other civilizations, for up to 20 turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_BOND" Language="ja_JP"><Text>the bond market, lending to other civilizations and 30-turn loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TAB_TRADE" Language="ja_JP"><Text>the Markets and Trade tabs, with world prices and trade bills</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TAB_TRADE_ONLY" Language="ja_JP"><Text>the Trade tab, with trade bills between partners</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TAB_WORLD" Language="ja_JP"><Text>the World tab, with the business cycle, and financial depth from your Markets</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TAB_WORLD_MARKETS" Language="ja_JP"><Text>the Markets and World tabs, with world prices, the business cycle and financial depth from your Markets</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TRADE_BILLS" Language="ja_JP"><Text>trade bills between partners and the Trade tab</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TARIFFS" Language="ja_JP"><Text>tariffs on your trading partners</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_DEV_LOANS" Language="ja_JP"><Text>development loans toward another civilization's builds</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_GENERAL" Language="ja_JP"><Text>investment in another civilization's treasury</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_INFLATION" Language="ja_JP"><Text>inflation, once the bond market is open</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_PANICS" Language="ja_JP"><Text>Panics, when the world borrows too much</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_CARD" Language="ja_JP"><Text>the {1_Card} card</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_LOANS_LENDERS" Language="ja_JP"><Text>Economics: the Loans tab is open. Other civilizations will lend to you now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_LOANS" Language="ja_JP"><Text>Economics: the Loans tab is open, with your loans and the auto-loan guard.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_MARKETS_TRADE" Language="ja_JP"><Text>Economics: the Markets and Trade tabs are open. Resources have world prices now, and trading partners settle what they owe each other every turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_MARKETS_WORLD" Language="ja_JP"><Text>Economics: the Markets and World tabs are open. Resources have world prices now, and you can follow booms and slumps. Your Markets add to your financial depth.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_MARKETS" Language="ja_JP"><Text>Economics: the Markets tab is open. Resources have world prices now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_TRADE" Language="ja_JP"><Text>Economics: the Trade tab is open. Trading partners settle what they owe each other every turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_WORLD" Language="ja_JP"><Text>Economics: the World tab is open. Follow booms and slumps there, and your Markets now add to your financial depth.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_CIV_LOANS" Language="ja_JP"><Text>Economics: other civilizations will lend to you now, for up to 20 turns, on the Loans tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_BOND" Language="ja_JP"><Text>Economics: the bond market is open on the Loans tab, and you can lend to other civilizations.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_TARIFFS" Language="ja_JP"><Text>Economics: you can set tariffs on the Fiscal tab now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_DEV_LOANS" Language="ja_JP"><Text>Economics: you can fund another civilization's builds with development loans on the Trade tab now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_GENERAL" Language="ja_JP"><Text>Economics: you can invest in another civilization's treasury on the Trade tab now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_INFLATION" Language="ja_JP"><Text>Economics: inflation now reaches your treasury. The World tab shows its rate.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_DOCK_NEW" Language="ja_JP"><Text>Economics: new on the {1_Tabs} tab</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_NONE_YET" Language="ja_JP"><Text>Your first tax card unlocks with this age's early civics.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_CYCLE" Language="ja_JP"><Text>Business cycle ({1_Phase})</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW" Language="ja_JP"><Text>Borrow</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_NO_OFFERS" Language="ja_JP"><Text>Nobody will lend you this amount on these terms right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_MOST" Language="ja_JP"><Text>The most you can borrow from {1_Lender} over {2_Turns} turns is {3_Amount} Gold.</Text></Replace>
@@ -173,8 +198,6 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_CARDS" Language="ja_JP"><Text>Tax cards</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_TAXES_OFF" Language="ja_JP"><Text>The Taxes option is off for this game, so there are no tax cards.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_ACTIVE" Language="ja_JP"><Text>Slotted</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FISCAL_LOCKED" Language="ja_JP"><Text>Not unlocked yet</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FISCAL_LOCKED_BY" Language="ja_JP"><Text>Opens with {1_Node}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_NOW" Language="ja_JP"><Text>Your civilization now</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_GOLD_NOW" Language="ja_JP"><Text>Gold a turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_HAPPINESS_NOW" Language="ja_JP"><Text>Happiness a turn</Text></Replace>
@@ -278,7 +301,6 @@
         <Replace Tag="LOC_ECONOMICS_TRADE_SETTLEMENT" Language="ja_JP"><Text>This turn's trade bills</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_INCOME" Language="ja_JP"><Text>Trade Income the game pays your cities</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_CAP" Language="ja_JP"><Text>The most you pay in bills a turn</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TRADE_STAGE" Language="ja_JP"><Text>Trade bills open with {1_Node}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_NONE" Language="ja_JP"><Text>You don't have a bill with anyone this turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_OWE" Language="ja_JP"><Text>You owe for your imports</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_OWED" Language="ja_JP"><Text>They owe for theirs</Text></Replace>
@@ -318,7 +340,6 @@
         <Replace Tag="LOC_ECONOMICS_TARIFF_NOW" Language="ja_JP"><Text>Your tariff</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TARIFF_PENDING" Language="ja_JP"><Text>Your change takes effect next turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TARIFF_WAIT" Language="ja_JP"><Text>A tariff can change once every five turns.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TARIFF_STAGE" Language="ja_JP"><Text>Tariffs open with {1_Node}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TARIFF_NOTE" Language="ja_JP"><Text>A tariff holds back that share of what you owe the civilizations you import from, so they earn less selling to you. It's a trade-war lever, and a High tariff costs 1 relationship with each of them every five turns. The game's own Tariffs policy card raises your Trade Income instead; the two are separate.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE" Language="ja_JP"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_WAIVED" Language="ja_JP"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold; {3_Waived} Gold over your cap was waived.</Text></Replace>
