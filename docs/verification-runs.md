@@ -764,7 +764,7 @@ in the ledger. No invariant line in `UI.log`.
 ## Watched 2026-10-31, eighth run (AI plan stage D: credit reputation and the AI's repudiation weighing)
 
 One lab game, seed 4242, Modern, the same setup as the fifth run, the stage D build (commit `ebfce20`) in
-`Mods/economics`, 22 turns (`~/.tower-bench/runs/2026-10-31T19-00-37`; drive log, dump and `UI.log` under
+`Mods/economics`, 22 turns (`~/.tower-bench/runs/2026-10-31T19-01-09`; drive log, dump and `UI.log` under
 `mod_ideas_tested/economics/devtools/probe-runs/2026-10-31-stage-d/`). The script
 (`devtools/econ-stage-d-sample.js`) read each AI's strength at turn 2 (`getMilitaryStrength` answered nothing, so the
 combat-unit count: 15 for all five), wrote Persia a 20-turn loan from Dai Viet worth 6 turns of its income and set
