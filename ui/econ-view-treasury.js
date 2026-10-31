@@ -241,14 +241,17 @@ function triggerText(building, weight, api) {
 }
 
 /**
- * The 20-turn projection: with and without the player's loans once loans are open, the balance alone before.
+ * The 20-turn projection: with and without the player's loans while it owes on one, the balance alone otherwise.
+ * With nothing owed the two lines would differ only by the mod's other flows (the cycle's share, trade bills), and
+ * a gap labelled "with your loans" would be wrong.
  * @param {ReturnType<typeof treasuryView>} view
  * @param {boolean} loanFigures
  * @param {ScreenApi} api
  */
 function projectionSection(view, loanFigures, api) {
   const last = (/** @type {number[]} */ series) => series[series.length - 1] ?? 0;
-  if (!loanFigures) return balanceProjection(view.projection.withLoans, last(view.projection.withLoans), api);
+  const series = view.projection.withLoans;
+  if (!loanFigures || !(view.outstandingCents > 0)) return balanceProjection(series, last(series), api);
   const withEnd = last(view.projection.withLoans);
   const withoutEnd = last(view.projection.without);
   const turns = turnLabels(api, api.input().turn, view.projection.withLoans.length, { ahead: true });

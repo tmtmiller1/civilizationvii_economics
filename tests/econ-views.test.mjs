@@ -105,9 +105,9 @@ test("before loans are open the Treasury tab leaves out the loan figures and pro
   assert.ok(text.includes("LOC_ECONOMICS_TREASURY_PROJECTION_BALANCE | 600"), "500 Gold now and 5 a turn for 20 turns");
   const off = document.createElement("div");
   renderTreasury(off, firstTurnApi({ planInput: { options: { stages: false } } }));
-  for (const key of ["LOC_ECONOMICS_TREASURY_OUTSTANDING", "LOC_ECONOMICS_CHART_WITH"]) {
-    assert.ok(textOf(off).includes(key), `stages Off: ${key}`);
-  }
+  assert.ok(textOf(off).includes("LOC_ECONOMICS_TREASURY_OUTSTANDING"), "stages Off: the loan rows");
+  assert.equal(textOf(off).includes("LOC_ECONOMICS_CHART_WITH"), false,
+    "nothing owed: one line, since a gap labelled 'with your loans' would only be the mod's other flows");
   assert.equal(byClass(off, "econ-meter").length, 1);
   const { renderSummary } = await import("../ui/econ-view-summary.js");
   const strip = document.createElement("div");

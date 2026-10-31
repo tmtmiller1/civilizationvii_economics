@@ -558,6 +558,29 @@ Cartography and Guilds unlocked the same way. Captures in `working_screenshots/e
 | The bar pill reads "Debt 22 · Steady" after a loan landed | `exploration/09-next-turn-pill-crop.png` |
 | What Economics moved last turn opens to its parts ("Loans -8.3") | `exploration/11-*` |
 
+## Watched 2026-10-31 (0.5.4: whole-Gold payments, Spoil Guard, UI polish)
+
+One lab game, seed 4242, Antiquity, the usual mod set, full screen on the Retina display (3024x1890). Captures in
+`working_screenshots/econ-0.5.4/antiquity/` (t01, t55 and t101 for each tab the player could see).
+
+- WG.1: turns 2 to 15, each AI's cycle share carried (player 3: -51, -92, then paid -1 Gold with -28 carried), and
+  every balance moved by what its row paid, to the cent.
+- WG.2: a UI reload on turn 15 logged `0 re-sent`; the same reload on 0.5.3 that morning logged 5.
+- WG.3: `glue.landed` named the civs paid on turns 11 and 14 (player 3; players 1 and 3), and nobody on turns with
+  nothing paid.
+- SG.2: turn 1 "Unmet civilizations hidden: 5", turn 55 "2"; the Trade tab listed only Greece, Goryeo and Dai Viet,
+  and neither unmet civ (Persia, Hawai'i) appeared anywhere.
+- UP.1: turn 1 Treasury with no loan rows, no scale, one balance line and no Debt figure.
+- UP.2: after Commerce (set through the game's civic operation and granted Culture, turn 101) the Debt figure, the
+  three loan rows and the scale came back.
+- UP.4: "Most you can borrow over 10 turns" 70 in the limits panel and the form, with the payment-limit line.
+- UP.5 and UP.6: "Send aid" on Treasury on turn 1 ("You haven't met anyone to send aid to yet"), gone by turn 55 with
+  aid on the Trade tab.
+- UP.9: the citizens' offer card titled "Your citizens".
+- Found and fixed after the run: on turn 101, with nothing owed, the chart still compared "with your loans" against
+  "without them", a 13 Gold gap that was only the cycle's share. The comparison now waits for a loan the player owes;
+  the pill also sat against "Steady" and has a gap now. Both fixes are built, not watched.
+
 ## Owed: whole-Gold payments
 
 Built 2026-10-31 (NOTES 119). The engine fact was watched that day; the fix itself hasn't been seen in a game.
