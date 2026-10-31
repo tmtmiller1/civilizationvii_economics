@@ -16,19 +16,25 @@ test("a payment that fits is taken whole: interest plus amortisation, paid count
   assert.equal(r.loan.missed, 0, "a paid turn resets the run of misses (DESIGN 4.4)");
 });
 
-test("a payment the funds can't cover is a miss: m + 1, r * 1.25, the interest added to O, nothing taken", () => {
+test("a payment the funds can't cover is paid as far as they go: the rest joins O, m + 1, r * 1.25 (AI-PLAN 4.1)", () => {
   const r = settleActive(loan(), 2099);
   assert.equal(r.missed, true);
-  assert.equal(r.cents, 0);
+  assert.equal(r.cents, 2099, "paid 20.99 of 21");
+  assert.deepEqual([r.interest, r.amortisation, r.capitalised, r.due], [600, 1499, 1, 2100], "interest first");
   assert.equal(r.loan.missed, 1);
   assert.equal(r.loan.ratePpm, 25000);
-  assert.equal(r.loan.outstanding, 30600, "missed interest is capitalised");
-  assert.equal(r.capitalised, 600);
-  assert.equal(r.loan.paid, 0, "the missed slice moves to the next turn");
+  assert.equal(r.loan.outstanding, 30000 - 1499, "what was paid comes off O; the short cent stays on it");
+  assert.equal(r.loan.paid, 0, "the slice moves to the next turn, so the next payment is the same number");
+  const half = settleActive(loan(), 400);
+  assert.deepEqual([half.cents, half.interest, half.amortisation, half.capitalised, half.loan.outstanding],
+    [400, 400, 0, 1700, 30200], "under the interest: the unpaid interest joins O");
 });
 
-test("negative funds miss every payment", () => {
-  assert.equal(settleActive(loan(), -1).missed, true);
+test("with nothing to pay it's the plain miss: the interest alone joins O, nothing taken", () => {
+  const r = settleActive(loan(), 0);
+  assert.deepEqual([r.missed, r.cents, r.capitalised, r.loan.outstanding], [true, 0, 2100, 30600]);
+  const r2 = settleActive(loan(), -1);
+  assert.deepEqual([r2.missed, r2.cents, r2.loan.outstanding], [true, 0, 30600], "negative funds pay nothing");
 });
 
 test("the rate steps per miss, 0.02, 0.025, 0.03125, and stops at r_cap", () => {
@@ -63,13 +69,27 @@ test("early repayment rides on a made payment, capped by O and by what the borro
   assert.equal(settleActive(loan(), 2099, { extra: 5000 }).extra, 0, "no extra on a miss");
 });
 
-test("garnish with income above 0: min(ceil(O * 0.1), floor(0.5 * income), cash)", () => {
+test("garnish with income above 0: min(max(ceil(O * 0.1), 1 Gold), floor(0.5 * income), cash)", () => {
   assert.equal(garnishDue(loan({ outstanding: 10000 }), { incomeCents: 4000, cashCents: 1e6 }), 1000);
   assert.equal(garnishDue(loan({ outstanding: 10000 }), { incomeCents: 1000, cashCents: 1e6 }), 500);
   assert.equal(garnishDue(loan({ outstanding: 10000 }), { incomeCents: 4000, cashCents: 300 }), 300);
   assert.equal(garnishDue(loan({ outstanding: 10000 }), { incomeCents: 4000, cashCents: -5 }), 0);
-  assert.equal(garnishDue(loan({ outstanding: 4 }), { incomeCents: 1e6, cashCents: 1e6 }), 1, "rounds up");
+  assert.equal(garnishDue(loan({ outstanding: 461 }), { incomeCents: 1e6, cashCents: 1e6 }), 100,
+    "the floor: 1 Gold where 10% would be 47 cents (the Ottomans' 4.61 Gold tail, AI-PLAN 2)");
+  assert.equal(garnishDue(loan({ outstanding: 40 }), { incomeCents: 1e6, cashCents: 1e6 }), 40, "never past O");
   assert.equal(garnishDue(loan({ outstanding: 0 }), { incomeCents: 1e6, cashCents: 1e6 }), 0);
+});
+
+test("a defaulted loan closes once under 1 Gold is left, the rest forgiven", () => {
+  const d = loan({ state: "default", missed: 3, outstanding: 1090 });
+  const r = settleDefault(d, { incomeCents: 1e6, cashCents: 1e6 });
+  assert.deepEqual([r.cents, r.garnish, r.forgiven, r.closed, r.loan.outstanding], [109, 109, 0, false, 981],
+    "ceil(10%) of 10.90 Gold is 1.09 Gold");
+  const tail = settleDefault(loan({ state: "default", missed: 3, outstanding: 199 }), { incomeCents: 1e6, cashCents: 1e6 });
+  assert.deepEqual([tail.cents, tail.forgiven, tail.closed, tail.loan.state], [100, 99, true, "closed"],
+    "1 Gold taken, 99 cents forgiven, the loan closes");
+  const broke = settleDefault(loan({ state: "default", missed: 3, outstanding: 99 }), { incomeCents: 1e6, cashCents: 0 });
+  assert.deepEqual([broke.cents, broke.forgiven, broke.closed], [0, 99, true], "under a Gold closes even with no cash");
 });
 
 test("garnish with income at or below 0: min(ceil(O * 0.05), floor(0.1 * balance), cash) (NOTES finding C)", () => {

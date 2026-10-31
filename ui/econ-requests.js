@@ -9,8 +9,9 @@ import { firstPayment, isOpen, isOverdue, restructure } from "./econ-loan.js";
 import { addMiss, creditCap, fitsService, outstandingOf, recentRepudiations, serviceCap, serviceOf }
   from "./econ-credit.js";
 import { bondRatePpm, civLenderRefusal, offersFor, relationLevel, termRefusal } from "./econ-lenders.js";
-import { aiAccepts, aiShortfall } from "./econ-ai.js";
-import { funds, lenderBalance, projected } from "./econ-batch.js";
+import { aiAccepts } from "./econ-ai.js";
+import { funds, lenderBalance } from "./econ-batch.js";
+import { distressOf } from "./econ-distress.js";
 import { repudiate } from "./econ-repudiation.js";
 import { canChangeTax, isTaxLevel } from "./econ-tax.js";
 import { canChangeTariff, isTariffLevel, withTariff } from "./econ-trade.js";
@@ -175,7 +176,9 @@ function lendTermsRefusal(ctx, { lender, borrower, principal, ratePpm, term }) {
 }
 
 /**
- * DESIGN 5: the AI accepts a cheap enough loan when it's short, its income is positive and the limits fit.
+ * DESIGN 5, AI-PLAN 4.1: the AI accepts a cheap enough loan when its dues pass its funds (the distress read), its
+ * income is positive and the loan fits its credit cap; a loan no bigger than the gap meets payments already inside
+ * the service figure, so it skips the debt-service limit, as the refinancing rule does.
  * @param {TurnContext} ctx
  * @param {Request} request
  */
@@ -186,11 +189,12 @@ function lendRefusal(ctx, request) {
   const borrower = /** @type {Civ} */ (ctx.civ.get(request.borrower));
   const bond = bondRatePpm({ age: ctx.age, standing: standing(ctx, request.borrower), rates: ctx.rates,
     depthFactorPct: borrower.depthFactorPct ?? 100 });
+  const read = distressOf(ctx, request.borrower);
   const limit = limitRefusal(ctx, request.borrower, { principal: request.principal, ratePpm: request.ratePpm,
     term: request.term });
   const accepts = aiAccepts({ offerRatePpm: request.ratePpm, bondRatePpm: bond,
-    incomeCents: incomeOf(ctx, request.borrower), shortfallCents: aiShortfall(projected(ctx.batch, request.borrower)),
-    fitsCredit: limit !== "credit-cap", fitsService: limit !== "service-cap" });
+    incomeCents: incomeOf(ctx, request.borrower), shortfallCents: read.gap,
+    fitsCredit: limit !== "credit-cap", fitsService: request.principal <= read.gap || limit !== "service-cap" });
   if (!accepts) return "declined";
   openLoan(ctx, { lender: request.lender, borrower: request.borrower, principal: request.principal,
     ratePpm: request.ratePpm, term: request.term, source: "lend" });

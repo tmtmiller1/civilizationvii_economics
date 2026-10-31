@@ -338,7 +338,9 @@
         <Replace Tag="LOC_ECONOMICS_NOTICE_CELEBRATION" Language="pl_PL"><Text>Your celebration meter moved by {1_Amount}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_OPEN" Language="pl_PL"><Text>A loan of {1_Amount} Gold from {2_Lender} has landed, at {3_Rate} a turn over {4_Turns} turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_LENT" Language="pl_PL"><Text>Your loan of {1_Amount} Gold to {2_Borrower} has gone out.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_MISS" Language="pl_PL"><Text>You missed a payment on loan {1_Loan} ({2_Count} in a row). The interest joins the debt and the rate rises; three in a row is default.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_MISS" Language="pl_PL"><Text>You couldn't pay anything on loan {1_Loan} ({2_Count} missed in a row). The {4_Due} Gold due joins the debt and the rate rises; three in a row is default.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_MISS_PART" Language="pl_PL"><Text>Paid {3_Paid} of {4_Due} Gold on loan {1_Loan}. {5_Short} Gold was added to the loan ({2_Count} missed in a row); the rate rises, and three in a row is default. You can restructure the loan or borrow on the Loans tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_REFINANCE" Language="pl_PL"><Text>Your payments of {3_Dues} Gold passed what you had, so the guard borrowed the {1_Amount} Gold missing from {2_Lender} over 10 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_DEFAULT" Language="pl_PL"><Text>Loan {1_Loan} is in default. The lender takes what it can each turn and won't lend to you again this age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_DEFAULTED_ON" Language="pl_PL"><Text>{1_Borrower} has defaulted on your loan {2_Loan}. You collect what you can each turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD" Language="pl_PL"><Text>The guard borrowed {1_Amount} Gold from {2_Lender} to keep you above 0.</Text></Replace>
@@ -380,7 +382,10 @@
         <Replace Tag="LOC_ECONOMICS_REASON_TOO_SOON" Language="pl_PL"><Text>it changed in the last five turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_UNKNOWN" Language="pl_PL"><Text>the request couldn't be carried out.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_OPEN" Language="pl_PL"><Text>Loan {1_Loan} opened: {2_Amount} Gold from {3_Lender} to {4_Borrower}.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_EVENT_MISS" Language="pl_PL"><Text>Payment missed on {1_Loan} ({2_Count} in a row).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_MISS" Language="pl_PL"><Text>Nothing paid on {1_Loan}, {4_Due} Gold added to it ({2_Count} missed in a row).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_MISS_PART" Language="pl_PL"><Text>{1_Loan}: paid {3_Paid} of {4_Due} Gold, {5_Short} added to the loan ({2_Count} missed in a row).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_REFINANCE" Language="pl_PL"><Text>{1_Civ} refinanced: {2_Amount} Gold from {3_Lender} to meet the turn's payments.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_AID_CLEARED" Language="pl_PL"><Text>Aid from {1_Giver} cleared {2_Amount} Gold of {3_Loan}, which {4_Borrower} had defaulted on.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_DEFAULT" Language="pl_PL"><Text>{1_Loan} went into default ({2_Borrower}).</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_CLOSED" Language="pl_PL"><Text>{1_Loan} paid off.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_RESTRUCTURE" Language="pl_PL"><Text>{1_Loan} restructured with {2_Amount} Gold left.</Text></Replace>
@@ -451,9 +456,11 @@
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_PROJECT" Language="pl_PL"><Text>Your development loan of {1_Amount} Gold to {2_Host} added {3_Progress} production to its build.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_GENERAL" Language="pl_PL"><Text>You invested {1_Amount} Gold in {2_Host}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_AID" Language="pl_PL"><Text>You sent {1_Amount} Gold of aid to {2_Host}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_AID_CLEARED" Language="pl_PL"><Text>You gave {2_Host} {1_Amount} Gold of aid; {4_Cleared} Gold of it cleared the debt it had defaulted on, and the rest went to its treasury.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_IN_PROJECT" Language="pl_PL"><Text>{1_Investor} put {2_Amount} Gold into one of your builds: {3_Progress} production.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_IN_GENERAL" Language="pl_PL"><Text>{1_Investor} invested {2_Amount} Gold in your treasury.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_IN_AID" Language="pl_PL"><Text>{1_Investor} sent you {2_Amount} Gold of aid.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_IN_AID_CLEARED" Language="pl_PL"><Text>{1_Investor} gave you {2_Amount} Gold of aid; {4_Cleared} Gold of it cleared the debt you had defaulted on, and the rest reached your treasury.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVEST_MISS" Language="pl_PL"><Text>You missed a return payment on {1_Id} ({2_Count} in a row). Three in a row is default.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVEST_DEFAULT" Language="pl_PL"><Text>You defaulted on {1_Id}. The investor takes a share each turn until it's paid.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVEST_DEFAULTED_ON" Language="pl_PL"><Text>{1_Host} defaulted on {2_Id}. You'll get a share of what's owed each turn.</Text></Replace>

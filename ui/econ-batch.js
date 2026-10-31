@@ -1,7 +1,9 @@
 // econ-batch.js - Economics: the turn's Gold bookkeeping (DESIGN 4.14). Each payer is resolved on its own funds:
-// its snapshot balance plus its income plus what world accounts put in this turn. Gold coming in from other civs
-// counts from the next turn, which is what keeps one civ's result from depending on another's. The commit records
-// each civ's snapshot balance and net, so a reload can tell a landed batch from a lost one.
+// its snapshot balance plus its income plus what world accounts put in this turn, plus the principal of any loan
+// that lands this turn. Other Gold coming in from civs (payments, dividends, bills) counts from the next turn,
+// which is what keeps one civ's result from depending on another's; a lender's offer is judged on its snapshot, so
+// principal can count at once and a refinancing loan can meet the dues it was taken for (NOTES choice 120). The
+// commit records each civ's snapshot balance and net, so a reload can tell a landed batch from a lost one.
 
 import { isWorldAccount } from "./econ-params.js";
 
@@ -11,8 +13,8 @@ import { isWorldAccount } from "./econ-params.js";
  */
 export function createBatch(civs) {
   /** @type {Batch} */
-  const batch = { snapshot: new Map(), income: new Map(), worldIn: new Map(), civIn: new Map(), out: new Map(),
-    committed: new Map(), influence: new Map(), celebration: new Map() };
+  const batch = { snapshot: new Map(), income: new Map(), worldIn: new Map(), civIn: new Map(), principalIn: new Map(),
+    out: new Map(), committed: new Map(), influence: new Map(), celebration: new Map() };
   for (const civ of civs) {
     batch.snapshot.set(civ.id, civ.balanceCents);
     batch.income.set(civ.id, civ.alive === true ? civ.incomeCents : 0);
@@ -33,12 +35,14 @@ const get = (map, key) => map.get(key) || 0;
 const add = (map, key, value) => map.set(key, get(map, key) + value);
 
 /**
- * What the payer can spend this turn: snapshot + income + world inflows - what it has already paid out.
+ * What the payer can spend this turn: snapshot + income + world inflows + loan principal landed this turn - what it
+ * has already paid out.
  * @param {Batch} batch
  * @param {number} pid
  */
 export function funds(batch, pid) {
-  return get(batch.snapshot, pid) + get(batch.income, pid) + get(batch.worldIn, pid) - get(batch.out, pid);
+  return get(batch.snapshot, pid) + get(batch.income, pid) + get(batch.worldIn, pid) + get(batch.principalIn, pid)
+    - get(batch.out, pid);
 }
 
 /**
@@ -64,7 +68,7 @@ export function lenderBalance(batch, pid) {
  * @param {number} pid
  */
 export function netOf(batch, pid) {
-  return get(batch.worldIn, pid) + get(batch.civIn, pid) - get(batch.out, pid);
+  return get(batch.worldIn, pid) + get(batch.civIn, pid) + get(batch.principalIn, pid) - get(batch.out, pid);
 }
 
 /**
@@ -79,6 +83,7 @@ export function record(batch, transfer) {
   if (toWorld) return;
   const to = /** @type {number} */ (transfer.to);
   if (fromWorld) add(batch.worldIn, to, transfer.cents);
+  else if (transfer.reason === "principal") add(batch.principalIn, to, transfer.cents);
   else add(batch.civIn, to, transfer.cents);
 }
 

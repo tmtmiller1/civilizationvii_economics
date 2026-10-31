@@ -1,20 +1,22 @@
-// econ-shortfall.js - Economics: the rules that open loans nobody asked for. The guard covers the human (DESIGN 4.6);
-// the AI borrowing, restructuring and repudiation rules (section 6) cover AI civs. Both run on each civ's projected
-// end balance after the resolve step, and an emergency loan stops at emergency_cap with one notice per spell.
-// An AI's emergency loan is the human's guard loan: the same line, the same sizing (back to the line plus one turn of
-// upkeep) and the same cap, through the one guardDecision. The AI differs only in trying a standard loan first while
-// it is short but solvent (DESIGN 6), which the human does by asking. The AI's build loan is its door to "borrow to
-// build", which the player has through the Gold it spends: cheap credit puts progress on its own current build.
+// econ-shortfall.js - Economics: the rules that open loans nobody asked for. Before the payments run, the distress
+// read (econ-distress.js, AI-PLAN 4.1) finds each civ whose dues pass its funds; with income above 0 it gets a
+// refinancing loan for the gap, judged by the credit cap alone, through the guard for the human and by rule for an
+// AI. After the payments, the guard covers the human below the engine's line (DESIGN 4.6) and the AI gets the same
+// emergency loan: the same line, the same sizing (back to the line plus one turn of upkeep) and the same cap,
+// through the one guardDecision, each stopping at emergency_cap with one notice per spell. The AI's restructuring and
+// repudiation rules (section 6) are here too, and its build loan, its door to "borrow to build", which the player has
+// through the Gold it spends: cheap credit puts progress on its own current build.
 
-import { AI, CITIZENS, PROGRESS, SHORT_TERM, isWorldAccount } from "./econ-params.js";
+import { AI, CITIZENS, PROGRESS, REFINANCE, SHORT_TERM, isWorldAccount } from "./econ-params.js";
 import { isOpen } from "./econ-loan.js";
 import { activeDefaults, emergencyOutstandingOf, outstandingOf } from "./econ-credit.js";
 import { emergencyOffersFor, offersFor, relationLevel } from "./econ-lenders.js";
+import { distressOf } from "./econ-distress.js";
 import { aiBuildBorrowWanted, aiRepudiationTarget, aiRestructures, aiShortfall } from "./econ-ai.js";
 import { emergencyCap, guardDecision, isInsolvent } from "./econ-guard.js";
 import { projected } from "./econ-batch.js";
 import { aiLendersFor, event, incomeOf, isHuman, notice, offerQuery, openLoan } from "./econ-turn.js";
-import { isAtLoanLimit, limitRefusal, mostBorrowCents, repudiateFor, restructureLoan } from "./econ-requests.js";
+import { creditRoom, isAtLoanLimit, mostBorrowCents, repudiateFor, restructureLoan } from "./econ-requests.js";
 import { pointPriceCents } from "./econ-planned.js";
 
 /**
@@ -96,24 +98,61 @@ export function guardFor(ctx, civ) {
 }
 
 /**
- * DESIGN 6 borrowing: short means a standard loan within the limits; insolvent or past them, an emergency loan.
+ * AI-PLAN 4.1: a civ whose dues pass its funds, with income above 0 and solvent, borrows the gap over 10 turns from
+ * the cheapest lender that offers, within its credit cap alone; the debt-service limit is for voluntary loans, and
+ * this one meets payments already inside the service figure. Returns the read, with the loan when one opened. A
+ * short civ that gets no loan is noted (`short`) and pays what it has at the payment step.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ */
+export function refinanceFor(ctx, civ) {
+  const read = distressOf(ctx, civ.id);
+  if (!read.short) return { read, loan: null, reason: null };
+  const why = () => {
+    if (!(civ.incomeCents > 0) || isInsolventCiv(ctx, civ.id)) return "income";
+    if (isAtLoanLimit(ctx, civ.id)) return "loan-limit";
+    if (read.gap > creditRoom(ctx, civ.id)) return "credit-cap";
+    return null;
+  };
+  const refused = why();
+  const best = refused ? null : offersFor(offerQuery(ctx, civ.id, { principal: read.gap, term: REFINANCE.term,
+    lenders: aiLendersFor(ctx, civ.id) }))[0];
+  const reason = refused || (best ? null : "no-offer");
+  if (reason) {
+    event(ctx, { kind: "short", pid: civ.id, dues: read.dues, funds: read.funds, cents: read.gap, reason });
+    return { read, loan: null, reason };
+  }
+  const offer = /** @type {Offer} */ (best);
+  const loan = openLoan(ctx, { lender: offer.lender, borrower: civ.id, principal: read.gap, ratePpm: offer.ratePpm,
+    term: REFINANCE.term, source: "refinance" });
+  const fields = { kind: "refinance", pid: civ.id, loanId: loan.id, cents: read.gap, lender: offer.lender,
+    dues: read.dues, funds: read.funds };
+  event(ctx, fields);
+  notice(ctx, civ.id, fields);
+  return { read, loan, reason: null };
+}
+
+/**
+ * The human's side of the refinancing rule: the guard takes the loan (DESIGN 4.6 names it as the guard's work).
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ */
+export function guardRefinance(ctx, civ) {
+  if (!ctx.options.guard) return;
+  refinanceFor(ctx, civ);
+}
+
+/**
+ * DESIGN 6 borrowing after the payments: below the engine's line with income at or below 0, the emergency loan;
+ * the short-but-solvent case is refinanceFor's, before the payments.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 export function aiBorrow(ctx, civ) {
   const need = aiShortfall(projected(ctx.batch, civ.id), ctx.params.amenityLineCents);
   if (!need || isAtLoanLimit(ctx, civ.id)) return;
-  if (!isInsolventCiv(ctx, civ.id) && civ.incomeCents > 0) {
-    const query = offerQuery(ctx, civ.id, { principal: need, term: SHORT_TERM, lenders: aiLendersFor(ctx, civ.id) });
-    const best = offersFor(query)[0];
-    if (best && !limitRefusal(ctx, civ.id, { principal: need, ratePpm: best.ratePpm, term: SHORT_TERM })) {
-      openLoan(ctx, { lender: best.lender, borrower: civ.id, principal: need, ratePpm: best.ratePpm,
-        term: SHORT_TERM, source: "ai-shortfall" });
-      return;
-    }
-  }
-  // Past the limits or insolvent: the guard's own decision, so an AI's emergency loan is sized and capped exactly as
-  // the human's (DESIGN 4.6, "AI civs get the same rule").
+  // The guard's own decision, so an AI's emergency loan is sized and capped exactly as the human's (DESIGN 4.6, "AI
+  // civs get the same rule").
   const decision = guardDecision({ enabled: true, projectedCents: projected(ctx.batch, civ.id),
     upkeepCents: civ.upkeepCents || 0, lineCents: ctx.params.amenityLineCents, turn: ctx.turn,
     incomeCents: civ.incomeCents, openEmergencyCents: emergencyOutstandingOf(ctx.ledger, civ.id) });

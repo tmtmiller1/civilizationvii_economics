@@ -10,7 +10,7 @@ declare global {
   /** `project` and `general` are 1.1's investment records; 1.0 only writes `loan`. */
   type LoanKind = "loan" | "project" | "general";
   /** Who opened the record: a player's borrow or lend request, the guard, or an AI rule. */
-  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens" | "ai-build";
+  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens" | "ai-build" | "refinance";
   type RelationLevel = "war" | "unfriendly" | "neutral" | "friendly" | "unmet";
   type BlockReason = "default" | "repudiation";
 
@@ -319,6 +319,8 @@ declare global {
     income: Map<number, number>;
     worldIn: Map<number, number>;
     civIn: Map<number, number>;
+    /** Loan principal from a civ lender this turn, which counts in the borrower's funds at once (NOTES 120). */
+    principalIn: Map<number, number>;
     out: Map<number, number>;
     committed: Map<number, number>;
     influence: Map<number, number>;

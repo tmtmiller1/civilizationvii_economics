@@ -24,17 +24,24 @@ test("every notice kind the plan emits has a line, with the loan's figures looke
   assert.equal(describeNotice({ pid: 2, kind: "something-new" }, ctx), null);
   for (const kind of ["open", "lent", "miss", "default", "defaulted-on", "guard", "guard-cap", "insolvent", "restructure",
     "restructure-ask", "repudiated", "repudiated-by", "trade", "tariff-cost", "invested", "invested-in", "invest-miss",
-    "invest-default", "invest-defaulted-on", "invest-writeoff", "offer"]) {
-    for (const form of [{ form: "project" }, { form: "general" }, { form: "general", aid: 1 }, { waived: 3 }]) {
+    "invest-default", "invest-defaulted-on", "invest-writeoff", "offer", "refinance"]) {
+    for (const form of [{ form: "project" }, { form: "general" }, { form: "general", aid: 1 }, { waived: 3 },
+      { form: "general", aid: 1, cleared: 5 }, { paid: 0 }]) {
       const line = describeNotice({ pid: 2, kind, loanId: "L1", borrower: 4, lender: "bond", cents: 1, missed: 1, turns: 5,
         cap: 1, deficit: 1, investor: 4, paid: 1, received: 0, ...form }, ctx);
       assert.ok(line && english.has(line.key), `${kind} -> ${line && line.key}`);
     }
   }
   assert.deepEqual(describeNotice({ pid: 2, kind: "invested-in", lender: 4, cents: 30000, form: "project", progress: 100 },
-    ctx), { key: "LOC_ECONOMICS_NOTICE_INVESTED_IN_PROJECT", args: ["Civ 4", "300", 100] });
+    ctx), { key: "LOC_ECONOMICS_NOTICE_INVESTED_IN_PROJECT", args: ["Civ 4", "300", 100, "0"] });
   assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 500, received: 0, waived: 0 }, ctx),
     { key: "LOC_ECONOMICS_NOTICE_TRADE", args: ["5", "0", "0"] });
+  assert.deepEqual(describeNotice({ pid: 2, kind: "miss", loanId: "L1", missed: 1, paid: 8000, due: 10000, short: 2000 },
+    ctx), { key: "LOC_ECONOMICS_NOTICE_MISS_PART", args: ["L1", 1, "80", "100", "20"] }, "Paid 80 of 100, 20 added");
+  assert.equal(describeNotice({ pid: 2, kind: "miss", loanId: "L1", missed: 2, paid: 0, due: 10000, short: 10000 },
+    ctx).key, "LOC_ECONOMICS_NOTICE_MISS", "nothing paid: the plain miss");
+  assert.deepEqual(describeNotice({ pid: 2, kind: "invested", borrower: 4, cents: 30000, form: "general", aid: 1,
+    cleared: 12000 }, ctx), { key: "LOC_ECONOMICS_NOTICE_INVESTED_AID_CLEARED", args: ["300", "Civ 4", 0, "120"] });
 });
 
 test("a borrow over a limit adds the most that lender would lend over the term; anything else adds nothing", () => {

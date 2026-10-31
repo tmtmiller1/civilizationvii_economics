@@ -12,7 +12,7 @@ export const LOAN_STATES = ["active", "default", "closed", "repudiated"];
 export const LOAN_KINDS = ["loan", "project", "general"];
 // Who opened the record: a player's borrow or lend request, the guard, or an AI rule.
 /** @type {LoanSource[]} */
-export const LOAN_SOURCES = ["borrow", "lend", "guard", "ai-shortfall", "ai-citizens", "ai-build"];
+export const LOAN_SOURCES = ["borrow", "lend", "guard", "ai-shortfall", "ai-citizens", "ai-build", "refinance"];
 
 /** @param {number} seq */
 export function loanId(seq) {

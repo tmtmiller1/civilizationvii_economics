@@ -244,12 +244,15 @@ Default:
 
   ```
   cash     = max(0, the borrower's funds after this turn's other charges)       4.14
-  garnish  = min(ceil(O * 0.1), floor(0.5 * income), cash)       income > 0
-  garnish  = min(ceil(O * 0.05), floor(0.1 * balance), cash)     income at or below 0 (NOTES finding C)
+  garnish  = min(max(ceil(O * 0.1), 1), floor(0.5 * income), cash)       income > 0
+  garnish  = min(max(ceil(O * 0.05), 1), floor(0.1 * balance), cash)     income at or below 0 (NOTES finding C)
   ```
 
-  What isn't collected stays in `O`. A defaulted loan accrues no interest (NOTES choice 7). Without the second line a
-  negative-income AI never clears a default (offline: 633 of 633 shortfall loans stayed in default).
+  What isn't collected stays in `O`; once less than 1 Gold is left the loan closes and that remainder is forgiven. A
+  defaulted loan accrues no interest (NOTES choice 7). Without the second line a negative-income AI never clears a
+  default (offline: 633 of 633 shortfall loans stayed in default). The 1 Gold floor and the close under 1 Gold are
+  from the first AI watch run (AI-PLAN section 2, 2026-10-31): the 10% rule tailed off and the last few Gold of the
+  Ottomans' default took dozens of turns.
 - Blocks new loans from that lender for the rest of the age.
 - Cycle event (4.11) and a chronicle entry.
 - Land and units are never touched: capture and transfer stay with the engine.
@@ -297,9 +300,14 @@ Repudiation:
 
 ### 4.6 Auto-loan guard and emergency loans
 
-When the projected end-of-turn balance, after the resolve step of 4.14, is below the guard line, the guard takes an
-emergency loan for the shortfall plus one turn of upkeep, over 10 turns, and tells the player. AI civs get the same
-rule (section 6). The guard works from the start of the game; who lends depends on the civ's stage (4.15):
+The guard has two loans. Before the payments run, the distress read (AI-PLAN 4.1, NOTES choice 121) finds whether the
+civ's dues this turn (its scheduled payments, the dividends it hosts, the bills it pays) pass its funds; when they do
+and its income is above 0, the guard takes a refinancing loan for the gap over 10 turns from the cheapest lender that
+offers, judged by the credit cap alone, and tells the player ("your payments of 36 Gold passed what you had, so the
+guard borrowed the 16 missing"). Then, when the projected end-of-turn balance after the resolve step of 4.14 is below
+the guard line, the guard takes an emergency loan for the shortfall plus one turn of upkeep, over 10 turns, and tells
+the player. AI civs get both rules (section 6). The guard works from the start of the game; who lends depends on the
+civ's stage (4.15):
 
 | Stage | Emergency lender |
 | --- | --- |
@@ -665,7 +673,8 @@ income, best +27%, the world in Depression 5% of turns, Slump 24%, Boom 21%, flo
 | Host loses the city | schedule closed, rest written off | unaffected | n/a |
 
 Relationship gains are counted in turns of the host's income (`max(10, income)`), so a gift means as much to a Modern
-host as to an Antiquity one.
+host as to an Antiquity one. Aid to a civ in default to the giver clears that debt first: the defaulted loans take the
+aid up to what's outstanding, and only the rest is sent as Gold (NOTES choice 122; the goodwill counts the whole gift).
 
 A development loan is a loan tied to a build, with a fixed return, and the screens call it that. General investment is
 the one whose return depends on how the host does. The record kind stays `project` so the code and tests keep their
@@ -767,9 +776,13 @@ has the lower player id, and a turn is never applied twice.
    civ or a world account: `bond`, `temple`, `citizens`, `tax`, `inflation`, `cycle`, `plan`. A civ-to-civ
    transaction is one record, so its debit and credit are the same number by construction.
 3. Resolve, each payer on its own. A payer's funds are its snapshot balance plus its income plus what it gets from
-   world accounts this turn (bond principal, positive tax and cycle Gold). Gold coming in from other civs this turn
-   counts from the next turn, which is what keeps one civ's result from depending on another's. The payer's outgoing
-   transactions are taken in this order, each paid in full or missed (garnish takes what's there, 4.5):
+   world accounts this turn (bond principal, positive tax and cycle Gold) plus the principal of any loan that lands
+   this turn, from a civ as from the bond market (NOTES choice 120: a lender's offer is judged on its snapshot, so
+   the borrower's funds still don't depend on the lender's turn). Other Gold coming in from civs this turn counts
+   from the next turn, which is what keeps one civ's result from depending on another's. Before the payments, the
+   distress read (4.6) finds each civ whose dues pass its funds and takes its refinancing loan. The payer's outgoing
+   transactions are taken in this order, each paid in full, as far as the funds go (a loan payment, 4.4) or missed
+   (garnish takes what's there, 4.5):
    1. write-offs (party eliminated, city lost): no Gold, records close
    2. repudiations, player and AI (4.5, section 6): the records close before any payment on them, then player
       requests: borrow, repay, lend, invest, tax level, tariff
@@ -1046,10 +1059,12 @@ price; priced at that rate since (choice 104), it's worth the Gold it takes (sec
 - Repudiate what you owe one lender or the bond market (4.5). See the Gold kept and the reputation and credit cost
   first.
 - Switch the guard off or on (4.6) on the Loans tab.
-- Lend: offer `P`, `r`, `T` to an AI in shortfall. It accepts if `r <= 1.2 * its bond rate`, its income is positive
-  and the loan fits its debt-service limit (4.2), so the player isn't lending to a civ that can't pay. The player
-  bears the AI's default or repudiation under the same rules. Each borrower shows its repudiation risk: the AI
-  rule's conditions (section 6) and how close it is to them.
+- Lend: offer `P`, `r`, `T` to an AI that's short (its dues this turn pass its funds, 4.6). It accepts if
+  `r <= 1.2 * its bond rate`, its income is positive and the loan fits its credit cap; a loan no bigger than the gap
+  skips the debt-service limit, as the refinancing rule does, and a bigger one is tested against it (4.2), so the
+  player isn't lending to a civ that can't pay. The loan lands in the AI's funds the same turn, so its payment is
+  made. The player bears the AI's default or repudiation under the same rules. Each borrower shows its repudiation
+  risk: the AI rule's conditions (section 6) and how close it is to them.
 - Fiscal tab: tax level and tariff. Defaults are Standard and None; each changes at most once per 5 turns.
 - Invest from the Trade tab: a civ for general, or a city for a development loan on its current build; "as aid"
   means no return. See the progress or Gold, the return and the relationship gain first.
@@ -1072,7 +1087,7 @@ numbers. The AI's native spending doesn't know about them, so they follow three 
 
 | Part | Rule |
 | --- | --- |
-| Borrowing | short: a standard bond or AI loan for the shortfall, 10 turns, within the 4.2 limits; insolvent, or past the limits: an emergency loan within `emergency_cap` (4.6); past the cap: none |
+| Borrowing | short (its dues this turn pass its funds, read before the payments) with income above 0: a refinancing loan for the gap from the cheapest bond or AI lender, 10 turns, within the credit cap alone (4.6, AI-PLAN 4.1); below the engine's line with income at or below 0: an emergency loan within `emergency_cap` (4.6); past the cap, or short with no lender or no credit: none, and it pays what it has (4.4) |
 | Build loan | income of 10 Gold or more, solvent, in no default, its own phase Boom or Steady (or outside the cycle), a city with a build at the head of its queue, at most once per 10 turns: the cheapest bond or AI loan over 10 turns for up to 5 turns of its income, no more than the build still needs at the game's purchase rate (4.17) and no more than the most the 4.2 limits allow (the sizing a player's refusal names). The principal goes from the lender straight to the build as `addProgress`, through the progress account a development loan uses, role buildings first. No native lever carries a loan (P18), so this is the AI's door to borrowing to build, which the player has through the Gold it spends. Cheap credit in a boom means more of it, which is what builds the leverage a Panic needs (4.11) |
 | Restructuring | an overdue loan with income > 0 is restructured at `m = 2` |
 | Repudiation | at most once per 20 turns, never against a Friendly lender. Repudiates what it owes a civ it's at war with; or, when insolvent or in default, what it owes a lender it's Unfriendly or worse with, if that debt is above `10 * max(|income|, 10)`; or the bond market, when insolvent and at `emergency_cap` |
@@ -1081,7 +1096,7 @@ numbers. The AI's native spending doesn't know about them, so they follow three 
 | Taxes | native: the AI slots the tax cards in its own policy pass, steered by War Levy's requirement and the two strategy rows (4.7). Only in the script fallback: Heavy if balance < `5 * max(|income|, 10)` and falling, or insolvent (War Levy at war); Light if income > 0 and balance > `30 * income`; else Standard |
 | Tariffs | option On only. Sets Low when it pays a partner more than it's paid and isn't Friendly with it; High against a partner it's Unfriendly or worse with, accepting High's relationship cost; a Mercantile AI, whose High costs half as much, goes to High where another would go to Low. A tariff falls on everything a civ imports, so only partners that sell it a third or more of its imports count. Answers a tariff on its exports in kind (Low with Low, High with High) 2 turns after it's set, when that importer buys a third or more of its exports; takes the higher of its own level and its answer; eases at once when the other side does and drops back when no reason holds; bound by the 5-turn limit. Comes back down: while it holds a tariff, each civ behind it is counted turns at peace from the turn it became a reason; after 20 in a row, or at once when the two are Friendly, the AI eases off that civ, and its own grudge and its answer to that civ both stop counting. War ends the easing and starts the count over. While eased, the other civ's tariff as it stood goes unanswered, so the AI doesn't raise again in kind the next turn; a raise past the lowest level that civ has held since is new and is answered as before |
 | Investment | income > 0 and balance > `20 * income`, at most once per 10 turns, Friendly host only, `5 * its own income`: general if the host's income is growing, else a development loan on a city's current build; to the player it's an offer |
-| Aid | income > 0; to a Friendly civ in default or in its own Depression, at most once per age, up to `5 * its own income` |
+| Aid | income > 0; to a Friendly civ in default or in its own Depression, at most once per age, up to `5 * its own income`; a debt the host has defaulted on to the giver is cleared first (4.12) |
 | Accepting | player loans at `r <= 1.2 * bond rate` with income > 0 and within its 4.2 limits; development loans on any current build; general unless in default; aid always |
 | Citizen loans | a Civic market AI with income > 0, solvent, owing its citizens nothing and holding under 10 turns of income borrows up to 5 turns of income from them, as much as the debt-service limit lets through. No native lever carries a loan (P18), so this is the AI's door to a system the player can use |
 | Investing from Capitalism | a Market or Mixed AI investor past Capitalism also invests in Neutral hosts that are Market or Mixed and past it (4.15) |

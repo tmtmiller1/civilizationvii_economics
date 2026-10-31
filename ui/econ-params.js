@@ -41,8 +41,14 @@ export const CREDIT = { baseTurns: 12, perRepudiationTurns: 4, maxDepthTurns: 12
 export const LENDER_BALANCE_MULTIPLE = 2;
 export const MISS = { rateNum: 5, rateDen: 4, influence: -5, defaultAt: 3 };
 export const RESTRUCTURE = { turns: 10 };
-// DESIGN 4.5: garnish with income > 0, and the branch for income at or below 0 (NOTES finding C).
-export const GARNISH = { outstandingPct: 10, incomePct: 50, lowOutstandingPct: 5, lowBalancePct: 10 };
+// DESIGN 4.5: garnish with income > 0, and the branch for income at or below 0 (NOTES finding C). The share of the
+// outstanding is never under 1 Gold (minCents), and a defaulted loan closes once under 1 Gold is left
+// (closeUnderCents), so the last few Gold don't take dozens of turns (AI-PLAN section 2).
+export const GARNISH = { outstandingPct: 10, incomePct: 50, lowOutstandingPct: 5, lowBalancePct: 10, minCents: 100,
+  closeUnderCents: 100 };
+// AI-PLAN 4.1: a civ whose dues this turn pass its funds, with income above 0, gets a refinancing loan for the gap
+// over 10 turns, judged by the credit cap alone.
+export const REFINANCE = { term: 10 };
 // DESIGN 4.5: the grudge is 5 grievances per turn of the lender's income lost, 10 to 40; witnesses lose 3
 // relationship, doubled for the bond market and temple treasuries, halved against an enemy at war.
 export const REPUDIATION = { grudgePerTurn: 5, grudgeMin: 10, grudgeMax: 40, witness: 3, worldWitnessMultiple: 2,

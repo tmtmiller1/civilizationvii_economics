@@ -218,7 +218,7 @@ test("citizen loans: offered to a Civic market civ within citizen_cap; the inter
   const paid = plan({ civs: [cr(), ai(AI)], turn: 51, ledger: opened.ledger, macro: opened.macro });
   assert.deepEqual(paid.celebration.map((r) => [r.pid, r.amount, r.reason]), [[ME, 2250, "citizens"]]);
   const missed = plan({ civs: [cr({ balanceCents: -100000 }), ai(AI)], turn: 51, ledger: opened.ledger,
-    macro: opened.macro });
+    macro: opened.macro, options: { guard: false } });
   assert.deepEqual(missed.celebration.map((r) => [r.amount, r.reason]), [[-3000, "citizens-miss"]]);
   assert.deepEqual(missed.influence, [], "a miss at home costs celebration, not Influence");
   const tooBig = plan({ civs: [cr(), ai(AI)], requests: [{ ...borrow, principal: 400000 }] });

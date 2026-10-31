@@ -86,7 +86,8 @@ export function debt5(envelopeText) {
 
 /**
  * debt-6 (DESIGN 4.14 commit check): no payer goes past its funds. What a civ paid out this turn is at most its
- * snapshot balance plus income plus what world accounts put in; Gold from other civs counts next turn.
+ * snapshot balance plus income plus what world accounts put in plus the principal of loans that landed this turn;
+ * other Gold from civs counts next turn.
  * @param {Transfer[]} transfers
  * @param {Civ[]} civs
  * @returns {Violation[]}
@@ -99,7 +100,8 @@ export function debt6(transfers, civs) {
   for (const transfer of transfers) {
     const fromWorld = isWorldAccount(transfer.from);
     if (!fromWorld) out.set(transfer.from, (out.get(transfer.from) || 0) + transfer.cents);
-    else if (!isWorldAccount(transfer.to)) worldIn.set(transfer.to, (worldIn.get(transfer.to) || 0) + transfer.cents);
+    if (isWorldAccount(transfer.to) || (!fromWorld && transfer.reason !== "principal")) continue;
+    worldIn.set(transfer.to, (worldIn.get(transfer.to) || 0) + transfer.cents);
   }
   return civs.flatMap((civ) => {
     const paid = out.get(civ.id) || 0;

@@ -114,9 +114,10 @@ test("a defaulted record is garnished by the loan rule until nothing is left", (
   assert.deepEqual([rich.cents, rich.record.outstanding, rich.closed], [1000, 9000, false]);
   const poor = settleInvestmentDefault(record, { incomeCents: -100, balanceCents: 3000, cashCents: 99999 });
   assert.equal(poor.cents, 300, "income at or below 0: min(5% of O, 10% of the balance)");
-  const part = settleInvestmentDefault({ ...record, outstanding: 50 }, { incomeCents: 5000, balanceCents: 0,
+  const part = settleInvestmentDefault({ ...record, outstanding: 450 }, { incomeCents: 5000, balanceCents: 0,
     cashCents: 99999 });
-  assert.deepEqual([part.cents, part.closed, part.record.state], [5, false, "default"], "10% of what's left, rounded up");
+  assert.deepEqual([part.cents, part.closed, part.record.state], [100, false, "default"],
+    "the floor of 1 Gold where 10% of what's left would be 45 cents");
   const done = settleInvestmentDefault({ ...record, outstanding: 1 }, { incomeCents: 5000, balanceCents: 0,
     cashCents: 99999 });
   assert.deepEqual([done.cents, done.closed, done.record.state], [1, true, "closed"]);

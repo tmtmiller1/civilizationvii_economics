@@ -66,15 +66,23 @@ test("term refusals name the gate: Moneylending for 20, Public debt and a lender
     "term-repudiation");
 });
 
-test("a miss: -5 Influence, the rate rises, the interest joins O, a notice for the player; no Gold moves", () => {
-  const plan = planTurn(input({ ledger: ledgerWith([loan("L1")]), civs: [me({ balanceCents: 0, incomeCents: 2099 })] }));
-  assert.deepEqual(plan.transfers, []);
+test("a short turn (AI-PLAN 4.1): what there is goes to the lender, the rest joins O, -5 Influence, the rate rises", () => {
+  const plan = planTurn(input({ ledger: ledgerWith([loan("L1")]), civs: [me({ balanceCents: 0, incomeCents: 2099,
+    stages: CLOSED })], options: { guard: false } }));
+  assert.deepEqual(plan.transfers.map((t) => [t.from, t.to, t.cents, t.parts.short]), [[ME, "bond", 2099, 1]]);
   assert.deepEqual(plan.influence, [{ pid: ME, amount: -5, loanId: "L1", reason: "miss" }]);
   assert.equal(plan.ledger.loans[0].ratePpm, 25000);
-  assert.equal(plan.ledger.loans[0].outstanding, 30600);
-  assert.equal(plan.notices[0].kind, "miss");
+  assert.equal(plan.ledger.loans[0].outstanding, 30000 - 1499, "paid 20.99 of 21: 14.99 off the principal");
+  assert.deepEqual(plan.notices.find((n) => n.kind === "miss"), { pid: ME, kind: "miss", loanId: "L1", missed: 1,
+    paid: 2099, due: 2100, short: 1 });
   assert.deepEqual(plan.ledger.misses, [{ pid: ME, turn: 50, n: 1 }]);
   assert.equal(plan.batch.civs[0].influence, -5);
+  const nothing = planTurn(input({ ledger: ledgerWith([loan("L1")]), civs: [me({ balanceCents: 0, incomeCents: 0 })],
+    options: { guard: false } }));
+  assert.deepEqual(nothing.transfers, [], "nothing to pay: the plain miss, no Gold moves");
+  assert.equal(nothing.ledger.loans[0].outstanding, 30600);
+  const next = planTurn(input({ turn: 51, ledger: plan.ledger, civs: [me({ balanceCents: 0, incomeCents: 1e6 })] }));
+  assert.equal(next.transfers[0].parts.amortisation, 1500, "the same slice again next turn, on the bigger loan");
 });
 
 test("funds for the turn: balance + income - payment >= 0 pays; a paid turn resets the run of misses", () => {
@@ -85,12 +93,16 @@ test("funds for the turn: balance + income - payment >= 0 pays; a paid turn rese
   assert.equal(pays.ledger.loans[0].missed, 0);
 });
 
-test("payments run oldest loan first, each all or nothing; a later small one can still be paid", () => {
+test("payments run oldest loan first, each paid as far as the funds go; a later one takes what's left", () => {
   const big = loan("L1", { opened: 1 });
   const small = loan("L2", { opened: 2, principal: 1000, outstanding: 1000, term: 10 });
-  const plan = planTurn(input({ ledger: ledgerWith([small, big]), civs: [me({ balanceCents: 0, incomeCents: 2000 })] }));
-  assert.deepEqual(plan.transfers.map((t) => t.loanId), ["L2"]);
-  assert.deepEqual(plan.influence.map((i) => i.loanId), ["L1"]);
+  const plan = planTurn(input({ ledger: ledgerWith([small, big]), civs: [me({ balanceCents: 0, incomeCents: 2000,
+    stages: CLOSED })], options: { guard: false } }));
+  assert.deepEqual(plan.transfers.map((t) => [t.loanId, t.cents]), [["L1", 2000]], "L1 takes all 20; L2 gets nothing");
+  assert.deepEqual(plan.influence.map((i) => i.loanId), ["L1", "L2"]);
+  const roomy = planTurn(input({ ledger: ledgerWith([small, big]), civs: [me({ balanceCents: 0, incomeCents: 2150,
+    stages: CLOSED })], options: { guard: false } }));
+  assert.deepEqual(roomy.transfers.map((t) => [t.loanId, t.cents]), [["L1", 2100], ["L2", 50]], "L2 paid 0.50 of 1.20");
 });
 
 test("the third miss in a row defaults: chronicle event, the lender blocked for the age, garnish from next turn", () => {
@@ -123,9 +135,11 @@ test("garnish is bound by cash, and a civ with income at or below 0 pays from it
 test("garnish is taken before scheduled payments", () => {
   const d = loan("L1", { state: "default", missed: 3, opened: 5, outstanding: 10000 });
   const a = loan("L2", { opened: 1, principal: 10000, outstanding: 10000, term: 10, ratePpm: 10000 });
-  const plan = planTurn(input({ ledger: ledgerWith([a, d]), civs: [me({ balanceCents: 0, incomeCents: 1200 })] }));
-  assert.deepEqual(plan.transfers.map((t) => [t.loanId, t.reason, t.cents]), [["L1", "garnish", 600]]);
-  assert.equal(plan.influence[0].loanId, "L2", "1100 due, 600 left after the garnish; paid first it would fit");
+  const plan = planTurn(input({ ledger: ledgerWith([a, d]), civs: [me({ balanceCents: 0, incomeCents: 1200,
+    stages: CLOSED })], options: { guard: false } }));
+  assert.deepEqual(plan.transfers.map((t) => [t.loanId, t.reason, t.cents]), [["L1", "garnish", 600],
+    ["L2", "payment", 600]], "1100 due, 600 left after the garnish; paid first it would fit");
+  assert.equal(plan.influence[0].loanId, "L2");
 });
 
 test("restructuring (DESIGN 4.4): the player's overdue loan gets a new 10-turn schedule, standing takes a miss", () => {
@@ -301,14 +315,56 @@ test("the open-loan limit: a seventh open loan for one borrower is refused, the 
   assert.equal(plan.events.some((e) => e.kind === "guard-limit"), true);
 });
 
-test("AI borrowing (DESIGN 6): a short AI takes a standard 10-turn loan within its limits, cheapest lender first", () => {
-  const civs = [me({ balanceCents: 1e7 }), civ(4, { balanceCents: -4000, incomeCents: 2000 }),
-    civ(6, { balanceCents: 300000, incomeCents: 1000 }), civ(8, { balanceCents: 30000, incomeCents: 2000 })];
-  const plan = planTurn(input({ civs, relations: [{ a: 6, b: 4, level: "unfriendly" }] }));
-  const t = plan.transfers[0];
-  assert.deepEqual([t.from, t.to, t.cents], [6, 4, 2000], "8 fails 20 * income; the human never lends by rule");
-  assert.deepEqual([plan.ledger.loans[0].term, plan.ledger.loans[0].emergency, plan.ledger.loans[0].source],
-    [10, false, "ai-shortfall"]);
+test("refinancing (AI-PLAN 4.1): an AI whose dues pass its funds, with income above 0, borrows the gap before it pays",
+  () => {
+    // The third watch run's unreachable case: an AI at 0 Gold with income under what it owes this turn.
+    const due = loan("L1", { borrower: 4, principal: 10000, outstanding: 10000, ratePpm: 20000, term: 10, opened: 1 });
+    const civs = [me({ balanceCents: 1e7 }), civ(4, { balanceCents: 0, incomeCents: 1000 }),
+      civ(6, { balanceCents: 300000, incomeCents: 1000 }), civ(8, { balanceCents: 30000, incomeCents: 2000 })];
+    const plan = planTurn(input({ ledger: ledgerWith([due]), civs, relations: [{ a: 6, b: 4, level: "unfriendly" }] }));
+    assert.deepEqual(plan.transfers.map((t) => [t.from, t.to, t.cents, t.reason]),
+      [[6, 4, 200, "principal"], [4, "bond", 1200, "payment"]],
+      "12 due against 10: 2 from the cheapest lender (8 fails 20 * income; the human never lends by rule)");
+    const opened = plan.ledger.loans[1];
+    assert.deepEqual([opened.term, opened.emergency, opened.source, opened.principal], [10, false, "refinance", 200]);
+    assert.equal(plan.events.find((e) => e.kind === "refinance").dues, 1200);
+    assert.deepEqual(plan.influence, [], "the payment was made in full: no miss");
+    const dip = planTurn(input({ civs: [me(), civ(4, { balanceCents: -4000, incomeCents: 2000 })] }));
+    assert.deepEqual(dip.transfers, [], "a dip with nothing due isn't distress: the engine wipes it (P4)");
+  });
+
+test("refinancing is judged by the credit cap alone; over it, insolvent or with no lender the civ pays what it has", () => {
+  // L1: 12 a turn on 100 owed. At 10 of income the payments take all of it, past the service limit; the cap
+  // (12 turns of income less what's owed) still leaves 20, so the refinancing passes.
+  const due = loan("L1", { borrower: 4, principal: 10000, outstanding: 10000, ratePpm: 20000, term: 10, opened: 1 });
+  const lender = civ(6, { balanceCents: 300000, incomeCents: 1000 });
+  const run = (over = {}, ledger = ledgerWith([due])) => planTurn(input({ ledger, civs: [me(),
+    civ(4, { balanceCents: 0, incomeCents: 1000, ...over }), lender] }));
+  const ok = run();
+  assert.equal(ok.transfers[0].reason, "principal", "service already past half of income: the cap alone passes");
+  const capped = run({}, ledgerWith([due, loan("L2", { borrower: 4, principal: 1900, outstanding: 1900, ratePpm: 0,
+    term: 100, opened: 1 })]));
+  assert.equal(capped.events.find((e) => e.kind === "short")?.reason, "credit-cap",
+    "12 turns of 10 is 120, less 119 outstanding leaves 1 against a gap of 2.19");
+  assert.equal(capped.transfers.find((t) => t.loanId === "L1").cents, 1000, "L1 takes the 10 there was");
+  const insolvent = run({ incomeCents: 0 }, ledgerWith([due], { lowIncome: [{ pid: 4, turns: 5 }] }));
+  assert.equal(insolvent.events.find((e) => e.kind === "short")?.reason, "income");
+  const nobody = planTurn(input({ ledger: ledgerWith([due]), civs: [me(), civ(4, { balanceCents: 0, incomeCents: 1000,
+    stages: { moneylending: 0, publicDebt: null } })] }));
+  assert.equal(nobody.events.find((e) => e.kind === "short")?.reason, "no-offer");
+  assert.equal(nobody.ledger.loans[0].missed, 1);
+});
+
+test("the human's guard takes the same refinancing loan, with a notice; off, the player pays what there is", () => {
+  const due = loan("L1", { principal: 10000, outstanding: 10000, ratePpm: 20000, term: 10, opened: 1 });
+  const civs = [me({ balanceCents: 0, incomeCents: 1000 }), civ(6, { balanceCents: 300000, incomeCents: 1000 })];
+  const on = planTurn(input({ ledger: ledgerWith([due]), civs }));
+  assert.deepEqual(on.transfers.map((t) => [t.from, t.to, t.cents]), [[6, ME, 200], [ME, "bond", 1200]]);
+  assert.deepEqual(on.notices.find((n) => n.kind === "refinance"), { pid: ME, kind: "refinance", loanId: "L2",
+    cents: 200, lender: 6, dues: 1200, funds: 1000 });
+  const off = planTurn(input({ ledger: ledgerWith([due]), civs, options: { guard: false } }));
+  assert.deepEqual(off.transfers.map((t) => [t.from, t.to, t.cents]), [[ME, "bond", 1000]]);
+  assert.equal(off.notices.find((n) => n.kind === "miss").short, 200);
 });
 
 test("AI borrowing: past the 4.2 limits or insolvent it takes an emergency loan sized as the guard's; at the cap none", () => {
@@ -348,25 +404,33 @@ test("an AI's emergency loan is the human's guard loan: same line, same sizing, 
     [true, true]);
 });
 
-test("AI borrowing: competing borrowers go largest shortfall first, ties by id; committed principal counts", () => {
-  const civs = [me(), civ(4, { balanceCents: -550, incomeCents: 200 }), civ(5, { balanceCents: -600,
-    incomeCents: 200 }), civ(6, { balanceCents: 1001, incomeCents: 50 })];
-  const plan = planTurn(input({ civs }));
-  assert.deepEqual(plan.transfers.map((t) => [t.from, t.to, t.cents]), [[6, 5, 400], ["bond", 4, 350]],
-    "6 can cover 2 * 400 once, then 1001 - 400 < 2 * 350 and 4 goes to the bond market");
-  assert.deepEqual(plan.ledger.loans.map((l) => l.emergency), [false, false]);
+test("refinancing: competing borrowers go largest gap first, ties by id; committed principal counts", () => {
+  // 2 of income each, 20 owed over 4 turns: 4 owes 5.50 this turn (2.5% interest), 5 owes 6; the cap leaves 4.
+  const owed = (id, borrower, ratePpm) => loan(id, { borrower, principal: 2000, outstanding: 2000, ratePpm, term: 4,
+    opened: 1 });
+  const civs = [me(), civ(4, { balanceCents: 0, incomeCents: 200 }), civ(5, { balanceCents: 0, incomeCents: 200 }),
+    civ(6, { balanceCents: 1001, incomeCents: 50 })];
+  const plan = planTurn(input({ ledger: ledgerWith([owed("L1", 4, 25000), owed("L2", 5, 50000)]), civs }));
+  assert.deepEqual(plan.transfers.filter((t) => t.reason === "principal").map((t) => [t.from, t.to, t.cents]),
+    [[6, 5, 400], ["bond", 4, 350]], "6 can cover 2 * 400 once, then 1001 - 400 < 2 * 350 and 4 goes to the bond market");
+  assert.deepEqual(plan.ledger.loans.slice(2).map((l) => l.emergency), [false, false]);
+  assert.deepEqual(plan.influence, [], "both payments made in full");
 });
 
-test("player lends: an AI in shortfall accepts at r <= 1.2 * its bond rate when it can pay; refusals by reason", () => {
-  const civs = [me({ balanceCents: 50000 }), civ(4, { balanceCents: -6000, incomeCents: 5000 })];
-  const lend = (ratePpm, over = {}) => ({ kind: "lend", lender: ME, borrower: 4, principal: 10000, ratePpm, term: 10,
+test("player lends: an AI whose dues pass its funds accepts at r <= 1.2 * its bond rate; refusals by reason", () => {
+  // Civ 4 owes 60 this turn on L1 and has 50: the player's 10 at the bond rate's 1.2 is accepted on the credit
+  // cap alone, and the AI's payment is made from it in the same turn (NOTES 120).
+  const owed = loan("L1", { borrower: 4, principal: 50000, outstanding: 50000, ratePpm: 20000, term: 10, opened: 1 });
+  const ledger = ledgerWith([owed]);
+  const civs = [me({ balanceCents: 50000 }), civ(4, { balanceCents: 0, incomeCents: 5000 })];
+  const lend = (ratePpm, over = {}) => ({ kind: "lend", lender: ME, borrower: 4, principal: 1000, ratePpm, term: 10,
     ...over });
-  const ok = planTurn(input({ civs, requests: [lend(24000)] }));
-  assert.deepEqual(ok.transfers[0], { loanId: "L1", turn: 50, from: ME, to: 4, cents: 10000, reason: "principal",
-    parts: {} });
-  assert.equal(ok.transfers.length, 1, "the loan covered the shortfall, so the AI borrows nothing more");
-  assert.equal(ok.ledger.loans[0].source, "lend");
-  const why = (r, extra = {}) => refusal(planTurn(input({ civs, requests: [r], ...extra })));
+  const ok = planTurn(input({ ledger, civs, requests: [lend(24000)] }));
+  assert.deepEqual(ok.transfers.map((t) => [t.loanId, t.from, t.to, t.cents, t.reason]),
+    [["L2", ME, 4, 1000, "principal"], ["L1", 4, "bond", 6000, "payment"]]);
+  assert.equal(ok.ledger.loans[1].source, "lend");
+  assert.deepEqual(ok.influence, [], "the payment was met from the player's Gold");
+  const why = (r, extra = {}) => refusal(planTurn(input({ ledger, civs, requests: [r], ...extra })));
   assert.equal(why(lend(24001)), "declined");
   assert.equal(why(lend(24000, { principal: 70000 })), "balance", "funds for the turn are 60000");
   assert.equal(why(lend(24000, { borrower: ME })), "parties");
@@ -374,7 +438,12 @@ test("player lends: an AI in shortfall accepts at r <= 1.2 * its bond rate when 
   assert.equal(why(lend(24000), { relations: [{ a: ME, b: 4, level: "war" }] }), "war");
   assert.equal(why(lend(0)), "terms");
   assert.equal(why(lend(24000, { term: 30 })), "term-banking", "the player needs a Bank for 30 turns too");
-  assert.equal(why(lend(24000), { civs: [civs[0], civ(4, { balanceCents: 4000 })] }), "declined", "no shortfall");
+  assert.equal(why(lend(24000), { civs: [civs[0], civ(4, { balanceCents: 4000, incomeCents: 5000 })] }), "declined",
+    "90 against 60 due: not short");
+  assert.equal(why(lend(24000), { civs: [civs[0], civ(4, { balanceCents: 0, incomeCents: 1000 })] }),
+    "declined", "10 of income: 12 turns is 120, less 500 outstanding leaves no credit room");
+  assert.equal(why(lend(24000, { principal: 1100 })), "declined",
+    "past the gap the debt-service limit applies: 60 and the new 1.34 is more than half of 50");
   assert.equal(why(lend(24000), { civs: [civs[0], civ(4, { balanceCents: -4000, incomeCents: 0 })] }), "declined",
     "finding E: an AI that can't pay doesn't borrow from the player");
   assert.equal(why(lend(24000, { principal: 40000 }), { civs: [civs[0], civ(4, { balanceCents: -4000,
@@ -421,7 +490,8 @@ test("Gold from another civ counts next turn: a payment received this turn can't
   const loans = [loan("L1", { borrower: 4, lender: 6, opened: 1 }), loan("L2", { borrower: 6, lender: 4, opened: 2 })];
   const civs = [me(), civ(4, { balanceCents: 0, incomeCents: 2100 }), civ(6, { balanceCents: 0, incomeCents: 2099 })];
   const plan = planTurn(input({ ledger: ledgerWith(loans), civs, options: { ai: false } }));
-  assert.deepEqual(plan.transfers.map((t) => [t.from, t.to, t.cents]), [[4, 6, 2100]]);
+  assert.deepEqual(plan.transfers.map((t) => [t.from, t.to, t.cents]), [[4, 6, 2100], [6, 4, 2099]],
+    "6 pays the 20.99 it has, not the 21 that lands from 4 this turn");
   assert.deepEqual(plan.influence.map((i) => i.pid), [6]);
 });
 

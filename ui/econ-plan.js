@@ -18,13 +18,14 @@ import { cloneLedger, emptyLedger, prune } from "./econ-state.js";
 import { emptyMarkets } from "./econ-markets.js";
 import { isAlive, closeLoan, emit, event, notice, replaceLoan, turnContext } from "./econ-turn.js";
 import { runRequests } from "./econ-requests.js";
-import { aiBorrow, aiBuildBorrow, aiRepudiate, aiRestructure, guardFor, isInsolventCiv } from "./econ-shortfall.js";
+import { aiBorrow, aiBuildBorrow, aiRepudiate, aiRestructure, guardFor, guardRefinance, isInsolventCiv, refinanceFor }
+  from "./econ-shortfall.js";
 import { aiAid, aiInvest, aiTariff, investWriteOffs, marketStep, payDividendsFor, settleTradeFor, tradeNotices,
   tradeStep } from "./econ-commerce.js";
 import { aiMacro, cycleInflows, macroPayerSteps, macroSnapshot } from "./econ-macro.js";
 import { citizenInterest, citizenMiss } from "./econ-citizens.js";
 import { cycleKPct, emptyMacro } from "./econ-macro-state.js";
-import { growthMille } from "./econ-invest.js";
+import { distressOf, loanGrowth } from "./econ-distress.js";
 
 /** The smallest drop across an age change that's recorded as the game's cap, not the turn's own spending. */
 const AGE_GOLD_MIN_CENTS = 10000;
@@ -98,9 +99,25 @@ function proposeStep(ctx) {
   if (ctx.options.loans) for (const civ of ai) aiBuildBorrow(ctx, civ);
   cycleInflows(ctx);
   if (ctx.options.taxFallback) for (const civ of live) taxOne(ctx, civ);
+  refinanceStep(ctx, live, ai);
   for (const civ of live) payerSteps(ctx, civ.id, extras);
   tradeNotices(ctx);
   if (ctx.options.loans) shortfallStep(ctx, live, ai);
+}
+
+/**
+ * AI-PLAN 4.1, before the payments: the distress read for every living civ; the human's guard and the AI rule take a
+ * refinancing loan for the gap. Competing AI borrowers go largest gap first, ties by id, as the emergency step does.
+ * @param {TurnContext} ctx
+ * @param {Civ[]} live
+ * @param {Civ[]} ai
+ */
+function refinanceStep(ctx, live, ai) {
+  if (!ctx.options.loans) return;
+  for (const civ of live) if (civ.human === true) guardRefinance(ctx, civ);
+  const short = ai.map((civ) => ({ civ, gap: distressOf(ctx, civ.id).gap })).filter((row) => row.gap > 0)
+    .sort((x, y) => y.gap - x.gap || x.civ.id - y.civ.id);
+  for (const row of short) refinanceFor(ctx, row.civ);
 }
 
 /**
@@ -284,7 +301,7 @@ function garnishOne(ctx, loan, extras) {
   const result = settleDefault(loan, { incomeCents: civ.incomeCents, balanceCents: civ.balanceCents,
     cashCents: funds(ctx.batch, loan.borrower) }, extras.get(loan.id) || 0);
   emit(ctx, loan, { from: loan.borrower, to: loan.lender, cents: result.cents, reason: "garnish",
-    parts: { garnish: result.garnish, extra: result.extra } });
+    parts: { garnish: result.garnish, extra: result.extra, forgiven: result.forgiven } });
   replaceLoan(ctx, result.loan);
   if (result.closed) closeLoan(ctx, result.loan);
 }
@@ -296,15 +313,15 @@ function garnishOne(ctx, loan, extras) {
  */
 function payOne(ctx, loan, extras) {
   const extra = extras.get(loan.id) || 0;
-  const growth = loan.partnership === true ? growthMille(ctx.civ.get(loan.borrower)?.incomeCents ?? 0,
-    loan.baseIncome ?? 0) : 1000;
   const result = settleActive(loan, funds(ctx.batch, loan.borrower), { capPpm: ctx.capPpm, extra,
-    growthMille: growth });
+    growthMille: loanGrowth(ctx, loan) });
   replaceLoan(ctx, result.loan);
-  if (result.missed) { recordMiss(ctx, loan, result); return; }
+  // A short turn still pays what there was (AI-PLAN 4.1); the transfer carries what joined the loan.
   emit(ctx, loan, { from: loan.borrower, to: loan.lender, cents: result.cents, reason: "payment",
-    parts: { interest: result.interest, amortisation: result.amortisation, extra: result.extra } });
+    parts: { interest: result.interest, amortisation: result.amortisation, extra: result.extra,
+      short: result.capitalised } });
   citizenInterest(ctx, loan, result.interest);
+  if (result.missed) { recordMiss(ctx, loan, result); return; }
   if (result.closed) closeLoan(ctx, result.loan);
 }
 
@@ -321,8 +338,9 @@ function recordMiss(ctx, loan, result) {
     out.influence.push({ pid: loan.borrower, amount: MISS.influence, loanId: loan.id, reason: "miss" });
   }
   event(ctx, { kind: "miss", loanId: loan.id, borrower: loan.borrower, missed: result.loan.missed,
-    capitalised: result.capitalised });
-  notice(ctx, loan.borrower, { kind: "miss", loanId: loan.id, missed: result.loan.missed });
+    capitalised: result.capitalised, paid: result.cents, due: result.due });
+  notice(ctx, loan.borrower, { kind: "miss", loanId: loan.id, missed: result.loan.missed, paid: result.cents,
+    due: result.due, short: result.capitalised });
   if (!result.defaulted) return;
   ledger.blocks = withBlock(ledger.blocks, blockFor({ lender: loan.lender, borrower: loan.borrower, reason: "default",
     turn }));

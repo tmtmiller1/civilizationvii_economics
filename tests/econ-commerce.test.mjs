@@ -319,6 +319,36 @@ test("to the player an AI investment is an offer: accepted it opens, declined or
   assert.equal(expired.ledger.offers.some((o) => o.id === offer.id), false, "gone after 3 turns");
 });
 
+test("aid to a civ in default to the giver clears that debt first (AI-PLAN 2); the rest is sent as Gold", () => {
+  const loan = (id, outstanding, over = {}) => ({ id, kind: "loan", lender: ME, borrower: AI, principal: 10000, outstanding,
+    ratePpm: 20000, term: 10, paid: 0, missed: 3, state: "default", emergency: false, restructured: false, opened: 1,
+    closedTurn: null, writtenOff: 0, source: "lend", ...over });
+  const ledger = { ...emptyLedger(), nextId: 4, loans: [loan("L1", 3000), loan("L2", 5000, { opened: 2 }),
+    loan("L3", 2000, { state: "active", missed: 0, opened: 3 })] };
+  const civs = [me(), ai(AI, { incomeCents: 2000 })];
+  const aid = { kind: "invest", investor: ME, host: AI, form: "general", cents: 10000, asAid: true };
+  const out = plan({ civs, ledger, requests: [aid], options: { loans: true } });
+  const cleared = out.events.filter((e) => e.kind === "aid-cleared").map((e) => [e.loanId, e.cents]);
+  assert.deepEqual(cleared, [["L1", 3000], ["L2", 5000]], "oldest default first; the active L3 isn't touched");
+  assert.deepEqual(out.ledger.loans.map((l) => [l.id, l.state, l.outstanding]),
+    [["L1", "closed", 0], ["L2", "closed", 0], ["L3", "active", 2000 - 1000]], "L3 pays its slice as usual");
+  const gift = out.transfers.find((t) => t.reason === "invest");
+  assert.deepEqual([gift.from, gift.to, gift.cents], [ME, AI, 2000], "100 of aid: 80 cleared, 20 sent");
+  assert.equal(out.events.find((e) => e.kind === "invest").cleared, 8000);
+  assert.deepEqual(out.relationships, [{ a: ME, b: AI, delta: 2 }], "the goodwill counts the whole 100");
+  assert.equal(out.notices.find((n) => n.kind === "invested").cleared, 8000);
+  const partly = plan({ civs, ledger, requests: [{ ...aid, cents: 2000 }], options: { loans: true } });
+  assert.deepEqual(partly.transfers.filter((t) => t.reason === "invest"), [], "20 of aid: all of it clears L1");
+  assert.equal(partly.transfers.find((t) => t.loanId === "L1").reason, "garnish", "L1's garnish still runs after");
+  assert.deepEqual(partly.ledger.loans.find((l) => l.id === "L1").outstanding, 900, "10 left, the 1 Gold garnish");
+  const poor = plan({ civs: [me({ balanceCents: 2500, incomeCents: 0 }), ai(AI, { incomeCents: 2000 })], ledger,
+    requests: [aid], options: { loans: true } });
+  assert.equal(refusal(poor, "invest"), undefined, "the giver only needs the Gold for the part it sends (20)");
+  const broke = plan({ civs: [me({ balanceCents: 1500, incomeCents: 0 }), ai(AI, { incomeCents: 2000 })], ledger,
+    requests: [aid], options: { loans: true } });
+  assert.equal(refusal(broke, "invest"), "balance");
+});
+
 test("AI aid: to a Friendly civ in default, once per age, 5 turns of its own income", () => {
   const inDefault = { ...emptyLedger(), nextId: 2, loans: [{ id: "L1", kind: "loan", lender: "bond", borrower: OTHER,
     principal: 100, outstanding: 100, ratePpm: 20000, term: 10, paid: 0, missed: 3, state: "default",

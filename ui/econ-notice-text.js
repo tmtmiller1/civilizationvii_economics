@@ -134,7 +134,13 @@ const NOTICES = {
     const loan = loanOf(ctx, notice.loanId);
     return loan ? { key: `${PREFIX}NOTICE_LENT`, args: [gold(loan.principal), name(ctx, loan.borrower)] } : null;
   },
-  miss: (notice) => ({ key: `${PREFIX}NOTICE_MISS`, args: [String(notice.loanId), Number(notice.missed) || 1] }),
+  // A short turn pays what there was (AI-PLAN 4.1): "Paid 80 of 100. 20 added to the loan."; with nothing paid
+  // the plain miss.
+  miss: (notice) => ({ key: `${PREFIX}NOTICE_MISS${Number(notice.paid) > 0 ? "_PART" : ""}`,
+    args: [String(notice.loanId), Number(notice.missed) || 1, gold(notice.paid), gold(notice.due),
+      gold(notice.short)] }),
+  refinance: (notice, ctx) => ({ key: `${PREFIX}NOTICE_REFINANCE`, args: [gold(notice.cents), name(ctx, notice.lender),
+    gold(notice.dues)] }),
   default: (notice) => ({ key: `${PREFIX}NOTICE_DEFAULT`, args: [String(notice.loanId)] }),
   "defaulted-on": (notice, ctx) => ({ key: `${PREFIX}NOTICE_DEFAULTED_ON`,
     args: [name(ctx, notice.borrower), String(notice.loanId)] }),
@@ -153,9 +159,9 @@ const NOTICES = {
     args: [gold(notice.paid), gold(notice.received), gold(notice.waived)] }),
   "tariff-cost": (notice) => ({ key: `${PREFIX}NOTICE_TARIFF_COST`, args: [Number(notice.partners) || 1] }),
   invested: (notice, ctx) => ({ key: `${PREFIX}NOTICE_INVESTED_${investForm(notice)}`,
-    args: [gold(notice.cents), name(ctx, notice.borrower), Number(notice.progress) || 0] }),
+    args: [gold(notice.cents), name(ctx, notice.borrower), Number(notice.progress) || 0, gold(notice.cleared)] }),
   "invested-in": (notice, ctx) => ({ key: `${PREFIX}NOTICE_INVESTED_IN_${investForm(notice)}`,
-    args: [name(ctx, notice.lender), gold(notice.cents), Number(notice.progress) || 0] }),
+    args: [name(ctx, notice.lender), gold(notice.cents), Number(notice.progress) || 0, gold(notice.cleared)] }),
   "invest-miss": (notice) => ({ key: `${PREFIX}NOTICE_INVEST_MISS`, args: [String(notice.loanId), Number(notice.missed) || 1] }),
   "invest-default": (notice) => ({ key: `${PREFIX}NOTICE_INVEST_DEFAULT`, args: [String(notice.loanId)] }),
   "invest-defaulted-on": (notice, ctx) => ({ key: `${PREFIX}NOTICE_INVEST_DEFAULTED_ON`,
@@ -178,7 +184,7 @@ const NOTICES = {
  * @param {Record<string, unknown>} notice
  */
 function investForm(notice) {
-  if (Number(notice.aid) === 1) return "AID";
+  if (Number(notice.aid) === 1) return Number(notice.cleared) > 0 ? "AID_CLEARED" : "AID";
   return notice.form === "general" ? "GENERAL" : "PROJECT";
 }
 
@@ -317,7 +323,13 @@ export function eventConcerns(event, pid) {
 const EVENTS = {
   open: (event, who) => ({ key: `${PREFIX}EVENT_OPEN`, args: [String(event.loanId), gold(event.cents),
     who(event.lender), who(event.borrower)] }),
-  miss: (event) => ({ key: `${PREFIX}EVENT_MISS`, args: [String(event.loanId), Number(event.missed) || 1] }),
+  miss: (event) => ({ key: `${PREFIX}EVENT_MISS${Number(event.paid) > 0 ? "_PART" : ""}`,
+    args: [String(event.loanId), Number(event.missed) || 1, gold(event.paid), gold(event.due),
+      gold(event.capitalised)] }),
+  refinance: (event, who) => ({ key: `${PREFIX}EVENT_REFINANCE`, args: [who(event.pid), gold(event.cents),
+    who(event.lender)] }),
+  "aid-cleared": (event, who) => ({ key: `${PREFIX}EVENT_AID_CLEARED`, args: [who(event.lender), gold(event.cents),
+    String(event.loanId), who(event.borrower)] }),
   default: (event, who) => ({ key: `${PREFIX}EVENT_DEFAULT`, args: [String(event.loanId), who(event.borrower)] }),
   closed: (event) => ({ key: `${PREFIX}EVENT_CLOSED`, args: [String(event.loanId)] }),
   "age-gold": (event, who) => ({ key: `${PREFIX}EVENT_AGE_GOLD`, args: [who(event.pid), gold(event.after),

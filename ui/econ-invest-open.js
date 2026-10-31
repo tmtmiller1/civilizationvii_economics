@@ -10,7 +10,8 @@ import { activeDefaults } from "./econ-credit.js";
 import { isBlocked, relationLevel } from "./econ-lenders.js";
 import { hasStage } from "./econ-stages.js";
 import { funds } from "./econ-batch.js";
-import { emit, event, haveNotMet, incomeOf, isAlive, isHuman, notice, termsFor } from "./econ-turn.js";
+import { closeLoan, emit, event, haveNotMet, incomeOf, isAlive, isHuman, notice, replaceLoan, termsFor }
+  from "./econ-turn.js";
 
 /**
  * @typedef {{ investor: number, host: number, form: InvestKind, cents: number, cityId: string | null,
@@ -56,7 +57,7 @@ function partiesRefusal(ctx, spec) {
 function termsRefusal(ctx, spec) {
   const gate = spec.asAid ? null : gateRefusal(ctx, spec);
   if (gate) return gate;
-  if (funds(ctx.batch, spec.investor) < spec.cents) return "balance";
+  if (funds(ctx.batch, spec.investor) < spec.cents - aidClearing(ctx, spec).cleared) return "balance";
   if (spec.form === "project") {
     const city = cityFor(ctx, spec);
     if (!city || !city.build || !(city.neededProgress > 0)) return "build";
@@ -82,6 +83,49 @@ function gateRefusal(ctx, spec) {
 
 /** @param {InvestSpec} spec */
 const giftKey = (spec) => `A${spec.investor}-${spec.host}`;
+
+/**
+ * @param {Loan} a
+ * @param {Loan} b
+ */
+const byAge = (a, b) => a.opened - b.opened || a.id.localeCompare(b.id);
+
+/**
+ * AI-PLAN section 2: aid to a civ in default to the giver clears that debt first. The host's defaulted loans from
+ * the giver, oldest first, take the aid up to what's outstanding; only the rest is sent as Gold.
+ * @param {TurnContext} ctx
+ * @param {InvestSpec} spec
+ * @returns {{ cleared: number, rows: { loan: Loan, take: number }[] }}
+ */
+export function aidClearing(ctx, spec) {
+  if (!spec.asAid || !(spec.cents > 0)) return { cleared: 0, rows: [] };
+  const owed = ctx.ledger.loans.filter((loan) => loan.borrower === spec.host && loan.lender === spec.investor
+    && loan.state === "default").sort(byAge);
+  let left = spec.cents;
+  /** @type {{ loan: Loan, take: number }[]} */
+  const rows = [];
+  for (const loan of owed) {
+    const take = Math.min(left, loan.outstanding);
+    if (take <= 0) continue;
+    rows.push({ loan, take });
+    left -= take;
+  }
+  return { cleared: spec.cents - left, rows };
+}
+
+/**
+ * Books the clearing: each loan's outstanding falls by what the aid covers, closing at 0, with an event per loan.
+ * @param {TurnContext} ctx
+ * @param {InvestSpec} spec
+ * @param {{ loan: Loan, take: number }[]} rows
+ */
+function clearDebt(ctx, spec, rows) {
+  for (const { loan, take } of rows) {
+    const next = replaceLoan(ctx, { ...loan, outstanding: loan.outstanding - take });
+    event(ctx, { kind: "aid-cleared", loanId: loan.id, lender: spec.investor, borrower: spec.host, cents: take });
+    if (next.outstanding === 0) closeLoan(ctx, next);
+  }
+}
 
 /**
  * Why this investment can't open, or null. Both parties alive, at peace and Neutral or better (aid only at peace),
@@ -125,26 +169,41 @@ function bookRecord(ctx, spec, { id, spent, city }) {
  * @param {"request" | "ai" | "offer"} source
  */
 export function openInvestment(ctx, spec, source) {
-  const spend = spendFor(ctx, spec);
-  if (spend.cents <= 0) return null;
+  const clearing = aidClearing(ctx, spec);
+  const spend = spendFor(ctx, { ...spec, cents: spec.cents - clearing.cleared });
+  if (spend.cents <= 0 && clearing.cleared <= 0) return null;
   const id = spec.asAid ? giftKey(spec) : investId(ctx.ledger.nextInvestId);
-  emit(ctx, { id }, { from: spec.investor, to: spend.city ? PROGRESS : spec.host, cents: spend.cents,
-    reason: "invest", parts: { refund: spend.refund } });
+  if (clearing.cleared > 0) clearDebt(ctx, spec, clearing.rows);
+  if (spend.cents > 0) {
+    emit(ctx, { id }, { from: spec.investor, to: spend.city ? PROGRESS : spec.host, cents: spend.cents,
+      reason: "invest", parts: { refund: spend.refund } });
+  }
   if (spend.city) {
     ctx.out.progress.push({ host: spec.host, cityId: spend.city.id, amount: spend.progress, investmentId: id });
   }
   if (!spec.asAid) bookRecord(ctx, spec, { id, spent: spend.cents, city: spend.city });
-  // Tribute and Religious aid buys twice the goodwill (DESIGN 4.17).
+  bookGoodwill(ctx, spec, { id, spend, cleared: clearing.cleared, source });
+  return id;
+}
+
+/**
+ * The relationship the gift buys, once, both sides, and the event and notices. Tribute and Religious aid buys twice
+ * the goodwill (DESIGN 4.17); a debt cleared is a gift received in full.
+ * @param {TurnContext} ctx
+ * @param {InvestSpec} spec
+ * @param {{ id: string, spend: ReturnType<typeof spendFor>, cleared: number, source: string }} q
+ */
+function bookGoodwill(ctx, spec, { id, spend, cleared, source }) {
   const share = spec.asAid ? termsFor(ctx, spec.investor).aidRelationPct : 100;
-  const gain = Math.floor((relationshipGain(spend.cents, incomeOf(ctx, spec.host), tenthsFor(spec.form, spec.asAid))
+  const given = spend.cents + cleared;
+  const gain = Math.floor((relationshipGain(given, incomeOf(ctx, spec.host), tenthsFor(spec.form, spec.asAid))
     * share) / 100);
   if (gain > 0) ctx.out.relationships.push({ a: spec.investor, b: spec.host, delta: gain });
-  const fields = { loanId: id, lender: spec.investor, borrower: spec.host, cents: spend.cents, form: spec.form,
-    aid: spec.asAid ? 1 : 0, progress: spend.progress, relationship: gain, source };
+  const fields = { loanId: id, lender: spec.investor, borrower: spec.host, cents: given, form: spec.form,
+    aid: spec.asAid ? 1 : 0, progress: spend.progress, relationship: gain, source, cleared };
   event(ctx, { kind: "invest", ...fields });
   notice(ctx, spec.investor, { kind: "invested", ...fields });
   notice(ctx, spec.host, { kind: "invested-in", ...fields });
-  return id;
 }
 
 /**
