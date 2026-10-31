@@ -1128,7 +1128,9 @@ price; priced at that rate since (choice 104), it's worth the Gold it takes (sec
 - Invest from the Trade tab: a civ for general, or a city for a development loan on its current build; "as aid"
   means no return. See the progress or Gold, the return and the relationship gain first.
 - Accept or decline AI offers to invest in the player's civ or builds.
-- Read: the Economics screen, a dock button, and top-bar pills, each coloured on its own (decided 2026-10-31, the owner): the debt while there is one, red in default; the phase, amber in a Slump and red in a Depression or a Panic; inflation while the rate is above 0, amber from 1% a turn. Nothing is shown when there's nothing to say.
+- Read: the Economics screen, a dock button, and top-bar pills, each coloured on its own (decided 2026-10-31, the
+  owner): the debt while there is one, red in default; the phase, amber in a Slump and red in a Depression or a
+  Panic; inflation while the rate is above 0, amber from 1% a turn. Nothing is shown when there's nothing to say.
 
 ## 6. The AI
 
