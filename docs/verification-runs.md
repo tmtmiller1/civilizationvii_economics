@@ -790,6 +790,45 @@ took, `isAtWarWith` read true the next turn). No invariant line and no failed bo
   favors do to the relationship over time (the fourth run read the favor events, not their weight); a 0.5.4 save
   loading its standing as the opening reputation in a game (unit-tested).
 
+## Watched 2026-10-31, ninth run (AI plan stage E: stakes behind investment, aid and lending)
+
+One lab game, seed 4242, Modern, the same setup as the fifth run, the stage E build (commit `a302f53`) in
+`Mods/economics`, 21 turns (`~/.tower-bench/runs/2026-10-31T19-19-15`; drive log, dump and `UI.log` under
+`mod_ideas_tested/economics/devtools/probe-runs/2026-10-31-stage-e/`). The script
+(`devtools/econ-stage-e-sample.js`) held Hawai'i at a level of 30 with Goryeo, Dai Viet at 0 with Persia, kept
+Goryeo flush to turn 5 and emptied its treasury from turn 6; at turn 18 it wrote a defaulted 200 Gold loan from the
+Ottomans to Goryeo into the ledger. No invariant line in `UI.log`.
+
+- The pair facts reached the model: every met pair's row carried the engine's level number (10 at the start,
+  30 for Hawai'i and Goryeo once set, 44 between Persia and Hawai'i by turn 5), the routes between them as they
+  opened (r1, r2), the capital distances (12 to 44 plots), and the agenda rows (Persia's -10 toward everyone from
+  turn 10, Dai Viet's +10 toward the seat, -5 toward the rest), with alliances none. The plan's own stakes followed:
+  Hawai'i in Goryeo 10 at turn 3, 19 once a route and the level's drift came in; Persia in Dai Viet 0; Persia's
+  stakes in everyone below 2 from turn 10 on its agenda and falling levels.
+- Investment by stake, not the clock: ten AI investments in eight turns, each to the host the investor had the most
+  at stake in, none repeated while one was open. Turn 3: Hawai'i and Goryeo into each other at a stake of 10
+  (270 and 165 Gold of build progress, 4 turns of income each); turn 4: Persia into Hawai'i, the Ottomans and Dai
+  Viet into each other, each at the threshold of 8 (a level of 15 or 20 with capitals within 20 plots); turn 5:
+  the Ottomans into Goryeo (12.7), Hawai'i into Persia (23.7, 8 turns of income capped by what it could spare),
+  and Goryeo's 604 Gold offer to the seat (12.7); turn 6 Goryeo into the Ottomans; turn 8 Hawai'i into the
+  Ottomans. Persia, at stakes under 2 from turn 10, invested in nobody after turn 4.
+- Aid by stake: at turn 19, Goryeo in default on the 200 Gold it owed the Ottomans, the Ottomans (stake 27 in
+  Goryeo, level 42, so 1 point short of nothing: the one point's worth) sent 377 Gold of aid: `aid-cleared` 200 on
+  that loan, which closed, and 177 Gold to Goryeo's treasury (`invest` with `cleared 20000`); `aidTurns` noted
+  turn 19, and no second aid to Goryeo followed. That is stage A's owed item A.1 as well.
+- The lending gate: Dai Viet, at a stake of 0 with Persia, still lent it a build loan at turn 2 (0 passes); the
+  Unfriendly-lender refusal is unit-tested and wasn't driven here (owed below).
+- Not seen: what the booked favors and the agenda-driven stakes do over a long game; the Trade tab showing the AI's
+  stake behind an offer (no screen reads it yet).
+
+## Owed: AI plan stage E
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| E.1 | An AI that's Unfriendly with the player (a stake under 0) makes no loan offer on the Loans tab's borrow form, and comes back once Neutral | a game where an AI dislikes the player | `ui/econ-stake.js` `lenderGate`, `ui/econ-lenders.js` `declines` |
+| E.2 | An AI allied with another, or sharing an enemy at war with it, invests in it ahead of a richer neutral neighbour | Modern, an alliance or a shared war | `ui/econ-stake.js` `stakeFacts` |
+| E.3 | An offer the player declined isn't made again for 10 turns, then comes back | a player declining an AI offer | `ui/econ-commerce.js` `investSpec` |
+
 ## Owed: AI plan stage D
 
 | # | What the player sees when it works | Setup | Source |
@@ -817,11 +856,11 @@ took, `isAtWarWith` read true the next turn). No invariant line and no failed bo
 
 ## Owed: AI plan stage A
 
-Built 2026-10-31 (commit `2b99755` and the dues fix). The rules above were watched; these weren't.
+Built 2026-10-31 (commit `2b99755` and the dues fix). The rules above were watched; these weren't. The AI's aid
+clearing a default to the giver (A.1 here before) was watched in the ninth run.
 
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
-| A.1 | An AI Friendly with a civ in default to it sends aid: the Treasury flows read "Aid from X cleared N Gold of Ln", the defaulted loan closes or shrinks by that much, and only the rest lands as Gold | Modern 4242, the AI watch probe's Ottomans drain, the lender Friendly with them | `ui/econ-invest-open.js` `aidClearing` |
 | A.2 | The player's own aid to a civ in default to the player: the confirmation's Gold leaves only for the part sent, the notice reads "N Gold of it cleared the debt" | same, a player loan defaulted on | `ui/econ-invest-open.js` `openInvestment` |
 | A.3 | The human's guard refinancing with a civ lender (a civ's principal counting the same turn, NOTES 120): the seat short with the bond market closed (civ lenders only, a Tribute system) | Modern, the seat under Despotism | `ui/econ-batch.js` `principalIn` |
 
