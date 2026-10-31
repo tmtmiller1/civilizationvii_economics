@@ -340,7 +340,7 @@ function finishTurn(ctx) {
   ledger.capHits = ledger.capHits.filter((row) => turn - row.turn <= 1 && isAlive(ctx, row.pid));
   ledger.lastTurn = turn;
   ledger.batchSeq += 1;
-  ledger.lastBatch = commitBatch(ctx.batch, { id: `B${ledger.batchSeq}`, turn, civs: ctx.civs });
+  ledger.lastBatch = commitBatch(ctx.batch, { id: `B${ledger.batchSeq}`, turn, civs: ctx.civs, prior: ledger.lastBatch });
   ctx.out.batch = ledger.lastBatch;
   ctx.out.markets = ctx.markets;
   ctx.out.trade = ctx.trade;

@@ -162,6 +162,10 @@ release is generated from the matching section below by `scripts/steam-changelog
   negative balance to 0 at the turn roll without charging you, so a loan there would be Gold the game gives for free.
 
 ### Fixed
+- Payments under one Gold never reached anyone's treasury, because the game pays grants in whole Gold. That was most
+  of the business cycle's effect in a steady economy. Each civilization is now paid in whole Gold and the rest carries
+  to its next turn, so a few tenths a turn add up to a Gold every few turns. Reloading in the middle of a turn no
+  longer re-sends those payments, and a payment that has landed is never sent twice.
 - War Levy's yields: the card had kept its old +30 Gold and -40 Happiness and asked for eight wars at once before it
   paid, so slotting it cost Happiness in every settlement and didn't pay any Gold. It now pays +8 Gold and -4 Happiness
   while you're at war with anyone.

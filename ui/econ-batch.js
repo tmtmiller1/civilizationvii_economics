@@ -109,20 +109,67 @@ export function addCelebration(batch, pid, amount) {
 }
 
 /**
- * The batch row the ledger keeps: one line per civ with its snapshot balance and its net Gold and Influence.
+ * What the game pays for an amount in cents. grantYield drops the part of a Gold (or a point of celebration) after
+ * the whole number, toward zero: 10.37 lands as 10, -2.9 as -2, 0.6 as nothing (watched 2026-10-31, NOTES 119).
+ * @param {number} cents
+ */
+export function wholeGold(cents) {
+  return Math.trunc(cents / 100) * 100 || 0;
+}
+
+/**
+ * The batch row the ledger keeps: one line per civ with its snapshot balance, its net Gold, Influence and
+ * celebration, and what is paid this turn. Each civ is paid in whole Gold; the part left over carries to its next
+ * batch, so a civ owed 0.4 Gold a turn gets 1 Gold every few turns instead of nothing.
  * @param {Batch} batch
- * @param {{ id: string, turn: number, civs: Civ[] }} q
+ * @param {{ id: string, turn: number, civs: Civ[], prior?: BatchRecord | null }} q prior is the last batch, whose
+ *   carries this one picks up
  * @returns {BatchRecord}
  */
-export function commitBatch(batch, { id, turn, civs }) {
+export function commitBatch(batch, { id, turn, civs, prior = null }) {
+  const before = new Map((prior?.civs || []).map((row) => [row.pid, row]));
   /** @type {BatchRow[]} */
   const rows = [];
   for (const civ of civs) {
     if (civ.alive !== true) continue;
-    rows.push({ pid: civ.id, snapshot: get(batch.snapshot, civ.id), net: netOf(batch, civ.id),
-      influence: get(batch.influence, civ.id), celebration: get(batch.celebration, civ.id) });
+    const last = before.get(civ.id);
+    const net = netOf(batch, civ.id);
+    const celebration = get(batch.celebration, civ.id);
+    const goldDue = net + (last?.carry ?? 0);
+    const celebrationDue = celebration + (last?.celebrationCarry ?? 0);
+    const paid = wholeGold(goldDue);
+    const celebrationPaid = wholeGold(celebrationDue);
+    rows.push({ pid: civ.id, snapshot: get(batch.snapshot, civ.id), net, paid, carry: goldDue - paid,
+      influence: get(batch.influence, civ.id), celebration, celebrationPaid,
+      celebrationCarry: celebrationDue - celebrationPaid });
   }
   return { id, turn, civs: rows };
+}
+
+/**
+ * The Gold a batch row pays; a row saved before 0.5.4 has no paid field, and the game paid its net in whole Gold.
+ * @param {BatchRow} row
+ */
+export function paidOf(row) {
+  return Number.isInteger(row.paid) ? /** @type {number} */ (row.paid) : wholeGold(row.net);
+}
+
+/**
+ * The Gold a batch pays, as grants: what the game's treasuries move by, for the offline games.
+ * @param {BatchRecord | null | undefined} batch
+ * @returns {{ pid: number, cents: number }[]}
+ */
+export function paidGrants(batch) {
+  return (batch?.civs || []).map((row) => ({ pid: row.pid, cents: paidOf(row) }));
+}
+
+/**
+ * The celebration a batch row pays, as paidOf.
+ * @param {BatchRow} row
+ */
+export function celebrationPaidOf(row) {
+  return Number.isInteger(row.celebrationPaid) ? /** @type {number} */ (row.celebrationPaid)
+    : wholeGold(row.celebration);
 }
 
 /**
@@ -142,9 +189,10 @@ export function batchStatus(batch, balances, incomes = new Map()) {
     const earned = row.snapshot + get(incomes, row.pid);
     /** @type {"landed" | "lost" | "unknown"} */
     let status = "unknown";
-    if (now === earned + row.net) status = "landed";
-    else if (now === earned && row.net !== 0) status = "lost";
-    out.push({ pid: row.pid, status, cents: status === "lost" ? row.net : 0 });
+    const paid = paidOf(row);
+    if (now === earned + paid) status = "landed";
+    else if (now === earned && paid !== 0) status = "lost";
+    out.push({ pid: row.pid, status, cents: status === "lost" ? paid : 0 });
   }
   return out;
 }

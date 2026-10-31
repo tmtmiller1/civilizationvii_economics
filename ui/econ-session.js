@@ -7,8 +7,7 @@
 
 import { planTurn } from "./econ-plan.js";
 import { MOD_ID, emptyLedger, load, save } from "./econ-state.js";
-import { batchStatus } from "./econ-batch.js";
-import { grantsFor, netGrants } from "./econ-conservation.js";
+import { batchStatus, celebrationPaidOf, paidOf } from "./econ-batch.js";
 import { engineLines, purchasePointCents } from "./econ-params.js";
 import { checkPlan } from "./econ-invariants.js";
 import { viewRules } from "./econ-view-model.js";
@@ -38,11 +37,11 @@ const MAX_REQUESTS = 16;
 
 /**
  * `roles` remembers the roles each building type had in its own age (econ-macro-read.js); `cycleEvents` holds the
- * engine's events since the last batch.
+ * engine's events since the last batch; `landed` names the civs whose payment from the last batch was seen to land.
  * @typedef {{ v: number, stages: Record<string, StageTurns>, seen: number[], requests: PlanRequest[],
  *   guardOn: boolean | null, turns: import("./econ-turn-count.js").TurnCount, roles: Record<string, string>,
  *   cycleEvents: import("./econ-macro-read.js").PendingCycleEvent[], told: string[] | null,
- *   fresh: string[] }} GlueState
+ *   fresh: string[], landed: { batch: string, pids: number[] } | null }} GlueState
  * @typedef {{ ledger: Ledger, glue: GlueState, lastPlan: PlanOutput | null, params: EngineParams | null,
  *   markets: MarketsState, macro: import("./econ-macro-state.js").MacroState, pops: Map<string, number>,
  *   skipsLogged: Set<string> }} Session
@@ -51,7 +50,14 @@ const MAX_REQUESTS = 16;
 /** @returns {GlueState} */
 export function emptyGlue() {
   return { v: GLUE_VERSION, stages: {}, seen: [], requests: [], guardOn: null, turns: emptyTurnCount(), roles: {},
-    cycleEvents: [], told: null, fresh: [] };
+    cycleEvents: [], told: null, fresh: [], landed: null };
+}
+
+/** @param {unknown} raw */
+function cleanLanded(raw) {
+  const value = /** @type {Record<string, any> | null} */ (raw && typeof raw === "object" ? raw : null);
+  if (!value || typeof value.batch !== "string" || value.batch.length > 16 || !Array.isArray(value.pids)) return null;
+  return { batch: value.batch, pids: value.pids.filter((pid) => Number.isInteger(pid) && pid >= 0).slice(0, 64) };
 }
 
 /** @param {unknown} raw @param {(id: string) => boolean} keep */
@@ -108,6 +114,7 @@ export function sanitizeGlue(raw) {
   // tabs with a part the player hasn't opened yet, for the dock button's marker.
   out.told = Array.isArray(value.told) ? cleanIds(value.told, (id) => /^[a-z]+[:.][A-Za-z]+$/.test(id)) : null;
   out.fresh = cleanIds(value.fresh, (id) => /** @type {readonly string[]} */ (TAB_KEYS).includes(id));
+  out.landed = cleanLanded(value.landed);
   return out;
 }
 
@@ -332,11 +339,12 @@ export function buildInput(session) {
  */
 export function sendPlan(plan) {
   let sent = 0;
-  for (const [pid, cents] of netGrants(grantsFor(plan.transfers))) {
-    if (typeof pid === "number" && sendGold(pid, cents)) sent += 1;
+  // Gold and celebration go out as the batch rows' whole amounts (econ-batch.js wholeGold); the rest carries.
+  for (const row of plan.batch?.civs || []) {
+    if (sendGold(row.pid, paidOf(row))) sent += 1;
+    if (sendCelebration(row.pid, celebrationPaidOf(row))) sent += 1;
   }
   for (const [pid, amount] of sumBy(plan.influence)) if (sendInfluence(pid, amount)) sent += 1;
-  for (const [pid, amount] of sumBy(plan.celebration)) if (sendCelebration(pid, amount)) sent += 1;
   for (const row of plan.grievances) bookGrievance(row);
   for (const row of plan.relationships) bookRelationship(row);
   return sent + sendProgressRows(plan.progress);
@@ -424,15 +432,35 @@ export function resendLostBatch(session) {
   const batch = session.ledger.lastBatch;
   if (!batch || batch.turn !== turnNow(session)) return [];
   const balances = new Map(batch.civs.map((row) => [row.pid, readBalanceCents(row.pid)]));
-  const lost = batchStatus(batch, balances).filter((row) => row.status === "lost");
+  // A payment seen to land is never re-sent, even when the balance has since come back to the snapshot.
+  const landed = session.glue.landed?.batch === batch.id ? session.glue.landed.pids : [];
+  const lost = batchStatus(batch, balances).filter((row) => row.status === "lost" && !landed.includes(row.pid));
   for (const row of lost) {
     const saved = batch.civs.find((civ) => civ.pid === row.pid);
     sendGold(row.pid, row.cents);
     if (saved?.influence) sendInfluence(row.pid, saved.influence);
-    if (saved?.celebration) sendCelebration(row.pid, saved.celebration);
+    if (saved) sendCelebration(row.pid, celebrationPaidOf(saved));
     logLine(`batch ${batch.id} re-sent for player ${row.pid}: ${row.cents} cents`);
   }
   return lost;
+}
+
+/**
+ * A moment after the grants go out: notes which civs' payments have landed, so a save made after this can't have
+ * them re-sent (a balance spent back to exactly its snapshot would otherwise read as lost). Returns how many it added.
+ * @param {Session} session
+ */
+export function noteLanded(session) {
+  const batch = session.ledger.lastBatch;
+  if (!batch) return 0;
+  const balances = new Map(batch.civs.map((row) => [row.pid, readBalanceCents(row.pid)]));
+  const seen = session.glue.landed?.batch === batch.id ? session.glue.landed.pids : [];
+  const added = batchStatus(batch, balances).filter((row) => row.status === "landed" && !seen.includes(row.pid)
+    && paidOf(/** @type {BatchRow} */ (batch.civs.find((civ) => civ.pid === row.pid))) !== 0).map((row) => row.pid);
+  if (!added.length && session.glue.landed?.batch === batch.id) return 0;
+  session.glue.landed = { batch: batch.id, pids: [...seen, ...added] };
+  writeGlue(session);
+  return added.length;
 }
 
 /**

@@ -7,6 +7,7 @@
 
 import { planTurn } from "../ui/econ-plan.js";
 import { applyGrants, grantsFor } from "../ui/econ-conservation.js";
+import { paidGrants } from "../ui/econ-batch.js";
 import { emptyMarkets } from "../ui/econ-markets.js";
 import { emptyMacro, saveMacro } from "../ui/econ-macro-state.js";
 import { utf8Bytes } from "../ui/econ-state.js";
@@ -174,7 +175,7 @@ export function runMacroGame(game, options = ALL_ON) {
     facts.planMs.push(Number(process.hrtime.bigint() - t0) / 1e6);
     record(facts, plan, civs);
     const earned = new Map([...balances].map(([id, b]) => [id, b + civs.find((c) => c.id === id).incomeCents]));
-    balances = spend(game, applyGrants(earned, grantsFor(plan.transfers)), civs);
+    balances = spend(game, applyGrants(earned, paidGrants(plan.batch)), civs);
     ({ ledger, markets, macro } = plan);
   }
   return facts;

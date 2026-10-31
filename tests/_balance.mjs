@@ -5,9 +5,9 @@
 // number; the constants are DESIGN's starting points.
 
 import { planTurn } from "../ui/econ-plan.js";
-import { applyGrants, grantsFor } from "../ui/econ-conservation.js";
+import { applyGrants } from "../ui/econ-conservation.js";
 import { load, save, utf8Bytes } from "../ui/econ-state.js";
-import { batchStatus } from "../ui/econ-batch.js";
+import { batchStatus, paidGrants } from "../ui/econ-batch.js";
 import { emergencyCap } from "../ui/econ-guard.js";
 import { emergencyOutstandingOf } from "../ui/econ-credit.js";
 import { civRatePpm } from "../ui/econ-lenders.js";
@@ -131,7 +131,7 @@ export function runGame(game, { on = true, lend = true, roundTrip = true } = {})
     facts.planMs.push(Number(process.hrtime.bigint() - t0) / 1e6);
     const incomes = new Map(civs.map((c) => [c.id, c.incomeCents]));
     const earned = new Map([...balances].map(([id, b]) => [id, b + incomes.get(id)]));
-    const next = applyGrants(earned, grantsFor(plan.transfers));
+    const next = applyGrants(earned, paidGrants(plan.batch));
     if (on) {
       readTurn(facts, plan, civs, me, next, earned, incomes);
       const text = save(plan.ledger);

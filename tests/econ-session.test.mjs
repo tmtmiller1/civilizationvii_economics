@@ -3,9 +3,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { installFakeEngine, removeFakeEngine } from "./_fake-engine.mjs";
-import { buildInput, emptyGlue, loadSession, queueRequest, readCiv, readOptions, resendLostBatch, runTurn, sanitizeGlue,
+import { buildInput, emptyGlue, loadSession, queueRequest, readCiv, readOptions, noteLanded, resendLostBatch, runTurn, sanitizeGlue,
+  sendPlan,
   setGuard, GLUE_KEY } from "../ui/econ-session.js";
-import { MOD_ID, load } from "../ui/econ-state.js";
+import { MOD_ID, emptyLedger, load, save } from "../ui/econ-state.js";
 import { resetBuildingDataForTests } from "../ui/econ-engine.js";
 import { resetAnchorsForTests } from "../ui/econ-stage-read.js";
 
@@ -103,6 +104,48 @@ test("on load, a batch saved this turn whose grants never landed is re-sent, and
   removeFakeEngine();
 });
 
+test("Gold and celebration go out in whole amounts; a batch that paid nothing isn't re-sent on load", () => {
+  const world = fresh();
+  const row = { pid: 0, snapshot: 5000, net: 129, influence: 0, celebration: 250, paid: 100, carry: 29,
+    celebrationPaid: 200, celebrationCarry: 50 };
+  sendPlan({ batch: { id: "B3", turn: 10, civs: [row, { ...row, pid: 3, net: -35, paid: 0, carry: -35,
+    celebration: 0, celebrationPaid: 0, celebrationCarry: 0 }] }, influence: [], grievances: [], relationships: [],
+  progress: [] });
+  assert.deepEqual(world.calls.filter((c) => c.startsWith("grant")), ["grant 0 1 1", "grant 0 3 2"],
+    "1 Gold and 2 celebration for player 0; nothing for player 3's -0.35");
+  world.config[MOD_ID] = save({ ...emptyLedger(), lastTurn: 10, lastBatch: { id: "B3", turn: 10,
+    civs: [{ ...row, pid: 3, snapshot: world.civs.get(3).balance * 100, net: -35, paid: 0, carry: -35 }] } });
+  world.calls.length = 0;
+  assert.deepEqual(resendLostBatch(loadSession()), [], "the balance at its snapshot is what a payment of 0 leaves");
+  assert.deepEqual(world.calls.filter((c) => c.startsWith("grant")), []);
+  world.config[MOD_ID] = save({ ...emptyLedger(), lastTurn: 10, lastBatch: { id: "B3", turn: 10,
+    civs: [{ ...row, pid: 3, snapshot: world.civs.get(3).balance * 100, net: -135, paid: -100, carry: -35 }] } });
+  assert.deepEqual(resendLostBatch(loadSession()).map((r) => [r.pid, r.cents]), [[3, -100]],
+    "a whole Gold that didn't move the balance is re-sent, as paid");
+  assert.ok(world.calls.includes("grant 3 1 -1"));
+  removeFakeEngine();
+});
+
+test("a payment seen to land is noted, and isn't re-sent even if the balance comes back to its snapshot", () => {
+  const world = fresh();
+  const snapshot = world.civs.get(3).balance * 100;
+  world.config[MOD_ID] = save({ ...emptyLedger(), lastTurn: 10, lastBatch: { id: "B3", turn: 10,
+    civs: [{ pid: 3, snapshot, net: -135, influence: 0, celebration: 0, paid: -100, carry: -35 }] } });
+  const session = loadSession();
+  assert.equal(noteLanded(session), 0, "still at the snapshot: not landed yet");
+  world.civs.get(3).balance = (snapshot - 100) / 100;
+  assert.equal(noteLanded(session), 1);
+  assert.equal(noteLanded(session), 0, "noted once");
+  assert.deepEqual(sanitizeGlue(JSON.parse(world.config[GLUE_KEY])).landed, { batch: "B3", pids: [3] }, "saved");
+  world.civs.get(3).balance = snapshot / 100;
+  world.calls.length = 0;
+  assert.deepEqual(resendLostBatch(loadSession()), [], "the player spent it back to the snapshot: still not re-sent");
+  assert.equal(world.calls.some((c) => c.startsWith("grant")), false);
+  assert.equal(sanitizeGlue({ landed: { batch: 7, pids: [1] } }).landed, null);
+  assert.deepEqual(sanitizeGlue({ landed: { batch: "B1", pids: [1, -1, "2"] } }).landed, { batch: "B1", pids: [1] });
+  removeFakeEngine();
+});
+
 test("the glue envelope keeps requests, stage turns, seen civs and the guard switch, and drops what it can't trust", () => {
   const world = fresh();
   const session = loadSession();
@@ -114,7 +157,7 @@ test("the glue envelope keeps requests, stage turns, seen civs and the guard swi
   const clean = sanitizeGlue({ v: 1, stages: { 4: { moneylending: 3, publicDebt: "x" }, bad: {} }, seen: [1, -2, "3"],
     requests: [{ kind: "borrow" }, 5], guardOn: "yes" });
   assert.deepEqual(clean, { v: 2, stages: { 4: { moneylending: 3, publicDebt: null } }, seen: [1], requests: [{ kind: "borrow" }],
-    guardOn: null, turns: { age: null, base: 0, last: 0 }, roles: {}, cycleEvents: [], told: null, fresh: [] });
+    guardOn: null, turns: { age: null, base: 0, last: 0 }, roles: {}, cycleEvents: [], told: null, fresh: [], landed: null });
   assert.deepEqual(sanitizeGlue({ told: ["tab:loans", "bad id", 4], fresh: ["loans", "nope"] }).told, ["tab:loans"]);
   assert.deepEqual(sanitizeGlue({ fresh: ["loans", "nope", "loans"] }).fresh, ["loans"]);
   assert.deepEqual(sanitizeGlue("junk"), emptyGlue());

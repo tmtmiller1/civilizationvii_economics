@@ -429,7 +429,8 @@ test("the batch (DESIGN 4.14): a batch id, each civ's snapshot balance and net, 
   const civs = [me({ balanceCents: 12345 }), civ(6, { balanceCents: 60000 })];
   const plan = planTurn(input({ civs, requests: [borrow({ lender: 6, principal: 20000, term: 10 })] }));
   assert.deepEqual(plan.batch, { id: "B1", turn: 50, civs: [{ pid: ME, snapshot: 12345, net: 20000, influence: 0,
-    celebration: 0 }, { pid: 6, snapshot: 60000, net: -20000, influence: 0, celebration: 0 }] });
+    celebration: 0, paid: 20000, carry: 0, celebrationPaid: 0, celebrationCarry: 0 }, { pid: 6, snapshot: 60000,
+    net: -20000, influence: 0, celebration: 0, paid: -20000, carry: 0, celebrationPaid: 0, celebrationCarry: 0 }] });
   assert.deepEqual(plan.ledger.lastBatch, plan.batch);
   const next = planTurn(input({ turn: 51, ledger: plan.ledger, civs }));
   assert.equal(next.batch.id, "B2");

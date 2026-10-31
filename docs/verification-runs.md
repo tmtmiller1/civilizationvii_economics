@@ -538,6 +538,16 @@ Cartography and Guilds unlocked the same way. Captures in `working_screenshots/e
 | The bar pill reads "Debt 22 · Steady" after a loan landed | `exploration/09-next-turn-pill-crop.png` |
 | What Economics moved last turn opens to its parts ("Loans -8.3") | `exploration/11-*` |
 
+## Owed: whole-Gold payments
+
+Built 2026-10-31 (NOTES 119). The engine fact was watched that day; the fix itself hasn't been seen in a game.
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| WG.1 | Over 10 turns with the cycle's small shares, an AI's balance moves by a whole Gold every few turns, and the sum it moved matches the sum of its nets to within one Gold | Antiquity, cycle Standard | `ui/econ-batch.js` `commitBatch` |
+| WG.2 | A UI reload in the middle of a turn logs `0 re-sent` when every payment was under a Gold or landed | same | `ui/econ-session.js` `resendLostBatch` |
+| WG.3 | `__towerEconomics.session().glue.landed` names the civs paid this turn a few seconds after `TurnBegin` | same | `ui/econ-session.js` `noteLanded` |
+
 ## Owed: Spoil Guard
 
 Built 2026-10-31, offline only (`ui/econ-spoil.js`, `ui/econ-options.js`). Nothing here has been seen in a game.

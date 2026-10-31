@@ -792,6 +792,11 @@ saved snapshot balance and net Gold tell whether its grants landed before the sa
 means they did, a balance still at snapshot means they didn't and the grants are re-sent. P15 checks whether a save
 can fall in that 3 s window at all.
 
+The game pays a grant in whole Gold, dropping the rest toward zero (NOTES 119). Each batch row records what it pays
+(`paid`, `celebrationPaid`) and carries the remainder to the civ's next batch, and the reload check reads `paid` in
+place of the net. A payment seen to land a moment after the send is noted in the glue envelope, and a reload never
+re-sends a noted payment.
+
 ### 4.15 Economic stages
 
 Each part opens per civ, AI included, when the civ completes the node that unlocks the anchor. Until then the part is

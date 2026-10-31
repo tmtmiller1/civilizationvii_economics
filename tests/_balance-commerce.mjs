@@ -6,7 +6,8 @@
 
 import { readFileSync } from "node:fs";
 import { planTurn } from "../ui/econ-plan.js";
-import { applyGrants, grantsFor } from "../ui/econ-conservation.js";
+import { applyGrants } from "../ui/econ-conservation.js";
+import { paidGrants } from "../ui/econ-batch.js";
 import { emptyMarkets, saveMarkets } from "../ui/econ-markets.js";
 import { utf8Bytes } from "../ui/econ-state.js";
 import { computeDepth, rolesOf } from "../ui/econ-depth.js";
@@ -165,7 +166,7 @@ export function runTradeGame(game, { on, turns = 200, ai = false }) {
     }
     facts.maxMarketsBytes = Math.max(facts.maxMarketsBytes, utf8Bytes(saveMarkets(plan.markets)));
     const earned = new Map([...balances].map(([id, b]) => [id, b + civs.find((c) => c.id === id).incomeCents]));
-    balances = applyGrants(earned, grantsFor(plan.transfers));
+    balances = applyGrants(earned, paidGrants(plan.batch));
     ledger = plan.ledger;
     markets = plan.markets;
   }

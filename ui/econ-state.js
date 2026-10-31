@@ -204,7 +204,20 @@ function cleanTaxes(raw) {
 function cleanBatchRow(row) {
   if (!row || !isPid(row.pid) || !isInt(row.snapshot) || !isInt(row.net)) return null;
   return { pid: row.pid, snapshot: row.snapshot, net: row.net, influence: isInt(row.influence) ? row.influence : 0,
-    celebration: isInt(row.celebration) ? row.celebration : 0 };
+    celebration: isInt(row.celebration) ? row.celebration : 0, ...paidFields(row) };
+}
+
+/**
+ * A batch row's whole-Gold payment and its carries (0.5.4), kept only when they're whole cents and a carry is under
+ * one Gold; a row from an older save has none, and econ-batch.js paidOf reads its net instead.
+ * @param {Raw} row
+ */
+function paidFields(row) {
+  /** @type {Record<string, number>} */
+  const out = {};
+  for (const key of ["paid", "celebrationPaid"]) if (isInt(row[key])) out[key] = row[key];
+  for (const key of ["carry", "celebrationCarry"]) if (isInt(row[key]) && Math.abs(row[key]) < 100) out[key] = row[key];
+  return out;
 }
 
 /**

@@ -60,7 +60,11 @@ declare global {
     [field: string]: string | number | boolean | null | undefined;
   }
 
-  interface BatchRow { pid: number; snapshot: number; net: number; influence: number; celebration: number }
+  /** paid and celebrationPaid are what the game is sent, in whole Gold; the carries go to the next batch. */
+  interface BatchRow {
+    pid: number; snapshot: number; net: number; influence: number; celebration: number;
+    paid?: number; carry?: number; celebrationPaid?: number; celebrationCarry?: number;
+  }
   interface BatchRecord { id: string; turn: number; civs: BatchRow[] }
 
   /** The saved envelope's body (DESIGN 9). */

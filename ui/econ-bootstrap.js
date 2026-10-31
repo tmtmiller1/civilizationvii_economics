@@ -5,8 +5,8 @@
 
 import { logLine } from "./econ-log.js";
 import { aliveMajorIds, gameTurn, isMultiplayer, listen, loc, localId, readAtWar, safe } from "./econ-engine.js";
-import { buildInput, displayTurn, dropRequest, economyOf, loadSession, markSeen, noteCycleEvent, noteOpened,
-  queueRequest, readOptions, resendLostBatch, runTurn, setGuard, stageTurnsOf, turnNow } from "./econ-session.js";
+import { buildInput, displayTurn, dropRequest, economyOf, loadSession, markSeen, noteCycleEvent, noteLanded,
+  noteOpened, queueRequest, readOptions, resendLostBatch, runTurn, setGuard, stageTurnsOf, turnNow } from "./econ-session.js";
 import { captureEvent, disasterEvent, razeEvent, readPopulations } from "./econ-macro-read.js";
 import { phaseKey } from "./econ-notice-text.js";
 import { formatRate } from "./econ-format.js";
@@ -107,6 +107,29 @@ function afterBatch(session, plan) {
   refreshDock();
 }
 
+// Grants land about a second after they're sent, and the turn's autosave is asked for about 4.7 s after (P15), so
+// the payments are looked at twice in between and the ones seen to land are noted before that save.
+const LANDED_CHECKS_MS = [1500, 3500];
+
+/**
+ * After grants go out: note the payments that landed, so a later reload can't re-send them.
+ * @param {Session} session
+ */
+function watchLanded(session) {
+  if (typeof setTimeout !== "function") return;
+  for (const ms of LANDED_CHECKS_MS) setTimeout(() => safe(() => noteLanded(session), 0), ms);
+}
+
+/**
+ * A save that fell between the ledger write and the grants landing: re-send what didn't land, then watch it land.
+ * @param {Session} session
+ */
+function resend(session) {
+  const lost = resendLostBatch(session);
+  if (lost.length) watchLanded(session);
+  return lost;
+}
+
 /**
  * A save requested before this turn's batch ran reloads into a turn whose TurnBegin has already fired, so the batch
  * runs once at load instead (the plan skips a turn it has already planned, so a later TurnBegin can't repeat it).
@@ -116,6 +139,7 @@ function catchUp(session) {
   const last = session.ledger.lastTurn;
   if (!Number.isInteger(last) || /** @type {number} */ (last) >= turnNow(session)) return;
   const plan = safe(() => runTurn(session, `load catch-up from turn ${last}`), null);
+  if (plan) watchLanded(session);
   afterBatch(session, plan);
 }
 
@@ -123,6 +147,7 @@ function onTurnBegin() {
   const session = state.session;
   if (!session) return;
   const plan = safe(() => runTurn(session, `TurnBegin ${gameTurn()}`), null);
+  if (plan) watchLanded(session);
   afterBatch(session, plan);
   refreshPill();
   newTurnOnScreen();
@@ -172,7 +197,7 @@ function boot() {
   if (state.multiplayer) { logLine(`v${VERSION} loaded; multiplayer game, the mod is off`); return; }
   const session = loadSession();
   state.session = session;
-  const lost = resendLostBatch(session);
+  const lost = resend(session);
   // A loaded game opens on the local player's own turn, and no PlayerTurnActivated follows for it.
   if (safe(() => Players.get(localId()).isTurnActive === true, false)) state.activeTurn = turnNow(session);
   catchUp(session);
