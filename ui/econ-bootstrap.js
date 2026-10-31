@@ -13,7 +13,7 @@ import { formatRate } from "./econ-format.js";
 import { flushNotice, holdNotice, installClickHandler, nameOf } from "./econ-notify.js";
 import { stageOpenerName } from "./econ-stage-read.js";
 import { canSwap, readCards, readFiscal, swapTo } from "./econ-fiscal.js";
-import { openScreen, rerenderScreen, setScreenApi, showTab } from "./econ-screen.js";
+import { newTurnOnScreen, openScreen, rerenderScreen, setScreenApi, showTab } from "./econ-screen.js";
 import { installDock, refreshDock, refreshPill } from "./econ-dock.js";
 import { formatGold } from "./econ-format.js";
 import { outstandingOf } from "./econ-credit.js";
@@ -122,7 +122,7 @@ function onTurnBegin() {
   const plan = safe(() => runTurn(session, `TurnBegin ${gameTurn()}`), null);
   afterBatch(session, plan);
   refreshPill();
-  rerenderScreen();
+  newTurnOnScreen();
 }
 
 /** @param {any} data */

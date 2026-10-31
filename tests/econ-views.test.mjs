@@ -427,6 +427,7 @@ test("a request says it was sent beside its control, and says so when the list i
   const api = makeApi();
   send(api, { kind: "repay", loanId: "L1", cents: 100 }, "loan:L1");
   assert.equal(feedbackLine("top"), null, "the line belongs beside the loan, not the top of the tab");
+  assert.ok(feedbackLine("loan:L1"), "and it stays through the redraws that follow");
   const host = document.createElement("div");
   renderLoans(host, api);
   assert.ok(textOf(host).includes("LOC_ECONOMICS_SENT|LOC_ECONOMICS_REQUEST_REPAY"));

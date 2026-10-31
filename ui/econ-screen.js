@@ -11,7 +11,7 @@ import { renderFiscal } from "./econ-view-fiscal.js";
 import { renderMarkets } from "./econ-view-markets.js";
 import { renderTrade } from "./econ-view-trade.js";
 import { renderWorld } from "./econ-view-world.js";
-import { el, takeFeedback } from "./econ-dom.js";
+import { clearFeedback, el, takeFeedback } from "./econ-dom.js";
 import { renderSubtitle, renderSummary } from "./econ-view-summary.js";
 import { startTab } from "./econ-view-tabs.js";
 import { viewRules } from "./econ-view-model.js";
@@ -121,6 +121,7 @@ class ScreenEconomics extends Panel {
   onAttach() {
     try { super.onAttach?.(); } catch (error) { logLine(`screen attach: ${error}`); }
     openScreenInstance = this;
+    clearFeedback();
     this.Root?.addEventListener?.("engine-input", this.onEngineInput);
     try {
       this.wireClose();
@@ -181,6 +182,7 @@ class ScreenEconomics extends Panel {
 
   /** @param {TabKey} key */
   selectTab(key) {
+    if (key !== this.tab) clearFeedback();
     this.tab = this.tabs.includes(key) ? key : "treasury";
     setSetting("lastTab", this.tab);
     screenApi?.seenTab?.(this.tab);
@@ -246,6 +248,12 @@ try {
 
 /** Re-draws the open screen's current tab, after an action or a turn. */
 export function rerenderScreen() {
+  openScreenInstance?.render();
+}
+
+/** A new turn: the line after the last action is out of date. */
+export function newTurnOnScreen() {
+  clearFeedback();
   openScreenInstance?.render();
 }
 

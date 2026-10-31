@@ -152,7 +152,7 @@
         <Row Tag="LOC_ECONOMICS_SUMMARY_PHASE_TIP"><Text>Where your economy stands in the business cycle. Above 1.05 is a Boom, below 0.95 a Slump, below 0.80 a Depression.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SUMMARY_WAITING"><Text>Waiting</Text></Row>
         <Row Tag="LOC_ECONOMICS_SUMMARY_WAITING_SUB"><Text>for next turn</Text></Row>
-        <Row Tag="LOC_ECONOMICS_SENT"><Text>Sent: {1_Request}. It goes through at the start of next turn, and you can still take it back under Waiting for next turn.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SENT"><Text>Sent: {1_Request}. It goes through at the start of next turn; until then you can take it back under Queued for next turn.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SENT_FAILED"><Text>Not sent: {1_Request}. The list for next turn is full; take something off it first.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CHANGE_TREASURY"><Text>Your treasury</Text></Row>
         <Row Tag="LOC_ECONOMICS_CHANGE_DEBT"><Text>Your debt</Text></Row>

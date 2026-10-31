@@ -2,10 +2,9 @@
 // beside the player's own, what moved it lately, its last 30 turns, inflation and its cause, world debt against the
 // Gold the civilizations hold, and the player's legacy from old buildings with the slump cushion it gives.
 
-import { columns, empty, note, pill, row, section } from "./econ-dom.js";
+import { columns, empty, lineChart, note, pill, row, section } from "./econ-dom.js";
 import { formatGold, formatRate } from "./econ-format.js";
 import { cycleEventKey } from "./econ-notice-text.js";
-import { sparkline } from "./econ-view-markets.js";
 import { worldView } from "./econ-view-macro.js";
 import { opensNext, rulesFor, turnLabels } from "./econ-view-common.js";
 import { cycleDial, inflationMeter } from "./econ-view-instruments.js";
@@ -78,7 +77,8 @@ function nowSection(view, inflationShown, api) {
  */
 function historySection(view, api) {
   const turns = turnLabels(api, api.input().ledger?.lastTurn ?? api.input().turn, view.history.length);
-  const chart = sparkline(view.history, formatIndex, { turns, reference: 10000, height: "8rem" });
+  const chart = lineChart([{ values: view.history, tone: "gilt" }], { format: formatIndex, turns, reference: 10000,
+    height: "8rem" });
   return section(api.loc("LOC_ECONOMICS_WORLD_HISTORY", view.history.length), [chart,
     note(api.loc("LOC_ECONOMICS_WORLD_HISTORY_NOTE"))]);
 }

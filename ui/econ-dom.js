@@ -705,7 +705,8 @@ export function confirmCard({ title, lines, confirm, cancel, warning = false, on
   return node;
 }
 
-/** The line shown after an action, by the place on the tab it belongs to, once.
+/** The line shown after an action, by the place on the tab it belongs to. It stays through the redraws that follow
+ * the action, until the next action, a change of tab, closing the screen or the next turn clears it.
  * @type {{ at: string, text: string, ok: boolean } | null} */
 let feedback = null;
 
@@ -719,14 +720,16 @@ export function say(text, { at = "top", ok = true } = {}) {
 }
 
 /**
- * The line for this place, cleared once taken; null when there's none for it.
+ * The line for this place; null when there's none for it.
  * @param {string} [at]
  */
 export function takeFeedback(at = "top") {
-  if (!feedback || feedback.at !== at) return null;
-  const text = feedback.text;
+  return feedback && feedback.at === at ? feedback.text : null;
+}
+
+/** Clears the line after an action. */
+export function clearFeedback() {
   feedback = null;
-  return text;
 }
 
 /**
