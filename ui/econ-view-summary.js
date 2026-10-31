@@ -1,7 +1,8 @@
 // econ-view-summary.js - Economics: what sits above the tabs on every tab (DESIGN 9): under the title, the civ's
 // economic system and the cycle's phase; then a strip of the figures that matter at a glance: the treasury, income a
-// turn, what Economics moved last turn, the debt with this turn's payments, the cycle's phase, and the requests
-// waiting for the next turn. Each figure is on the face; its tooltip only explains it.
+// turn, what Economics moved last turn, the debt with this turn's payments (once loans are open, by the Loans tab's
+// rule), the cycle's phase, and the requests waiting for the next turn. Each figure is on the face; its tooltip only
+// explains it.
 
 import { amount, el, pill, stat } from "./econ-dom.js";
 import { formatGold } from "./econ-format.js";
@@ -10,6 +11,7 @@ import { phaseKey, systemKey } from "./econ-notice-text.js";
 import { dueNext } from "./econ-view-model.js";
 import { systemView, worldView } from "./econ-view-macro.js";
 import { emptyLedger } from "./econ-state.js";
+import { rulesFor } from "./econ-view-common.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 
@@ -49,7 +51,8 @@ export function renderSubtitle(host, api) {
 export function renderSummary(host, api) {
   const input = api.input();
   const strip = el("div", "econ-summary");
-  for (const tile of [...moneyTiles(input, api), debtTile(input, api), phaseTile(input, api), waitingTile(api)]) {
+  const debt = rulesFor(api).rules.sections["treasury.loanFigures"] ? debtTile(input, api) : null;
+  for (const tile of [...moneyTiles(input, api), debt, phaseTile(input, api), waitingTile(api)]) {
     if (tile) strip.appendChild(tile);
   }
   host.appendChild(strip);

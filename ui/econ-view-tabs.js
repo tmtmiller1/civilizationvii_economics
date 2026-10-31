@@ -127,6 +127,11 @@ function sectionsFor(f, shown) {
   return {
     // Before the Loans tab, the guard switch and any loan line live on the Treasury tab.
     "treasury.loans": !shown.loans,
+    // The loan figures (what's owed and due, the debt-service scale, the projection with and without loans) wait for
+    // the rule that opens the Loans tab; before it the projection is the plain balance.
+    "treasury.loanFigures": shown.loans,
+    // Aid needs no stage: before the Trade tab opens it's on the Treasury tab.
+    "treasury.aid": !shown.trade && f.investmentOn,
     // Before the World tab, this turn's cycle Gold shows on the Treasury tab.
     "treasury.cycle": !shown.world && f.cycleOn,
     "treasury.depth": r.coinage,

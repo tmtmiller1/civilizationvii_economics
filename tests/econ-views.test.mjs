@@ -82,6 +82,64 @@ test("before Coinage the Treasury tab leaves out financial depth and says what o
   assert.ok(text.includes("LOC_ECONOMICS_OPENS_NEXT|LOC_ECONOMICS_PART_TAB_TRADE|LOC_CIVIC_ECONOMICS_NAME"));
 });
 
+/** Turn 1 in Antiquity: no stage reached, no loans, nobody offering. */
+function firstTurnApi(over = {}) {
+  const { planInput, ...rest } = over;
+  return makeApi({ planInput: { age: "AGE_ANTIQUITY", turn: 1, civs: [civ(ME, { human: true, incomeCents: 500,
+    stages: { moneylending: null, publicDebt: null, trade: null, guildPatronage: null, charteredCompanies: null } }),
+  civ(6)], ledger: emptyLedger(), ...planInput }, ...rest });
+}
+
+test("before loans are open the Treasury tab leaves out the loan figures and projects the balance alone", async () => {
+  const host = document.createElement("div");
+  renderTreasury(host, firstTurnApi());
+  const text = textOf(host);
+  for (const key of ["LOC_ECONOMICS_TREASURY_OUTSTANDING", "LOC_ECONOMICS_TREASURY_DUE_NEXT",
+    "LOC_ECONOMICS_TREASURY_SERVICE_SHARE", "LOC_ECONOMICS_CHART_WITH", "LOC_ECONOMICS_TREASURY_PROJECTION_WITH",
+    "LOC_ECONOMICS_TREASURY_PROJECTION_NOTE", "LOC_ECONOMICS_TREASURY_INSTRUMENTS"]) {
+    assert.equal(text.includes(key), false, key);
+  }
+  assert.equal(byClass(host, "econ-meter").length, 0, "no debt-service scale");
+  assert.equal(byClass(host, "econ-chart-hit").length, 20, "the balance still projects 20 turns");
+  assert.equal(byClass(host, "econ-legend-item").length, 0, "one line, no legend");
+  assert.ok(text.includes("LOC_ECONOMICS_TREASURY_PROJECTION_BALANCE | 600"), "500 Gold now and 5 a turn for 20 turns");
+  const off = document.createElement("div");
+  renderTreasury(off, firstTurnApi({ planInput: { options: { stages: false } } }));
+  for (const key of ["LOC_ECONOMICS_TREASURY_OUTSTANDING", "LOC_ECONOMICS_CHART_WITH"]) {
+    assert.ok(textOf(off).includes(key), `stages Off: ${key}`);
+  }
+  assert.equal(byClass(off, "econ-meter").length, 1);
+  const { renderSummary } = await import("../ui/econ-view-summary.js");
+  const strip = document.createElement("div");
+  renderSummary(strip, firstTurnApi());
+  assert.equal(textOf(strip).includes("LOC_ECONOMICS_SUMMARY_DEBT"), false, "no debt tile above the tabs either");
+});
+
+test("aid sits on the Treasury tab before the Trade tab opens, leaves out hidden civs, and sends a gift", () => {
+  resetConfirmForTests();
+  const api = firstTurnApi();
+  const host = document.createElement("div");
+  renderTreasury(host, api);
+  const titles = byClass(host, "econ-section-title").map((n) => n.textContent);
+  assert.ok(titles.includes("LOC_ECONOMICS_AID"), `section titles: ${titles}`);
+  const aid = byClass(host, "econ-button").find((b) => b.textContent === "LOC_ECONOMICS_INVEST_AID");
+  assert.ok(aid, "an aid line for civ 6");
+  aid.click();
+  const again = document.createElement("div");
+  renderTreasury(again, api);
+  byClass(byClass(again, "econ-confirm")[0], "econ-button")[0].click();
+  assert.deepEqual(api.requests.at(-1), { kind: "invest", investor: ME, host: 6, form: "general", cents: 30000,
+    cityId: null, asAid: true });
+  const hidden = document.createElement("div");
+  renderTreasury(hidden, firstTurnApi({ hidden: (pid) => pid === 6 }));
+  assert.equal(textOf(hidden).includes("Civ 6"), false, "the Spoil Guard hides civ 6 here too");
+  assert.ok(textOf(hidden).includes("LOC_ECONOMICS_AID_NOBODY"));
+  const trade = document.createElement("div");
+  renderTreasury(trade, firstTurnApi({ planInput: { civs: [civ(ME, { human: true, stages: OPEN_ALL }), civ(6)] } }));
+  assert.equal(byClass(trade, "econ-section-title").some((n) => n.textContent === "LOC_ECONOMICS_AID"), false,
+    "once Trade opens, aid is on the Trade tab only");
+});
+
 /** Renders the Loans tab again (the fake api's rerender draws nothing) and clicks the open confirmation's first button. */
 function confirmOn(api) {
   const host = document.createElement("div");

@@ -125,3 +125,20 @@ test("the Loans tab's line says whether other civilizations lend now", () => {
   assert.deepEqual(newlyOpened(first.told, openParts(then.rules, then.facts), then.facts).keys,
     ["LOC_ECONOMICS_OPENED_CIV_LOANS"]);
 });
+
+test("the Treasury tab's loan figures wait for the rule that opens the Loans tab; aid sits there until Trade", () => {
+  const start = rulesOf(antiquity()).rules;
+  assert.equal(start.sections["treasury.loanFigures"], false, "turn 1 in Antiquity: no loans yet");
+  assert.equal(start.sections["treasury.aid"], true, "aid needs no stage");
+  assert.equal(rulesOf(antiquity({ moneylending: 15 })).rules.sections["treasury.loanFigures"], true);
+  assert.equal(rulesOf(antiquity(), {}, { citizenOffer: true }).rules.sections["treasury.loanFigures"], true);
+  const loan = makeLoan({ id: "L1", lender: "temple", borrower: ME, principal: 3000, ratePpm: 30000, term: 10, turn: 18 });
+  assert.equal(rulesOf(antiquity({}, { ledger: { ...emptyLedger(), loans: [loan] } })).rules
+    .sections["treasury.loanFigures"], true, "an emergency loan");
+  assert.equal(rulesOf(antiquity({ trade: 10 })).rules.sections["treasury.aid"], false, "Trade carries aid now");
+  assert.equal(rulesOf(antiquity({}, { options: { investment: false } })).rules.sections["treasury.aid"], false,
+    "aid is part of Foreign investment");
+  const off = rulesOf(antiquity({}, { options: { stages: false } })).rules;
+  assert.equal(off.sections["treasury.loanFigures"], true, "stages Off: everything open");
+  assert.equal(off.sections["treasury.aid"], false, "and aid lives on the Trade tab");
+});
