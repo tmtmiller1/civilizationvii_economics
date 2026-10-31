@@ -101,7 +101,7 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION" Language="zh_Hans_CN"><Text>Next 20 turns</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_WITH" Language="zh_Hans_CN"><Text>Balance in 20 turns with your loans</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_WITHOUT" Language="zh_Hans_CN"><Text>Balance in 20 turns without them</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_NOTE" Language="zh_Hans_CN"><Text>Income held flat; light bars are with your loans, dark bars without. Hover a bar for the figure.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_NOTE" Language="zh_Hans_CN"><Text>Income held flat, so this shows what the loans do to your Gold, not what you might build with it. Borrowed Gold shows at the start and the payments wear it down; the grey line is 0. Point at the chart for any turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_FLOWS" Language="zh_Hans_CN"><Text>What moved, and why</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_NO_FLOWS" Language="zh_Hans_CN"><Text>Loans haven't moved any of your Gold yet.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_FLOWS_NOTE" Language="zh_Hans_CN"><Text>The newest lines first; the last batch ran on turn {1_Turn}.</Text></Replace>
@@ -111,28 +111,144 @@
         <Replace Tag="LOC_ECONOMICS_ROLE_BANKING" Language="zh_Hans_CN"><Text>Banking buildings</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_DEPTH_TURNS" Language="zh_Hans_CN"><Text>Extra turns of income on your credit limit</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_DEPTH_FACTOR" Language="zh_Hans_CN"><Text>Rate factor from depth</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_SYSTEM" Language="zh_Hans_CN"><Text>{1_System}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_TREASURY" Language="zh_Hans_CN"><Text>Treasury</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_TREASURY_TIP" Language="zh_Hans_CN"><Text>The Gold you hold now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_INCOME" Language="zh_Hans_CN"><Text>Income</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_PER_TURN" Language="zh_Hans_CN"><Text>a turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_INCOME_TIP" Language="zh_Hans_CN"><Text>Your Gold a turn, as the top bar shows it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_MOD" Language="zh_Hans_CN"><Text>From Economics</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_LAST_TURN" Language="zh_Hans_CN"><Text>last turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_MOD_TIP" Language="zh_Hans_CN"><Text>What loans, trade bills, investment, the business cycle and the rest moved in or out of your treasury at the start of this turn. The Treasury tab breaks it down.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_DEBT" Language="zh_Hans_CN"><Text>Debt</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_DUE" Language="zh_Hans_CN"><Text>{1_Amount} due next turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_NO_DEBT" Language="zh_Hans_CN"><Text>you owe nothing</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_DEBT_TIP" Language="zh_Hans_CN"><Text>What you still owe on all your loans. It turns red while a loan is in default.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_PHASE" Language="zh_Hans_CN"><Text>Your economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_INDEX" Language="zh_Hans_CN"><Text>index {1_Index}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_PHASE_TIP" Language="zh_Hans_CN"><Text>Where your economy stands in the business cycle. Above 1.05 is a Boom, below 0.95 a Slump, below 0.80 a Depression.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_WAITING" Language="zh_Hans_CN"><Text>Waiting</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_WAITING_SUB" Language="zh_Hans_CN"><Text>for next turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SENT" Language="zh_Hans_CN"><Text>Sent: {1_Request}. It goes through at the start of next turn; until then you can take it back under Queued for next turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SENT_FAILED" Language="zh_Hans_CN"><Text>Not sent: {1_Request}. The list for next turn is full; take something off it first.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CHANGE_TREASURY" Language="zh_Hans_CN"><Text>Your treasury</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CHANGE_DEBT" Language="zh_Hans_CN"><Text>Your debt</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CHANGE_PAYMENTS" Language="zh_Hans_CN"><Text>Loan payments a turn, for {1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SHOW_PARTS" Language="zh_Hans_CN"><Text>Show the parts</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_HIDE_PARTS" Language="zh_Hans_CN"><Text>Hide the parts</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SINCE_LAST_TURN" Language="zh_Hans_CN"><Text>Since last turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TURN_SHORT" Language="zh_Hans_CN"><Text>Turn {1_Turn}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GAUGE_SERVICE" Language="zh_Hans_CN"><Text>Loan payments, of your income</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GAUGE_SERVICE_READING" Language="zh_Hans_CN"><Text>{1_Percent}% of income</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GAUGE_LIMIT" Language="zh_Hans_CN"><Text>lenders stop at {1_Percent}%</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GAUGE_INFLATION_READING" Language="zh_Hans_CN"><Text>{1_Rate} a turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GAUGE_WORLD_SUB" Language="zh_Hans_CN"><Text>The world: {1_Index}, {2_Phase}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CHART_WITH" Language="zh_Hans_CN"><Text>With your loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CHART_WITHOUT" Language="zh_Hans_CN"><Text>Without them</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GAUGE_SERVICE_TIP" Language="zh_Hans_CN"><Text>The share of your income your loan payments take. Lenders won't take you past {1_Percent}%.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GAUGE_CYCLE_TIP" Language="zh_Hans_CN"><Text>Your economic index on the cycle's scale, 0.50 to 1.50. The bands are the model's own lines: below 0.80 Depression, below 0.95 Slump, above 1.05 Boom, Steady between.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GAUGE_INFLATION_TIP" Language="zh_Hans_CN"><Text>Inflation a turn, from bond debt against the Gold the world holds. It stops at 0.5%.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_INSTRUMENTS" Language="zh_Hans_CN"><Text>At a glance</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_INSOLVENT_PILL" Language="zh_Hans_CN"><Text>Insolvent</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_MOD_NET" Language="zh_Hans_CN"><Text>From Economics last turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_MOD_NET_LATER" Language="zh_Hans_CN"><Text>The breakdown shows again after the next turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_MOD_NET_NONE" Language="zh_Hans_CN"><Text>Economics didn't move any of your Gold last turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_LOANS" Language="zh_Hans_CN"><Text>Loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_TRADE" Language="zh_Hans_CN"><Text>Trade bills</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_INVESTMENT" Language="zh_Hans_CN"><Text>Investment</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_CYCLE" Language="zh_Hans_CN"><Text>Business cycle</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_INFLATION" Language="zh_Hans_CN"><Text>Inflation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_PLAN" Language="zh_Hans_CN"><Text>The plan</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_TAX" Language="zh_Hans_CN"><Text>Taxes</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_OTHER" Language="zh_Hans_CN"><Text>Other</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_SUB" Language="zh_Hans_CN"><Text>Filled in with the most your limits allow over the shortest term.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFFER_RATE" Language="zh_Hans_CN"><Text>{1_Rate} a turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFFER_PAYMENT" Language="zh_Hans_CN"><Text>Payment a turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFFER_INTEREST" Language="zh_Hans_CN"><Text>Interest in all</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFFER_SHARE" Language="zh_Hans_CN"><Text>Of your income</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OFFER_INCOME_AFTER" Language="zh_Hans_CN"><Text>Income after</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_FROM" Language="zh_Hans_CN"><Text>Borrow from {1_Lender}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_YOU_GET" Language="zh_Hans_CN"><Text>You get, next turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_YOU_PAY" Language="zh_Hans_CN"><Text>You pay a turn, for {1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_NOTE" Language="zh_Hans_CN"><Text>The lender can still say no at the start of next turn if your limits have changed; the notification will tell you.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_TITLE" Language="zh_Hans_CN"><Text>Owed to {1_Lender}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_SUB" Language="zh_Hans_CN"><Text>Loan {1_Loan}, {2_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_OWED" Language="zh_Hans_CN"><Text>Still owed</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_LEFT" Language="zh_Hans_CN"><Text>Payments left</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_PART_INTEREST" Language="zh_Hans_CN"><Text>Interest at {1_Rate}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOAN_PART_PRINCIPAL" Language="zh_Hans_CN"><Text>Paying down the loan</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESTRUCTURE_WHY_ON_TIME" Language="zh_Hans_CN"><Text>Only an overdue loan can be restructured.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESTRUCTURE_WHY_DONE" Language="zh_Hans_CN"><Text>This loan has been restructured once already.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REPAY_NOTE" Language="zh_Hans_CN"><Text>If your treasury is short next turn, you pay what it holds and the rest stays on the loan.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REPUDIATE_KEEP" Language="zh_Hans_CN"><Text>You keep</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REPUDIATE_STANDING" Language="zh_Hans_CN"><Text>Your standing</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENT_TITLE" Language="zh_Hans_CN"><Text>Lent to {1_Borrower}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENT_OWED" Language="zh_Hans_CN"><Text>Still owed to you</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENT_PAYMENT" Language="zh_Hans_CN"><Text>They pay a turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND_SUB" Language="zh_Hans_CN"><Text>Lend to a computer player who can pay it back, and collect the interest.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND_TO" Language="zh_Hans_CN"><Text>Lend to</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND_THEY_PAY" Language="zh_Hans_CN"><Text>They pay a turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND_YOU_EARN" Language="zh_Hans_CN"><Text>You earn in interest</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND_TO_CIV" Language="zh_Hans_CN"><Text>Lend to {1_Borrower}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND_THEY_PAY_FOR" Language="zh_Hans_CN"><Text>They pay a turn, for {1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD_SAID_ON" Language="zh_Hans_CN"><Text>The auto-loan guard is on.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD_SAID_OFF" Language="zh_Hans_CN"><Text>The auto-loan guard is off. A negative balance meets the game's own penalties.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_CARDS_SUB" Language="zh_Hans_CN"><Text>One card at a time, in its own slot.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST_GOLD" Language="zh_Hans_CN"><Text>Gold a turn, against now</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST_HAPPINESS" Language="zh_Hans_CN"><Text>Happiness a turn, against now</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_SUB" Language="zh_Hans_CN"><Text>Dearest first. Hover a line for each turn's price.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_COL_RESOURCE" Language="zh_Hans_CN"><Text>Resource</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_COL_PRICE" Language="zh_Hans_CN"><Text>Price</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_COL_HELD" Language="zh_Hans_CN"><Text>Copies</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_COL_CHANGE" Language="zh_Hans_CN"><Text>Change</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_COL_HISTORY" Language="zh_Hans_CN"><Text>Last 30 turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_SUB" Language="zh_Hans_CN"><Text>Pick the Gold, then where it goes. Each line says what it brings back.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_YOU_SEND" Language="zh_Hans_CN"><Text>You send, next turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_HISTORY_NOTE" Language="zh_Hans_CN"><Text>The grey line is 1.00. Hover the chart for each turn's figure.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_LIMITS" Language="zh_Hans_CN"><Text>Your limits</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_CREDIT_ROOM" Language="zh_Hans_CN"><Text>You can still borrow up to</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE" Language="zh_Hans_CN"><Text>Payments per turn, of the limit</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE_OF" Language="zh_Hans_CN"><Text>{1_Used} of {2_Cap} Gold</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_STANDING" Language="zh_Hans_CN"><Text>Standing (1.00 is clean)</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOANS_STAGES" Language="zh_Hans_CN"><Text>What's open to you</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOANS_STAGES_ALL_OPEN" Language="zh_Hans_CN"><Text>Every lender of this age is open to you.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOANS_STAGE_CLOSED" Language="zh_Hans_CN"><Text>{1_Part} opens with {2_Node}.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_STAGE_NEXT_AGE" Language="zh_Hans_CN"><Text>the next age</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PART_CIV_LOANS" Language="zh_Hans_CN"><Text>Loans from other civilizations, and 20-turn terms</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PART_BOND" Language="zh_Hans_CN"><Text>The bond market and 30-turn terms</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENS_NEXT" Language="zh_Hans_CN"><Text>Opens next: {1_Part}, with {2_Node}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENS_NEXT_AGE" Language="zh_Hans_CN"><Text>Opens next: {1_Part}, in the next age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_CIV_LOANS" Language="zh_Hans_CN"><Text>loans from other civilizations, for up to 20 turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_BOND" Language="zh_Hans_CN"><Text>the bond market, lending to other civilizations and 30-turn loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TAB_TRADE" Language="zh_Hans_CN"><Text>the Markets and Trade tabs, with world prices and trade bills</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TAB_TRADE_ONLY" Language="zh_Hans_CN"><Text>the Trade tab, with trade bills between partners</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TAB_WORLD" Language="zh_Hans_CN"><Text>the World tab, with the business cycle, and financial depth from your Markets</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TAB_WORLD_MARKETS" Language="zh_Hans_CN"><Text>the Markets and World tabs, with world prices, the business cycle and financial depth from your Markets</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TRADE_BILLS" Language="zh_Hans_CN"><Text>trade bills between partners and the Trade tab</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TARIFFS" Language="zh_Hans_CN"><Text>tariffs on your trading partners</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_DEV_LOANS" Language="zh_Hans_CN"><Text>development loans toward another civilization's builds</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_GENERAL" Language="zh_Hans_CN"><Text>investment in another civilization's treasury</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_INFLATION" Language="zh_Hans_CN"><Text>inflation, once the bond market is open</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_PANICS" Language="zh_Hans_CN"><Text>Panics, when the world borrows too much</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_CARD" Language="zh_Hans_CN"><Text>the {1_Card} card</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_LOANS_LENDERS" Language="zh_Hans_CN"><Text>Economics: the Loans tab is open. Other civilizations will lend to you now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_LOANS" Language="zh_Hans_CN"><Text>Economics: the Loans tab is open, with your loans and the auto-loan guard.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_MARKETS_TRADE" Language="zh_Hans_CN"><Text>Economics: the Markets and Trade tabs are open. Resources have world prices now, and trading partners settle what they owe each other every turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_MARKETS_WORLD" Language="zh_Hans_CN"><Text>Economics: the Markets and World tabs are open. Resources have world prices now, and you can follow booms and slumps. Your Markets add to your financial depth.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_MARKETS" Language="zh_Hans_CN"><Text>Economics: the Markets tab is open. Resources have world prices now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_TRADE" Language="zh_Hans_CN"><Text>Economics: the Trade tab is open. Trading partners settle what they owe each other every turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_WORLD" Language="zh_Hans_CN"><Text>Economics: the World tab is open. Follow booms and slumps there, and your Markets now add to your financial depth.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_CIV_LOANS" Language="zh_Hans_CN"><Text>Economics: other civilizations will lend to you now, for up to 20 turns, on the Loans tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_BOND" Language="zh_Hans_CN"><Text>Economics: the bond market is open on the Loans tab, and you can lend to other civilizations.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_TARIFFS" Language="zh_Hans_CN"><Text>Economics: you can set tariffs on the Fiscal tab now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_DEV_LOANS" Language="zh_Hans_CN"><Text>Economics: you can fund another civilization's builds with development loans on the Trade tab now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_GENERAL" Language="zh_Hans_CN"><Text>Economics: you can invest in another civilization's treasury on the Trade tab now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_INFLATION" Language="zh_Hans_CN"><Text>Economics: inflation now reaches your treasury. The World tab shows its rate.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_DOCK_NEW" Language="zh_Hans_CN"><Text>Economics: something new on {1_Tabs}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_NONE_YET" Language="zh_Hans_CN"><Text>Your first tax card unlocks with this age's early civics.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_CYCLE" Language="zh_Hans_CN"><Text>Business cycle ({1_Phase})</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW" Language="zh_Hans_CN"><Text>Borrow</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_NO_OFFERS" Language="zh_Hans_CN"><Text>Nobody will lend you this amount on these terms right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_MOST" Language="zh_Hans_CN"><Text>The most you can borrow from {1_Lender} over {2_Turns} turns is {3_Amount} Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_MOST_NONE" Language="zh_Hans_CN"><Text>Your payments already take all your limits allow, so you can't borrow from {1_Lender} over {2_Turns} turns right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_THAT" Language="zh_Hans_CN"><Text>Borrow that instead</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_OVER_ROOM" Language="zh_Hans_CN"><Text>That's more than your credit limit allows.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_OFFER_SERVICE" Language="zh_Hans_CN"><Text>With this loan, your payments would take {1_Percent}% of your income.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_OFFER_ROW" Language="zh_Hans_CN"><Text>{1_Lender}: {2_Rate} a turn, about {3_Payment} Gold a turn, {4_Interest} Gold of interest in all</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_MINE" Language="zh_Hans_CN"><Text>Your loans</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_NONE" Language="zh_Hans_CN"><Text>You don't owe anyone anything.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOAN_ROW" Language="zh_Hans_CN"><Text>{1_Loan}: {2_Owed} Gold owed to {3_Lender} at {4_Rate} a turn, {5_Turns} payments left</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOAN_PAYMENT" Language="zh_Hans_CN"><Text>Next payment</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOAN_ACTIVE" Language="zh_Hans_CN"><Text>On schedule</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOAN_OVERDUE" Language="zh_Hans_CN"><Text>Overdue, {1_Count} missed</Text></Replace>
@@ -148,7 +264,6 @@
         <Replace Tag="LOC_ECONOMICS_CLOSED_TURNS" Language="zh_Hans_CN"><Text>{1_Turns} turns</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CLOSED_AGES" Language="zh_Hans_CN"><Text>the rest of this age and the whole of the next</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_LENT" Language="zh_Hans_CN"><Text>What you've lent</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LENT_ROW" Language="zh_Hans_CN"><Text>{1_Loan}: {2_Owed} Gold owed to you by {3_Borrower} at {4_Rate} a turn, {5_Turns} payments left</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_ALLOW_RESTRUCTURE" Language="zh_Hans_CN"><Text>Let them restructure</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEND" Language="zh_Hans_CN"><Text>Lend</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEND_NOBODY" Language="zh_Hans_CN"><Text>There's no civilization to lend to.</Text></Replace>
@@ -173,8 +288,6 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_CARDS" Language="zh_Hans_CN"><Text>Tax cards</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_TAXES_OFF" Language="zh_Hans_CN"><Text>The Taxes option is off for this game, so there are no tax cards.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_ACTIVE" Language="zh_Hans_CN"><Text>Slotted</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FISCAL_LOCKED" Language="zh_Hans_CN"><Text>Not unlocked yet</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FISCAL_LOCKED_BY" Language="zh_Hans_CN"><Text>Opens with {1_Node}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_NOW" Language="zh_Hans_CN"><Text>Your civilization now</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_GOLD_NOW" Language="zh_Hans_CN"><Text>Gold a turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_HAPPINESS_NOW" Language="zh_Hans_CN"><Text>Happiness a turn</Text></Replace>
@@ -186,8 +299,6 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_NO_CARD" Language="zh_Hans_CN"><Text>No tax card</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_EFFECT" Language="zh_Hans_CN"><Text>Effect in every settlement</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_EFFECT_ROW" Language="zh_Hans_CN"><Text>Gold {1_Gold}, Happiness {2_Happiness}</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST" Language="zh_Hans_CN"><Text>Change for you, about</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST_ROW" Language="zh_Hans_CN"><Text>{1_Gold} Gold and {2_Happiness} Happiness a turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR" Language="zh_Hans_CN"><Text>While you're at war</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SLOT" Language="zh_Hans_CN"><Text>Slot this card</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CLEAR" Language="zh_Hans_CN"><Text>Clear the tax card</Text></Replace>
@@ -278,7 +389,6 @@
         <Replace Tag="LOC_ECONOMICS_TRADE_SETTLEMENT" Language="zh_Hans_CN"><Text>This turn's trade bills</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_INCOME" Language="zh_Hans_CN"><Text>Trade Income the game pays your cities</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_CAP" Language="zh_Hans_CN"><Text>The most you pay in bills a turn</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TRADE_STAGE" Language="zh_Hans_CN"><Text>Trade bills open with {1_Node}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_NONE" Language="zh_Hans_CN"><Text>You don't have a bill with anyone this turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_OWE" Language="zh_Hans_CN"><Text>You owe for your imports</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_OWED" Language="zh_Hans_CN"><Text>They owe for theirs</Text></Replace>
@@ -318,7 +428,6 @@
         <Replace Tag="LOC_ECONOMICS_TARIFF_NOW" Language="zh_Hans_CN"><Text>Your tariff</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TARIFF_PENDING" Language="zh_Hans_CN"><Text>Your change takes effect next turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TARIFF_WAIT" Language="zh_Hans_CN"><Text>A tariff can change once every five turns.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TARIFF_STAGE" Language="zh_Hans_CN"><Text>Tariffs open with {1_Node}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TARIFF_NOTE" Language="zh_Hans_CN"><Text>A tariff holds back that share of what you owe the civilizations you import from, so they earn less selling to you. It's a trade-war lever, and a High tariff costs 1 relationship with each of them every five turns. The game's own Tariffs policy card raises your Trade Income instead; the two are separate.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE" Language="zh_Hans_CN"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_WAIVED" Language="zh_Hans_CN"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold; {3_Waived} Gold over your cap was waived.</Text></Replace>

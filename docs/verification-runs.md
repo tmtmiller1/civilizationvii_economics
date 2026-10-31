@@ -517,3 +517,37 @@ been seen in a game.
 | F.10 | Trade bills read a few tenths of a Gold a copy on the Trade tab and the cap line rarely shows "waived"; an AI that pays a big Neutral partner sets Low (ledger `tariff` event), one Unfriendly with a big partner sets High, and a Low tariff the player sets is answered with Low two turns later and dropped when the player drops it (merged run 2026-10-30: bills of a few tenths and AI High and Low watched in Modern; all five held High 130 turns, which 0.5.1 answers with TD.1 to TD.6; the player's Low answered is owed) | Exploration after Imperialism, the human with routes to two AIs | `ui/econ-trade.js` `aiTariffWanted`, `ui/econ-commerce.js` `aiTariff` |
 | F.11 | With an AI in default, the Trade tab greys its general investment with the reason and a "Set up a development loan instead" button; the button lists that AI's builds at the same Gold and sends nothing until one is picked; a general request queued anyway is refused with the notice line naming the development loan | Exploration after Colonialism, an AI pushed into default (a deficit spell, or a probe) | `ui/econ-view-trade.js` `projectCard`, `ui/econ-invest-open.js` `investRequestRefusal` |
 | F.12 | A Classical Republic player paying 3 Gold of interest to its citizens sees the celebration meter rise by 18 that turn (6 a Gold, the same as Light Taxation's 6 Happiness for its 1 Gold) | Antiquity 4242 as Classical Republic with two market towns | `ui/econ-citizens.js` `interestCelebrationCents` |
+
+## Watched 2026-10-30 (ui-pass: tabs by stage, the screen's new look)
+
+Four lab games on 2026-10-30, every other mod off, the `ui-pass` build installed over Mods/economics and put back
+after (`mod_ideas_tested/economics/devtools/restore-ui-pass-2026-10-30.sh`, its log in `devtools/probe-runs/`: 0 rows
+differ, option files the same, Mods/economics the installed 0.5.2). Antiquity seed 4242 with the stage nodes unlocked
+one a turn by `tower-bench do unlock`, and Exploration seed 9001 with Economics, Mercantilism, Colonialism,
+Cartography and Guilds unlocked the same way. Captures in `working_screenshots/econ-ui-pass/`.
+
+| What was watched | Where |
+| --- | --- |
+| Antiquity turn 1 shows Treasury and Fiscal only; the guard switch and the cycle's Gold sit on the Treasury tab; the tab ends "Opens next: the Markets and Trade tabs ..., with Code of Laws" | `antiquity/01-*` |
+| Code of Laws opens Markets and Trade together, Currency opens World, Commerce opens Loans; each turn's notice leads with one sentence (`UI.log`: "Economics: the Markets and Trade tabs are open ...", "... the World tab is open ...", "... the Loans tab is open. Other civilizations will lend to you now.") | `antiquity/02-*` to `04-*` |
+| The dock button carries a gold dot while a newly opened tab hasn't been looked at; its tooltip names the tabs (`glue.fresh` read back) | `options/` run, `antiquity/earlier-options-run/turn8-dock-marker-crop.png` |
+| A locked tax card is left out and named on the Fiscal tab's "Opens next" line; the cards show Gold and Happiness with the game's icons | `antiquity/04-after-commerce-fiscal.png` |
+| Exploration: the bond market and lending open with Economics, development loans and general investment with Guilds and Colonialism, each with its own notice sentence | `UI.log` of the Exploration game |
+| Every tab draws in the new look; the cycle on one dial, debt service on its scale with the 50% limit marked, line charts with scale, turn labels, legend and the readout | `exploration/01-*`, `06-*`, `10-*` |
+| Repay, borrow, lend and aid open a confirmation in place with now against after; a borrow confirmed twice in the same moment queued one request; the line after a repay sits beside the loan | `exploration/02-*` to `07-*` |
+| The bar pill reads "Debt 22 · Steady" after a loan landed | `exploration/09-next-turn-pill-crop.png` |
+| What Economics moved last turn opens to its parts ("Loans -8.3") | `exploration/11-*` |
+
+## Owed: ui-pass
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| U.1 | A controller: the tab bar's bumpers change tab; accept on a button, chip or stepper step presses it (they're `fxs-activatable`); focus shows on chips and steps | any, a controller | `ui/econ-dom.js` `control` |
+| U.2 | Escape closes the screen | any, a person at the keyboard | `ui/econ-screen.js` `onEngineInput` |
+| U.3 | Hovering a chart's turn shows that turn in the readout under it; hovering a figure shows its tooltip | any, a person | `ui/econ-dom.js` `lineChart` |
+| U.4 | The Loans tab appears before Commerce for a temple or emergency loan, and for a Civic market civ with a Commerce building, then goes when the loan closes; a remembered Loans tab falls back to Treasury | Antiquity, income below 0 / Classical Republic | `ui/econ-view-tabs.js` |
+| U.5 | A save loaded from 0.5.2 says nothing about tabs already open, then announces the next one | a 0.5.2 save | `ui/econ-session.js` `noteOpened` |
+| U.6 | The tariff row appears with Imperialism and the chips set a tariff, its line beside it | Exploration | `ui/econ-view-fiscal.js` |
+| U.7 | Inflation's scale on the Treasury and World tabs with Inflation on and Public debt reached | Exploration, Inflation On | `ui/econ-view-instruments.js` |
+| U.8 | The screen at 1280x720 and at a 4:3 window: one column, nothing cut off | window sizes | `ui/econ-screen.css` |
+| U.9 | The turn notification itself in the train, the opening sentence first (the lines were read from `UI.log`, the notification wasn't opened) | any | `ui/econ-notify.js` |

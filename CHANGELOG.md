@@ -77,6 +77,25 @@ release is generated from the matching section below by `scripts/steam-changelog
   income for a few turns, about what an age's crisis takes, and a boom can add a quarter. Each game finds its own highs
   and lows. Gentle keeps the old cycle, where a slump cost a few percent; Extreme runs wilder still. A Panic now hits
   half as hard on Mild and half again as hard on Strong.
+- The Economics screen grows with your economy. In Antiquity it opens with the Treasury and Fiscal tabs; Markets and
+  World appear with Currency, Trade with Code of Laws, and Loans with Commerce, or sooner if you take an emergency or
+  temple loan or your citizens would lend to you. Until the Loans tab appears, the auto-loan guard and your loans sit
+  on the Treasury tab, along with this turn's business cycle Gold until the World tab opens. Parts you haven't reached
+  are left out instead of greyed, and each tab ends with one line naming what opens next and the civic or tech that
+  opens it. The turn a tab or part opens, the turn notification says so, and the dock button shows a small gold dot
+  until you look. With Economic stages off, every tab is there from the start.
+- The Economics screen has a new look. A strip above the tabs shows your treasury, income, what Economics moved last
+  turn, your debt with this turn's payments, your economy's phase and anything waiting for next turn, and your
+  economic system and phase sit under the title. Gold and Happiness show with the game's icons and their signs. The
+  business cycle reads on a dial, and loan payments and inflation on slim scales with the lenders' limit and the
+  inflation cap marked. The 20-turn projection, the world index and each resource's prices are line charts with a
+  scale, turn labels and a readout for the turn you point at. What Economics moved last turn opens to its parts, and
+  the Treasury tab says what changed since last turn.
+- Borrowing, repaying, restructuring, repudiating, lending and investing open a confirmation right under the button,
+  with your treasury, debt and payments now and after, and the line saying it was sent appears beside it. The borrow
+  form starts at the most your limits allow over the shortest term. A button you can't use says why beside it.
+- Buttons, choices and steppers are the game's own activatable controls, so a controller's accept presses them, and
+  Escape closes the screen.
 - The turn notice shows Gold in whole numbers, like the top bar, and only speaks up when Economics moved 2 Gold or
   more that turn.
 - The debt pill sits in the top resource bar, after the settlement limit.

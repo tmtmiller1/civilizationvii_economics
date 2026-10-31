@@ -12,7 +12,8 @@ import { grudgeFor, witnessDelta } from "./econ-repudiation.js";
 import { aiWillLend, repudiationThreshold } from "./econ-ai.js";
 import { hasStage } from "./econ-stages.js";
 import { DEFAULT_OPTIONS, projectBalances } from "./econ-plan.js";
-import { lendersFor, offerQuery, turnContext } from "./econ-turn.js";
+import { citizensFor, lendersFor, offerQuery, turnContext } from "./econ-turn.js";
+import { tabFacts, tabRules } from "./econ-view-tabs.js";
 import { creditRoom, limitRefusal, mostBorrowCents } from "./econ-requests.js";
 import { STANDING, REPUDIATION } from "./econ-params.js";
 import { emptyLedger } from "./econ-state.js";
@@ -206,4 +207,25 @@ export function borrowerRisk(input, lender, borrower) {
     inDefault: ledger.loans.some((loan) => loan.borrower === borrower && loan.state === "default"),
     thresholdCents: repudiationThreshold(civ?.incomeCents || 0), owedCents: owed,
     incomeCents: civ?.incomeCents || 0, wouldLendByRule: civ ? aiWillLend(civ) : false };
+}
+
+/**
+ * Whether the player's citizens would lend to it now (a Civic market civ with a Commerce building and room left).
+ * @param {PlanInput} input
+ * @param {number} pid
+ */
+export function citizenOfferOpen(input, pid) {
+  const offer = citizensFor(viewContext(input), pid);
+  return !!offer && offer.roomCents > 0;
+}
+
+/**
+ * The facts and the tab rules (econ-view-tabs.js) for this player, from the plan input and its stage turns.
+ * @param {PlanInput} input
+ * @param {number} pid
+ * @param {Record<string, number | null | undefined> | null | undefined} stageTurns
+ */
+export function viewRules(input, pid, stageTurns) {
+  const facts = tabFacts(input, pid, stageTurns, { citizenOffer: citizenOfferOpen(input, pid) });
+  return { facts, rules: tabRules(facts) };
 }

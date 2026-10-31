@@ -1,15 +1,16 @@
-// econ-view-fiscal.js - Economics: the Fiscal tab (DESIGN 4.7, 9): the three tax cards of this age with what each
-// would change in this civ's Gold and Happiness and when the next celebration would come, which one is slotted, and
-// the door that slots or clears one through the game's own policy-change operation (econ-fiscal.js). The policy menu
-// shows the same cards and works as before.
+// econ-view-fiscal.js - Economics: the Fiscal tab (DESIGN 4.7, 9). The main column holds the tax cards of this age
+// the player has unlocked: what each does in every settlement (Gold and Happiness with the game's icons), what it
+// would change for this civ against now and when the next celebration would come, and one button that slots it
+// through the game's own policy-change operation (econ-fiscal.js). The side column: the civ's Gold, Happiness and
+// celebration now, its economic system, and the tariff once the stage opens. The policy menu shows the same cards.
 
-import { button, chips, el, note, pill, row, section } from "./econ-dom.js";
+import { amount, button, chips, columns, el, empty, facts, feedbackLine, note, pill, row, section, stat } from "./econ-dom.js";
 import { canChangeTariff } from "./econ-trade.js";
-import { hasStage } from "./econ-stages.js";
 import { formatGold } from "./econ-format.js";
 import { CARD_LEVELS, ageOf, atWarAmounts, cardAmounts, cardForecast } from "./econ-tax-cards.js";
 import { systemView } from "./econ-view-macro.js";
 import { systemKey } from "./econ-notice-text.js";
+import { opensNext, rulesFor, send } from "./econ-view-common.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 /** @typedef {import("./econ-tax-cards.js").FiscalRead} FiscalRead */
@@ -17,15 +18,37 @@ import { systemKey } from "./econ-notice-text.js";
 /** @type {string | null} */
 let lastVerdict = null;
 
+/** @param {number} cents */
+const toneOf = (cents) => (cents > 0 ? 1 : cents < 0 ? -1 : 0);
+/**
+ * @param {number} cents
+ * @param {"gold" | "happiness"} kind
+ */
+const signedYield = (cents, kind) => amount(formatGold(cents, { signed: true }), { kind, tone: toneOf(cents) });
+
 /**
  * @param {HTMLElement} host
  * @param {ScreenApi} api
  */
 export function renderFiscal(host, api) {
-  host.appendChild(systemSection(api));
-  renderCards(host, api);
-  const tariff = tariffSection(api);
-  if (tariff) host.appendChild(tariff);
+  const { rules } = rulesFor(api);
+  const cards = api.cards();
+  const read = api.fiscal();
+  const { block, locked } = cardsSection(cards, read, api);
+  /** @type {HTMLElement[]} */
+  const side = [];
+  if (cards.length) side.push(nowSection(read, cards, api));
+  side.push(systemSection(api));
+  if (rules.sections["fiscal.tariff"]) {
+    const tariff = tariffSection(api);
+    if (tariff) side.push(tariff);
+  }
+  host.appendChild(columns([block], side));
+  // A card not unlocked yet comes before the tariffs: it opens in this age's early civics.
+  const first = locked ? { text: api.loc("LOC_ECONOMICS_PART_CARD", api.loc(CARD_LEVELS[locked.level].nameKey)),
+    nodeKey: locked.opener || null } : null;
+  const next = opensNext(api, rules.next.fiscal, first);
+  if (next) host.appendChild(next);
 }
 
 /**
@@ -36,57 +59,75 @@ export function renderFiscal(host, api) {
 function systemSection(api) {
   const view = systemView(api.input(), api.me);
   const block = section(api.loc("LOC_ECONOMICS_FISCAL_SYSTEM"));
-  if (!view.on) { block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_SYSTEMS_OFF"))); return block; }
-  block.appendChild(el("div", "econ-card-title", api.loc(systemKey(view.system))));
-  block.appendChild(note(api.loc(`LOC_ECONOMICS_FISCAL_SYSTEM_FROM_${view.source.toUpperCase()}`)));
-  block.appendChild(note(api.loc(`${systemKey(view.system)}_LINE`)));
+  if (!view.on) { block.appendChild(empty(api.loc("LOC_ECONOMICS_FISCAL_SYSTEMS_OFF"))); return block; }
+  const head = el("div", "econ-card econ-card--active");
+  head.appendChild(el("div", "econ-card-title", api.loc(systemKey(view.system))));
+  head.appendChild(el("div", "econ-card-sub", api.loc(`LOC_ECONOMICS_FISCAL_SYSTEM_FROM_${view.source.toUpperCase()}`)));
+  head.appendChild(note(api.loc(`${systemKey(view.system)}_LINE`)));
+  block.appendChild(head);
+  for (const line of systemLines(view, api)) block.appendChild(line);
+  return block;
+}
+
+/**
+ * Under the system: the blend after a change, the plan's take for a Planned civ, and where the tax changes show.
+ * @param {ReturnType<typeof systemView>} view
+ * @param {ScreenApi} api
+ */
+function systemLines(view, api) {
+  /** @type {HTMLElement[]} */
+  const out = [];
+  const block = { appendChild: (/** @type {HTMLElement} */ node) => out.push(node) };
   if (view.from) {
     const blendKey = view.blendLeft === 1 ? "LOC_ECONOMICS_FISCAL_SYSTEM_BLEND_ONE" : "LOC_ECONOMICS_FISCAL_SYSTEM_BLEND";
     block.appendChild(note(api.loc(blendKey, api.loc(systemKey(view.from)), view.blendLeft)));
   }
   if (view.planTakeCents > 0) {
-    block.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_PLAN"), formatGold(view.planTakeCents)));
+    block.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_PLAN"), amount(formatGold(view.planTakeCents))));
     block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_PLAN_NOTE")));
   }
   block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_SYSTEM_TAX_NOTE")));
-  return block;
+  return out;
 }
 
 /**
- * The tax cards block.
- * @param {HTMLElement} host
+ * The tax cards block: the cards the player has unlocked, the slotted one first, and the way to clear it. Returns the
+ * first card still locked, for the tab's "Opens next" line.
+ * @param {import("./econ-fiscal.js").CardRead[]} cards
+ * @param {FiscalRead} read
  * @param {ScreenApi} api
  */
-function renderCards(host, api) {
-  const cards = api.cards();
-  const block = section(api.loc("LOC_ECONOMICS_FISCAL_CARDS"));
-  if (!cards.length) { block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_TAXES_OFF"))); host.appendChild(block); return; }
-  const read = api.fiscal();
+function cardsSection(cards, read, api) {
+  const block = section(api.loc("LOC_ECONOMICS_FISCAL_CARDS"), [],
+    { subtitle: api.loc("LOC_ECONOMICS_FISCAL_CARDS_SUB") });
+  if (!cards.length) { block.appendChild(empty(api.loc("LOC_ECONOMICS_FISCAL_TAXES_OFF"))); return { block, locked: null }; }
   const canSwap = api.canSwap();
   const active = cards.find((card) => card.active) || null;
   // Every card the database holds is this age's, so any card's type names the age whose amounts apply.
   const age = ageOf(cards[0].type);
-  host.appendChild(nowSection(read, active ? active.level : null, age, api));
-  for (const card of cards) block.appendChild(cardBlock(card, active ? active.level : null, read, canSwap, api));
+  if (lastVerdict) block.appendChild(el("div", "econ-feedback", api.loc(verdictKey(lastVerdict))));
+  const shown = cards.filter((card) => card.unlocked || card.active)
+    .sort((a, b) => Number(b.active) - Number(a.active));
+  for (const card of shown) block.appendChild(cardBlock(card, active ? active.level : null, read, canSwap, api));
+  if (!shown.length) block.appendChild(empty(api.loc("LOC_ECONOMICS_FISCAL_NONE_YET")));
   if (active) block.appendChild(clearBlock(active.level, read, canSwap, age, api));
-  if (!canSwap) block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_NO_SWAP")));
-  if (lastVerdict) block.appendChild(note(api.loc(verdictKey(lastVerdict))));
   block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_NOTE")));
-  host.appendChild(block);
+  return { block, locked: cards.find((card) => !card.unlocked && !card.active) || null };
 }
 
 /**
- * Where the civ stands now: its settlements' Gold and Happiness and the next celebration.
+ * Where the civ stands now, with the slotted card: its settlements' Gold and Happiness and the next celebration.
  * @param {FiscalRead} read
- * @param {string | null} activeLevel
- * @param {string | null} age
+ * @param {import("./econ-fiscal.js").CardRead[]} cards
  * @param {ScreenApi} api
  */
-function nowSection(read, activeLevel, age, api) {
-  const now = cardForecast(activeLevel, activeLevel, read, age);
+function nowSection(read, cards, api) {
+  const active = cards.find((card) => card.active) || null;
+  const level = active ? active.level : null;
+  const now = cardForecast(level, level, read, ageOf(cards[0].type));
   return section(api.loc("LOC_ECONOMICS_FISCAL_NOW"), [
-    row(api.loc("LOC_ECONOMICS_FISCAL_GOLD_NOW"), formatGold(read.goldCents)),
-    row(api.loc("LOC_ECONOMICS_FISCAL_HAPPINESS_NOW"), formatGold(read.happinessCents)),
+    row(api.loc("LOC_ECONOMICS_FISCAL_GOLD_NOW"), amount(formatGold(read.goldCents), { kind: "gold" })),
+    row(api.loc("LOC_ECONOMICS_FISCAL_HAPPINESS_NOW"), amount(formatGold(read.happinessCents), { kind: "happiness" })),
     row(api.loc("LOC_ECONOMICS_FISCAL_CELEBRATION"), celebrationText(now.turnsToCelebration, read, api)),
   ]);
 }
@@ -103,6 +144,8 @@ function celebrationText(turns, read, api) {
 }
 
 /**
+ * One card: what it does in each settlement, at war too, and for a card not slotted what it would change and the
+ * button that slots it.
  * @param {import("./econ-fiscal.js").CardRead} card
  * @param {string | null} activeLevel
  * @param {FiscalRead} read
@@ -113,35 +156,36 @@ function cardBlock(card, activeLevel, read, canSwap, api) {
   const level = CARD_LEVELS[card.level];
   const age = ageOf(card.type);
   const amounts = cardAmounts(card.level, age);
-  const box = el("div", "econ-card");
+  const box = el("div", `econ-card${card.active ? " econ-card--active" : ""}`);
   const head = el("div", "econ-card-head");
   head.appendChild(el("div", "econ-card-title", api.loc(level.nameKey)));
   if (card.active) head.appendChild(pill(api.loc("LOC_ECONOMICS_FISCAL_ACTIVE"), false));
-  else if (!card.unlocked) head.appendChild(pill(lockedText(card, api), false));
   box.appendChild(head);
-  box.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_EFFECT"), api.loc("LOC_ECONOMICS_FISCAL_EFFECT_ROW",
-    formatGold(amounts.gold * 100, { signed: true }), formatGold(amounts.happiness * 100, { signed: true }))));
-  if (level.atWar) {
-    const war = atWarAmounts(card.level, age);
-    box.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR"), api.loc("LOC_ECONOMICS_FISCAL_EFFECT_ROW",
-      formatGold(war.gold * 100, { signed: true }), formatGold(war.happiness * 100, { signed: true }))));
-  }
+  /** @type {HTMLElement[]} */
+  const each = [stat(api.loc("LOC_ECONOMICS_FISCAL_EFFECT"), effect(amounts, api))];
+  if (level.atWar) each.push(stat(api.loc("LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR"), effect(atWarAmounts(card.level, age), api)));
+  box.appendChild(facts(each));
   if (!card.active) {
-    for (const line of forecastRows(card.level, activeLevel, read, age, api)) box.appendChild(line);
+    box.appendChild(forecastFacts(card.level, activeLevel, read, age, api));
     box.appendChild(button(api.loc("LOC_ECONOMICS_FISCAL_SLOT"), () => swap(card.type, api),
-      { disabled: !canSwap || !card.unlocked }));
+      { disabled: !canSwap || !card.unlocked, reason: canSwap ? null : api.loc("LOC_ECONOMICS_FISCAL_NO_SWAP") }));
   }
   return box;
 }
 
 /**
- * "Not unlocked yet", with the civic or tech that opens the card when this age has one (DESIGN 4.15).
- * @param {import("./econ-fiscal.js").CardRead} card
+ * A card's amounts in each settlement: Gold and Happiness with their icons; the text key carries the same figures
+ * for a tooltip.
+ * @param {{ gold: number, happiness: number }} amounts
  * @param {ScreenApi} api
  */
-function lockedText(card, api) {
-  return card.opener ? api.loc("LOC_ECONOMICS_FISCAL_LOCKED_BY", api.loc(card.opener))
-    : api.loc("LOC_ECONOMICS_FISCAL_LOCKED");
+function effect(amounts, api) {
+  const node = el("div", "econ-facts");
+  node.appendChild(signedYield(amounts.gold * 100, "gold"));
+  node.appendChild(signedYield(amounts.happiness * 100, "happiness"));
+  node.setAttribute("data-tooltip-content", api.loc("LOC_ECONOMICS_FISCAL_EFFECT_ROW",
+    formatGold(amounts.gold * 100, { signed: true }), formatGold(amounts.happiness * 100, { signed: true })));
+  return node;
 }
 
 /**
@@ -152,15 +196,13 @@ function lockedText(card, api) {
  * @param {string | null} age
  * @param {ScreenApi} api
  */
-function forecastRows(level, activeLevel, read, age, api) {
+function forecastFacts(level, activeLevel, read, age, api) {
   const forecast = cardForecast(level, activeLevel, read, age);
-  const label = api.loc("LOC_ECONOMICS_FISCAL_FORECAST");
-  const gold = formatGold(forecast.goldDeltaCents, { signed: true });
-  const happiness = formatGold(forecast.happinessDeltaCents, { signed: true });
-  return [
-    row(label, api.loc("LOC_ECONOMICS_FISCAL_FORECAST_ROW", gold, happiness)),
-    row(api.loc("LOC_ECONOMICS_FISCAL_CELEBRATION"), celebrationText(forecast.turnsToCelebration, read, api)),
-  ];
+  return facts([
+    stat(api.loc("LOC_ECONOMICS_FISCAL_FORECAST_GOLD"), signedYield(forecast.goldDeltaCents, "gold")),
+    stat(api.loc("LOC_ECONOMICS_FISCAL_FORECAST_HAPPINESS"), signedYield(forecast.happinessDeltaCents, "happiness")),
+    stat(api.loc("LOC_ECONOMICS_FISCAL_CELEBRATION"), celebrationText(forecast.turnsToCelebration, read, api)),
+  ]);
 }
 
 /**
@@ -172,15 +214,17 @@ function forecastRows(level, activeLevel, read, age, api) {
  * @param {ScreenApi} api
  */
 function clearBlock(activeLevel, read, canSwap, age, api) {
-  const box = el("div", "econ-card");
+  const box = el("div", "econ-card econ-card--muted");
   box.appendChild(el("div", "econ-card-title", api.loc("LOC_ECONOMICS_FISCAL_NO_CARD")));
-  for (const line of forecastRows(null, activeLevel, read, age, api)) box.appendChild(line);
-  box.appendChild(button(api.loc("LOC_ECONOMICS_FISCAL_CLEAR"), () => swap(null, api), { disabled: !canSwap }));
+  box.appendChild(forecastFacts(null, activeLevel, read, age, api));
+  box.appendChild(button(api.loc("LOC_ECONOMICS_FISCAL_CLEAR"), () => swap(null, api),
+    { disabled: !canSwap, reason: canSwap ? null : api.loc("LOC_ECONOMICS_FISCAL_NO_SWAP"),
+      className: "econ-button--quiet" }));
   return box;
 }
 
 /**
- * The tariff row (DESIGN 4.10): hidden with Markets or Tariffs off, greyed until the Tariffs stage, one change per 5
+ * The tariff row (DESIGN 4.10): hidden with Markets or Tariffs off and until the Tariffs stage, one change per 5
  * turns, with what a tariff does in words.
  * @param {ScreenApi} api
  */
@@ -189,6 +233,8 @@ function tariffSection(api) {
   if (input.options?.markets === false || input.options?.tariffs === false) return null;
   const block = section(api.loc("LOC_ECONOMICS_TARIFF"));
   for (const node of tariffRows(input, api)) block.appendChild(node);
+  const said = feedbackLine("tariff");
+  if (said) block.appendChild(said);
   block.appendChild(note(api.loc("LOC_ECONOMICS_TARIFF_NOTE")));
   return block;
 }
@@ -208,11 +254,6 @@ function tariffRowOf(input, pid) {
  * @returns {HTMLElement[]}
  */
 function tariffRows(input, api) {
-  const me = input.civs.find((civ) => civ.id === api.me);
-  if (!hasStage(me, "tariffs", input.turn, input.options)) {
-    return [note(api.loc("LOC_ECONOMICS_TARIFF_STAGE",
-      api.loc(api.stageOpener("tariffs") || "LOC_ECONOMICS_STAGE_NEXT_AGE")))];
-  }
   const current = tariffRowOf(input, api.me);
   const level = current ? current.level : "none";
   const name = (/** @type {string} */ id) => api.loc(`LOC_ECONOMICS_TARIFF_${id.toUpperCase()}`);
@@ -223,10 +264,10 @@ function tariffRows(input, api) {
   }
   const pick = (/** @type {string} */ id) => {
     if (id === level) return;
-    api.request({ kind: "tariff", pid: api.me, level: id });
-    api.rerender();
+    send(api, { kind: "tariff", pid: api.me, level: id }, "tariff");
   };
-  return [chips(["none", "low", "high"].map((id) => ({ id, label: name(id) })), level, pick)];
+  return [row(api.loc("LOC_ECONOMICS_TARIFF_NOW"), name(level)),
+    chips(["none", "low", "high"].map((id) => ({ id, label: name(id) })), level, pick)];
 }
 
 /** The LOC key for what a swap came back with. @param {string} verdict */

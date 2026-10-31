@@ -11,21 +11,36 @@ import { renderFiscal } from "./econ-view-fiscal.js";
 import { renderMarkets } from "./econ-view-markets.js";
 import { renderTrade } from "./econ-view-trade.js";
 import { renderWorld } from "./econ-view-world.js";
-import { el } from "./econ-dom.js";
+import { clearFeedback, el, takeFeedback } from "./econ-dom.js";
+import { renderSubtitle, renderSummary } from "./econ-view-summary.js";
+import { startTab } from "./econ-view-tabs.js";
+import { viewRules } from "./econ-view-model.js";
 import { getSetting, setSetting } from "./econ-settings.js";
 import { logLine } from "./econ-log.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 
 export const SCREEN_ID = "screen-economics";
-const TABS = [
-  { key: "LOC_ECONOMICS_TAB_TREASURY", render: renderTreasury },
-  { key: "LOC_ECONOMICS_TAB_LOANS", render: renderLoans },
-  { key: "LOC_ECONOMICS_TAB_FISCAL", render: renderFiscal },
-  { key: "LOC_ECONOMICS_TAB_MARKETS", render: renderMarkets },
-  { key: "LOC_ECONOMICS_TAB_TRADE", render: renderTrade },
-  { key: "LOC_ECONOMICS_TAB_WORLD", render: renderWorld },
-];
+/** @typedef {import("./econ-view-tabs.js").TabKey} TabKey */
+/** @type {Record<TabKey, { key: string, render: (host: HTMLElement, api: ScreenApi) => void }>} */
+const TABS = {
+  treasury: { key: "LOC_ECONOMICS_TAB_TREASURY", render: renderTreasury },
+  loans: { key: "LOC_ECONOMICS_TAB_LOANS", render: renderLoans },
+  fiscal: { key: "LOC_ECONOMICS_TAB_FISCAL", render: renderFiscal },
+  markets: { key: "LOC_ECONOMICS_TAB_MARKETS", render: renderMarkets },
+  trade: { key: "LOC_ECONOMICS_TAB_TRADE", render: renderTrade },
+  world: { key: "LOC_ECONOMICS_TAB_WORLD", render: renderWorld },
+};
+
+/** The tabs this player sees now (econ-view-tabs.js); every tab when the rules can't be read. @param {ScreenApi} api */
+function shownTabs(api) {
+  try {
+    return viewRules(api.input(), api.me, api.stageTurns?.() ?? null).rules.tabs;
+  } catch (error) {
+    logLine(`tab rules failed: ${error instanceof Error ? error.message : String(error)}`);
+    return /** @type {TabKey[]} */ (Object.keys(TABS));
+  }
+}
 
 /** @type {ScreenApi | null} */
 let screenApi = null;
@@ -70,9 +85,29 @@ function makeTabBar(items, onSelect, start) {
   return bar;
 }
 
+/** The open screen's tab, chosen from outside (the console, for captures). @param {string} key */
+export function showTab(key) {
+  const screen = openScreenInstance;
+  if (!screen) return null;
+  screen.selectTab(/** @type {TabKey} */ (key));
+  const bar = screen.Root?.querySelector?.("fxs-tab-bar");
+  bar?.setAttribute?.("selected-tab-index", String(Math.max(0, screen.tabs.indexOf(screen.tab))));
+  return screen.tab;
+}
+
+/** The line after an action, once, at the top of the tab. @param {HTMLElement} host */
+function showFeedback(host) {
+  const said = takeFeedback();
+  if (said) host.appendChild(el("div", "econ-feedback", said));
+}
+
 class ScreenEconomics extends Panel {
-  /** @type {number} */
-  tab = 0;
+  /** @type {TabKey} */
+  tab = "treasury";
+  /** @type {TabKey[]} */
+  tabs = [];
+  /** @type {TabKey | null} the tab last drawn, to keep its scroll across a redraw */
+  drawnTab = null;
 
   onInitialize() {
     super.onInitialize?.();
@@ -86,9 +121,15 @@ class ScreenEconomics extends Panel {
   onAttach() {
     try { super.onAttach?.(); } catch (error) { logLine(`screen attach: ${error}`); }
     openScreenInstance = this;
-    this.tab = Number(getSetting("lastTab")) || 0;
+    clearFeedback();
+    this.Root?.addEventListener?.("engine-input", this.onEngineInput);
     try {
       this.wireClose();
+      if (screenApi) {
+        this.tabs = shownTabs(screenApi);
+        // A remembered tab that isn't shown now (a closed stage, or a game with the stages on) falls back to Treasury.
+        this.tab = startTab({ tabs: this.tabs }, getSetting("lastTab"));
+      }
       this.buildTabs();
       this.render();
     } catch (error) {
@@ -96,7 +137,18 @@ class ScreenEconomics extends Panel {
     }
   }
 
+  /** Escape (or the controller's back) closes the screen, as the game's own screens do. @param {any} event */
+  onEngineInput = (event) => {
+    if (event?.detail?.status !== /** @type {any} */ (globalThis).InputActionStatuses?.FINISH) return;
+    if (event.isCancelInput?.() || event.detail.name === "sys-menu") {
+      this.close();
+      event.stopPropagation?.();
+      event.preventDefault?.();
+    }
+  };
+
   onDetach() {
+    this.Root?.removeEventListener?.("engine-input", this.onEngineInput);
     if (openScreenInstance === this) openScreenInstance = null;
     try { super.onDetach?.(); } catch (_error) { /* nothing to release */ }
   }
@@ -106,30 +158,70 @@ class ScreenEconomics extends Panel {
     close?.addEventListener?.("action-activate", () => this.close());
   }
 
+  /** Builds the tab bar for the shown tabs. It's rebuilt only when the set of tabs changes (a stage opened while the
+   * screen was up), since a rebuilt fxs-tab-bar flashes its first tab. */
   buildTabs() {
     const host = this.Root?.querySelector?.(".econ-tab-host");
     if (!host || !screenApi) return;
-    const items = TABS.map((tab, index) => ({ id: String(index), label: screenApi?.loc(tab.key) || tab.key }));
-    host.appendChild(makeTabBar(items, (index) => this.selectTab(index), this.tab));
+    while (host.firstChild) host.removeChild(host.firstChild);
+    const tabs = this.tabs;
+    const items = tabs.map((key, index) => ({ id: String(index), label: screenApi?.loc(TABS[key].key) || key }));
+    host.appendChild(makeTabBar(items, (index) => this.selectTab(tabs[index] ?? "treasury"),
+      Math.max(0, tabs.indexOf(this.tab))));
+    screenApi.seenTab?.(this.tab);
   }
 
-  /** @param {number} index */
-  selectTab(index) {
-    this.tab = Math.max(0, Math.min(TABS.length - 1, index));
+  /** A stage opened or a loan closed while the screen was up: the tab bar follows. @param {ScreenApi} api */
+  syncTabs(api) {
+    const tabs = shownTabs(api);
+    if (tabs.join() === this.tabs.join()) return;
+    this.tabs = tabs;
+    if (!tabs.includes(this.tab)) this.tab = "treasury";
+    this.buildTabs();
+  }
+
+  /** @param {TabKey} key */
+  selectTab(key) {
+    if (key !== this.tab) clearFeedback();
+    this.tab = this.tabs.includes(key) ? key : "treasury";
     setSetting("lastTab", this.tab);
+    screenApi?.seenTab?.(this.tab);
     this.render();
   }
 
   render() {
     const host = /** @type {HTMLElement | null} */ (this.Root?.querySelector?.(".econ-screen-host") ?? null);
     if (!host) return;
+    // A redraw after an action keeps the player's place in a long tab; a new tab starts at its top.
+    const keep = this.drawnTab === this.tab ? host.scrollTop : 0;
+    this.drawnTab = this.tab;
     while (host.firstChild) host.removeChild(host.firstChild);
     if (!screenApi) { host.appendChild(el("div", "econ-note", "Economics: no session")); return; }
+    this.syncTabs(screenApi);
+    this.renderHeader(screenApi);
+    showFeedback(host);
+    this.renderTab(host, screenApi);
+    host.scrollTop = keep;
+  }
+
+  /** @param {HTMLElement} host @param {ScreenApi} api */
+  renderTab(host, api) {
     try {
-      TABS[this.tab].render(host, screenApi);
+      TABS[this.tab].render(host, api);
     } catch (error) {
       logLine(`tab ${this.tab} failed: ${error instanceof Error ? error.stack || error.message : String(error)}`);
-      host.appendChild(el("div", "econ-note econ-negative", screenApi.loc("LOC_ECONOMICS_TAB_FAILED")));
+      host.appendChild(el("div", "econ-note econ-negative", api.loc("LOC_ECONOMICS_TAB_FAILED")));
+    }
+  }
+
+  /** The subtitle and the summary strip, redrawn with the tab. @param {ScreenApi} api */
+  renderHeader(api) {
+    for (const [selector, draw] of /** @type {const} */ ([[".econ-subtitle", renderSubtitle],
+      [".econ-summary-host", renderSummary]])) {
+      const node = /** @type {HTMLElement | null} */ (this.Root?.querySelector?.(selector) ?? null);
+      if (!node) continue;
+      while (node.firstChild) node.removeChild(node.firstChild);
+      try { draw(node, api); } catch (error) { logLine(`${selector} failed: ${error}`); }
     }
   }
 
@@ -156,6 +248,12 @@ try {
 
 /** Re-draws the open screen's current tab, after an action or a turn. */
 export function rerenderScreen() {
+  openScreenInstance?.render();
+}
+
+/** A new turn: the line after the last action is out of date. */
+export function newTurnOnScreen() {
+  clearFeedback();
   openScreenInstance?.render();
 }
 

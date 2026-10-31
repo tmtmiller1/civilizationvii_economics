@@ -12,6 +12,8 @@ import { planTakeCents } from "./econ-planned.js";
 import { isOpen } from "./econ-loan.js";
 import { hasStage } from "./econ-stages.js";
 import { CYCLE_RULES, SYSTEM_BLEND_TURNS } from "./econ-params.js";
+import { cycleGoldFor } from "./econ-macro.js";
+import { viewContext } from "./econ-view-model.js";
 
 /** @param {PlanInput} input */
 const optionsOf = (input) => ({ ...DEFAULT_OPTIONS, ...(input.options || {}) });
@@ -102,4 +104,18 @@ export function inflationLines(input, me) {
   return { on: true, member, reserveCents: reserveCents(civ.incomeCents),
     erosionCents: member ? erosionCents({ piPpm: readings.piPpm, balanceCents: civ.balanceCents,
       incomeCents: civ.incomeCents, erosionPct: terms.erosionPct }) : 0 };
+}
+
+/**
+ * Next turn's cycle Gold for the player and its phase (DESIGN 4.11), for the Treasury tab's line before the World tab
+ * opens: positive in a boom, negative in a slump.
+ * @param {PlanInput} input
+ * @param {number} me
+ */
+export function cycleGoldLine(input, me) {
+  const ctx = viewContext(input);
+  const civ = ctx.civ.get(me);
+  const reading = ctx.readings.civ.get(me);
+  if (!civ || !reading || ctx.readings.kPct === 0) return { on: false, cents: 0, phase: "steady" };
+  return { on: true, cents: cycleGoldFor(ctx, civ), phase: reading.phase };
 }

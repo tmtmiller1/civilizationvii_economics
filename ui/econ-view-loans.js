@@ -1,23 +1,24 @@
-// econ-view-loans.js - Economics: the Loans tab (DESIGN 5, 9): the player's limits and standing, what it owes
-// (overdue first) with repay, restructure and repudiate, what it has lent, the guard switch and its allowance, and
-// the requests queued for the next batch. The borrow and lend forms are in econ-view-borrow.js. Before a repudiation
-// or a restructure is queued, the tab shows what DESIGN 5 says to show and asks once more.
+// econ-view-loans.js - Economics: the Loans tab (DESIGN 5, 9). The main column: the borrow form (econ-view-borrow.js)
+// where the player's stages open one, then the player's loans (overdue first) with repay, restructure and repudiate,
+// then what it has lent and the lend form. The side column: the debt-service gauge with the credit room and standing,
+// the guard switch with its allowance, and the requests waiting for the next turn. Each action opens a confirmation in
+// place that says what it costs and what changes, and one more click sends it.
 
-import { button, el, note, pill, row, section } from "./econ-dom.js";
+import { amount, button, changeRow, columns, confirmCard, el, empty, expander, facts, feedbackLine, isConfirming, note,
+  pill, row, say, section, setConfirming, stat } from "./econ-dom.js";
 import { formatGold, formatRate } from "./econ-format.js";
 import { loansView, repudiationPreview, restructurePreview } from "./econ-view-model.js";
 import { renderBorrow, renderLend } from "./econ-view-borrow.js";
 import { requestKey } from "./econ-notice-text.js";
+import { opensNext, rulesFor, send } from "./econ-view-common.js";
+import { isOpen, paymentDue } from "./econ-loan.js";
+import { serviceMeter } from "./econ-view-instruments.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 /** @typedef {ReturnType<typeof loansView>["mine"][number]} LoanRow */
 
-/** What the player is being asked to confirm, kept across re-renders. */
-/** @type {{ kind: "repudiate", lender: Party } | { kind: "restructure", loanId: string } | null} */
-let confirming = null;
-
 /** @param {ScreenApi} api @param {number} cents */
-const gold = (api, cents) => api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents));
+const gold = (api, cents) => amount(formatGold(cents), { tooltip: api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents)) });
 
 /**
  * @param {HTMLElement} host
@@ -26,47 +27,34 @@ const gold = (api, cents) => api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cen
 export function renderLoans(host, api) {
   const input = api.input();
   const view = loansView(input, api.me);
-  host.appendChild(limitsSection(view, api));
-  host.appendChild(stageSection(view, api));
-  if (view.stages.moneylending || view.stages.publicDebt) host.appendChild(renderBorrow(input, view, api));
-  host.appendChild(mineSection(input, view, api));
-  if (view.lent.length) host.appendChild(lentSection(view, api));
-  if (view.stages.publicDebt) host.appendChild(renderLend(input, api));
-  host.appendChild(guardSection(view, api));
-  host.appendChild(pendingSection(api));
+  const { rules } = rulesFor(api);
+  /** @type {HTMLElement[]} */
+  const main = [];
+  if (rules.sections["loans.borrow"]) main.push(renderBorrow(input, view, api));
+  main.push(mineSection(input, view, api));
+  if (view.lent.length) main.push(lentSection(view, api));
+  if (rules.sections["loans.lend"]) main.push(renderLend(input, api));
+  const income = input.civs.find((civ) => civ.id === api.me)?.incomeCents ?? 0;
+  host.appendChild(columns(main, [limitsSection(view, income, api), guardSection(view, api), pendingSection(api)]));
+  const next = opensNext(api, rules.next.loans);
+  if (next) host.appendChild(next);
 }
 
 /**
+ * The debt-service gauge, what the player can still borrow and its standing.
  * @param {ReturnType<typeof loansView>} view
+ * @param {number} income
  * @param {ScreenApi} api
  */
-function limitsSection(view, api) {
-  return section(api.loc("LOC_ECONOMICS_LOANS_LIMITS"), [
+function limitsSection(view, income, api) {
+  const share = income > 0 ? Math.round((100 * view.serviceCents) / income) : view.serviceCents > 0 ? 100 : 0;
+  return section(api.loc("LOC_ECONOMICS_LOANS_LIMITS"), [serviceMeter(share, api),
     row(api.loc("LOC_ECONOMICS_LOANS_CREDIT_ROOM"), gold(api, view.creditRoomCents)),
     row(api.loc("LOC_ECONOMICS_LOANS_SERVICE"), api.loc("LOC_ECONOMICS_LOANS_SERVICE_OF",
       formatGold(view.serviceCents), formatGold(view.serviceCapCents))),
-    row(api.loc("LOC_ECONOMICS_LOANS_STANDING"), (view.standingPct / 100).toFixed(2)),
+    row(api.loc("LOC_ECONOMICS_LOANS_STANDING"), (view.standingPct / 100).toFixed(2),
+      view.standingPct < 100 ? "econ-negative" : ""),
   ]);
-}
-
-/**
- * The parts a civ hasn't reached, greyed with the node that opens them (DESIGN 4.15).
- * @param {ReturnType<typeof loansView>} view
- * @param {ScreenApi} api
- */
-function stageSection(view, api) {
-  /** @type {HTMLElement[]} */
-  const lines = [];
-  const closed = (/** @type {string} */ partKey, /** @type {string} */ stage) => {
-    const opener = api.stageOpener(stage);
-    const by = opener ? api.loc(opener) : api.loc("LOC_ECONOMICS_STAGE_NEXT_AGE");
-    lines.push(el("div", "econ-line econ-muted", api.loc("LOC_ECONOMICS_LOANS_STAGE_CLOSED", api.loc(partKey), by)));
-  };
-  if (!view.stages.moneylending) closed("LOC_ECONOMICS_PART_CIV_LOANS", "moneylending");
-  if (!view.stages.publicDebt) closed("LOC_ECONOMICS_PART_BOND", "publicDebt");
-  const block = section(api.loc("LOC_ECONOMICS_LOANS_STAGES"), lines);
-  if (!lines.length) block.appendChild(note(api.loc("LOC_ECONOMICS_LOANS_STAGES_ALL_OPEN")));
-  return block;
 }
 
 /**
@@ -85,19 +73,38 @@ function statusPill(loan, api) {
  * @param {ReturnType<typeof loansView>} view
  * @param {ScreenApi} api
  */
-function mineSection(input, view, api) {
+export function mineSection(input, view, api) {
   const block = section(api.loc("LOC_ECONOMICS_LOANS_MINE"));
-  if (!view.mine.length) { block.appendChild(note(api.loc("LOC_ECONOMICS_LOANS_NONE"))); return block; }
+  if (!view.mine.length) { block.appendChild(empty(api.loc("LOC_ECONOMICS_LOANS_NONE"))); return block; }
+  const said = feedbackLine("mine");
+  if (said) block.appendChild(said);
   for (const loan of view.mine) block.appendChild(loanCard(input, loan, api));
   const lenders = [...new Set(view.mine.map((loan) => loan.lender))];
   const repudiate = el("div", "econ-actions");
   for (const lender of lenders) {
     repudiate.appendChild(button(api.loc("LOC_ECONOMICS_LOANS_REPUDIATE_LENDER", api.nameOf(lender)),
-      () => { confirming = { kind: "repudiate", lender }; api.rerender(); }));
+      () => { setConfirming(`repudiate:${lender}`); api.rerender(); }, { className: "econ-button--warning econ-button--small" }));
   }
   block.appendChild(repudiate);
-  if (confirming?.kind === "repudiate") block.appendChild(repudiateConfirm(input, confirming.lender, api));
+  for (const lender of lenders) {
+    if (isConfirming(`repudiate:${lender}`)) block.appendChild(repudiateConfirm(input, lender, api));
+  }
   return block;
+}
+
+/**
+ * The payment a loan charges next turn, opening to its interest and principal.
+ * @param {PlanInput} input
+ * @param {LoanRow} loan
+ * @param {ScreenApi} api
+ */
+function paymentRow(input, loan, api) {
+  const record = (input.ledger?.loans || []).find((row) => row.id === loan.id);
+  const parts = record && record.state === "active" ? paymentDue(record) : { interest: 0, amortisation: 0, total: 0 };
+  return expander(`payment:${loan.id}`, row(api.loc("LOC_ECONOMICS_LOAN_PAYMENT"), gold(api, loan.paymentCents)), () => [
+    row(api.loc("LOC_ECONOMICS_LOAN_PART_INTEREST", formatRate(loan.ratePpm)), gold(api, parts.interest)),
+    row(api.loc("LOC_ECONOMICS_LOAN_PART_PRINCIPAL"), gold(api, parts.amortisation)),
+  ], api.rerender, { show: api.loc("LOC_ECONOMICS_SHOW_PARTS"), hide: api.loc("LOC_ECONOMICS_HIDE_PARTS") });
 }
 
 /**
@@ -106,26 +113,72 @@ function mineSection(input, view, api) {
  * @param {ScreenApi} api
  */
 function loanCard(input, loan, api) {
-  const card = el("div", "econ-card");
+  const trouble = loan.overdue || loan.state === "default";
+  const card = el("div", `econ-card${trouble ? " econ-card--trouble" : ""}`);
   const head = el("div", "econ-card-head");
-  head.appendChild(el("div", "econ-card-title", api.loc("LOC_ECONOMICS_LOAN_ROW", loan.id, formatGold(loan.outstanding),
-    api.nameOf(loan.lender), formatRate(loan.ratePpm), loan.turnsLeft)));
+  const titles = el("div", "");
+  titles.appendChild(el("div", "econ-card-title", api.loc("LOC_ECONOMICS_LOAN_TITLE", api.nameOf(loan.lender))));
+  titles.appendChild(el("div", "econ-card-sub", api.loc("LOC_ECONOMICS_LOAN_SUB", loan.id, loan.term)));
+  head.appendChild(titles);
   head.appendChild(statusPill(loan, api));
   card.appendChild(head);
-  card.appendChild(row(api.loc("LOC_ECONOMICS_LOAN_PAYMENT"), gold(api, loan.paymentCents)));
+  card.appendChild(facts([
+    stat(api.loc("LOC_ECONOMICS_LOAN_OWED"), gold(api, loan.outstanding)),
+    stat(api.loc("LOC_ECONOMICS_RATE"), formatRate(loan.ratePpm)),
+    stat(api.loc("LOC_ECONOMICS_LOAN_LEFT"), api.loc("LOC_ECONOMICS_TURNS", loan.turnsLeft)),
+  ]));
+  card.appendChild(paymentRow(input, loan, api));
+  card.appendChild(loanActions(loan, api));
+  const said = feedbackLine(`loan:${loan.id}`);
+  if (said) card.appendChild(said);
+  for (const share of ["all", "half"]) {
+    if (isConfirming(`repay:${loan.id}:${share}`)) card.appendChild(repayConfirm(input, loan, share === "all", api));
+  }
+  if (isConfirming(`restructure:${loan.id}`)) card.appendChild(restructureConfirm(input, loan.id, api));
+  return card;
+}
+
+/**
+ * Repay all, repay half and restructure; restructure says why when it can't.
+ * @param {LoanRow} loan
+ * @param {ScreenApi} api
+ */
+function loanActions(loan, api) {
   const actions = el("div", "econ-actions");
   actions.appendChild(button(api.loc("LOC_ECONOMICS_LOANS_REPAY_ALL"),
-    () => { api.request({ kind: "repay", loanId: loan.id, cents: loan.outstanding }); api.rerender(); }));
+    () => { setConfirming(`repay:${loan.id}:all`); api.rerender(); }));
   actions.appendChild(button(api.loc("LOC_ECONOMICS_LOANS_REPAY_HALF"),
-    () => { api.request({ kind: "repay", loanId: loan.id, cents: Math.ceil(loan.outstanding / 2) }); api.rerender(); }));
+    () => { setConfirming(`repay:${loan.id}:half`); api.rerender(); }));
   const canRestructure = loan.overdue && !loan.restructured;
   actions.appendChild(button(api.loc("LOC_ECONOMICS_LOANS_RESTRUCTURE"),
-    () => { confirming = { kind: "restructure", loanId: loan.id }; api.rerender(); }, { disabled: !canRestructure }));
-  card.appendChild(actions);
-  if (confirming?.kind === "restructure" && confirming.loanId === loan.id) {
-    card.appendChild(restructureConfirm(input, loan.id, api));
-  }
-  return card;
+    () => { setConfirming(`restructure:${loan.id}`); api.rerender(); }, { disabled: !canRestructure,
+      reason: canRestructure ? null : api.loc(loan.restructured ? "LOC_ECONOMICS_RESTRUCTURE_WHY_DONE"
+        : "LOC_ECONOMICS_RESTRUCTURE_WHY_ON_TIME") }));
+  return actions;
+}
+
+/**
+ * Repaying all or half: now against after for the treasury, this loan and its payment a turn (the model's own
+ * schedule on what's left).
+ * @param {PlanInput} input
+ * @param {LoanRow} loan
+ * @param {boolean} all
+ * @param {ScreenApi} api
+ */
+function repayConfirm(input, loan, all, api) {
+  const cents = all ? loan.outstanding : Math.ceil(loan.outstanding / 2);
+  const balance = input.civs.find((civ) => civ.id === api.me)?.balanceCents ?? 0;
+  const record = (input.ledger?.loans || []).find((row) => row.id === loan.id);
+  const left = loan.outstanding - cents;
+  const after = record && left > 0 ? paymentDue({ ...record, outstanding: left }).total : 0;
+  return confirmCard({ title: api.loc(all ? "LOC_ECONOMICS_LOANS_REPAY_ALL" : "LOC_ECONOMICS_LOANS_REPAY_HALF"),
+    lines: [changeRow(api.loc("LOC_ECONOMICS_CHANGE_TREASURY"), formatGold(balance), formatGold(balance - cents), -1),
+      changeRow(api.loc("LOC_ECONOMICS_LOAN_OWED"), formatGold(loan.outstanding), formatGold(left), 1),
+      changeRow(api.loc("LOC_ECONOMICS_LOAN_PAYMENT"), formatGold(loan.paymentCents), formatGold(after), 1),
+      note(api.loc("LOC_ECONOMICS_REPAY_NOTE"))],
+    confirm: api.loc("LOC_ECONOMICS_CONFIRM"), cancel: api.loc("LOC_ECONOMICS_CANCEL"),
+    onConfirm: () => send(api, { kind: "repay", loanId: loan.id, cents }, `loan:${loan.id}`),
+    rerender: api.rerender });
 }
 
 /**
@@ -135,12 +188,18 @@ function loanCard(input, loan, api) {
  */
 function restructureConfirm(input, loanId, api) {
   const preview = restructurePreview(/** @type {Ledger} */ (input.ledger), loanId);
-  const box = el("div", "econ-confirm");
-  if (!preview) return box;
-  box.appendChild(note(api.loc("LOC_ECONOMICS_RESTRUCTURE_PREVIEW", formatGold(preview.outstanding),
-    formatRate(preview.ratePpm), formatGold(preview.paymentCents))));
-  box.appendChild(confirmButtons(api, () => api.request({ kind: "restructure", loanId, pid: api.me })));
-  return box;
+  if (!preview) return el("div", "");
+  const record = (input.ledger?.loans || []).find((row) => row.id === loanId);
+  const before = record && record.state === "active" ? paymentDue(record).total : 0;
+  return confirmCard({ title: api.loc("LOC_ECONOMICS_LOANS_RESTRUCTURE"),
+    lines: [changeRow(api.loc("LOC_ECONOMICS_LOAN_PAYMENT"), formatGold(before), formatGold(preview.paymentCents),
+      preview.paymentCents < before ? 1 : 0),
+    changeRow(api.loc("LOC_ECONOMICS_LOAN_LEFT"), String(record ? record.term - record.paid : 0), String(preview.term)),
+    note(api.loc("LOC_ECONOMICS_RESTRUCTURE_PREVIEW", formatGold(preview.outstanding),
+      formatRate(preview.ratePpm), formatGold(preview.paymentCents)))],
+    confirm: api.loc("LOC_ECONOMICS_CONFIRM"), cancel: api.loc("LOC_ECONOMICS_CANCEL"), warning: true,
+    onConfirm: () => send(api, { kind: "restructure", loanId, pid: api.me }, `loan:${loanId}`),
+    rerender: api.rerender });
 }
 
 /**
@@ -150,26 +209,20 @@ function restructureConfirm(input, loanId, api) {
  */
 function repudiateConfirm(input, lender, api) {
   const p = repudiationPreview(input, api.me, lender);
-  const box = el("div", "econ-confirm");
   const closes = p.closedTurns !== null ? api.loc("LOC_ECONOMICS_CLOSED_TURNS", p.closedTurns)
     : api.loc("LOC_ECONOMICS_CLOSED_AGES");
-  box.appendChild(note(api.loc("LOC_ECONOMICS_REPUDIATE_PREVIEW", formatGold(p.keptCents), api.nameOf(lender),
-    p.grudge, p.witnesses.length, p.witnessDelta, (p.standingAfter / 100).toFixed(2), closes, p.creditTurnsLost)));
-  if (p.atWar) box.appendChild(note(api.loc("LOC_ECONOMICS_REPUDIATE_AT_WAR")));
-  box.appendChild(confirmButtons(api, () => api.request({ kind: "repudiate", borrower: api.me, lender })));
-  return box;
-}
-
-/**
- * @param {ScreenApi} api
- * @param {() => void} onConfirm
- */
-function confirmButtons(api, onConfirm) {
-  const actions = el("div", "econ-actions");
-  actions.appendChild(button(api.loc("LOC_ECONOMICS_CONFIRM"), () => { onConfirm(); confirming = null; api.rerender(); },
-    { className: "econ-button--warning" }));
-  actions.appendChild(button(api.loc("LOC_ECONOMICS_CANCEL"), () => { confirming = null; api.rerender(); }));
-  return actions;
+  const owed = input.ledger ? input.ledger.loans.filter((loan) => loan.borrower === api.me && isOpen(loan))
+    .reduce((sum, loan) => sum + loan.outstanding, 0) : 0;
+  const lines = [row(api.loc("LOC_ECONOMICS_REPUDIATE_KEEP"), gold(api, p.keptCents)),
+    changeRow(api.loc("LOC_ECONOMICS_CHANGE_DEBT"), formatGold(owed), formatGold(owed - p.keptCents)),
+    changeRow(api.loc("LOC_ECONOMICS_REPUDIATE_STANDING"), (p.standingNow / 100).toFixed(2),
+      (p.standingAfter / 100).toFixed(2), -1),
+    note(api.loc("LOC_ECONOMICS_REPUDIATE_PREVIEW", formatGold(p.keptCents), api.nameOf(lender), p.grudge,
+      p.witnesses.length, p.witnessDelta, (p.standingAfter / 100).toFixed(2), closes, p.creditTurnsLost))];
+  if (p.atWar) lines.push(note(api.loc("LOC_ECONOMICS_REPUDIATE_AT_WAR")));
+  return confirmCard({ title: api.loc("LOC_ECONOMICS_LOANS_REPUDIATE_LENDER", api.nameOf(lender)), lines,
+    confirm: api.loc("LOC_ECONOMICS_CONFIRM"), cancel: api.loc("LOC_ECONOMICS_CANCEL"), warning: true,
+    onConfirm: () => send(api, { kind: "repudiate", borrower: api.me, lender }, "mine"), rerender: api.rerender });
 }
 
 /**
@@ -179,53 +232,68 @@ function confirmButtons(api, onConfirm) {
 function lentSection(view, api) {
   const block = section(api.loc("LOC_ECONOMICS_LOANS_LENT"));
   for (const loan of view.lent) {
-    const card = el("div", "econ-card");
+    const card = el("div", `econ-card${loan.overdue || loan.state === "default" ? " econ-card--trouble" : ""}`);
     const head = el("div", "econ-card-head");
-    head.appendChild(el("div", "econ-card-title", api.loc("LOC_ECONOMICS_LENT_ROW", loan.id, formatGold(loan.outstanding),
-      api.nameOf(loan.borrower), formatRate(loan.ratePpm), loan.turnsLeft)));
+    const titles = el("div", "");
+    titles.appendChild(el("div", "econ-card-title", api.loc("LOC_ECONOMICS_LENT_TITLE", api.nameOf(loan.borrower))));
+    titles.appendChild(el("div", "econ-card-sub", api.loc("LOC_ECONOMICS_LOAN_SUB", loan.id, loan.term)));
+    head.appendChild(titles);
     head.appendChild(statusPill(loan, api));
     card.appendChild(head);
+    card.appendChild(facts([stat(api.loc("LOC_ECONOMICS_LENT_OWED"), gold(api, loan.outstanding)),
+      stat(api.loc("LOC_ECONOMICS_RATE"), formatRate(loan.ratePpm)),
+      stat(api.loc("LOC_ECONOMICS_LENT_PAYMENT"), gold(api, loan.paymentCents)),
+      stat(api.loc("LOC_ECONOMICS_LOAN_LEFT"), api.loc("LOC_ECONOMICS_TURNS", loan.turnsLeft))]));
     if (loan.overdue && !loan.restructured) {
       card.appendChild(button(api.loc("LOC_ECONOMICS_LOANS_ALLOW_RESTRUCTURE"),
-        () => { api.request({ kind: "restructure", loanId: loan.id, pid: api.me }); api.rerender(); }));
+        () => send(api, { kind: "restructure", loanId: loan.id, pid: api.me }, `lent:${loan.id}`)));
     }
+    const said = feedbackLine(`lent:${loan.id}`);
+    if (said) card.appendChild(said);
     block.appendChild(card);
   }
   return block;
 }
 
 /**
+ * The guard switch (DESIGN 4.6) and what it can still lend this age.
  * @param {ReturnType<typeof loansView>} view
  * @param {ScreenApi} api
  */
-function guardSection(view, api) {
+export function guardSection(view, api) {
   const on = api.guardOn();
-  const block = section(api.loc("LOC_ECONOMICS_GUARD"), [
-    row(api.loc("LOC_ECONOMICS_GUARD_STATE"), api.loc(on ? "LOC_ECONOMICS_ON" : "LOC_ECONOMICS_OFF")),
-    row(api.loc("LOC_ECONOMICS_GUARD_ALLOWANCE"), api.loc("LOC_ECONOMICS_LOANS_SERVICE_OF",
-      formatGold(Math.max(0, view.emergencyCapCents - view.emergencyOpenCents)), formatGold(view.emergencyCapCents))),
-  ]);
+  const block = section(api.loc("LOC_ECONOMICS_GUARD"));
+  block.appendChild(row(api.loc("LOC_ECONOMICS_GUARD_STATE"), api.loc(on ? "LOC_ECONOMICS_ON" : "LOC_ECONOMICS_OFF"),
+    on ? "econ-positive" : "econ-muted"));
+  block.appendChild(row(api.loc("LOC_ECONOMICS_GUARD_ALLOWANCE"), api.loc("LOC_ECONOMICS_LOANS_SERVICE_OF",
+    formatGold(Math.max(0, view.emergencyCapCents - view.emergencyOpenCents)), formatGold(view.emergencyCapCents))));
   const actions = el("div", "econ-actions");
   actions.appendChild(button(api.loc(on ? "LOC_ECONOMICS_GUARD_SWITCH_OFF" : "LOC_ECONOMICS_GUARD_SWITCH_ON"),
-    () => { api.setGuard(!on); api.rerender(); }));
+    () => {
+      api.setGuard(!on);
+      say(api.loc(on ? "LOC_ECONOMICS_GUARD_SAID_OFF" : "LOC_ECONOMICS_GUARD_SAID_ON"), { at: "guard" });
+      api.rerender();
+    }));
   block.appendChild(actions);
+  const said = feedbackLine("guard");
+  if (said) block.appendChild(said);
   block.appendChild(note(api.loc("LOC_ECONOMICS_GUARD_NOTE")));
   return block;
 }
 
 /**
- * The requests waiting for the next batch, each with a way to take it back.
+ * The requests waiting for the next turn, each with a way to take it back.
  * @param {ScreenApi} api
  */
-function pendingSection(api) {
+export function pendingSection(api) {
   const pending = api.pending();
   const block = section(api.loc("LOC_ECONOMICS_LOANS_PENDING"));
-  if (!pending.length) { block.appendChild(note(api.loc("LOC_ECONOMICS_LOANS_PENDING_NONE"))); return block; }
+  if (!pending.length) { block.appendChild(empty(api.loc("LOC_ECONOMICS_LOANS_PENDING_NONE"))); return block; }
   pending.forEach((request, index) => {
-    const line = el("div", "econ-actions");
-    line.appendChild(el("div", "econ-line", api.loc(requestKey(request.kind))));
+    const line = el("div", "econ-row");
+    line.appendChild(el("div", "econ-row-label", api.loc(requestKey(request.kind))));
     line.appendChild(button(api.loc("LOC_ECONOMICS_CANCEL"), () => { api.dropRequest(index); api.rerender(); },
-      { className: "econ-button--small" }));
+      { className: "econ-button--small econ-button--quiet" }));
     block.appendChild(line);
   });
   block.appendChild(note(api.loc("LOC_ECONOMICS_LOANS_PENDING_NOTE")));
@@ -234,5 +302,5 @@ function pendingSection(api) {
 
 /** Test hook. */
 export function resetConfirmForTests() {
-  confirming = null;
+  setConfirming(null);
 }

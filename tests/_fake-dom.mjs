@@ -6,7 +6,7 @@ class FakeElement {
     this.tagName = tag.toUpperCase();
     this.children = [];
     this.parentElement = null;
-    this.textContent = "";
+    this._text = "";
     this.style = {};
     this.attributes = {};
     this.listeners = {};
@@ -19,6 +19,9 @@ class FakeElement {
       contains: (name) => self._classes.has(name),
     };
   }
+  // As in a page: an element's text is its own, or its children's run together.
+  get textContent() { return this._text || this.children.map((c) => c.textContent).join(""); }
+  set textContent(value) { this._text = String(value); this.children = []; }
   get className() { return [...this._classes].join(" "); }
   set className(value) { this._classes = new Set(String(value).split(/\s+/).filter(Boolean)); }
   get firstChild() { return this.children[0] ?? null; }
@@ -43,6 +46,7 @@ export function installFakeDom() {
   const head = new FakeElement("head");
   globalThis.document = {
     createElement: (tag) => new FakeElement(tag),
+    createElementNS: (_ns, tag) => new FakeElement(tag),
     getElementById: () => null,
     head,
   };
@@ -62,5 +66,5 @@ export function byClass(root, name) {
 
 /** The text of every element under `root`, joined, for "does it say" checks. */
 export function textOf(root) {
-  return [root, ...root.all()].map((node) => node.textContent).filter(Boolean).join(" | ");
+  return [root, ...root.all()].map((node) => node._text).filter(Boolean).join(" | ");
 }

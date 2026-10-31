@@ -4,10 +4,13 @@
 // would return and the relationship it buys; then the routes the game would let you make and what each would add to
 // your bill; then your open investments.
 
-import { button, el, goldStepper, note, row, section } from "./econ-dom.js";
+import { amount, button, changeRow, columns, confirmCard, el, empty, facts, feedbackLine, goldStepper, isConfirming,
+  note, row, section, setConfirming, stat } from "./econ-dom.js";
+import { send } from "./econ-view-common.js";
 import { formatGold } from "./econ-format.js";
 import { reasonKey } from "./econ-notice-text.js";
 import { investForecast, investTargets, investmentsView, routePreview, tradeView } from "./econ-view-commerce.js";
+import { opensNext, rulesFor } from "./econ-view-common.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 
@@ -19,15 +22,19 @@ const form = { cents: 30000, projectFor: /** @type {number | null} */ (null) };
  */
 export function renderTrade(host, api) {
   const input = api.input();
-  host.appendChild(settlementSection(input, api));
-  host.appendChild(offersSection(input, api));
-  host.appendChild(investSection(input, api));
-  host.appendChild(previewSection(input, api));
-  host.appendChild(holdingsSection(input, api));
+  const { rules } = rulesFor(api);
+  const open = { project: rules.sections["trade.project"], general: rules.sections["trade.general"] };
+  host.appendChild(columns([settlementSection(input, api), offersSection(input, api), investSection(input, api, open)],
+    [holdingsSection(input, api), previewSection(input, api)]));
+  const next = opensNext(api, rules.next.trade);
+  if (next) host.appendChild(next);
 }
 
-/** @param {number} cents @param {ScreenApi} api */
-const goldText = (cents, api) => api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents));
+/** @typedef {{ project: boolean, general: boolean }} InvestOpen the investment forms the player's stages open */
+
+/** @param {number} cents @param {ScreenApi} api @param {number} [tone] */
+const goldText = (cents, api, tone = 0) => amount(formatGold(cents), { tone,
+  tooltip: api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents)) });
 
 /**
  * @param {PlanInput} input
@@ -43,9 +50,8 @@ function settlementSection(input, api) {
   if (view.tradeIncomeCents > 0) {
     block.appendChild(row(api.loc("LOC_ECONOMICS_TRADE_INCOME"), goldText(view.tradeIncomeCents, api)));
   }
-  if (!view.on) { block.appendChild(note(api.loc("LOC_ECONOMICS_MARKETS_OFF"))); return block; }
-  if (!view.stageOpen) block.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_STAGE", api.loc(api.stageOpener("trade") || "LOC_ECONOMICS_STAGE_NEXT_AGE"))));
-  if (!view.rows.length) block.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_NONE")));
+  if (!view.on) { block.appendChild(empty(api.loc("LOC_ECONOMICS_MARKETS_OFF"))); return block; }
+  if (!view.rows.length) block.appendChild(empty(api.loc("LOC_ECONOMICS_TRADE_NONE")));
   for (const line of view.rows) block.appendChild(partnerRow(line, api));
   block.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_NOTE")));
   return block;
@@ -56,12 +62,14 @@ function settlementSection(input, api) {
  * @param {ScreenApi} api
  */
 function partnerRow(line, api) {
-  const box = el("div", "econ-card");
+  const box = el("div", `econ-card${line.payCents > 0 ? " econ-card--trouble" : ""}`);
   box.appendChild(el("div", "econ-card-title", api.nameOf(line.partner)));
-  box.appendChild(row(api.loc("LOC_ECONOMICS_TRADE_OWE"), goldText(line.youOweCents, api)));
-  box.appendChild(row(api.loc("LOC_ECONOMICS_TRADE_OWED"), goldText(line.theyOweCents, api)));
-  if (line.payCents > 0) box.appendChild(row(api.loc("LOC_ECONOMICS_TRADE_PAY"), goldText(line.payCents, api), "econ-negative"));
-  if (line.receiveCents > 0) box.appendChild(row(api.loc("LOC_ECONOMICS_TRADE_RECEIVE"), goldText(line.receiveCents, api)));
+  /** @type {HTMLElement[]} */
+  const figures = [stat(api.loc("LOC_ECONOMICS_TRADE_OWE"), goldText(line.youOweCents, api)),
+    stat(api.loc("LOC_ECONOMICS_TRADE_OWED"), goldText(line.theyOweCents, api))];
+  if (line.payCents > 0) figures.push(stat(api.loc("LOC_ECONOMICS_TRADE_PAY"), goldText(line.payCents, api, -1)));
+  if (line.receiveCents > 0) figures.push(stat(api.loc("LOC_ECONOMICS_TRADE_RECEIVE"), goldText(line.receiveCents, api, 1)));
+  box.appendChild(facts(figures));
   if (line.waivedCents > 0) box.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_WAIVED", formatGold(line.waivedCents))));
   return box;
 }
@@ -73,7 +81,9 @@ function partnerRow(line, api) {
 function offersSection(input, api) {
   const { offers } = investmentsView(input, api.me);
   const block = section(api.loc("LOC_ECONOMICS_TRADE_OFFERS"));
-  if (!offers.length) block.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_NO_OFFERS")));
+  const said = feedbackLine("offers");
+  if (said) block.appendChild(said);
+  if (!offers.length) block.appendChild(empty(api.loc("LOC_ECONOMICS_TRADE_NO_OFFERS")));
   for (const offer of offers) {
     const box = el("div", "econ-card");
     const kind = offer.kind === "general" ? "LOC_ECONOMICS_OFFER_GENERAL_ROW" : "LOC_ECONOMICS_OFFER_PROJECT_ROW";
@@ -81,9 +91,9 @@ function offersSection(input, api) {
       offer.cityId ? api.cityName(offer.cityId) : "")));
     const actions = el("div", "econ-actions");
     actions.appendChild(button(api.loc("LOC_ECONOMICS_OFFER_ACCEPT"), () => ask(api, { kind: "accept-offer",
-      offerId: offer.id })));
+      offerId: offer.id }, "offers"), { className: "econ-button--primary" }));
     actions.appendChild(button(api.loc("LOC_ECONOMICS_OFFER_DECLINE"), () => ask(api, { kind: "decline-offer",
-      offerId: offer.id })));
+      offerId: offer.id }, "offers"), { className: "econ-button--quiet" }));
     box.appendChild(actions);
     block.appendChild(box);
   }
@@ -93,27 +103,31 @@ function offersSection(input, api) {
 /**
  * @param {ScreenApi} api
  * @param {PlanRequest} request
+ * @param {string} at where the line saying so goes
  */
-function ask(api, request) {
-  api.request(request);
-  api.rerender();
+function ask(api, request, at) {
+  send(api, request, at);
 }
 
 /**
  * @param {PlanInput} input
  * @param {ScreenApi} api
+ * @param {InvestOpen} open
  */
-function investSection(input, api) {
-  const block = section(api.loc("LOC_ECONOMICS_INVEST"), [
-    row(api.loc("LOC_ECONOMICS_INVEST_AMOUNT"), ""),
-    goldStepper({ value: form.cents, min: 1000, max: 10000000, format: formatGold,
-      onChange: (cents) => { form.cents = cents; api.rerender(); } }),
-  ]);
-  if (input.options?.investment === false) { block.appendChild(note(api.loc("LOC_ECONOMICS_INVEST_OFF"))); return block; }
+function investSection(input, api, open) {
+  const block = section(api.loc("LOC_ECONOMICS_INVEST"), [], { subtitle: api.loc("LOC_ECONOMICS_INVEST_SUB") });
+  if (input.options?.investment === false) { block.appendChild(empty(api.loc("LOC_ECONOMICS_INVEST_OFF"))); return block; }
+  const amountLine = el("div", "econ-field");
+  amountLine.appendChild(el("div", "econ-field-label font-title uppercase", api.loc("LOC_ECONOMICS_INVEST_AMOUNT")));
+  amountLine.appendChild(goldStepper({ value: form.cents, min: 1000, max: 10000000, format: formatGold,
+    onChange: (cents) => { form.cents = cents; api.rerender(); } }));
+  block.appendChild(amountLine);
+  const said = feedbackLine("invest");
+  if (said) block.appendChild(said);
   const targets = investTargets(input, api.me, form.cents);
-  const chosen = targets.find((target) => target.pid === form.projectFor);
+  const chosen = open.project ? targets.find((target) => target.pid === form.projectFor) : undefined;
   if (chosen) block.appendChild(projectCard(chosen, api));
-  for (const target of targets) block.appendChild(targetCard(target, api));
+  for (const target of targets) block.appendChild(targetCard(target, api, open));
   block.appendChild(note(api.loc("LOC_ECONOMICS_INVEST_NOTE")));
   return block;
 }
@@ -141,16 +155,21 @@ function projectCard(target, api) {
 /**
  * One civ the player could invest in: general investment and aid, and a development loan on each queued build. A
  * host in default refuses general investment; its line says so and offers the development loan instead.
+ * Forms the player's stages haven't opened are left out (econ-view-tabs.js); aid needs no stage.
  * @param {ReturnType<typeof investTargets>[number]} target
  * @param {ScreenApi} api
+ * @param {InvestOpen} open
  */
-function targetCard(target, api) {
+function targetCard(target, api, open) {
   const box = el("div", "econ-card");
   box.appendChild(el("div", "econ-card-title", api.nameOf(target.pid)));
   const host = { host: target.pid, hostIncomeCents: target.incomeCents };
-  box.appendChild(actionRow(api, { ...host, form: "general", asAid: false, refusal: target.general,
-    caption: "LOC_ECONOMICS_INVEST_GENERAL" }));
-  if (target.general === "host-default" && target.cities.some((row) => row.refusal === null)) {
+  if (open.general) {
+    box.appendChild(actionRow(api, { ...host, form: "general", asAid: false, refusal: target.general,
+      caption: "LOC_ECONOMICS_INVEST_GENERAL" }));
+  }
+  if (open.general && open.project && target.general === "host-default"
+    && target.cities.some((row) => row.refusal === null)) {
     box.appendChild(button(api.loc("LOC_ECONOMICS_INVEST_PROJECT_INSTEAD"), () => {
       form.projectFor = target.pid;
       api.rerender();
@@ -158,6 +177,7 @@ function targetCard(target, api) {
   }
   box.appendChild(actionRow(api, { ...host, form: "general", asAid: true, refusal: target.aid,
     caption: "LOC_ECONOMICS_INVEST_AID" }));
+  if (!open.project) return box;
   for (const { city, refusal } of target.cities) {
     box.appendChild(actionRow(api, { ...host, form: "project", asAid: false, refusal, city,
       caption: "LOC_ECONOMICS_INVEST_PROJECT" }));
@@ -166,22 +186,43 @@ function targetCard(target, api) {
 }
 
 /**
- * A button with the forecast beside it, or the reason it can't go ahead.
+ * A button with the forecast beside it, or the reason it can't go ahead; the button opens a confirmation with what
+ * the Gold buys.
  * @param {ScreenApi} api
  * @param {{ host: number, hostIncomeCents: number, form: InvestKind, asAid: boolean, refusal: string | null,
  *   caption: string, city?: CityRead }} q
  */
 function actionRow(api, q) {
-  const line = el("div", "econ-line");
+  const line = el("div", "econ-invest-line");
   const forecast = investForecast({ form: q.form, cents: form.cents, asAid: q.asAid,
     hostIncomeCents: q.hostIncomeCents, city: q.city ?? null });
   const label = q.city ? api.loc(q.caption, api.buildName(q.city.build || ""), api.cityName(q.city.id))
     : api.loc(q.caption);
-  line.appendChild(button(label, () => ask(api, { kind: "invest", investor: api.me, host: q.host, form: q.form,
-    cents: form.cents, cityId: q.city?.id ?? null, asAid: q.asAid }), { disabled: q.refusal !== null }));
-  if (q.refusal) line.appendChild(el("div", "econ-line econ-negative", api.loc(reasonKey(q.refusal))));
-  else line.appendChild(note(forecastText(forecast, q, api)));
+  const id = `invest:${q.host}:${q.form}:${q.asAid ? 1 : 0}:${q.city?.id ?? ""}`;
+  line.appendChild(button(label, () => { setConfirming(id); api.rerender(); },
+    { disabled: q.refusal !== null, reason: q.refusal ? api.loc(reasonKey(q.refusal)) : null }));
+  if (!q.refusal) line.appendChild(note(forecastText(forecast, q, api)));
+  if (isConfirming(id)) line.appendChild(investConfirm(api, q, label, forecast));
   return line;
+}
+
+/**
+ * The investment, confirmed: what goes out, the treasury now against after, and what it brings back.
+ * @param {ScreenApi} api
+ * @param {{ host: number, form: InvestKind, asAid: boolean, city?: CityRead }} q
+ * @param {string} label
+ * @param {ReturnType<typeof investForecast>} forecast
+ */
+function investConfirm(api, q, label, forecast) {
+  const balance = api.input().civs.find((civ) => civ.id === api.me)?.balanceCents ?? 0;
+  return confirmCard({ title: label, lines: [
+      row(api.loc("LOC_ECONOMICS_INVEST_YOU_SEND"), goldText(forecast.spentCents, api)),
+      changeRow(api.loc("LOC_ECONOMICS_CHANGE_TREASURY"), formatGold(balance),
+        formatGold(balance - forecast.spentCents), -1),
+      note(forecastText(forecast, q, api))],
+    confirm: api.loc("LOC_ECONOMICS_CONFIRM"), cancel: api.loc("LOC_ECONOMICS_CANCEL"),
+    onConfirm: () => ask(api, { kind: "invest", investor: api.me, host: q.host, form: q.form, cents: form.cents,
+      cityId: q.city?.id ?? null, asAid: q.asAid }, "invest"), rerender: api.rerender });
 }
 
 /**
@@ -205,9 +246,9 @@ function forecastText(forecast, q, api) {
 function previewSection(input, api) {
   const block = section(api.loc("LOC_ECONOMICS_TRADE_PREVIEW"));
   const possible = api.possibleRoutes();
-  if (possible === null) { block.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_PREVIEW_UNREAD"))); return block; }
+  if (possible === null) { block.appendChild(empty(api.loc("LOC_ECONOMICS_TRADE_PREVIEW_UNREAD"))); return block; }
   const rows = routePreview(possible, input.markets?.prices || {}).filter((r) => r.resources.length);
-  if (!rows.length) block.appendChild(note(api.loc("LOC_ECONOMICS_TRADE_PREVIEW_NONE")));
+  if (!rows.length) block.appendChild(empty(api.loc("LOC_ECONOMICS_TRADE_PREVIEW_NONE")));
   for (const route of rows.slice(0, 8)) {
     block.appendChild(row(api.loc("LOC_ECONOMICS_TRADE_PREVIEW_ROW", api.cityName(route.city), api.nameOf(route.owner),
       route.resources.length), goldText(route.billCents, api)));
@@ -227,9 +268,9 @@ function holdingsSection(input, api) {
   ]);
   for (const record of view.open) {
     const mine = record.investor === api.me;
-    block.appendChild(el("div", "econ-line", api.loc(mine ? "LOC_ECONOMICS_HOLDING_OUT" : "LOC_ECONOMICS_HOLDING_IN",
-      record.id, api.nameOf(mine ? record.host : record.investor), formatGold(record.outstanding),
-      record.term - record.paid)));
+    block.appendChild(el("div", "econ-history-line econ-line", api.loc(mine ? "LOC_ECONOMICS_HOLDING_OUT"
+      : "LOC_ECONOMICS_HOLDING_IN", record.id, api.nameOf(mine ? record.host : record.investor),
+    formatGold(record.outstanding), record.term - record.paid)));
   }
   return block;
 }

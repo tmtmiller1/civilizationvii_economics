@@ -6,7 +6,7 @@
 const ROOT_KEY = "modSettings";
 const SLICE = "economics";
 /** @type {Record<string, string | number | boolean>} */
-export const DEFAULTS = Object.freeze({ lastTab: 0, dockButton: true });
+export const DEFAULTS = Object.freeze({ lastTab: "treasury", dockButton: true });
 
 /** @type {Record<string, string | number | boolean> | null} */
 let memory = null;

@@ -1,14 +1,35 @@
-// econ-view-treasury.js - Economics: the Treasury tab (DESIGN 9): balance, income, what's due next turn, the share of
-// income the loans take, the 20-turn projection with and without them, this turn's flows with their cause, and the
+// econ-view-treasury.js - Economics: the Treasury tab (DESIGN 9). The main column is the ledger: balance, income,
+// what Economics moved last turn (open it for each kind), upkeep, what's owed and due, the inflation reserve, and the
+// cycle's Gold before the World tab opens; then the 20-turn projection with and without your loans; then what moved,
+// and why. The side column holds the debt-service gauge, your loans and the guard until the Loans tab opens, and the
 // buildings that set financial depth.
 
-import { el, note, projectionChart, row, section } from "./econ-dom.js";
-import { formatFactor, formatGold, formatPct } from "./econ-format.js";
-import { composeArgs, describeEvent, eventConcerns } from "./econ-notice-text.js";
-import { treasuryView } from "./econ-view-model.js";
-import { inflationLines } from "./econ-view-macro.js";
+import { formatFactor, formatGold } from "./econ-format.js";
+import { composeArgs, describeEvent, eventConcerns, flowBreakdown, phaseKey } from "./econ-notice-text.js";
+import { loansView, treasuryView } from "./econ-view-model.js";
+import { cycleGoldLine, inflationLines, worldView } from "./econ-view-macro.js";
+import { amount, changeRow, columns, el, empty, expander, note, pill, projectionChart, row, section }
+  from "./econ-dom.js";
+import { opensNext, rulesFor, turnLabels } from "./econ-view-common.js";
+import { cycleDial, inflationMeter, serviceMeter } from "./econ-view-instruments.js";
+import { guardSection, mineSection, pendingSection } from "./econ-view-loans.js";
+import { CREDIT } from "./econ-params.js";
+import { emptyLedger } from "./econ-state.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
+
+/** @param {number} cents */
+const toneOf = (cents) => (cents > 0 ? 1 : cents < 0 ? -1 : 0);
+
+/**
+ * @param {ScreenApi} api
+ * @param {number} cents
+ * @param {{ signed?: boolean, tone?: boolean }} [options]
+ */
+export function goldAmount(api, cents, { signed = false, tone = false } = {}) {
+  return amount(formatGold(cents, { signed }), { tone: tone ? toneOf(cents) : 0,
+    tooltip: api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents, { signed })) });
+}
 
 /**
  * @param {HTMLElement} host
@@ -17,28 +38,146 @@ import { inflationLines } from "./econ-view-macro.js";
 export function renderTreasury(host, api) {
   const input = api.input();
   const view = treasuryView(input, api.me);
-  const gold = (/** @type {number} */ cents) => api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents));
-  const signed = (/** @type {number} */ cents) => api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents, { signed: true }));
-  const now = section(api.loc("LOC_ECONOMICS_TREASURY_NOW"), [
-    row(api.loc("LOC_ECONOMICS_TREASURY_BALANCE"), gold(view.balanceCents)),
-    row(api.loc("LOC_ECONOMICS_TREASURY_INCOME"), signed(view.incomeCents), view.incomeCents < 0 ? "econ-negative" : ""),
-    row(api.loc("LOC_ECONOMICS_TREASURY_UPKEEP"), gold(view.upkeepCents)),
-    row(api.loc("LOC_ECONOMICS_TREASURY_OUTSTANDING"), gold(view.outstandingCents)),
-    row(api.loc("LOC_ECONOMICS_TREASURY_DUE_NEXT"), gold(view.dueNextCents)),
-    row(api.loc("LOC_ECONOMICS_TREASURY_SERVICE_SHARE"), formatPct(view.servicePct).replace("+", "")),
-  ]);
-  if (view.insolvent) now.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_INSOLVENT")));
+  const { rules } = rulesFor(api);
+  /** @type {HTMLElement[]} */
+  const side = [instrumentSection(input, view, api)];
+  // Before the Loans tab opens, the player's loans and the guard switch are here.
+  const since = sinceSection(input, api);
+  if (since) side.push(since);
+  if (rules.sections["treasury.loans"]) side.push(...earlyLoans(input, api));
+  if (rules.sections["treasury.depth"]) side.push(depthSection(api));
+  if (rules.sections["treasury.old"]) side.push(oldSection(api));
+  const main = [nowSection(input, view, rules, api), projectionSection(view, api), flowsSection(api)];
+  host.appendChild(columns(main, side));
+  const next = opensNext(api, rules.next.treasury);
+  if (next) host.appendChild(next);
+}
+
+/**
+ * Conditions at a glance: the cycle's dial for the player's own index (the one dial on the screen), then the share
+ * of income the loans take on a slim scale with the lenders' limit marked, and inflation on its own scale for a civ
+ * it reaches.
+ * @param {PlanInput} input
+ * @param {ReturnType<typeof treasuryView>} view
+ * @param {ScreenApi} api
+ */
+function instrumentSection(input, view, api) {
+  const block = section(api.loc("LOC_ECONOMICS_TREASURY_INSTRUMENTS"), [], { variant: "minor" });
+  const world = worldView(input, api.me);
+  if (world.cycleOn) block.appendChild(cycleDial(world, api));
+  block.appendChild(serviceMeter(view.servicePct, api));
+  const inflation = inflationLines(input, api.me);
+  if (inflation.member) block.appendChild(inflationMeter(world.inflation.piPpm, api));
+  return block;
+}
+
+/**
+ * The ledger: balance, income, the mod's net with its parts, upkeep, debt, what's due; the inflation reserve for a
+ * member; this turn's cycle Gold before the World tab.
+ * @param {PlanInput} input
+ * @param {ReturnType<typeof treasuryView>} view
+ * @param {import("./econ-view-tabs.js").TabRules} rules
+ * @param {ScreenApi} api
+ */
+function nowSection(input, view, rules, api) {
+  const now = section(api.loc("LOC_ECONOMICS_TREASURY_NOW"));
+  if (view.insolvent) {
+    now.appendChild(pill(api.loc("LOC_ECONOMICS_TREASURY_INSOLVENT_PILL"), true));
+    now.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_INSOLVENT")));
+  }
+  now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_BALANCE"), goldAmount(api, view.balanceCents)));
+  now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_INCOME"), goldAmount(api, view.incomeCents,
+    { signed: true, tone: true })));
+  now.appendChild(modNetRow(input, api));
+  now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_UPKEEP"), goldAmount(api, view.upkeepCents)));
+  now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_OUTSTANDING"), goldAmount(api, view.outstandingCents)));
+  now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_DUE_NEXT"), goldAmount(api, view.dueNextCents)));
+  now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_SERVICE_SHARE"), `${Math.max(0, view.servicePct)}%`,
+    view.servicePct > CREDIT.servicePct ? "econ-negative" : ""));
+  for (const line of macroLines(input, rules, api)) now.appendChild(line);
+  return now;
+}
+
+/**
+ * The inflation reserve and erosion for a member, and this turn's cycle Gold before the World tab opens.
+ * @param {PlanInput} input
+ * @param {import("./econ-view-tabs.js").TabRules} rules
+ * @param {ScreenApi} api
+ */
+function macroLines(input, rules, api) {
+  /** @type {HTMLElement[]} */
+  const lines = [];
+  const now = { appendChild: (/** @type {HTMLElement} */ node) => lines.push(node) };
   const inflation = inflationLines(input, api.me);
   if (inflation.member) {
-    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_RESERVE"), gold(inflation.reserveCents)));
-    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_EROSION"), gold(inflation.erosionCents),
-      inflation.erosionCents > 0 ? "econ-negative" : ""));
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_RESERVE"), goldAmount(api, inflation.reserveCents)));
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_EROSION"), goldAmount(api, -inflation.erosionCents,
+      { tone: true })));
   }
-  host.appendChild(now);
-  host.appendChild(projectionSection(view, api));
-  host.appendChild(flowsSection(api));
-  host.appendChild(depthSection(api));
-  host.appendChild(oldSection(api));
+  const cycle = rules.sections["treasury.cycle"] ? cycleGoldLine(input, api.me) : null;
+  if (cycle?.on) {
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_CYCLE", api.loc(phaseKey(cycle.phase))),
+      goldAmount(api, cycle.cents, { signed: true, tone: true })));
+  }
+  return lines;
+}
+
+/**
+ * What Economics moved for the player in the last batch, opening to each kind of flow.
+ * @param {PlanInput} input
+ * @param {ScreenApi} api
+ */
+function modNetRow(input, api) {
+  const ledger = input.ledger || emptyLedger();
+  const net = ledger.lastBatch?.civs.find((civ) => civ.pid === api.me)?.net ?? 0;
+  const head = row(api.loc("LOC_ECONOMICS_TREASURY_MOD_NET"), goldAmount(api, net, { signed: true, tone: true }));
+  return expander("treasury-net", head, () => {
+    const transfers = api.lastTransfers?.() ?? null;
+    if (transfers === null) return [note(api.loc("LOC_ECONOMICS_TREASURY_MOD_NET_LATER"))];
+    const parts = flowBreakdown(transfers, api.me);
+    if (!parts.length) return [note(api.loc("LOC_ECONOMICS_TREASURY_MOD_NET_NONE"))];
+    return parts.map((part) => row(api.loc(part.key), goldAmount(api, part.cents, { signed: true, tone: true })));
+  }, api.rerender, { show: api.loc("LOC_ECONOMICS_SHOW_PARTS"), hide: api.loc("LOC_ECONOMICS_HIDE_PARTS") });
+}
+
+/**
+ * What changed since last turn, from what the save keeps: income a turn (the markets envelope's income marks, one a
+ * batch) and the world's index (the cycle's history). Nothing is shown that the save doesn't hold; with neither
+ * there's no section.
+ * @param {PlanInput} input
+ * @param {ScreenApi} api
+ */
+function sinceSection(input, api) {
+  /** @type {HTMLElement[]} */
+  const lines = [];
+  const incomes = input.markets?.incomes?.[String(api.me)] || [];
+  if (incomes.length >= 2) {
+    const [before, now] = incomes.slice(-2);
+    lines.push(changeRow(api.loc("LOC_ECONOMICS_TREASURY_INCOME"), formatGold(before, { signed: true }),
+      formatGold(now, { signed: true }), Math.sign(now - before)));
+  }
+  const history = worldView(input, api.me).history;
+  if (history.length >= 2) {
+    const [before, now] = history.slice(-2);
+    lines.push(changeRow(api.loc("LOC_ECONOMICS_WORLD_INDEX"), (before / 10000).toFixed(2), (now / 10000).toFixed(2),
+      Math.sign(now - before)));
+  }
+  return lines.length ? section(api.loc("LOC_ECONOMICS_SINCE_LAST_TURN"), lines, { variant: "minor" }) : null;
+}
+
+/**
+ * The loans and guard blocks of the Loans tab, shown here until that tab opens.
+ * @param {PlanInput} input
+ * @param {ScreenApi} api
+ */
+function earlyLoans(input, api) {
+  const loans = loansView(input, api.me);
+  /** @type {HTMLElement[]} */
+  const out = [];
+  if (loans.mine.length) out.push(mineSection(input, loans, api));
+  out.push(guardSection(loans, api));
+  if (api.pending().length) out.push(pendingSection(api));
+  return out;
 }
 
 /**
@@ -48,7 +187,7 @@ export function renderTreasury(host, api) {
 function oldSection(api) {
   const old = api.depth().buildings.filter((building) => building.old && building.weights);
   const block = section(api.loc("LOC_ECONOMICS_TREASURY_OLD"));
-  if (!old.length) { block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_OLD_NONE"))); return block; }
+  if (!old.length) { block.appendChild(empty(api.loc("LOC_ECONOMICS_TREASURY_OLD_NONE"))); return block; }
   for (const building of old.slice(0, 16)) {
     const weight = averageWeight(building);
     const name = `${api.buildName(building.type)}, ${api.cityName(building.city)}`;
@@ -96,31 +235,51 @@ function triggerText(building, weight, api) {
  */
 function projectionSection(view, api) {
   const last = (/** @type {number[]} */ series) => series[series.length - 1] ?? 0;
+  const withEnd = last(view.projection.withLoans);
+  const withoutEnd = last(view.projection.without);
+  const turns = turnLabels(api, api.input().turn, view.projection.withLoans.length, { ahead: true });
   const block = section(api.loc("LOC_ECONOMICS_TREASURY_PROJECTION"), [
-    projectionChart(view.projection.withLoans, view.projection.without, (cents) => formatGold(cents)),
-    row(api.loc("LOC_ECONOMICS_TREASURY_PROJECTION_WITH"), formatGold(last(view.projection.withLoans))),
-    row(api.loc("LOC_ECONOMICS_TREASURY_PROJECTION_WITHOUT"), formatGold(last(view.projection.without))),
+    projectionChart(view.projection.withLoans, view.projection.without, { format: (cents) => formatGold(cents), turns,
+      withLabel: api.loc("LOC_ECONOMICS_CHART_WITH"), withoutLabel: api.loc("LOC_ECONOMICS_CHART_WITHOUT") }),
+    row(api.loc("LOC_ECONOMICS_TREASURY_PROJECTION_WITH"), goldAmount(api, withEnd, { tone: withEnd < 0 })),
+    row(api.loc("LOC_ECONOMICS_TREASURY_PROJECTION_WITHOUT"), goldAmount(api, withoutEnd, { tone: withoutEnd < 0 })),
   ]);
   block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_PROJECTION_NOTE")));
   return block;
 }
 
 /**
- * The last batch's events that concern the player, newest first, each with its cause.
+ * One event as a history line: its turn, then what happened.
+ * @param {LedgerEvent} event
+ * @param {Ledger} ledger
+ * @param {ScreenApi} api
+ */
+function historyLine(event, ledger, api) {
+  const line = describeEvent(event, { ledger, nameOf: api.nameOf });
+  if (!line) return null;
+  const shown = api.turnLabel(event.turn);
+  const item = el("div", "econ-history-line");
+  item.appendChild(el("div", "econ-history-turn", shown === null ? api.loc("LOC_ECONOMICS_TURN_EARLIER_AGE")
+    : api.loc("LOC_ECONOMICS_TURN_SHORT", shown)));
+  item.appendChild(el("div", "econ-history-text econ-line", api.loc(line.key, ...composeArgs(line.args, api.loc))));
+  return item;
+}
+
+/**
+ * The last batch's events that concern the player, newest first, each with its cause and turn.
  * @param {ScreenApi} api
  */
 function flowsSection(api) {
   const ledger = api.input().ledger;
   const turn = ledger?.lastTurn ?? null;
   const events = (ledger?.events || []).filter((event) => eventConcerns(event, api.me)).slice(-12).reverse();
-  const lines = events.map((event) => {
-    const line = describeEvent(event, { ledger: /** @type {Ledger} */ (ledger), nameOf: api.nameOf });
-    const shown = api.turnLabel(event.turn);
-    const when = shown === null ? api.loc("LOC_ECONOMICS_TURN_EARLIER_AGE") : String(shown);
-    return line ? el("div", "econ-line", `${when}: ${api.loc(line.key, ...composeArgs(line.args, api.loc))}`) : null;
-  }).filter((line) => line !== null);
-  const block = section(api.loc("LOC_ECONOMICS_TREASURY_FLOWS"), /** @type {HTMLElement[]} */ (lines));
-  if (!lines.length) block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_NO_FLOWS")));
+  const block = section(api.loc("LOC_ECONOMICS_TREASURY_FLOWS"));
+  let shown = 0;
+  for (const event of events) {
+    const item = historyLine(event, /** @type {Ledger} */ (ledger), api);
+    if (item) { block.appendChild(item); shown += 1; }
+  }
+  if (!shown) block.appendChild(empty(api.loc("LOC_ECONOMICS_TREASURY_NO_FLOWS")));
   else if (turn !== null) {
     block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_FLOWS_NOTE", api.turnLabel(turn) ?? turn)));
   }
