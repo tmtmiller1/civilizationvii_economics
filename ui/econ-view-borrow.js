@@ -1,5 +1,6 @@
 // econ-view-borrow.js - Economics: the Borrow and Lend forms of the Loans tab (DESIGN 5). Borrow opens filled in with
-// the largest loan your limits allow over the shortest term; each lender's offer shows on its face the rate, the
+// the largest loan your limits allow over the shortest term, says that figure and which limit sets it (the same one
+// the Loans tab's limits show); each lender's offer shows on its face the rate, the
 // payment a turn, the interest in all, the share of income your payments would take and your income after it, and a
 // lender that would refuse says why, with the most it would lend and one button to take that instead. The model's own
 // offer and limit functions answer, so the form can't promise what the batch won't do. Lend: pick an AI, the
@@ -11,8 +12,8 @@ import { formatGold, formatRate } from "./econ-format.js";
 import { borrowerRisk, loanOffers, termsOpen } from "./econ-view-model.js";
 import { bondRatePpm } from "./econ-lenders.js";
 import { standingPct } from "./econ-credit.js";
-import { ratesPct } from "./econ-params.js";
-import { reasonKey } from "./econ-notice-text.js";
+import { BOND, CITIZENS, CREDIT, TEMPLE, ratesPct } from "./econ-params.js";
+import { reasonKey, worldNameKey } from "./econ-notice-text.js";
 import { emptyLedger } from "./econ-state.js";
 import { firstPayment, totalInterest } from "./econ-loan.js";
 import { send } from "./econ-view-common.js";
@@ -33,15 +34,20 @@ const RATE_CHOICES = [80, 100, 120];
 const gold = (api, cents, tone = 0) => amount(formatGold(cents), { tone,
   tooltip: api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents)) });
 
+/** @typedef {{ mostCents: number, bound: "credit" | "payments" | "lenders", term: number }} BorrowLimit the most the
+ * player can take over `term`, in whole tens of Gold, and the limit that stops a bigger loan */
+
 /**
- * The largest loan the player's limits allow over `term`: the credit room, or less where every lender's payment limit
- * stops short of it (the most the best of them would lend).
+ * The most the player can take over `term` and the limit that sets it: the credit room, or less where the payment
+ * limit (every lender's offer would push payments past the share of income allowed) or the lenders' own Gold stops
+ * short of it.
  * @param {PlanInput} input
  * @param {number} me
  * @param {number} roomCents
  * @param {number} term
+ * @returns {BorrowLimit}
  */
-export function largestLoan(input, me, roomCents, term) {
+export function borrowLimit(input, me, roomCents, term) {
   /** Whether some lender would take this amount as it stands. @param {number} cents */
   const takes = (cents) => loanOffers(input, me, cents, term).some((offer) => !offer.refusal);
   let low = 0;
@@ -52,23 +58,75 @@ export function largestLoan(input, me, roomCents, term) {
     if (takes(mid * 1000)) low = mid;
     else high = mid - 1;
   }
-  return Math.max(MIN_PRINCIPAL, low * 1000);
+  const mostCents = low * 1000;
+  const next = mostCents + 1000;
+  if (next > roomCents) return { mostCents, bound: "credit", term };
+  const payments = loanOffers(input, me, next, term).some((offer) => offer.refusal === "service-cap");
+  return { mostCents, bound: payments ? "payments" : "lenders", term };
+}
+
+/**
+ * The term the borrow form is on: the player's choice while it's open to them, else the shortest.
+ * @param {PlanInput} input
+ * @param {number} me
+ */
+export function borrowTerm(input, me) {
+  const terms = termsOpen(input, me);
+  return form.term !== null && terms.includes(form.term) ? form.term : terms[0] || 10;
+}
+
+/**
+ * The most the player can borrow over the form's term, in words, and why not more: the one answer the Loans tab
+ * gives, in its limits and in the form.
+ * @param {BorrowLimit} limit
+ * @param {ScreenApi} api
+ */
+export function limitLines(limit, api) {
+  const head = limit.mostCents <= 0 ? note(api.loc("LOC_ECONOMICS_BORROW_MOST_ZERO", limit.term))
+    : note(api.loc("LOC_ECONOMICS_BORROW_MOST_TERM", limit.term, formatGold(limit.mostCents)));
+  return [head, limitReason(limit, api)];
+}
+
+/**
+ * Why the player can't borrow more than the limit's figure, in words.
+ * @param {BorrowLimit} limit
+ * @param {ScreenApi} api
+ */
+export function limitReason(limit, api) {
+  const zero = limit.mostCents <= 0 ? "_ZERO" : "";
+  return note(api.loc(`LOC_ECONOMICS_BORROW_BOUND_${limit.bound.toUpperCase()}${zero}`, CREDIT.servicePct));
+}
+
+/** The world lenders whose names read mid-sentence ("your citizens"), so a title has its own capitalised key. */
+const TITLED = [CITIZENS, BOND, TEMPLE];
+
+/**
+ * A lender's name as a card title.
+ * @param {Party} lender
+ * @param {ScreenApi} api
+ */
+export function lenderTitle(lender, api) {
+  return TITLED.includes(/** @type {string} */ (lender)) ? api.loc(`${worldNameKey(lender)}_TITLE`)
+    : api.nameOf(lender);
 }
 
 /**
  * @param {PlanInput} input
  * @param {ReturnType<typeof import("./econ-view-model.js").loansView>} view
  * @param {ScreenApi} api
+ * @param {BorrowLimit} [limit] the most the player can borrow over the form's term, when the caller has it already
  */
-export function renderBorrow(input, view, api) {
+export function renderBorrow(input, view, api, limit = borrowLimit(input, api.me, view.creditRoomCents,
+  borrowTerm(input, api.me))) {
   const terms = termsOpen(input, api.me);
-  const term = form.term !== null && terms.includes(form.term) ? form.term : terms[0] || 10;
-  const principal = form.principal ?? largestLoan(input, api.me, view.creditRoomCents, term);
+  const term = limit.term;
+  const principal = form.principal ?? Math.max(MIN_PRINCIPAL, limit.mostCents);
   const block = section(api.loc("LOC_ECONOMICS_BORROW"), [], { subtitle: api.loc("LOC_ECONOMICS_BORROW_SUB") });
   block.appendChild(field(api.loc("LOC_ECONOMICS_PRINCIPAL"), goldStepper({ value: principal, min: MIN_PRINCIPAL,
     max: MAX_PRINCIPAL, format: formatGold, onChange: (cents) => { form.principal = cents; api.rerender(); } })));
   block.appendChild(field(api.loc("LOC_ECONOMICS_TERM"), chips(terms.map((t) => ({ id: String(t),
     label: api.loc("LOC_ECONOMICS_TURNS", t) })), String(term), (id) => { form.term = Number(id); api.rerender(); })));
+  for (const line of limitLines(limit, api)) block.appendChild(line);
   for (const node of offerCards(input, view, { principal, term }, api)) block.appendChild(node);
   return block;
 }
@@ -115,7 +173,7 @@ function field(label, control) {
 function offerCard(offer, ask, api) {
   const card = el("div", `econ-card${offer.refusal ? " econ-card--muted" : ""}`);
   const head = el("div", "econ-card-head");
-  head.appendChild(el("div", "econ-card-title", api.nameOf(offer.lender)));
+  head.appendChild(el("div", "econ-card-title", lenderTitle(offer.lender, api)));
   head.appendChild(el("div", "econ-card-sub", api.loc("LOC_ECONOMICS_OFFER_RATE", formatRate(offer.ratePpm))));
   card.appendChild(head);
   const after = ask.income - offer.paymentCents;

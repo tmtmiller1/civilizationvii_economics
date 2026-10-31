@@ -86,6 +86,8 @@
         <Replace Tag="LOC_ECONOMICS_RATE" Language="pt_BR"><Text>Rate per turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_BOND" Language="pt_BR"><Text>the bond market</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_TEMPLE" Language="pt_BR"><Text>the temple treasuries</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_BOND_TITLE" Language="pt_BR"><Text>The bond market</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_TEMPLE_TITLE" Language="pt_BR"><Text>The temple treasuries</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_TAX" Language="pt_BR"><Text>taxes</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PILL" Language="pt_BR"><Text>Debt {1_Amount}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PILL_DEFAULT" Language="pt_BR"><Text>In default</Text></Replace>
@@ -101,6 +103,8 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION" Language="pt_BR"><Text>Next 20 turns</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_WITH" Language="pt_BR"><Text>Balance in 20 turns with your loans</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_WITHOUT" Language="pt_BR"><Text>Balance in 20 turns without them</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_BALANCE" Language="pt_BR"><Text>Balance in 20 turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_BALANCE_NOTE" Language="pt_BR"><Text>Your income held flat, with what Economics moves for you each turn. The grey line is 0. Point at the chart for any turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_PROJECTION_NOTE" Language="pt_BR"><Text>Income held flat, so this shows what the loans do to your Gold, not what you might build with it. Borrowed Gold shows at the start and the payments wear it down; the grey line is 0. Point at the chart for any turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_FLOWS" Language="pt_BR"><Text>What moved, and why</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_NO_FLOWS" Language="pt_BR"><Text>Loans haven't moved any of your Gold yet.</Text></Replace>
@@ -206,7 +210,7 @@
         <Replace Tag="LOC_ECONOMICS_INVEST_YOU_SEND" Language="pt_BR"><Text>You send, next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_HISTORY_NOTE" Language="pt_BR"><Text>The grey line is 1.00. Hover the chart for each turn's figure.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_LIMITS" Language="pt_BR"><Text>Your limits</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOANS_CREDIT_ROOM" Language="pt_BR"><Text>You can still borrow up to</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_MOST" Language="pt_BR"><Text>Most you can borrow over {1_Turns} turns</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE" Language="pt_BR"><Text>Payments per turn, of the limit</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE_OF" Language="pt_BR"><Text>{1_Used} of {2_Cap} Gold</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_STANDING" Language="pt_BR"><Text>Standing (1.00 is clean)</Text></Replace>
@@ -246,6 +250,14 @@
         <Replace Tag="LOC_ECONOMICS_BORROW_MOST" Language="pt_BR"><Text>The most you can borrow from {1_Lender} over {2_Turns} turns is {3_Amount} Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_MOST_NONE" Language="pt_BR"><Text>Your payments already take all your limits allow, so you can't borrow from {1_Lender} over {2_Turns} turns right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_THAT" Language="pt_BR"><Text>Borrow that instead</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_MOST_TERM" Language="pt_BR"><Text>The most you can borrow over {1_Turns} turns is {2_Amount} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_MOST_ZERO" Language="pt_BR"><Text>You can't take out a new loan over {1_Turns} turns right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_CREDIT" Language="pt_BR"><Text>That's what's left of your credit limit.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_CREDIT_ZERO" Language="pt_BR"><Text>Your credit limit is used up.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_PAYMENTS" Language="pt_BR"><Text>A bigger loan would push your loan payments past {1_Percent}% of your income, and lenders stop there.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_PAYMENTS_ZERO" Language="pt_BR"><Text>Even 10 Gold more would push your loan payments past {1_Percent}% of your income, and lenders stop there.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_LENDERS" Language="pt_BR"><Text>That's as much as any lender will lend you right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_LENDERS_ZERO" Language="pt_BR"><Text>Lenders won't lend to you over this term right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_OVER_ROOM" Language="pt_BR"><Text>That's more than your credit limit allows.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_MINE" Language="pt_BR"><Text>Your loans</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_NONE" Language="pt_BR"><Text>You don't owe anyone anything.</Text></Replace>
@@ -407,6 +419,9 @@
         <Replace Tag="LOC_ECONOMICS_INVEST_OFF" Language="pt_BR"><Text>The Foreign investment option is off for this game.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_GENERAL" Language="pt_BR"><Text>General investment</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_AID" Language="pt_BR"><Text>Aid</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_AID" Language="pt_BR"><Text>Send aid</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_AID_SUB" Language="pt_BR"><Text>Pick the Gold, then who gets it. It's a gift, so it won't come back, but the relationship gets better. Once the Trade tab opens, aid moves there.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_AID_NOBODY" Language="pt_BR"><Text>You haven't met anyone to send aid to yet.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_PROJECT" Language="pt_BR"><Text>Development loan: {1_Build} in {2_City}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_GENERAL_FORECAST" Language="pt_BR"><Text>About {1_Amount} Gold a turn back for 25 turns, more if their income grows; relationship +{2_Points}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_AID_FORECAST" Language="pt_BR"><Text>{1_Amount} Gold as a gift; relationship +{2_Points}</Text></Replace>
@@ -570,6 +585,7 @@
         <Replace Tag="LOC_ECONOMICS_EVENT_SYSTEM" Language="pt_BR"><Text>{1_Civ} changed its economic system to the {2_System}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_PANIC" Language="pt_BR"><Text>A financial Panic began.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_CITIZENS" Language="pt_BR"><Text>your citizens</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_CITIZENS_TITLE" Language="pt_BR"><Text>Your citizens</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_INFLATION" Language="pt_BR"><Text>inflation</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_CYCLE" Language="pt_BR"><Text>the business cycle</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_PLAN" Language="pt_BR"><Text>the plan</Text></Replace>

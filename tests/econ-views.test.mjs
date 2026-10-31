@@ -149,6 +149,33 @@ test("the borrow form opens on the largest loan the limits allow", () => {
   renderLoans(host, api);
   assert.equal(textOf(host).includes("LOC_ECONOMICS_REASON_SERVICE_CAP"), false, "nobody refuses the amount it opens on");
   assert.ok(byClass(host, "econ-stepper-value")[0].textContent.includes("40"), "40 Gold: the most, in whole tens");
+  const text = textOf(host);
+  assert.ok(text.includes("LOC_ECONOMICS_LOANS_MOST|10 | 40"), "the limits show the same 40, not the credit room");
+  assert.ok(text.includes("LOC_ECONOMICS_BORROW_MOST_TERM|10|40"), "and the form says it");
+  assert.ok(text.includes("LOC_ECONOMICS_BORROW_BOUND_PAYMENTS|50"), "the payment limit (half of income) sets it, in words");
+  assert.equal(text.includes("LOC_ECONOMICS_LOANS_CREDIT_ROOM"), false);
+  resetFormForTests();
+  const broke = makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: 20000, incomeCents: 0 }),
+    civ(6, { balanceCents: 1e6 })], ledger: emptyLedger() } });
+  const none = document.createElement("div");
+  renderLoans(none, broke);
+  assert.ok(textOf(none).includes("LOC_ECONOMICS_LOANS_MOST|10 | 0"));
+  assert.ok(textOf(none).includes("LOC_ECONOMICS_BORROW_MOST_ZERO|10"));
+  assert.ok(textOf(none).includes("LOC_ECONOMICS_BORROW_BOUND_CREDIT_ZERO"), "no income, no credit");
+  resetFormForTests();
+  const poor = document.createElement("div");
+  renderLoans(poor, makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: 20000, incomeCents: 1000,
+    stages: { ...OPEN_ALL, publicDebt: null } }), civ(6, { balanceCents: 2000 })], ledger: emptyLedger() } }));
+  assert.ok(textOf(poor).includes("LOC_ECONOMICS_LOANS_MOST|10 | 10"), "civ 6 lends up to half its 20 Gold");
+  assert.ok(textOf(poor).includes("LOC_ECONOMICS_BORROW_BOUND_LENDERS"), "a lender short of Gold holds it back");
+});
+
+test("a world lender's card title has its own capital; a civ's title is its name", async () => {
+  const { lenderTitle } = await import("../ui/econ-view-borrow.js");
+  const api = makeApi();
+  assert.equal(lenderTitle("citizens", api), "LOC_ECONOMICS_LENDER_CITIZENS_TITLE");
+  assert.equal(lenderTitle("bond", api), "LOC_ECONOMICS_LENDER_BOND_TITLE");
+  assert.equal(lenderTitle(6, api), "Civ 6");
 });
 
 test("a borrow over a limit shows the most that lender would lend, and one click borrows that instead", () => {
