@@ -1,6 +1,9 @@
-/* econ-screen.css: the Economics screen (screen-economics). GameFace rules (engine-closed.md, "UI runtime"): flexbox
-   only, no grid, no italic, no clamp(), no var() in shorthands, border colours as literals. Sizes in rem; the frame
-   is a near-fullscreen modal like the Demographics and Emigration screens. */
+/* econ-screen.css: the Economics screen (screen-economics). A treasury instrument in the game's materials: warm
+   charcoal panels, ivory figures, antique gold kept for focus, money and one rule under each major section, the cycle
+   on one dial and the rest on slim scales. Three looks are on trial (the root's econ-skin-* class, the `skin`
+   setting): Ledger (the base below), Gilt instrument (econ-skin-gilt) and Folio (econ-skin-folio).
+   GameFace rules (engine-closed.md, "UI runtime"): flexbox only, no grid, no italic, no clamp(), no var() in
+   shorthands, border colours as longhands. Sizes in rem. Colours are literals so each skin reads on its own. */
 
 .econ-screen-root {
     width: 100vw;
@@ -9,24 +12,79 @@
 }
 
 .econ-screen-frame {
-    width: 90vw;
-    height: 92vh;
-    max-width: 90vw;
-    max-height: 92vh;
+    width: 92vw;
+    height: 93vh;
+    max-width: 92vw;
+    max-height: 93vh;
     min-height: 0;
+}
+
+@media (max-height: 55.5555555556rem), (max-aspect-ratio: 3/2) {
+    .econ-screen-frame {
+        width: 98vw;
+        height: 96vh;
+        max-width: 98vw;
+        max-height: 96vh;
+    }
 }
 
 .econ-screen-title {
+    margin-bottom: 0.1rem;
+}
+
+/* Under the title: the civ's economic system and the cycle's phase. */
+.econ-subtitle {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    min-height: 1.4rem;
     margin-bottom: 0.5rem;
+    color: #D0B270;
+    font-size: 0.95rem;
+    letter-spacing: 0.06rem;
+}
+
+.econ-subtitle-dot {
+    margin: 0 0.6rem;
+    color: #8a7650;
 }
 
 .econ-screen-body {
-    padding: 0 1.4rem 1.4rem 1.4rem;
+    padding: 0 1.6rem 1.2rem 1.6rem;
     min-height: 0;
 }
 
-.econ-tab-host {
+/* The summary strip. */
+.econ-summary-host {
+    display: flex;
+    flex-direction: row;
     margin-bottom: 0.6rem;
+}
+
+.econ-summary {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: 0.6rem 0.4rem;
+    background-color: #20252A;
+    border-bottom: 1px solid #D0B270;
+}
+
+.econ-summary .econ-stat {
+    flex: 1 1 0;
+    min-width: 9rem;
+    padding: 0.1rem 1.1rem;
+    border-left: 1px solid rgba(234, 224, 205, 0.12);
+}
+
+.econ-summary .econ-stat:first-child {
+    border-left: 0;
+}
+
+.econ-tab-host {
+    margin-bottom: 0.7rem;
 }
 
 .econ-screen-host {
@@ -35,70 +93,318 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    padding-right: 0.6rem;
 }
 
+.econ-cols {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.econ-col {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.econ-col--main {
+    flex: 1.7 1 0;
+    margin-right: 1.1rem;
+}
+
+.econ-col--side {
+    flex: 1 1 0;
+}
+
+@media (max-aspect-ratio: 4/3) {
+    .econ-cols {
+        flex-direction: column;
+    }
+
+    .econ-col--main {
+        margin-right: 0;
+        width: 100%;
+    }
+
+    .econ-col--side {
+        width: 100%;
+    }
+}
+
+/* Sections. Major: the title face and one gold rule. Minor: a quiet title, no rule. Compact: no frame. */
 .econ-section {
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
-    padding: 0.6rem 0.9rem;
-    background-color: rgba(20, 22, 28, 0.55);
-    border-top: 1px solid rgba(168, 132, 90, 0.35);
-    border-bottom: 1px solid rgba(168, 132, 90, 0.35);
-    border-left: 1px solid rgba(168, 132, 90, 0.35);
-    border-right: 1px solid rgba(168, 132, 90, 0.35);
+}
+
+.econ-section--major {
+    padding: 0.75rem 1.1rem 0.9rem 1.1rem;
+    background-color: #20252A;
+}
+
+.econ-section--minor {
+    padding: 0.6rem 1rem 0.7rem 1rem;
+    background-color: #302E2A;
+}
+
+.econ-section--compact {
+    padding: 0.2rem 0;
+}
+
+.econ-section-head {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .econ-section-title {
-    color: #e5d2ac;
-    margin-bottom: 0.4rem;
+    color: #EAE0CD;
+    font-size: 1rem;
 }
 
+.econ-section--major .econ-section-title {
+    color: #D0B270;
+    font-size: 1.05rem;
+    letter-spacing: 0.1rem;
+}
+
+.econ-section--minor .econ-section-title {
+    color: #D0B270;
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+}
+
+.econ-section-subtitle {
+    color: #a39b8b;
+    font-size: 0.85rem;
+}
+
+.econ-rule {
+    height: 1px;
+    margin: 0.4rem 0 0.55rem 0;
+    background-image: linear-gradient(to right, rgba(208, 178, 112, 0.85), rgba(208, 178, 112, 0));
+}
+
+/* Ledger rows. */
 .econ-row {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    min-height: 1.6rem;
-    padding: 0.1rem 0;
+    min-height: 2rem;
+    padding: 0.1rem 0.3rem;
+    border-bottom: 1px solid rgba(234, 224, 205, 0.07);
 }
 
 .econ-row-label {
-    color: #cfc3a4;
+    color: #c9c0ae;
+    font-size: 1rem;
+    flex: 1 1 auto;
+    margin-right: 1rem;
 }
 
 .econ-row-value {
-    color: #f3e9cf;
+    color: #EAE0CD;
+    font-size: 1.05rem;
+    text-align: right;
+}
+
+.econ-positive {
+    color: #A5B68B;
 }
 
 .econ-negative {
-    color: #ff8a73;
+    color: #CA8174;
 }
 
 .econ-muted {
-    color: #9a927f;
+    color: #9a9384;
 }
 
 .econ-note {
-    color: #b9ae92;
-    margin-top: 0.3rem;
+    color: #a39b8b;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-top: 0.45rem;
+}
+
+.econ-empty {
+    color: #b8ae98;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    padding: 0.7rem 0.8rem;
+    background-color: rgba(48, 46, 42, 0.7);
+}
+
+.econ-opens-next {
+    margin: 0.2rem 0 1rem 0;
+    padding: 0.55rem 0.9rem;
+    color: #D0B270;
+    font-size: 0.95rem;
+    background-color: #20252A;
+    border-left: 3px solid #D0B270;
+}
+
+.econ-feedback {
+    margin: 0.3rem 0 0.6rem 0;
+    padding: 0.5rem 0.9rem;
+    color: #EAE0CD;
+    font-size: 1rem;
+    background-color: rgba(165, 182, 139, 0.18);
+    border-left: 3px solid #A5B68B;
+}
+
+.econ-feedback--failed {
+    background-color: rgba(202, 129, 116, 0.18);
+    border-left: 3px solid #CA8174;
 }
 
 .econ-line {
-    color: #e5d2ac;
-    padding: 0.1rem 0;
+    color: #EAE0CD;
+    padding: 0.15rem 0;
+    font-size: 0.95rem;
 }
 
+.econ-history-line {
+    display: flex;
+    flex-direction: row;
+    padding: 0.25rem 0.3rem;
+    border-bottom: 1px solid rgba(234, 224, 205, 0.06);
+}
+
+.econ-history-turn {
+    min-width: 4.2rem;
+    color: #D0B270;
+    font-size: 0.9rem;
+}
+
+.econ-history-text {
+    flex: 1 1 auto;
+}
+
+/* Numbers. */
+.econ-yicon {
+    flex: 0 0 auto;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin-right: 0.25rem;
+}
+
+.econ-amount {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.econ-amount-value {
+    font-size: 1.05rem;
+    color: #EAE0CD;
+}
+
+.econ-amount-unit {
+    margin-left: 0.3rem;
+    color: #a39b8b;
+    font-size: 0.85rem;
+}
+
+.econ-amount--big .econ-amount-value {
+    font-size: 1.6rem;
+}
+
+.econ-change {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.econ-change-before {
+    color: #a39b8b;
+}
+
+.econ-change-arrow {
+    margin: 0 0.45rem;
+    color: #D0B270;
+}
+
+.econ-change-after {
+    color: #EAE0CD;
+}
+
+/* Figures. */
+.econ-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.econ-stat-label {
+    color: #b8ae98;
+    font-size: 0.85rem;
+    margin-bottom: 0.15rem;
+}
+
+.econ-stat-value {
+    color: #EAE0CD;
+    font-size: 1.35rem;
+}
+
+.econ-stat .econ-amount {
+    justify-content: flex-start;
+}
+
+.econ-stat-sub {
+    color: #9a9384;
+    font-size: 0.82rem;
+    margin-top: 0.1rem;
+}
+
+.econ-facts {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0.35rem 0 0.2rem 0;
+}
+
+.econ-facts .econ-stat {
+    margin-right: 1.7rem;
+    margin-bottom: 0.3rem;
+}
+
+.econ-facts .econ-stat-value {
+    font-size: 1.1rem;
+}
+
+.econ-facts .econ-amount {
+    margin-right: 0.8rem;
+}
+
+/* Cards. */
 .econ-card {
     display: flex;
     flex-direction: column;
-    margin: 0.35rem 0;
-    padding: 0.45rem 0.6rem;
-    background-color: rgba(35, 37, 43, 0.7);
-    border-top: 1px solid #53565d;
-    border-bottom: 1px solid #53565d;
-    border-left: 1px solid #53565d;
-    border-right: 1px solid #53565d;
+    margin: 0.4rem 0;
+    padding: 0.55rem 0.85rem;
+    background-color: #302E2A;
+    border-left: 3px solid rgba(208, 178, 112, 0.55);
+}
+
+.econ-card--active {
+    border-left: 3px solid #D0B270;
+    background-color: #3a362e;
+}
+
+.econ-card--trouble {
+    border-left: 3px solid #CA8174;
+}
+
+.econ-card--muted {
+    border-left: 3px solid rgba(154, 147, 132, 0.45);
 }
 
 .econ-card-head {
@@ -106,10 +412,17 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    min-height: 1.8rem;
 }
 
 .econ-card-title {
-    color: #f3e9cf;
+    color: #EAE0CD;
+    font-size: 1.08rem;
+}
+
+.econ-card-sub {
+    color: #9a9384;
+    font-size: 0.85rem;
 }
 
 .econ-actions {
@@ -117,123 +430,556 @@
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
-    margin-top: 0.3rem;
+    margin-top: 0.45rem;
 }
 
+.econ-invest-line {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.2rem;
+}
+
+/* Buttons: the game's button art, with its hover, focus and pressed looks. */
 .econ-button {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 1.9rem;
-    padding: 0.2rem 0.9rem;
-    margin: 0.15rem 0.4rem 0.15rem 0;
-    color: #f3e9cf;
-    background-color: #3a3326;
-    border-top: 1px solid #a8845a;
-    border-bottom: 1px solid #a8845a;
-    border-left: 1px solid #a8845a;
-    border-right: 1px solid #a8845a;
+    min-height: 2.2rem;
+    padding: 0.2rem 1.3rem;
+    margin: 0.3rem 0.7rem 0.3rem 0.4rem;
     pointer-events: auto;
 }
 
-.econ-button--small {
-    min-height: 1.5rem;
-    padding: 0.1rem 0.5rem;
-}
-
-.econ-button--warning {
-    background-color: #5a1f1a;
-    border-top: 1px solid #ff7a66;
-    border-bottom: 1px solid #ff7a66;
-    border-left: 1px solid #ff7a66;
-    border-right: 1px solid #ff7a66;
-}
-
-.econ-button--disabled {
-    opacity: 0.45;
+.econ-button-art {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
     pointer-events: none;
 }
 
+.econ-button-bg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-image-slice: 24 50 fill;
+    border-image-width: 1.1rem 2.1rem;
+    border-image-outset: 0.3rem 0.3rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.econ-button-bg--base {
+    border-image-source: url("blp:base_button-bg");
+    opacity: 1;
+}
+
+.econ-button-bg--focus {
+    border-image-source: url("blp:base_button-bg-focus");
+}
+
+.econ-button-bg--active {
+    border-image-source: url("blp:base_button-bg-press");
+}
+
+.econ-button-bg--disabled {
+    border-image-source: url("blp:base_button-bg-dis");
+}
+
+.econ-button:hover .econ-button-bg--focus,
+.econ-button:focus .econ-button-bg--focus {
+    opacity: 1;
+}
+
+.econ-button.pressed .econ-button-bg--active,
+.econ-button:active .econ-button-bg--active {
+    opacity: 1;
+}
+
+.econ-button-label {
+    position: relative;
+    color: #f3efe6;
+    font-size: 0.92rem;
+    letter-spacing: 0.06rem;
+}
+
+.econ-button--primary .econ-button-label {
+    color: #fff8e6;
+    font-size: 1rem;
+}
+
+.econ-button--disabled .econ-button-bg--base {
+    opacity: 0;
+}
+
+.econ-button--disabled .econ-button-bg--disabled {
+    opacity: 1;
+}
+
+.econ-button--disabled .econ-button-label {
+    color: #8b8d93;
+}
+
+.econ-button--quiet .econ-button-bg {
+    border-image-source: url("blp:hud_production_pill");
+    border-image-slice: 4 8 4 8 fill;
+    border-image-width: 0.22rem 0.45rem 0.22rem 0.45rem;
+    border-image-outset: 0;
+}
+
+.econ-button--quiet:hover .econ-button-label,
+.econ-button--quiet:focus .econ-button-label {
+    color: #D0B270;
+}
+
+.econ-button--small {
+    min-height: 1.7rem;
+    padding: 0.1rem 0.9rem;
+}
+
+.econ-button--small .econ-button-label {
+    font-size: 0.8rem;
+}
+
+.econ-button--warning .econ-button-art {
+    background-color: rgba(168, 32, 26, 0.5);
+}
+
+.econ-button--warning .econ-button-label {
+    color: #fff3e3;
+}
+
+.econ-button-why {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.econ-why {
+    color: #CA8174;
+    font-size: 0.9rem;
+    margin-left: 0.2rem;
+}
+
+/* Segmented choices; the chosen one lit and its label kept dark on gold, focus ringed. */
 .econ-chips {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    margin: 0.2rem 0;
+    margin: 0.25rem 0;
 }
 
 .econ-chip {
-    padding: 0.15rem 0.7rem;
-    margin: 0.1rem 0.3rem 0.1rem 0;
-    color: #cfc3a4;
-    background-color: #23252b;
-    border-top: 1px solid #53565d;
-    border-bottom: 1px solid #53565d;
-    border-left: 1px solid #53565d;
-    border-right: 1px solid #53565d;
+    padding: 0.3rem 0.9rem;
+    margin: 0.15rem 0.35rem 0.15rem 0;
+    background-color: #20252A;
+    border-top: 1px solid rgba(208, 178, 112, 0.35);
+    border-right: 1px solid rgba(208, 178, 112, 0.35);
+    border-bottom: 1px solid rgba(208, 178, 112, 0.35);
+    border-left: 1px solid rgba(208, 178, 112, 0.35);
     pointer-events: auto;
 }
 
+.econ-chip-label {
+    color: #c9c0ae;
+    font-size: 0.9rem;
+}
+
+.econ-chip:hover,
+.econ-chip:focus {
+    border-top: 1px solid #D0B270;
+    border-right: 1px solid #D0B270;
+    border-bottom: 1px solid #D0B270;
+    border-left: 1px solid #D0B270;
+}
+
 .econ-chip--on {
+    background-color: #D0B270;
+}
+
+.econ-chip--on .econ-chip-label {
     color: #1b1711;
-    background-color: #e5d2ac;
+}
+
+.econ-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 0.25rem 0;
+}
+
+.econ-field-label {
+    min-width: 7rem;
+    color: #b8ae98;
+    font-size: 0.9rem;
 }
 
 .econ-pill {
-    padding: 0.05rem 0.75rem;
+    padding: 0.1rem 0.85rem;
     min-height: 1.5rem;
     display: flex;
     align-items: center;
+    font-size: 0.85rem;
+    border-radius: 0.75rem;
     white-space: nowrap;
     pointer-events: none;
 }
 
+/* The Gold stepper. */
 .econ-stepper {
     display: flex;
     flex-direction: row;
     align-items: center;
 }
 
-.econ-stepper-value {
-    min-width: 5rem;
-    text-align: center;
-    color: #f3e9cf;
+.econ-step {
+    padding: 0.25rem 0.6rem;
+    margin-right: 0.25rem;
+    background-color: #20252A;
+    border-top: 1px solid rgba(208, 178, 112, 0.35);
+    border-right: 1px solid rgba(208, 178, 112, 0.35);
+    border-bottom: 1px solid rgba(208, 178, 112, 0.35);
+    border-left: 1px solid rgba(208, 178, 112, 0.35);
+    pointer-events: auto;
 }
 
+.econ-step-label {
+    color: #EAE0CD;
+    font-size: 0.88rem;
+}
+
+.econ-step:hover,
+.econ-step:focus {
+    border-top: 1px solid #D0B270;
+    border-right: 1px solid #D0B270;
+    border-bottom: 1px solid #D0B270;
+    border-left: 1px solid #D0B270;
+}
+
+.econ-step--off {
+    opacity: 0.35;
+}
+
+.econ-stepper-value {
+    min-width: 6.5rem;
+    display: flex;
+    justify-content: center;
+    margin: 0 0.5rem 0 0.25rem;
+}
+
+/* The confirmation an action opens in place. */
 .econ-confirm {
-    margin-top: 0.4rem;
-    padding: 0.4rem 0.6rem;
-    background-color: rgba(90, 31, 26, 0.35);
+    display: flex;
+    flex-direction: column;
+    margin: 0.5rem 0 0.3rem 0;
+    padding: 0.7rem 1rem;
+    background-color: #2b2720;
+    border-top: 1px solid #D0B270;
+    border-right: 1px solid rgba(208, 178, 112, 0.4);
+    border-bottom: 1px solid rgba(208, 178, 112, 0.4);
+    border-left: 3px solid #D0B270;
+}
+
+.econ-confirm--warning {
+    background-color: #33201c;
+    border-top: 1px solid #CA8174;
+    border-right: 1px solid rgba(202, 129, 116, 0.4);
+    border-bottom: 1px solid rgba(202, 129, 116, 0.4);
+    border-left: 3px solid #CA8174;
+}
+
+.econ-confirm-title {
+    color: #EAE0CD;
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+}
+
+/* The cycle's dial. */
+.econ-gauge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0.2rem 0 0.6rem 0;
+}
+
+.econ-gauge-title {
+    color: #b8ae98;
+    font-size: 0.85rem;
+    margin-bottom: 0.1rem;
+}
+
+.econ-gauge-dial {
+    position: relative;
+    width: 10rem;
+    height: 7.6rem;
+    overflow: hidden;
+}
+
+.econ-gauge-face,
+.econ-gauge-needle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 10rem;
+    height: 10rem;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.econ-gauge-needle {
+    transform-origin: 50% 70%;
+    transition: transform 0.9s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.econ-gauge-ends {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 10rem;
+    margin-top: -0.4rem;
+    color: #9a9384;
+    font-size: 0.75rem;
+}
+
+.econ-gauge-reading {
+    color: #EAE0CD;
+    font-size: 1.2rem;
+    margin-top: 0.1rem;
+}
+
+.econ-gauge-sub {
+    color: #9a9384;
+    font-size: 0.82rem;
+    text-align: center;
+}
+
+/* Slim scales: debt service, inflation. */
+.econ-meter {
+    display: flex;
+    flex-direction: column;
+    margin: 0.45rem 0 0.6rem 0;
+}
+
+.econ-meter-head {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+}
+
+.econ-meter-title {
+    color: #c9c0ae;
+    font-size: 0.95rem;
+}
+
+.econ-meter-reading {
+    color: #EAE0CD;
+    font-size: 0.95rem;
+}
+
+.econ-meter-track {
+    position: relative;
+    height: 0.45rem;
+    background-color: rgba(234, 224, 205, 0.1);
+}
+
+.econ-meter-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background-color: #D0B270;
+}
+
+.econ-meter-fill--over {
+    background-color: #CA8174;
+}
+
+.econ-meter-limit {
+    position: absolute;
+    top: -0.2rem;
+    bottom: -0.2rem;
+    width: 2px;
+    background-color: #EAE0CD;
+}
+
+.econ-meter-ends {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 0.2rem;
+    color: #9a9384;
+    font-size: 0.75rem;
+}
+
+.econ-meter-limit-label {
+    color: #c9c0ae;
+}
+
+/* Charts. */
+.econ-chart-wrap {
+    display: flex;
+    flex-direction: column;
+    margin: 0.3rem 0 0.2rem 0;
+}
+
+.econ-chart-body {
+    display: flex;
+    flex-direction: row;
+}
+
+.econ-chart-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 3.2rem;
+    margin-right: 0.4rem;
+    color: #9a9384;
+    font-size: 0.75rem;
+    text-align: right;
 }
 
 .econ-chart {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    height: 6rem;
-    margin: 0.3rem 0;
+    position: relative;
+    flex: 1 1 auto;
+    border-bottom: 1px solid rgba(208, 178, 112, 0.35);
+    border-left: 1px solid rgba(208, 178, 112, 0.2);
 }
 
-.econ-bar-pair {
+.econ-chart-svg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.econ-chart-hits {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: row;
-    align-items: flex-end;
+}
+
+.econ-chart-hit {
     flex: 1 1 0;
     height: 100%;
-    margin-right: 0.15rem;
+    pointer-events: auto;
 }
 
-.econ-bar {
-    flex: 1 1 0;
-    min-height: 2px;
+.econ-chart-hit:hover,
+.econ-chart-hit:focus {
+    background-color: rgba(208, 178, 112, 0.14);
 }
 
-.econ-bar--with {
-    background-color: #e5d2ac;
-    margin-right: 1px;
+.econ-chart-turns {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-left: 3.6rem;
+    color: #9a9384;
+    font-size: 0.75rem;
 }
 
-.econ-bar--without {
-    background-color: #7a6a4a;
+.econ-chart-readout {
+    margin: 0.25rem 0 0 3.6rem;
+    color: #EAE0CD;
+    font-size: 0.88rem;
+}
+
+.econ-legend {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0.25rem 0 0 3.6rem;
+    color: #a39b8b;
+    font-size: 0.82rem;
+}
+
+.econ-legend-swatch {
+    width: 1.2rem;
+    height: 0.2rem;
+    margin: 0 0.4rem 0 0;
+    align-self: center;
+}
+
+.econ-legend-item {
+    display: flex;
+    flex-direction: row;
+    margin-right: 1.2rem;
+}
+
+.econ-spark .econ-chart-axis,
+.econ-spark .econ-chart-turns,
+.econ-spark .econ-legend {
+    display: none;
+}
+
+.econ-spark .econ-chart-readout {
+    margin-left: 0;
+    font-size: 0.75rem;
+    color: #9a9384;
+}
+
+/* Totals that open to their parts. */
+.econ-expand-head {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    pointer-events: auto;
+}
+
+.econ-expand-head .econ-row {
+    flex: 1 1 auto;
+}
+
+.econ-expand-head:hover .econ-row-label,
+.econ-expand-head:focus .econ-row-label {
+    color: #D0B270;
+}
+
+.econ-expand-arrow {
+    width: 1rem;
+    height: 1rem;
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 0.3rem;
+    transition: transform 0.15s;
+}
+
+.econ-expand--open .econ-expand-arrow {
+    transform: rotate(90deg);
+}
+
+.econ-expand-word {
+    margin-left: 0.6rem;
+    color: #D0B270;
+    font-size: 0.8rem;
+}
+
+.econ-expand-body {
+    margin: 0 0 0.3rem 1.3rem;
+    padding-left: 0.6rem;
+    border-left: 1px solid rgba(208, 178, 112, 0.35);
+}
+
+.econ-expand-body .econ-row {
+    min-height: 1.6rem;
+}
+
+.econ-expand-body .econ-row-label,
+.econ-expand-body .econ-row-value {
+    font-size: 0.92rem;
 }
 
 .econ-bar-pill {
@@ -241,18 +987,191 @@
     align-self: center;
 }
 
-/* Markets tab: a resource's last 30 prices as flex bars. */
-.econ-spark {
+/* The Markets price board. */
+.econ-price {
     display: flex;
     flex-direction: row;
-    align-items: flex-end;
-    height: 1.6rem;
-    margin: 0.2rem 0;
+    align-items: center;
+    min-height: 2.8rem;
+    padding: 0.2rem 0.3rem;
+    border-bottom: 1px solid rgba(234, 224, 205, 0.07);
 }
 
-.econ-spark-bar {
-    flex: 1 1 0;
-    min-height: 2px;
-    margin-right: 1px;
-    background-color: #8c7a5a;
+.econ-price-name {
+    flex: 1.4 1 0;
+    color: #EAE0CD;
+    font-size: 1rem;
+}
+
+.econ-price-cell {
+    flex: 0.8 1 0;
+    color: #c9c0ae;
+    font-size: 0.98rem;
+    text-align: right;
+}
+
+.econ-price-spark {
+    flex: 1.6 1 0;
+    margin-left: 1rem;
+}
+
+.econ-table-head {
+    display: flex;
+    flex-direction: row;
+    padding: 0 0.3rem 0.2rem 0.3rem;
+    color: #b8ae98;
+    font-size: 0.82rem;
+}
+
+/* ---------- Option B: Gilt instrument. Deep blue-slate panels framed in a gilt hairline, small-caps gold labels,
+   cream figures, the game's own greens and reds: Zoom, Tilt and Rotate's panel carried to the whole screen. ---------- */
+
+.econ-skin-gilt .econ-summary,
+.econ-skin-gilt .econ-section--major,
+.econ-skin-gilt .econ-section--minor {
+    background-color: rgba(18, 21, 31, 0.9);
+    background-image: linear-gradient(to bottom, rgba(35, 37, 43, 0.96), rgba(18, 21, 31, 0.92));
+    border-radius: 0.35rem;
+    border-top: 1px solid rgba(196, 163, 98, 0.5);
+    border-right: 1px solid rgba(196, 163, 98, 0.3);
+    border-bottom: 1px solid rgba(196, 163, 98, 0.3);
+    border-left: 1px solid rgba(196, 163, 98, 0.3);
+}
+
+.econ-skin-gilt .econ-rule {
+    background-image: linear-gradient(to right, rgba(196, 163, 98, 0), rgba(196, 163, 98, 0.75), rgba(196, 163, 98, 0));
+}
+
+.econ-skin-gilt .econ-section-head {
+    justify-content: center;
+}
+
+.econ-skin-gilt .econ-section--major .econ-section-title,
+.econ-skin-gilt .econ-section--minor .econ-section-title {
+    color: #e5d2ac;
+    letter-spacing: 0.14rem;
+    text-transform: uppercase;
+}
+
+.econ-skin-gilt .econ-stat-label,
+.econ-skin-gilt .econ-gauge-title,
+.econ-skin-gilt .econ-meter-title,
+.econ-skin-gilt .econ-field-label {
+    color: #c0a875;
+    font-size: 0.72rem;
+    letter-spacing: 0.12rem;
+    text-transform: uppercase;
+}
+
+.econ-skin-gilt .econ-positive {
+    color: #7cc25a;
+}
+
+.econ-skin-gilt .econ-negative {
+    color: #f0606e;
+}
+
+.econ-skin-gilt .econ-card {
+    background-color: rgba(14, 16, 22, 0.6);
+    border-radius: 0.25rem;
+    border-top: 1px solid rgba(196, 163, 98, 0.18);
+    border-right: 1px solid rgba(196, 163, 98, 0.18);
+    border-bottom: 1px solid rgba(196, 163, 98, 0.18);
+}
+
+.econ-skin-gilt .econ-meter-fill {
+    background-image: linear-gradient(to right, #8a6a2e, #e8c867);
+}
+
+.econ-skin-gilt .econ-meter-track {
+    border-radius: 0.25rem;
+    background-color: rgba(236, 223, 191, 0.12);
+}
+
+/* ---------- Option C: Folio. The main column is a ledger page: ivory paper, ink figures, red and green ink for
+   losses and gains, a gold-brown rule; the side column stays charcoal, so the instruments sit beside the book. ------ */
+
+.econ-skin-folio .econ-col--main .econ-section--major,
+.econ-skin-folio .econ-summary {
+    background-color: #E7DCC4;
+    background-image: linear-gradient(to bottom, #EEE5D0, #E2D5BA);
+    border-bottom: 2px solid #8a6a2e;
+}
+
+.econ-skin-folio .econ-summary .econ-stat-label,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-row-label,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-stat-label,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-field-label,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-history-turn {
+    color: #5a4a32;
+}
+
+.econ-skin-folio .econ-summary .econ-stat-value,
+.econ-skin-folio .econ-summary .econ-amount-value,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-row-value,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-amount-value,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-stat-value,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-line,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-card-title,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-chart-readout {
+    color: #2b2418;
+}
+
+.econ-skin-folio .econ-summary .econ-stat-sub,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-note,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-section-subtitle,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-chart-axis,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-chart-turns,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-legend,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-card-sub {
+    color: #6e5f47;
+}
+
+.econ-skin-folio .econ-col--main .econ-section--major .econ-section-title {
+    color: #6b4f1d;
+}
+
+.econ-skin-folio .econ-col--main .econ-section--major .econ-rule {
+    background-image: linear-gradient(to right, #8a6a2e, rgba(138, 106, 46, 0));
+}
+
+.econ-skin-folio .econ-col--main .econ-section--major .econ-row {
+    border-bottom: 1px solid rgba(90, 74, 50, 0.22);
+}
+
+.econ-skin-folio .econ-summary .econ-positive,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-positive {
+    color: #3f6b2a;
+}
+
+.econ-skin-folio .econ-summary .econ-negative,
+.econ-skin-folio .econ-col--main .econ-section--major .econ-negative {
+    color: #9b2f22;
+}
+
+.econ-skin-folio .econ-col--main .econ-section--major .econ-card {
+    background-color: rgba(255, 252, 244, 0.55);
+    border-left: 3px solid #8a6a2e;
+}
+
+.econ-skin-folio .econ-col--main .econ-section--major .econ-chart {
+    border-bottom: 1px solid rgba(90, 74, 50, 0.5);
+    border-left: 1px solid rgba(90, 74, 50, 0.3);
+}
+
+.econ-skin-folio .econ-col--main .econ-section--major .econ-empty {
+    color: #5a4a32;
+    background-color: rgba(255, 252, 244, 0.5);
+}
+
+.econ-skin-folio .econ-col--main .econ-section--major .econ-series-gilt {
+    stroke: #8a5a14;
+}
+
+.econ-skin-folio .econ-col--main .econ-section--major .econ-series-fill {
+    fill: #8a5a14;
+}
+
+.econ-skin-folio .econ-col--main .econ-section--major .econ-series-ivory {
+    stroke: #3b4a5a;
 }

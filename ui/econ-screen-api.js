@@ -33,6 +33,8 @@
  * @property {() => Record<string, number | null | undefined>} [stageTurns] the turn the player reached each stage,
  *   coinage included, for the tab rules (econ-view-tabs.js)
  * @property {(tab: string) => void} [seenTab] the player opened a tab: clears its unseen marker
+ * @property {() => Transfer[] | null} [lastTransfers] the last batch's transfers this session, for the breakdown of
+ *   what the mod moved; null after a load, until the next batch
  */
 
 export {};

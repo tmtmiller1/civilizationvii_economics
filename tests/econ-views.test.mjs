@@ -64,7 +64,9 @@ test("the Treasury tab shows the balance block, the projection, the flows and th
   const text = textOf(host);
   for (const key of ["LOC_ECONOMICS_TREASURY_BALANCE", "LOC_ECONOMICS_TREASURY_PROJECTION", "LOC_ECONOMICS_TREASURY_FLOWS",
     "LOC_ECONOMICS_EVENT_OPEN|L1|30|Civ 6|Civ 2", "LOC_ECONOMICS_ROLE_BANKING"]) assert.ok(text.includes(key), key);
-  assert.equal(byClass(host, "econ-bar-pair").length, 20);
+  assert.equal(byClass(host, "econ-chart-hit").length, 20, "a hover column per projected turn");
+  assert.equal(byClass(host, "econ-meter").length, 1, "the debt-service scale");
+  assert.equal(byClass(host, "econ-gauge").length, 0, "the cycle's dial only with the cycle on");
   assert.equal(text.includes("LOC_ECONOMICS_GUARD_STATE"), false, "the guard lives on the Loans tab once it's open");
 });
 
@@ -80,6 +82,16 @@ test("before Coinage the Treasury tab leaves out financial depth and says what o
   assert.ok(text.includes("LOC_ECONOMICS_OPENS_NEXT|LOC_ECONOMICS_PART_TAB_TRADE|LOC_CIVIC_ECONOMICS_NAME"));
 });
 
+/** Renders the Loans tab again (the fake api's rerender draws nothing) and clicks the open confirmation's first button. */
+function confirmOn(api) {
+  const host = document.createElement("div");
+  renderLoans(host, api);
+  const card = byClass(host, "econ-confirm")[0];
+  assert.ok(card, "a confirmation is open");
+  byClass(card, "econ-button")[0].click();
+  return { host, card };
+}
+
 test("the Loans tab lists the loans overdue first, queues repay, restructure and repudiation after a confirm, and switches the guard", () => {
   resetConfirmForTests();
   resetFormForTests();
@@ -87,41 +99,56 @@ test("the Loans tab lists the loans overdue first, queues repay, restructure and
   const host = document.createElement("div");
   renderLoans(host, api);
   const titles = byClass(host, "econ-card-title").map((n) => n.textContent);
-  assert.ok(titles[0].startsWith("LOC_ECONOMICS_OFFER_ROW"), "offers come first");
-  const loanTitles = titles.filter((t) => t.startsWith("LOC_ECONOMICS_LOAN_ROW"));
-  assert.ok(loanTitles[0].includes("|L2|"), "the overdue loan leads");
+  assert.equal(titles[0], "Civ 6", "the borrow form's offers come first");
+  const subs = byClass(host, "econ-card-sub").map((n) => n.textContent).filter((t) => t.startsWith("LOC_ECONOMICS_LOAN_SUB"));
+  assert.ok(subs[0].includes("|L2|"), "the overdue loan leads");
   const buttons = byClass(host, "econ-button");
   const by = (prefix) => buttons.filter((b) => b.textContent.startsWith(prefix));
   by("LOC_ECONOMICS_LOANS_REPAY_ALL")[0].click();
+  assert.equal(api.requests.length, 0, "a repay opens its confirmation first");
+  const repay = confirmOn(api);
+  assert.ok(textOf(repay.card).includes("LOC_ECONOMICS_REPAY_PAYS"), "what goes out next turn");
   assert.deepEqual(api.requests.at(-1), { kind: "repay", loanId: "L2", cents: 3000 });
   by("LOC_ECONOMICS_LOANS_REPUDIATE_LENDER")[0].click();
-  const again = document.createElement("div");
-  renderLoans(again, api);
-  assert.ok(textOf(again).includes("LOC_ECONOMICS_REPUDIATE_PREVIEW|60|Civ 6|"), "the preview shows before the confirm");
-  byClass(again, "econ-button").find((b) => b.textContent === "LOC_ECONOMICS_CONFIRM").click();
+  const again = confirmOn(api);
+  assert.ok(textOf(again.card).includes("LOC_ECONOMICS_REPUDIATE_PREVIEW|60|Civ 6|"), "the preview shows before the confirm");
   assert.deepEqual(api.requests.at(-1), { kind: "repudiate", borrower: ME, lender: 6 });
   const restructure = by("LOC_ECONOMICS_LOANS_RESTRUCTURE").find((b) => !b.classList.contains("econ-button--disabled"));
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_RESTRUCTURE_WHY_ON_TIME"), "the loan on time says why it can't");
   restructure.click();
-  const third = document.createElement("div");
-  renderLoans(third, api);
-  assert.ok(textOf(third).includes("LOC_ECONOMICS_RESTRUCTURE_PREVIEW"));
-  byClass(third, "econ-button").find((b) => b.textContent === "LOC_ECONOMICS_CONFIRM").click();
+  const third = confirmOn(api);
+  assert.ok(textOf(third.card).includes("LOC_ECONOMICS_RESTRUCTURE_PREVIEW"));
   assert.deepEqual(api.requests.at(-1), { kind: "restructure", loanId: "L2", pid: ME });
   by("LOC_ECONOMICS_GUARD_SWITCH_OFF")[0].click();
   assert.equal(api.state.guard, false);
   const borrow = by("LOC_ECONOMICS_BORROW").find((b) => !b.classList.contains("econ-button--disabled"));
   borrow.click();
-  assert.deepEqual(api.requests.at(-1), { kind: "borrow", borrower: ME, lender: 6, principal: 10000, term: 10 });
-  const lend = by("LOC_ECONOMICS_LEND")[0];
-  lend.click();
+  const borrowed = confirmOn(api);
+  assert.ok(textOf(borrowed.card).includes("LOC_ECONOMICS_OFFER_INCOME_AFTER"), "income after the payment, before the click");
+  const sent = api.requests.at(-1);
+  assert.deepEqual([sent.kind, sent.lender, sent.term], ["borrow", 6, 10], "the shortest term");
+  assert.ok(sent.principal >= 1000, "filled in with the most the limits allow");
+  by("LOC_ECONOMICS_LEND")[0].click();
+  confirmOn(api);
   assert.equal(api.requests.at(-1).kind, "lend");
   assert.equal(api.requests.at(-1).borrower, 6);
-  assert.ok(textOf(third).includes("LOC_ECONOMICS_LOANS_PENDING"));
+  assert.ok(textOf(third.host).includes("LOC_ECONOMICS_LOANS_PENDING"));
+});
+
+test("the borrow form opens on the largest loan the limits allow", () => {
+  resetConfirmForTests();
+  resetFormForTests();
+  const api = makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: 20000, incomeCents: 1000 }),
+    civ(6, { balanceCents: 1e6 })], ledger: emptyLedger() } });
+  const host = document.createElement("div");
+  renderLoans(host, api);
+  assert.equal(textOf(host).includes("LOC_ECONOMICS_REASON_SERVICE_CAP"), false, "nobody refuses the amount it opens on");
+  assert.ok(byClass(host, "econ-stepper-value")[0].textContent.includes("40"), "40 Gold: the most, in whole tens");
 });
 
 test("a borrow over a limit shows the most that lender would lend, and one click borrows that instead", () => {
   resetConfirmForTests();
-  resetFormForTests();
+  resetFormForTests(10000);
   const api = makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: 20000, incomeCents: 1000 }),
     civ(6, { balanceCents: 1e6 })], ledger: emptyLedger() } });
   const host = document.createElement("div");
@@ -131,7 +158,9 @@ test("a borrow over a limit shows the most that lender would lend, and one click
   const instead = byClass(host, "econ-button").filter((b) => b.textContent === "LOC_ECONOMICS_BORROW_THAT");
   assert.equal(instead.length, 2, "one for each lender over the limit");
   instead[0].click();
+  confirmOn(api);
   assert.deepEqual(api.requests.at(-1), { kind: "borrow", borrower: ME, lender: 6, principal: 4500, term: 10 });
+  resetFormForTests(10000);
   const spoken = makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: 20000, incomeCents: 1000 }),
     civ(6, { balanceCents: 1e6 })], ledger: { ...emptyLedger(), loans: [makeLoan({ id: "L1", lender: 6, borrower: ME,
     principal: 4500, ratePpm: 10000, term: 10, turn: 40 })], nextId: 2 } } });
@@ -158,12 +187,14 @@ test("stages closed show the node that opens them; the Fiscal tab draws the card
   const full = document.createElement("div");
   renderFiscal(full, api);
   const text = textOf(full);
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-10|+12"),
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_GOLD | -10 | LOC_ECONOMICS_FISCAL_FORECAST_HAPPINESS | +12"),
     "Exploration's Light (+4) against Heavy on 2 settlements: -10 Gold, +12 Happiness");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|-1|+4"), "Light's flat amounts in each settlement, Exploration's");
+  assert.ok(byClass(full, "econ-facts").some((n) => n.getAttribute("data-tooltip-content") === "LOC_ECONOMICS_FISCAL_EFFECT_ROW|-1|+4"),
+    "Light's flat amounts in each settlement, Exploration's");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|3"), "the celebration under Light");
   assert.ok(text.includes("LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS|7"), "the celebration now, under Heavy");
-  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_ROW|-8|+4"), "clearing Heavy");
+  assert.ok(text.includes("LOC_ECONOMICS_FISCAL_FORECAST_GOLD | -8 | LOC_ECONOMICS_FISCAL_FORECAST_HAPPINESS | +4"),
+    "clearing Heavy");
   assert.equal(text.includes("LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR"), false, "a locked card isn't drawn");
   assert.ok(text.includes("LOC_ECONOMICS_OPENS_NEXT|LOC_ECONOMICS_PART_CARD|LOC_ECONOMICS_CARD_WAR_LEVY_NAME"
     + "|LOC_TECH_CURRENCY_NAME"), "the locked card is the next part, with what opens it");
@@ -171,9 +202,10 @@ test("stages closed show the node that opens them; the Fiscal tab draws the card
   const open = document.createElement("div");
   renderFiscal(open, api);
   const all = textOf(open);
-  assert.ok(all.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|+2|-1"), "War Levy's peacetime part");
+  const effects = byClass(open, "econ-facts").map((n) => n.getAttribute("data-tooltip-content"));
+  assert.ok(effects.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|+2|-1"), "War Levy's peacetime part");
   assert.ok(all.includes("LOC_ECONOMICS_FISCAL_EFFECT_AT_WAR"), "and a line for war");
-  assert.ok(all.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|+8|-4"), "War Levy's amounts at war, both parts");
+  assert.ok(effects.includes("LOC_ECONOMICS_FISCAL_EFFECT_ROW|+8|-4"), "War Levy's amounts at war, both parts");
   const slot = byClass(full, "econ-button").filter((b) => b.textContent === "LOC_ECONOMICS_FISCAL_SLOT");
   assert.equal(slot.length, 1, "only the unlocked card that isn't slotted");
   slot[0].click();
@@ -205,7 +237,9 @@ test("the Markets tab lists prices dearest first, with holders, the change and t
   renderMarkets(host, commerceApi());
   const text = textOf(host);
   assert.ok(text.indexOf("name:RESOURCE_IRON") < text.indexOf("name:RESOURCE_WINE"), "dearest first");
-  assert.ok(text.includes("LOC_ECONOMICS_MARKETS_ROW|2|+40|3"), "two copies held, up 40 Gold over three turns");
+  assert.ok(text.includes("name:RESOURCE_IRON | 200 | 2 | +40"), "price, two copies held, up 40 Gold");
+  assert.ok(byClass(host, "econ-price-cell").some((n) => n.getAttribute("data-tooltip-content")
+    === "LOC_ECONOMICS_MARKETS_ROW|2|+40|3"), "the change's tooltip says over how many turns");
   assert.equal(byClass(host, "econ-spark").length, 1, "one history long enough to draw");
   const off = document.createElement("div");
   renderMarkets(off, commerceApi({ options: { markets: false } }));
@@ -220,8 +254,8 @@ test("the Trade tab: this turn's bill per partner, offers to answer, investments
   const host = document.createElement("div");
   renderTrade(host, api);
   const text = textOf(host);
-  assert.ok(text.includes("LOC_ECONOMICS_TRADE_INCOME | LOC_ECONOMICS_GOLD_AMOUNT|6"), "the game's own Trade Income");
-  assert.ok(text.includes("LOC_ECONOMICS_TRADE_PAY | LOC_ECONOMICS_GOLD_AMOUNT|2"), "500 owed against 300: pay 200");
+  assert.ok(text.includes("LOC_ECONOMICS_TRADE_INCOME | 6"), "the game's own Trade Income");
+  assert.ok(text.includes("LOC_ECONOMICS_TRADE_PAY | 2"), "500 owed against 300: pay 200");
   assert.ok(text.includes("LOC_ECONOMICS_OFFER_GENERAL_ROW|Civ 6|50"));
   assert.ok(text.includes("LOC_ECONOMICS_INVEST_PROJECT|build:BUILDING_LIBRARY|city:6:1"));
   assert.ok(text.includes("LOC_ECONOMICS_INVEST_PROJECT_FORECAST|40|120|6|150|1"),
@@ -232,6 +266,11 @@ test("the Trade tab: this turn's bill per partner, offers to answer, investments
   accept.click();
   const project = byClass(host, "econ-button").find((b) => b.textContent.startsWith("LOC_ECONOMICS_INVEST_PROJECT"));
   project.click();
+  const asked = document.createElement("div");
+  renderTrade(asked, api);
+  const card = byClass(asked, "econ-confirm")[0];
+  assert.ok(textOf(card).includes("LOC_ECONOMICS_INVEST_YOU_SEND"), "the confirmation says what goes out");
+  byClass(card, "econ-button")[0].click();
   assert.deepEqual(api.requests, [{ kind: "accept-offer", offerId: "I5" }, { kind: "invest", investor: ME, host: 6,
     form: "project", cents: 30000, cityId: "6:1", asAid: false }]);
   const war = document.createElement("div");
@@ -296,10 +335,64 @@ test("a host in default: general investment shows why, and a button opens its de
   assert.ok(textOf(open).includes("LOC_ECONOMICS_INVEST_PROJECT_FOR|Civ 6|300"));
   const pick = byClass(open, "econ-button").find((b) => b.textContent.startsWith("LOC_ECONOMICS_INVEST_PROJECT|"));
   pick.click();
+  const asked = document.createElement("div");
+  renderTrade(asked, api);
+  byClass(byClass(asked, "econ-confirm")[0], "econ-button")[0].click();
   assert.deepEqual(api.requests.at(-1), { kind: "invest", investor: ME, host: 6, form: "project", cents: 30000,
     cityId: "6:1", asAid: false });
   byClass(open, "econ-button").find((b) => b.textContent === "LOC_ECONOMICS_CLOSE").click();
   const closed = document.createElement("div");
   renderTrade(closed, api);
   assert.equal(textOf(closed).includes("LOC_ECONOMICS_INVEST_PROJECT_FOR|"), false);
+});
+
+test("the summary strip: treasury, income, what Economics moved, debt with this turn's payments, waiting requests", async () => {
+  const { renderSummary, renderSubtitle } = await import("../ui/econ-view-summary.js");
+  const api = makeApi();
+  api.requests.push({ kind: "repay", loanId: "L1", cents: 100 });
+  const host = document.createElement("div");
+  renderSummary(host, api);
+  const text = textOf(host);
+  for (const piece of ["LOC_ECONOMICS_SUMMARY_TREASURY | 200", "LOC_ECONOMICS_SUMMARY_INCOME | +80",
+    "LOC_ECONOMICS_SUMMARY_DEBT | 60", "LOC_ECONOMICS_SUMMARY_WAITING | 1"]) assert.ok(text.includes(piece), piece);
+  assert.ok(byClass(host, "econ-positive").length >= 1, "income in the game's green");
+  const sub = document.createElement("div");
+  renderSubtitle(sub, makeApi({ planInput: { options: { systems: true, cycle: "standard" } } }));
+  assert.ok(textOf(sub).includes("LOC_ECONOMICS_SUMMARY_SYSTEM|LOC_ECONOMICS_SYSTEM_MIXED"));
+});
+
+test("a gauge's needle turns from the low end to its reading; a line chart has a hover column per turn", async () => {
+  const { gauge, lineChart, resetDomStateForTests } = await import("../ui/econ-dom.js");
+  resetDomStateForTests();
+  const low = gauge("a", 0, { title: "t", reading: "0%" });
+  const high = gauge("b", 1.4, { title: "t", reading: "140%" });
+  const needle = (node) => byClass(node, "econ-gauge-needle")[0];
+  assert.equal(needle(low).getAttribute("data-degrees"), "-90");
+  assert.equal(needle(high).getAttribute("data-degrees"), "90", "past the scale stops at its end");
+  assert.equal(needle(low).style.transform, "rotate(-90deg)", "drawn without frames: at its reading at once");
+  const again = gauge("b", 1, { title: "t", reading: "100%" });
+  assert.equal(needle(again).style.transform, "rotate(90deg)", "a re-render draws it in place, without a new sweep");
+  const turns = ["t0", "t1", "t2"];
+  const chart = lineChart([{ values: [1, 3, 2], label: "A" }, { values: [NaN, 2, Infinity], label: "B" }],
+    { format: String, reference: 0, turns });
+  const hits = byClass(chart, "econ-chart-hit");
+  assert.equal(hits.length, 3);
+  assert.equal(hits[1].getAttribute("data-tooltip-content"), "t1: A 3, B 2");
+  assert.equal(hits[0].getAttribute("data-tooltip-content"), "t0: A 1", "a figure that isn't finite is left out");
+  assert.equal(byClass(chart, "econ-chart-readout")[0].textContent, "t2: A 2", "the last turn until one is pointed at");
+  assert.equal(byClass(chart, "econ-legend-item").length, 2);
+  const none = lineChart([{ values: [] }], { format: String, turns: [], emptyText: "nothing yet" });
+  assert.equal(textOf(none), "nothing yet");
+  const flat = lineChart([{ values: [5, 5] }], { format: String, turns: ["a", "b"] });
+  assert.equal(byClass(flat, "econ-chart-axis")[0].children.map((n) => n.textContent).join(","), "6,4",
+    "a flat series gets a band around it");
+});
+
+test("what Economics moved, by kind of flow, for the Treasury tab's breakdown", async () => {
+  const { flowBreakdown } = await import("../ui/econ-notice-text.js");
+  const rows = flowBreakdown([{ from: 6, to: ME, cents: 500, reason: "principal" }, { from: ME, to: 6, cents: 120,
+    reason: "payment" }, { from: "cycle", to: ME, cents: 80, reason: "cycle" }, { from: 8, to: 6, cents: 999,
+    reason: "trade" }, { from: ME, to: "x", cents: 5, reason: "mystery" }], ME);
+  assert.deepEqual(rows, [{ key: "LOC_ECONOMICS_FLOW_LABEL_LOANS", cents: 380 },
+    { key: "LOC_ECONOMICS_FLOW_LABEL_CYCLE", cents: 80 }, { key: "LOC_ECONOMICS_FLOW_LABEL_OTHER", cents: -5 }]);
 });

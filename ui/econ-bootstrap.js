@@ -13,7 +13,7 @@ import { formatRate } from "./econ-format.js";
 import { flushNotice, holdNotice, installClickHandler, nameOf } from "./econ-notify.js";
 import { stageOpenerName } from "./econ-stage-read.js";
 import { canSwap, readCards, readFiscal, swapTo } from "./econ-fiscal.js";
-import { openScreen, rerenderScreen, setScreenApi } from "./econ-screen.js";
+import { openScreen, rerenderScreen, setScreenApi, setSkin, showTab } from "./econ-screen.js";
 import { installDock, refreshDock, refreshPill } from "./econ-dock.js";
 import { formatGold } from "./econ-format.js";
 import { outstandingOf } from "./econ-credit.js";
@@ -78,6 +78,7 @@ function screenApi(session) {
     possibleRoutes: () => readPossibleRoutes(localId(), aliveMajorIds()),
     turnLabel: (turn) => displayTurn(session, turn),
     stageTurns: () => stageTurnsOf(session, localId()),
+    lastTransfers: () => session.lastPlan?.transfers ?? null,
     seenTab: (tab) => { if (markSeen(session, tab)) refreshDock(); },
   };
 }
@@ -145,6 +146,8 @@ function installConsole() {
     cards: () => readCards(localId()),
     swapTo,
     open: () => openScreen(),
+    skin: (/** @type {string} */ name) => setSkin(name),
+    tab: (/** @type {string} */ key) => showTab(key),
     pill: pillSource,
   };
 }

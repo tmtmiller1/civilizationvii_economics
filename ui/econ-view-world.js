@@ -2,12 +2,13 @@
 // beside the player's own, what moved it lately, its last 30 turns, inflation and its cause, world debt against the
 // Gold the civilizations hold, and the player's legacy from old buildings with the slump cushion it gives.
 
-import { note, pill, row, section } from "./econ-dom.js";
+import { columns, empty, note, pill, row, section } from "./econ-dom.js";
 import { formatGold, formatRate } from "./econ-format.js";
-import { cycleEventKey, phaseKey } from "./econ-notice-text.js";
+import { cycleEventKey } from "./econ-notice-text.js";
 import { sparkline } from "./econ-view-markets.js";
 import { worldView } from "./econ-view-macro.js";
-import { opensNext, rulesFor } from "./econ-view-common.js";
+import { opensNext, rulesFor, turnLabels } from "./econ-view-common.js";
+import { cycleDial, inflationMeter } from "./econ-view-instruments.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 
@@ -34,35 +35,34 @@ export function formatWeight(bp) {
  */
 export function renderWorld(host, api) {
   const view = worldView(api.input(), api.me);
-  host.appendChild(nowSection(view, api));
-  if (view.cycleOn) {
-    host.appendChild(eventsSection(view, api));
-    if (view.history.length > 1) {
-      host.appendChild(section(api.loc("LOC_ECONOMICS_WORLD_HISTORY", view.history.length),
-        [sparkline(view.history, formatIndex)]));
-    }
-  }
   const { rules } = rulesFor(api);
-  if (rules.sections["world.inflation"]) host.appendChild(inflationSection(view, api));
-  host.appendChild(debtSection(view, api));
-  if (rules.sections["world.legacy"]) host.appendChild(legacySection(api));
+  /** @type {HTMLElement[]} */
+  const main = [nowSection(view, rules.sections["world.inflation"], api)];
+  if (view.cycleOn) {
+    if (view.history.length > 1) main.push(historySection(view, api));
+    main.push(eventsSection(view, api));
+  }
+  /** @type {HTMLElement[]} */
+  const side = [];
+  if (rules.sections["world.inflation"]) side.push(inflationSection(view, api));
+  side.push(debtSection(view, api));
+  if (rules.sections["world.legacy"]) side.push(legacySection(api));
+  host.appendChild(columns(main, side));
   const next = opensNext(api, rules.next.world);
   if (next) host.appendChild(next);
 }
 
 /**
+ * The instruments: the world's index and the player's own on the cycle gauge, and inflation on its own when it's on.
  * @param {ReturnType<typeof worldView>} view
+ * @param {boolean} inflationShown
  * @param {ScreenApi} api
  */
-function nowSection(view, api) {
+function nowSection(view, inflationShown, api) {
   const block = section(api.loc("LOC_ECONOMICS_WORLD_NOW"));
-  if (!view.cycleOn) { block.appendChild(note(api.loc("LOC_ECONOMICS_WORLD_CYCLE_OFF"))); return block; }
-  block.appendChild(row(api.loc("LOC_ECONOMICS_WORLD_INDEX"), formatIndex(view.e)));
-  block.appendChild(row(api.loc("LOC_ECONOMICS_WORLD_PHASE"), api.loc(phaseKey(view.worldPhase))));
-  if (view.mine) {
-    block.appendChild(row(api.loc("LOC_ECONOMICS_WORLD_YOURS"), api.loc("LOC_ECONOMICS_WORLD_YOURS_ROW",
-      formatIndex(view.mine.index), api.loc(phaseKey(view.mine.phase)))));
-  }
+  if (!view.cycleOn) { block.appendChild(empty(api.loc("LOC_ECONOMICS_WORLD_CYCLE_OFF"))); return block; }
+  block.appendChild(cycleDial(view, api));
+  if (inflationShown && view.inflation.on) block.appendChild(inflationMeter(view.inflation.piPpm, api));
   if (view.panic) {
     const turn = view.panicUntil === null ? "" : api.turnLabel(view.panicUntil) ?? view.panicUntil;
     block.appendChild(pill(api.loc("LOC_ECONOMICS_WORLD_PANIC", turn), true));
@@ -72,12 +72,24 @@ function nowSection(view, api) {
 }
 
 /**
+ * The world index over its last 30 turns, with 1.00 marked.
+ * @param {ReturnType<typeof worldView>} view
+ * @param {ScreenApi} api
+ */
+function historySection(view, api) {
+  const turns = turnLabels(api, api.input().ledger?.lastTurn ?? api.input().turn, view.history.length);
+  const chart = sparkline(view.history, formatIndex, { turns, reference: 10000, height: "8rem" });
+  return section(api.loc("LOC_ECONOMICS_WORLD_HISTORY", view.history.length), [chart,
+    note(api.loc("LOC_ECONOMICS_WORLD_HISTORY_NOTE"))]);
+}
+
+/**
  * @param {ReturnType<typeof worldView>} view
  * @param {ScreenApi} api
  */
 function eventsSection(view, api) {
   const block = section(api.loc("LOC_ECONOMICS_WORLD_EVENTS"));
-  if (!view.events.length) block.appendChild(note(api.loc("LOC_ECONOMICS_WORLD_EVENTS_NONE")));
+  if (!view.events.length) block.appendChild(empty(api.loc("LOC_ECONOMICS_WORLD_EVENTS_NONE")));
   for (const event of view.events) {
     const who = [event.a, event.b].filter((x) => x !== null).map((pid) => api.nameOf(/** @type {number} */ (pid)));
     const label = api.loc("LOC_ECONOMICS_WORLD_EVENT_ROW", api.loc(cycleEventKey(event.kind)),
@@ -96,8 +108,8 @@ function eventsSection(view, api) {
 function inflationSection(view, api) {
   const block = section(api.loc("LOC_ECONOMICS_WORLD_INFLATION"));
   const { inflation } = view;
-  if (!inflation.on) { block.appendChild(note(api.loc("LOC_ECONOMICS_WORLD_INFLATION_OFF"))); return block; }
-  if (!(inflation.bondCents > 0)) { block.appendChild(note(api.loc("LOC_ECONOMICS_WORLD_INFLATION_NONE"))); return block; }
+  if (!inflation.on) { block.appendChild(empty(api.loc("LOC_ECONOMICS_WORLD_INFLATION_OFF"))); return block; }
+  if (!(inflation.bondCents > 0)) { block.appendChild(empty(api.loc("LOC_ECONOMICS_WORLD_INFLATION_NONE"))); return block; }
   block.appendChild(row(api.loc("LOC_ECONOMICS_WORLD_INFLATION_RATE"), formatRate(inflation.piPpm)));
   block.appendChild(row(api.loc("LOC_ECONOMICS_WORLD_INFLATION_BOND"), formatGold(inflation.bondCents)));
   block.appendChild(row(api.loc("LOC_ECONOMICS_WORLD_INFLATION_MONEY"), formatGold(inflation.moneyCents)));

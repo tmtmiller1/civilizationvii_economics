@@ -11,7 +11,8 @@ import { renderFiscal } from "./econ-view-fiscal.js";
 import { renderMarkets } from "./econ-view-markets.js";
 import { renderTrade } from "./econ-view-trade.js";
 import { renderWorld } from "./econ-view-world.js";
-import { el } from "./econ-dom.js";
+import { el, takeFeedback } from "./econ-dom.js";
+import { renderSubtitle, renderSummary } from "./econ-view-summary.js";
 import { startTab } from "./econ-view-tabs.js";
 import { viewRules } from "./econ-view-model.js";
 import { getSetting, setSetting } from "./econ-settings.js";
@@ -84,6 +85,43 @@ function makeTabBar(items, onSelect, start) {
   return bar;
 }
 
+/** The looks on trial (econ-screen.css); the `skin` setting picks one. */
+export const SKINS = ["ledger", "gilt", "folio"];
+
+/**
+ * Puts the chosen look's class on the screen's root.
+ * @param {any} root
+ */
+function applySkin(root) {
+  const node = root?.querySelector?.(".econ-screen-root");
+  if (!node) return;
+  const chosen = String(getSetting("skin"));
+  for (const skin of SKINS) node.classList.toggle(`econ-skin-${skin}`, skin === (SKINS.includes(chosen) ? chosen : "ledger"));
+}
+
+/**
+ * Switches the look, for trying the options side by side: saved as the `skin` setting and drawn on the open screen.
+ * @param {string} skin
+ */
+export function setSkin(skin) {
+  if (!SKINS.includes(skin)) return false;
+  setSetting("skin", skin);
+  if (openScreenInstance) { applySkin(openScreenInstance.Root); openScreenInstance.render(); }
+  return true;
+}
+
+/** The open screen's tab, chosen from outside (the console, for captures). @param {string} key */
+export function showTab(key) {
+  openScreenInstance?.selectTab(/** @type {TabKey} */ (key));
+  return openScreenInstance?.tab ?? null;
+}
+
+/** The line after an action, once, at the top of the tab. @param {HTMLElement} host */
+function showFeedback(host) {
+  const said = takeFeedback();
+  if (said) host.appendChild(el("div", "econ-feedback", said));
+}
+
 class ScreenEconomics extends Panel {
   /** @type {TabKey} */
   tab = "treasury";
@@ -102,8 +140,10 @@ class ScreenEconomics extends Panel {
   onAttach() {
     try { super.onAttach?.(); } catch (error) { logLine(`screen attach: ${error}`); }
     openScreenInstance = this;
+    this.Root?.addEventListener?.("engine-input", this.onEngineInput);
     try {
       this.wireClose();
+      applySkin(this.Root);
       if (screenApi) {
         this.tabs = shownTabs(screenApi);
         // A remembered tab that isn't shown now (a closed stage, or a game with the stages on) falls back to Treasury.
@@ -116,7 +156,18 @@ class ScreenEconomics extends Panel {
     }
   }
 
+  /** Escape (or the controller's back) closes the screen, as the game's own screens do. @param {any} event */
+  onEngineInput = (event) => {
+    if (event?.detail?.status !== /** @type {any} */ (globalThis).InputActionStatuses?.FINISH) return;
+    if (event.isCancelInput?.() || event.detail.name === "sys-menu") {
+      this.close();
+      event.stopPropagation?.();
+      event.preventDefault?.();
+    }
+  };
+
   onDetach() {
+    this.Root?.removeEventListener?.("engine-input", this.onEngineInput);
     if (openScreenInstance === this) openScreenInstance = null;
     try { super.onDetach?.(); } catch (_error) { /* nothing to release */ }
   }
@@ -162,11 +213,24 @@ class ScreenEconomics extends Panel {
     while (host.firstChild) host.removeChild(host.firstChild);
     if (!screenApi) { host.appendChild(el("div", "econ-note", "Economics: no session")); return; }
     this.syncTabs(screenApi);
+    this.renderHeader(screenApi);
+    showFeedback(host);
     try {
       TABS[this.tab].render(host, screenApi);
     } catch (error) {
       logLine(`tab ${this.tab} failed: ${error instanceof Error ? error.stack || error.message : String(error)}`);
       host.appendChild(el("div", "econ-note econ-negative", screenApi.loc("LOC_ECONOMICS_TAB_FAILED")));
+    }
+  }
+
+  /** The subtitle and the summary strip, redrawn with the tab. @param {ScreenApi} api */
+  renderHeader(api) {
+    for (const [selector, draw] of /** @type {const} */ ([[".econ-subtitle", renderSubtitle],
+      [".econ-summary-host", renderSummary]])) {
+      const node = /** @type {HTMLElement | null} */ (this.Root?.querySelector?.(selector) ?? null);
+      if (!node) continue;
+      while (node.firstChild) node.removeChild(node.firstChild);
+      try { draw(node, api); } catch (error) { logLine(`${selector} failed: ${error}`); }
     }
   }
 

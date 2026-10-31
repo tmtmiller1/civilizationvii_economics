@@ -2,9 +2,13 @@
     <fxs-frame frame-style="f2" class="econ-screen-frame relative flex flex-col">
         <fxs-header class="econ-screen-title relative font-title text-xl uppercase text-secondary"
                     filigree-style="h4" title="LOC_ECONOMICS_OPEN"></fxs-header>
+        <!-- The civ's economic system and the cycle's phase (econ-view-summary.js). -->
+        <div class="econ-subtitle"></div>
         <div class="econ-screen-body relative flex flex-col flex-auto">
+            <!-- The figures that matter on every tab. -->
+            <div class="econ-summary-host w-full"></div>
             <div class="econ-tab-host w-full"></div>
-            <!-- The chosen tab renders here (econ-view-treasury.js, econ-view-loans.js, econ-view-fiscal.js). -->
+            <!-- The chosen tab renders here (econ-view-*.js). -->
             <div class="econ-screen-host w-full flex-auto"></div>
         </div>
         <fxs-close-button data-ia-close

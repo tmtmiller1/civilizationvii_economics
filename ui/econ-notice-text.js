@@ -247,6 +247,27 @@ export function flowKeys(transfers, pid) {
   return [...new Set(Object.values(FLOW_OF))].filter((flow) => seen.has(flow)).map((flow) => `${PREFIX}FLOW_${flow}`);
 }
 
+/**
+ * What each kind of flow moved for a civ in a batch, in the fixed order, for the screen's breakdown of the mod's net:
+ * `cents` positive when the civ received. Kinds that moved nothing are left out.
+ * @param {Transfer[]} transfers
+ * @param {number} pid
+ * @returns {{ key: string, cents: number }[]}
+ */
+export function flowBreakdown(transfers, pid) {
+  /** @type {Map<string, number>} */
+  const sums = new Map();
+  for (const transfer of transfers || []) {
+    const sign = transfer.to === pid ? 1 : transfer.from === pid ? -1 : 0;
+    if (!sign || transfer.from === transfer.to) continue;
+    const flow = Object.hasOwn(FLOW_OF, transfer.reason) ? FLOW_OF[transfer.reason] : "OTHER";
+    sums.set(flow, (sums.get(flow) || 0) + sign * (Number(transfer.cents) || 0));
+  }
+  const order = [...new Set(Object.values(FLOW_OF)), "OTHER"];
+  return order.filter((flow) => (sums.get(flow) || 0) !== 0)
+    .map((flow) => ({ key: `${PREFIX}FLOW_LABEL_${flow}`, cents: /** @type {number} */ (sums.get(flow)) }));
+}
+
 /** The least Gold the mod has to move in a turn for the net line to show, in cents. */
 const NET_LINE_MIN_CENTS = 200;
 

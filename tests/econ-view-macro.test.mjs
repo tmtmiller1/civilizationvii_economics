@@ -57,13 +57,13 @@ test("the World tab: index, phases, events newest first, history, inflation's ca
   const host = document.createElement("div");
   renderWorld(host, makeApi(planInput, { legacyBp: 25000, cushionBp: 250 }));
   const text = textOf(host);
-  for (const piece of ["LOC_ECONOMICS_WORLD_INDEX", "0.93", "LOC_ECONOMICS_PHASE_PANIC", "LOC_ECONOMICS_WORLD_PANIC|13",
+  for (const piece of ["LOC_ECONOMICS_WORLD_YOURS", "LOC_ECONOMICS_GAUGE_WORLD_SUB|0.93|LOC_ECONOMICS_PHASE_PANIC", "LOC_ECONOMICS_WORLD_PANIC|13",
     "9: LOC_ECONOMICS_WORLD_EVENT_ROW|LOC_ECONOMICS_CYCLE_EVENT_CRISIS_START|", "(Civ 2, Civ 6)", "-0.020",
     "LOC_ECONOMICS_WORLD_HISTORY|3", "LOC_ECONOMICS_WORLD_INFLATION_CAUSE|4.0|Civ 6", "0.2%", "200.0",
     "LOC_ECONOMICS_WORLD_DEBT_NOTE|1.7", "2.50", "2.5%"]) {
     assert.ok(text.includes(piece), piece);
   }
-  assert.equal(byClass(host, "econ-spark-bar").length, 3);
+  assert.equal(byClass(host, "econ-chart-hit").length, 3, "a hover column per turn of the history");
 });
 
 test("the World tab with the cycle and inflation off says so", () => {
