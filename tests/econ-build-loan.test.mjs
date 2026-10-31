@@ -74,6 +74,14 @@ test("an AI borrows from the bond market and the Gold lands on its role building
   assert.equal(built(later).length, 2, "once it's closed, the slow build is a reason again");
 });
 
+test("the city with a reason: a quick build in the first city doesn't hide a slow one in the next", () => {
+  const quickFirst = ai({ cities: [city("6:1", { turnsLeft: 2, roleBuilding: true }), city("6:2", { turnsLeft: 12 })] });
+  const out = plan({ civs: [quickFirst] });
+  assert.deepEqual(out.progress.map((row) => row.cityId), ["6:2"], "the slow build, not the quick role building");
+  const allQuick = ai({ cities: [city("6:1", { turnsLeft: 2 }), city("6:2", { turnsLeft: 3 })] });
+  assert.equal(built(plan({ civs: [allQuick] })).length, 0, "no city gives a reason");
+});
+
 test("a want, not a need: a quick build that pays for itself gets a loan, a quick Granary doesn't, nor a short civ", () => {
   const market = (over = {}) => ai({ cities: [city("6:1", { build: "BUILDING_MARKET", turnsLeft: 3, buildGoldYield: 3,
     roleBuilding: true, ...over })] });

@@ -482,6 +482,7 @@
  "LOC_ECONOMICS_EVENT_INVEST_PROJECT": "{1_Investor} lent {3_Amount} Gold toward a build of {2_Host}.",
  "LOC_ECONOMICS_EVENT_INVEST_GENERAL": "{1_Investor} invested {3_Amount} Gold in {2_Host}.",
  "LOC_ECONOMICS_EVENT_INVEST_AID": "{1_Investor} sent {2_Host} {3_Amount} Gold of aid.",
+ "LOC_ECONOMICS_EVENT_INVEST_AID_CLEARED": "{1_Investor} sent {2_Host} {3_Amount} Gold of aid; {4_Cleared} Gold of it cleared a debt {2_Host} had defaulted on.",
  "LOC_ECONOMICS_EVENT_INVEST_MISS": "Return missed on {1_Id} ({2_Count} in a row).",
  "LOC_ECONOMICS_EVENT_INVEST_DEFAULT": "{1_Id} went into default ({2_Host}).",
  "LOC_ECONOMICS_EVENT_INVEST_CLOSED": "{1_Id} paid in full.",

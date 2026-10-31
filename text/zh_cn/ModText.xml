@@ -486,6 +486,7 @@
         <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_PROJECT" Language="zh_Hans_CN"><Text>{1_Investor} lent {3_Amount} Gold toward a build of {2_Host}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_GENERAL" Language="zh_Hans_CN"><Text>{1_Investor} invested {3_Amount} Gold in {2_Host}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_AID" Language="zh_Hans_CN"><Text>{1_Investor} sent {2_Host} {3_Amount} Gold of aid.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_AID_CLEARED" Language="zh_Hans_CN"><Text>{1_Investor} sent {2_Host} {3_Amount} Gold of aid; {4_Cleared} Gold of it cleared a debt {2_Host} had defaulted on.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_MISS" Language="zh_Hans_CN"><Text>Return missed on {1_Id} ({2_Count} in a row).</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_DEFAULT" Language="zh_Hans_CN"><Text>{1_Id} went into default ({2_Host}).</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_INVEST_CLOSED" Language="zh_Hans_CN"><Text>{1_Id} paid in full.</Text></Replace>

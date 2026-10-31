@@ -305,15 +305,19 @@ export function aiRepudiate(ctx, civ) {
 }
 
 /**
- * The city an AI's build loan backs: its first city with a build that still needs progress, role buildings first
- * (DESIGN 4.13), with what this turn's other progress rows already send it taken off.
+ * The city an AI's build loan backs: a city whose build gives a reason to want one (slow on its own production, or
+ * a Gold building that could pay for the loan) and still needs progress, role buildings first (DESIGN 4.13), with
+ * what this turn's other progress rows already send it taken off. The first run of 2026-10-31 showed the first
+ * city's quick build hiding a slow one in the next.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 function buildCity(ctx, civ) {
   const left = (/** @type {CityRead} */ city) => city.neededProgress
     - (ctx.out.progress.find((row) => row.cityId === city.id)?.amount ?? 0);
-  const open = (civ.cities || []).filter((city) => city && city.build && left(city) > 0);
+  const reason = (/** @type {CityRead} */ city) => (Number.isFinite(city.turnsLeft)
+    && /** @type {number} */ (city.turnsLeft) >= AI.buildSlowTurns) || (city.buildGoldYield ?? 0) > 0;
+  const open = (civ.cities || []).filter((city) => city && city.build && left(city) > 0 && reason(city));
   const city = open.find((row) => row.roleBuilding === true) || open[0];
   return city ? { city, need: left(city) } : null;
 }

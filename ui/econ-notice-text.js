@@ -350,7 +350,7 @@ const EVENTS = {
   guard: (event, who) => ({ key: `${PREFIX}EVENT_GUARD`, args: [gold(event.cents), who(event.lender)] }),
   "guard-cap": (event) => ({ key: `${PREFIX}EVENT_GUARD_CAP`, args: [gold(event.cap)] }),
   invest: (event, who) => ({ key: `${PREFIX}EVENT_INVEST_${investForm(event)}`, args: [who(event.lender),
-    who(event.borrower), gold(event.cents)] }),
+    who(event.borrower), gold(event.cents), gold(Number(event.cleared) || 0)] }),
   "invest-miss": (event) => ({ key: `${PREFIX}EVENT_INVEST_MISS`, args: [String(event.loanId), Number(event.missed) || 1] }),
   "invest-default": (event, who) => ({ key: `${PREFIX}EVENT_INVEST_DEFAULT`, args: [String(event.loanId),
     who(event.borrower)] }),
