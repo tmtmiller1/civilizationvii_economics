@@ -48,11 +48,15 @@ test("options map from the setup keys, the guard switch overrides, and a dead ci
     ECONOMICS_AI: "ECONOMICS_AI_OFF" } });
   const glue = emptyGlue();
   assert.deepEqual(readOptions(glue), { loans: true, guard: false, ai: false, rates: "high", stages: true, taxFallback: false,
-    markets: true, tariffs: true, investment: true, inflation: false, cycle: "standard", systems: true });
+    markets: true, tariffs: true, investment: true, inflation: false, cycle: "standard", swings: "volatile", systems: true });
   const session = loadSession();
   assert.equal(setGuard(session, true), true);
   assert.equal(setGuard(session, null), false, "null follows the setup option again");
   assert.equal(readCiv(77, [0, 3, 5], { moneylending: null, publicDebt: null }).alive, false);
+  fresh({ config: { ECONOMICS_SWINGS: "ECONOMICS_SWINGS_EXTREME" } });
+  assert.equal(readOptions(emptyGlue()).swings, "extreme");
+  fresh({ config: { ECONOMICS_SWINGS: "ECONOMICS_SWINGS_SIDEWAYS" } });
+  assert.equal(readOptions(emptyGlue()).swings, "volatile", "an unknown value keeps the setup default");
   removeFakeEngine();
 });
 

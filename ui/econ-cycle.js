@@ -7,7 +7,18 @@
 // cycle is the mod's own state (level 3): only these rules act on it, and they act on every civ alike, felt through
 // cycle Gold and the bond spread. Nothing here reads the engine.
 
-import { CYCLE_RULES as R, CYCLE_WEIGHTS as W } from "./econ-params.js";
+import { CYCLE_RULES as R, CYCLE_SWINGS, CYCLE_WEIGHTS as W } from "./econ-params.js";
+
+/** @typedef {typeof CYCLE_SWINGS.volatile} Swing */
+
+/**
+ * The Swings option's profile; an unknown value reads Volatile, the default.
+ * @param {string | undefined} option
+ * @returns {Swing}
+ */
+export function swingFor(option) {
+  return (option !== undefined && Object.hasOwn(CYCLE_SWINGS, option) && CYCLE_SWINGS[option]) || CYCLE_SWINGS.volatile;
+}
 
 /**
  * @typedef {{ turn: number, kind: string, a: number | null, b: number | null, w: number }} CycleEvent
@@ -42,12 +53,14 @@ export function phaseOf(index) {
 }
 
 /**
- * The world stage scale s (DESIGN 4.15): 0.25 before Public debt, 0.6 from it, 1.0 from Capitalism, in percent.
+ * The world stage scale s (DESIGN 4.15): the Swings profile's early share before Public debt (0.4, 0.25 Gentle), 0.6
+ * from it, 1.0 from Capitalism, in percent.
  * @param {{ publicDebt: boolean, capitalism: boolean }} world
+ * @param {Swing} [swing]
  */
-export function stageScalePct({ publicDebt, capitalism }) {
+export function stageScalePct({ publicDebt, capitalism }, swing = swingFor(undefined)) {
   if (capitalism) return R.scaleCapitalismPct;
-  return publicDebt ? R.scalePublicDebtPct : R.scaleEarlyPct;
+  return publicDebt ? R.scalePublicDebtPct : swing.scaleEarlyPct;
 }
 
 /** @param {number} a @param {number} b */
@@ -252,15 +265,17 @@ export function civSum(events, pid) {
 }
 
 /**
- * E_next = E + 0.1 * (1 - E) + k * s * sum, clamped to 0.7 to 1.3.
+ * E_next = E + 0.1 * (1 - E) + momentum * (E - E_prev) + k * s * sum, clamped to the profile's range.
  * @param {number} e
  * @param {number} sum
  * @param {number} kPct
  * @param {number} scalePct
+ * @param {{ prev?: number, swing?: Swing }} [q] E a turn before `e`, and the Swings profile
  */
-export function nextE(e, sum, kPct, scalePct) {
+export function nextE(e, sum, kPct, scalePct, { prev = e, swing = swingFor(undefined) } = {}) {
   const reverted = e + Math.round(((R.one - e) * R.reversionPct) / 100);
-  return clamp(reverted + Math.round((sum * kPct * scalePct) / 10000), R.eMin, R.eMax);
+  const carried = Math.round(((e - prev) * swing.momentumPct) / 100);
+  return clamp(reverted + carried + Math.round((sum * kPct * scalePct) / 10000), swing.eMin, swing.eMax);
 }
 
 /**
@@ -296,22 +311,32 @@ export function spreadPct(index, panic) {
 }
 
 /**
- * cycle Gold = round((E + L - 1) * 0.2 * max(0, income)) a turn, in cents: Gold in a boom, a charge in a slump.
+ * cycle Gold = round((E + L - 1) * share * max(0, income)) a turn, in cents, the share 1.0 (0.2 Gentle): Gold in a
+ * boom, a charge in a slump.
  * @param {number} index E + L
  * @param {number} incomeCents
+ * @param {Swing} [swing]
  */
-export function cycleGoldCents(index, incomeCents) {
-  return Math.round(((index - R.one) * R.goldPct * Math.max(0, incomeCents)) / (100 * R.one)) || 0;
+export function cycleGoldCents(index, incomeCents, swing = swingFor(undefined)) {
+  return Math.round(((index - R.one) * swing.goldPct * Math.max(0, incomeCents)) / (100 * R.one)) || 0;
 }
 
 /**
  * Whether a Panic starts this turn (DESIGN 4.11): open from the Banking stage, leverage above its line (in hundredths
- * of a turn of world income), E above 1.05, and none in the last 20 turns.
- * @param {{ allowed: boolean, leverPct: number, e: number, lastPanic: number | null, turn: number }} q
+ * of a turn of world income), E above 1.05, and none in the profile's spacing (80 turns, 60 Gentle).
+ * @param {{ allowed: boolean, leverPct: number, e: number, lastPanic: number | null, turn: number, swing?: Swing }} q
  */
-export function panicStarts({ allowed, leverPct, e, lastPanic, turn }) {
+export function panicStarts({ allowed, leverPct, e, lastPanic, turn, swing = swingFor(undefined) }) {
   if (!allowed || leverPct <= R.panicLeverPct || e <= R.boom) return false;
-  return lastPanic === null || turn - lastPanic >= R.panicEveryTurns;
+  return lastPanic === null || turn - lastPanic >= swing.panicEveryTurns;
+}
+
+/**
+ * A Panic's drop in E: 0.2 at Standard, scaled by the Business cycle option (0.1 Mild, 0.3 Strong).
+ * @param {number} kPct
+ */
+export function panicDropBp(kPct) {
+  return Math.round((R.panicDrop * kPct) / 100);
 }
 
 /**

@@ -163,7 +163,7 @@ export function runMacroGame(game, options = ALL_ON) {
   let markets = emptyMarkets();
   let macro = emptyMacro();
   const facts = { e: [], phases: [], panics: 0, pi: [], gold: new Map(), systems: new Map(), maxMacroBytes: 0,
-    planMs: [], lever: [], buildLoans: 0, defaults: 0 };
+    planMs: [], lever: [], buildLoans: 0, defaults: 0, cycleShares: [] };
   for (let turn = 1; turn <= MACRO_TURNS; turn += 1) {
     const civs = game.civs.map((c) => civAt(game, c, turn, balances.get(c.id)));
     const routes = game.routes.filter((r) => turn >= r.from && turn < r.from + r.length);
@@ -187,7 +187,12 @@ function record(facts, plan, civs) {
   if (plan.events.some((e) => e.kind === "panic")) facts.panics += 1;
   facts.pi.push(plan.macro.inflation.piPpm);
   facts.maxMacroBytes = Math.max(facts.maxMacroBytes, utf8Bytes(saveMacro(plan.macro)));
-  for (const [pid, row] of macroGold(plan)) {
+  const moved = macroGold(plan);
+  for (const c of civs) {
+    // Cycle Gold as a share of the turn's income, in basis points, for the swing rows.
+    if (c.incomeCents > 0) facts.cycleShares.push(((moved.get(c.id)?.cycle || 0) * 10000) / c.incomeCents);
+  }
+  for (const [pid, row] of moved) {
     const sum = facts.gold.get(pid) || { cycle: 0, erosion: 0, plan: 0 };
     for (const key of Object.keys(row)) sum[key] += row[key];
     facts.gold.set(pid, sum);

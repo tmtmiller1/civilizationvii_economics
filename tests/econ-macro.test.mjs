@@ -36,18 +36,23 @@ function plan(over) {
 test("a war moves E and both sides' L down the turn it starts; the cycle charges Gold in proportion to income", () => {
   const civs = [me(), ai(AI, { atWar: true }), ai(OTHER, { atWar: true })];
   const relations = [{ a: AI, b: OTHER, level: "war" }];
-  const out = plan({ civs, relations });
+  // Gentle: no momentum and 0.2 of E + L - 1 on income, the arithmetic below.
+  const gentle = { swings: "gentle" };
+  const out = plan({ civs, relations, options: gentle });
   assert.equal(out.macro.cycle.e, 9880, "-0.02 at k 1.0 and s 0.6");
   assert.deepEqual(out.macro.cycle.l, { [AI]: -200, [OTHER]: -200 }, "only the two at war");
   assert.deepEqual(out.macro.cycle.wars, [`${AI}:${OTHER}`]);
   assert.deepEqual(out.macro.cycle.events.map((e) => [e.kind, e.a, e.b, e.w]), [["war-declared", AI, OTHER, -200]]);
   const charges = out.transfers.filter((t) => t.reason === "cycle").map((t) => [t.from, t.to, t.cents]);
   assert.deepEqual(charges, [[ME, "cycle", 24], [AI, "cycle", 64], [OTHER, "cycle", 64]]);
-  const next = plan({ civs, relations, turn: 51, ledger: out.ledger, macro: out.macro });
+  const next = plan({ civs, relations, turn: 51, ledger: out.ledger, macro: out.macro, options: gentle });
   assert.equal(next.macro.cycle.e, 9868, "reverting a tenth, -0.004 for the war that goes on");
+  const moved = { ...out.macro, cycle: { ...out.macro.cycle, history: [10000, 9880] } };
+  const carried = plan({ civs, relations, turn: 51, ledger: out.ledger, macro: moved });
+  assert.equal(carried.macro.cycle.e, 9772, "Volatile carries 0.8 of the last move, 1.0 to 0.988: -0.0096 more");
   assert.deepEqual(next.macro.cycle.l, { [AI]: -200, [OTHER]: -200 });
   const peace = plan({ civs: [me(), ai(AI), ai(OTHER)], relations: [{ a: AI, b: OTHER, level: "neutral" }], turn: 52,
-    ledger: next.ledger, macro: next.macro });
+    ledger: next.ledger, macro: next.macro, options: gentle });
   assert.equal(peace.macro.cycle.e, 9941, "+0.01 for peace");
   assert.deepEqual(peace.macro.cycle.l, { [AI]: -60, [OTHER]: -60 });
   assert.deepEqual(peace.macro.cycle.wars, []);
@@ -66,9 +71,11 @@ test("a reload replays the same cycle: the saved macro envelope gives the same n
 
 test("a boom pays cycle Gold as a world inflow the payer can spend this turn; the cycle Off moves nothing", () => {
   const civs = [me({ balanceCents: 0 }), ai(AI)];
-  const boom = plan({ civs, macro: macroWith({ e: 12000 }) });
+  const boom = plan({ civs, macro: macroWith({ e: 12000 }), options: { swings: "gentle" } });
   const gold = boom.transfers.find((t) => t.to === ME && t.reason === "cycle");
   assert.deepEqual([gold.from, gold.cents], ["cycle", 360], "E 1.18 after reverting: 0.18 * 0.2 of income");
+  const volatile = plan({ civs, macro: macroWith({ e: 12000 }) });
+  assert.equal(volatile.transfers.find((t) => t.to === ME && t.reason === "cycle").cents, 1800, "Volatile: 0.18 of income");
   const off = plan({ civs, macro: macroWith({ e: 12000 }), options: { cycle: "off" } });
   assert.deepEqual(off.transfers, []);
   assert.equal(off.macro.cycle.e, 10000, "Off rests the cycle");

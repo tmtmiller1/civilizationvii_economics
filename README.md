@@ -155,7 +155,8 @@ option off, everything is open from the start.
 | Tariffs | On | The tariff setting; needs Markets and trade bills |
 | Foreign investment | On | Development loans, general investment and aid |
 | Inflation | Off | Bond debt erodes idle Gold above the reserve and raises bond rates |
-| Business cycle | Standard | Off, Mild (half), Standard or Strong (half again): how far events move the economy |
+| Business cycle | Standard | Off, Mild (half), Standard or Strong (half again): how hard each event and each Panic moves the economy |
+| Economic swings | Volatile | Gentle, Volatile or Extreme: how far booms and slumps run. On Volatile a depression can take a third to half of your income for a few turns, about what an age's crisis takes |
 | Economic systems | On | Government and ideology set each civilization's economic system, and each computer player leans toward a government that suits its civilization; Off runs everyone mixed |
 
 ## Compatibility

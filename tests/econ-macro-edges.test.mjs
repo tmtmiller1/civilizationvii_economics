@@ -97,7 +97,9 @@ test("cycle Gold: nothing outside the cycle or with it off; the world stage and 
   const planned = { [ME]: { system: "planned", from: "planned", since: 0 } };
   const boom = ctxOf({ civs, macro: macroWith({ e: 12000 }, { systems: planned }) });
   assert.equal(cycleGoldFor(boom, civs[0]), 0);
-  assert.equal(cycleGoldFor(boom, civs[1]), 400);
+  assert.equal(cycleGoldFor(boom, civs[1]), 2000, "E 1.2 pays 0.2 of income");
+  const gentleBoom = ctxOf({ civs, macro: macroWith({ e: 12000 }, { systems: planned }), options: { swings: "gentle" } });
+  assert.equal(cycleGoldFor(gentleBoom, civs[1]), 400, "Gentle pays a fifth of that");
   assert.equal(cycleGoldFor(ctxOf({ civs, macro: macroWith({ e: 12000 }), options: { cycle: "off" } }), civs[1]), 0);
   assert.equal(cycleGoldFor(boom, civ(77)), 0, "a civ the readings don't hold");
   assert.deepEqual(worldStage(boom), { publicDebt: true, banking: true, capitalism: true });

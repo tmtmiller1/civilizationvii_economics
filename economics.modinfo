@@ -18,7 +18,7 @@
         <Package>Economics</Package>
         <PackageSortIndex>1000</PackageSortIndex>
         <ShowInBrowser>1</ShowInBrowser>
-        <Version>0.5.2</Version>
+        <Version>0.5.3</Version>
         <!-- The ledger (every loan, investment, block, miss and repudiation), the markets envelope and the macro
              envelope (the business cycle and each civ's economic system) live in the save, and the setup options
              are fixed when the game is created, so a save made with the mod needs it to load the same game. -->

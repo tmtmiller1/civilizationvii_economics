@@ -72,6 +72,11 @@ release is generated from the matching section below by `scripts/steam-changelog
   Economic systems (On).
 
 ### Changed
+- Booms and slumps can be big. A new setup option, Economic swings, sets how far they run: on Volatile, the default, a
+  downturn feeds on itself and a boom overshoots when it turns, so a depression can take a third to half of your
+  income for a few turns, about what an age's crisis takes, and a boom can add a quarter. Each game finds its own highs
+  and lows. Gentle keeps the old cycle, where a slump cost a few percent; Extreme runs wilder still. A Panic now hits
+  half as hard on Mild and half again as hard on Strong.
 - The turn notice shows Gold in whole numbers, like the top bar, and only speaks up when Economics moved 2 Gold or
   more that turn.
 - The debt pill sits in the top resource bar, after the settlement limit.

@@ -545,15 +545,16 @@ shrinking trade, falling income, disasters or a crisis. The World tab lists the 
 ledger keeps the event list, so a reload replays the same cycle.
 
 ```
-E_next  = E + 0.1 * (1 - E) + k * s * clamp(sum of this turn's event weights, -0.1, +0.1)
-          clamped to [0.7, 1.3]; E starts at 1.0
+E_next  = E + 0.1 * (1 - E) + m * (E - E_prev) + k * s * clamp(sum of this turn's event weights, -0.1, +0.1)
+          clamped to the Swings range; E starts at 1.0; E_prev is E a turn earlier
 L_next  = 0.8 * L + k * (weights of events the civ took part in), clamped to [-0.2, 0.2]
           a negative L is cut by the Warehouse share (4.13) plus the legacy cushion (4.16), together at most 35%
 growth  = world income now against 10 turns ago, in percent
 trend   = an average of growth that moves 4% of the way to each turn's reading (about 50 turns); the first reading sets it
 boom_n  = turns in a row the world has spent in Boom; any other phase sets it back to 0
 k       = Business cycle option: Off 0, Mild 0.5, Standard 1.0, Strong 1.5
-s       = world stage scale (4.15): 0.25, 0.6, 1.0; world index only
+m, g    = momentum and the Gold share, from the Economic swings option (table below)
+s       = world stage scale (4.15): the Swings early share before Public debt, then 0.6, 1.0; world index only
 lev     = (all outstanding loans) / max(world income, 10)      in turns; world income: the civs' positive income
 ```
 
@@ -569,7 +570,7 @@ them while it lasts:
 | Slump | 0.8 to below 0.95 | |
 | Steady | 0.95 to 1.05 | |
 | Boom | above 1.05 | |
-| Panic | a state, 5 turns | from the Banking stage (4.15). Starts when `lev > 1.7` turns and `E > 1.05`, with no Panic in the last 60 turns: `E -= 0.2` once, its own notification and chronicle entry. While it lasts the phase reads Panic, civ lenders stop offering (4.3), `cycle_spread` rises by 0.5, and Market and Merchant oligarchy civs take -0.05 on `L` once (4.17). After 5 turns the phase goes back to the range `E` is in, usually a Slump |
+| Panic | a state, 5 turns | from the Banking stage (4.15). Starts when `lev > 1.7` turns and `E > 1.05`, with no Panic within the Swings spacing (80 turns, 60 Gentle): `E -= 0.2 * k` once, its own notification and chronicle entry. While it lasts the phase reads Panic, civ lenders stop offering (4.3), `cycle_spread` rises by 0.5, and Market and Merchant oligarchy civs take -0.05 on `L` once (4.17). After 5 turns the phase goes back to the range `E` is in, usually a Slump |
 
 | Event | Weight | Source (probe) |
 | --- | --- | --- |
@@ -594,8 +595,21 @@ Effects:
 ```
 prices        target_r uses E (4.9)
 cycle_spread  = 2 - (E + L), + 0.5 during a Panic                    bond rate, per civ (4.3)
-cycle Gold    = round((E + L - 1) * 0.2 * max(0, income)) per civ per turn, + in a boom, - in a slump
+cycle Gold    = round((E + L - 1) * g * max(0, income)) per civ per turn, + in a boom, - in a slump
 ```
+
+The Economic swings setup option sets how far the cycle runs:
+
+| Swings | Momentum `m` | Gold share `g` | Range of `E` | `s` before Public debt | Panics at most once in |
+| --- | --- | --- | --- | --- | --- |
+| Gentle | 0 | 0.2 | 0.7 to 1.3 | 0.25 | 60 turns |
+| Volatile (default) | 0.8 | 1.0 | 0.5 to 1.5 | 0.4 | 80 turns |
+| Extreme | 0.9 | 1.0 | 0.5 to 1.5 | 0.4 | 80 turns |
+
+Momentum carries that share of last turn's move into this one, so a fall feeds on itself and a boom overshoots when it
+turns: with reversion at 0.1 a shock rings for a couple of swings about 20 turns apart before it settles. The same war
+can blow over in one game and become a depression in another, and each game finds its own highs and lows. A Panic's
+drop is carried the same way, which is why it scales with `k`.
 
 The turn notification names the events behind a phase change ("Slump: the war between Rome and Persia, a flood at
 Thebes").
@@ -625,6 +639,14 @@ hoard. The AI now takes build loans while its credit is cheap (section 6), lever
 the world's income, and the Panic line is 1.7 turns with 60 turns between Panics. Credit growth weighs +0.015 a turn,
 three times the first figure, so a borrowing wave lifts the world into Boom: at +0.005 the same games never boomed.
 The World tab shows leverage in turns against the line. Section 10 has the shape.
+
+Changed 2026-10-30 (offline only), owner's call: at Gentle (the cycle above) the deepest slump cost about 3% of a
+civ's income and the best boom added about 1%, too small to notice, and every game ran between 0.85 and 1.07. The
+owner wants swings on the order of an age's crisis, whose cards take a third to half of a civ's Gold. Slower reversion
+alone only made slumps longer, not deeper; momentum is what lets events build. The Economic swings option adds it,
+with Gentle kept as it was. In the Node simulation (7 games, 300 turns), Volatile at Standard: worst civ-turn -51% of
+income, best +27%, the world in Depression 5% of turns, Slump 24%, Boom 21%, floors 0.51 to 0.69 and ceilings 1.14 to
+1.27 across games, two Panics a game, no defaults (NOTES 118).
 
 ### 4.12 Foreign investment
 
@@ -1112,6 +1134,7 @@ Where the AI and the player are treated differently, and why:
 | Foreign investment | Off, On | On | 1.1 |
 | Inflation | Off, On | Off | 1.2 |
 | Business cycle | Off, Mild, Standard, Strong (`k`, 4.11) | Standard | 1.2 |
+| Economic swings | Gentle, Volatile, Extreme (momentum, Gold share and range, 4.11) | Volatile | 1.2 |
 | Economic systems | Off (every civ Mixed), On (4.17) | On | 1.2 |
 
 An option shows up in the release that ships its part. All Off: the Economics screen shows balances only and the mod

@@ -143,13 +143,17 @@ test("inflation reads only open bond debt owed by members, and members' Gold flo
 });
 
 test("a slump's charge is paid only from funds that hold it; a boom's Gold is a positive inflow only", () => {
+  // Gentle, so the charge is 0.2 of E - 1 on income.
   const slump = macroWith({ e: 9000 });
-  const charged = plan({ civs: [me({ balanceCents: 0, incomeCents: 10000 })], macro: slump });
+  const gentle = { swings: "gentle" };
+  const charged = plan({ civs: [me({ balanceCents: 0, incomeCents: 10000 })], macro: slump, options: gentle });
   assert.deepEqual(charged.transfers.map((t) => [t.loanId, t.from, t.to, t.cents]), [["CY3", ME, "cycle", 180]]);
-  const broke = plan({ civs: [me({ balanceCents: -9900, incomeCents: 10000 })], macro: slump });
+  const broke = plan({ civs: [me({ balanceCents: -9900, incomeCents: 10000 })], macro: slump, options: gentle });
   assert.deepEqual(broke.transfers, [], "100 of funds can't hold a 180 charge");
-  const exact = plan({ civs: [me({ balanceCents: -9820, incomeCents: 10000 })], macro: slump });
+  const exact = plan({ civs: [me({ balanceCents: -9820, incomeCents: 10000 })], macro: slump, options: gentle });
   assert.equal(exact.transfers.length, 1, "exactly the charge in funds pays it");
+  const volatile = plan({ civs: [me({ balanceCents: 0, incomeCents: 10000 })], macro: slump });
+  assert.deepEqual(volatile.transfers.map((t) => [t.from, t.cents]), [[ME, 900]], "Volatile charges all of E - 1");
   const level = plan({ civs: [me()], macro: macroWith({ e: 10000 }) });
   assert.deepEqual(level.transfers, []);
 });

@@ -484,6 +484,20 @@ here: Economics alone, Antiquity seed 4242, `--setup fast --quick`, `lab drive` 
 - TN.1 No turn notice for a net under 2 Gold; a larger one reads in whole Gold ("-13", not "-12.5").
 - BR.1 The setup screen reads "Base Interest Rate" with the new tooltip.
 
+## Owed: Economic swings (0.5.3)
+
+Built 2026-10-30, offline only (NOTES 118). Nothing here has been seen in a game.
+
+- SW.1 The setup screen lists Economic swings after Business cycle, Volatile by default, with the three descriptions.
+- SW.2 On Volatile, over a 100-turn soak into Exploration, the World tab's index leaves 0.85 to 1.07: a slump runs
+  on for several turns after the war or crisis that started it, and a boom overshoots before it turns. The cycle line
+  on the Treasury tab and the turn notice show tens of Gold in a deep slump for a civ with about 60 income.
+- SW.3 The AIs carry a Volatile depression: no AI default the turns after one starts, and their own balances stay
+  above the game's negative line (the auto-loan guard covers them where it must).
+- SW.4 A save made mid-depression with the index below 0.7 loads with the same index (`__towerEconomics.session()
+  .macro.cycle.e`), not 1.0.
+- SW.5 On Gentle the cycle runs as 0.5.2 did; on Mild a Panic drops the index by 0.1.
+
 ## Owed: model fixes
 
 Built 2026-10-30 on the `model-fixes` branch, offline only (NOTES findings P to U and W to Y, choices from 102). Nothing here has

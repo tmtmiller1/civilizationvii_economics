@@ -9,8 +9,8 @@
 import { BOND, CITIZENS, CYCLE, CYCLE_RULES as R, CYCLE_WEIGHTS as W, INFLATION, PLAN, SHORT_TERM }
   from "./econ-params.js";
 import { civSum, crisisEvents, cycleGoldCents, emptyCycle, engineEvents, growthBp, ledgerEvents, leverPct,
-  nextBoomTurns, nextE, nextL, nextTrendBp, overheatEvents, pairKey, panicStarts, routeEvents, stageScalePct,
-  trendEvents, warEvents, worldSum } from "./econ-cycle.js";
+  nextBoomTurns, nextE, nextL, nextTrendBp, overheatEvents, pairKey, panicDropBp, panicStarts, routeEvents,
+  stageScalePct, swingFor, trendEvents, warEvents, worldSum } from "./econ-cycle.js";
 import { erosionCents, largestDebtor, piPpm } from "./econ-inflation.js";
 import { nextSystems } from "./econ-systems.js";
 import { cycleKPct, emptyInflation, macroReadings } from "./econ-macro-state.js";
@@ -127,10 +127,12 @@ function cycleStep(ctx, input, reforms) {
   const boomBefore = state.boomTurns;
   const { events, outstanding, income } = turnEvents(ctx, input);
   const stage = worldStage(ctx);
-  state.e = nextE(state.e, worldSum(events), kPct, stageScalePct(stage));
-  const panicked = panicStarts({ allowed: stage.banking, e: state.e, lastPanic: state.lastPanic, turn: ctx.turn,
+  const swing = swingFor(ctx.options.swings);
+  state.e = nextE(state.e, worldSum(events), kPct, stageScalePct(stage, swing),
+    { prev: state.history.at(-2) ?? state.e, swing });
+  const panicked = panicStarts({ allowed: stage.banking, e: state.e, lastPanic: state.lastPanic, turn: ctx.turn, swing,
     leverPct: leverPct(outstanding, [income]) });
-  if (panicked) startPanic(ctx);
+  if (panicked) startPanic(ctx, kPct, swing);
   state.boomTurns = nextBoomTurns(state.boomTurns, state.e);
   for (const civ of ctx.civs) if (civ.alive === true) civCycle(ctx, civ, { events, kPct, reform: reforms.has(civ.id),
     panicked });
@@ -141,12 +143,15 @@ function cycleStep(ctx, input, reforms) {
 }
 
 /**
- * A Panic (DESIGN 4.11): E drops by 0.2 once, its own event (a chronicle entry) and notice, for 5 turns.
+ * A Panic (DESIGN 4.11): E drops once (0.2 at Standard, scaled by the Business cycle option), its own event (a
+ * chronicle entry) and notice, for 5 turns.
  * @param {TurnContext} ctx
+ * @param {number} kPct
+ * @param {import("./econ-cycle.js").Swing} swing
  */
-function startPanic(ctx) {
+function startPanic(ctx, kPct, swing) {
   const state = ctx.macro.cycle;
-  state.e = Math.max(R.eMin, state.e - R.panicDrop);
+  state.e = Math.max(swing.eMin, state.e - panicDropBp(kPct));
   state.panicUntil = ctx.turn + R.panicTurns;
   state.lastPanic = ctx.turn;
   event(ctx, { kind: "panic", until: state.panicUntil, chronicle: 1 });
@@ -246,7 +251,7 @@ function phaseNotices(ctx) {
 export function cycleGoldFor(ctx, civ) {
   const reading = ctx.readings.civ.get(civ.id);
   if (!reading || ctx.readings.kPct === 0 || termsFor(ctx, civ.id).outOfCycle) return 0;
-  return cycleGoldCents(reading.index, civ.incomeCents);
+  return cycleGoldCents(reading.index, civ.incomeCents, swingFor(ctx.options.swings));
 }
 
 /**

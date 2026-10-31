@@ -32,7 +32,7 @@ const AGE_GOLD_MIN_CENTS = 10000;
 /** @type {PlanOptions} */
 export const DEFAULT_OPTIONS = { loans: true, guard: true, ai: true, rates: "standard", stages: true,
   taxFallback: false, markets: true, tariffs: true, investment: true, inflation: false, cycle: "standard",
-  systems: true };
+  swings: "volatile", systems: true };
 
 /**
  * @param {Loan} a

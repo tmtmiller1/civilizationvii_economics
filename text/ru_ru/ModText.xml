@@ -375,15 +375,23 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_ON" Language="ru_RU"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_ON_DESCRIPTION" Language="ru_RU"><Text>Bond debt erodes idle Gold above the reserve and raises bond rates.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_NAME" Language="ru_RU"><Text>Business cycle</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_DESCRIPTION" Language="ru_RU"><Text>Wars, captures, disasters, the age's crisis, defaults and changes in trade move a world economic index and each civilization's own economy through booms and slumps. A boom pays a little Gold each turn and makes bonds cheaper; a slump takes a little and makes them dearer.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_DESCRIPTION" Language="ru_RU"><Text>Wars, captures, disasters, the age's crisis, defaults and changes in trade move a world economic index and each civilization's own economy through booms and slumps. A boom pays Gold each turn and makes bonds cheaper; a slump takes Gold and makes them dearer. This sets how hard each event and each Panic hits; Economic swings sets how far the economy runs.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_OFF" Language="ru_RU"><Text>Off</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_OFF_DESCRIPTION" Language="ru_RU"><Text>The economy stays steady.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_MILD" Language="ru_RU"><Text>Mild</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_MILD_DESCRIPTION" Language="ru_RU"><Text>Events move the economy half as much.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_MILD_DESCRIPTION" Language="ru_RU"><Text>Events and Panics move the economy half as much.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_STANDARD" Language="ru_RU"><Text>Standard</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_STANDARD_DESCRIPTION" Language="ru_RU"><Text>Events move the economy by their full weight.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_STRONG" Language="ru_RU"><Text>Strong</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_STRONG_DESCRIPTION" Language="ru_RU"><Text>Events move the economy half again as much.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_STRONG_DESCRIPTION" Language="ru_RU"><Text>Events and Panics move the economy half again as much.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SWINGS_NAME" Language="ru_RU"><Text>Economic swings</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SWINGS_DESCRIPTION" Language="ru_RU"><Text>How far booms and slumps run. With momentum, a downturn feeds on itself and a boom overshoots when it turns, so the same war can blow over in one game and become a depression in another.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SWINGS_GENTLE" Language="ru_RU"><Text>Gentle</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SWINGS_GENTLE_DESCRIPTION" Language="ru_RU"><Text>The economy drifts back to normal quickly. A deep slump costs a few percent of your income.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SWINGS_VOLATILE" Language="ru_RU"><Text>Volatile</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SWINGS_VOLATILE_DESCRIPTION" Language="ru_RU"><Text>Booms and busts build on themselves. A depression can take a third to half of your income for a few turns, about as much as an age's crisis, and a boom can add a quarter.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SWINGS_EXTREME" Language="ru_RU"><Text>Extreme</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_SWINGS_EXTREME_DESCRIPTION" Language="ru_RU"><Text>Wilder still: booms run higher, busts fall further and both last longer.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_SYSTEMS_NAME" Language="ru_RU"><Text>Economic systems</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_SYSTEMS_DESCRIPTION" Language="ru_RU"><Text>Each civilization's government, or its ideology in the Modern age, sets how its economy runs: Despotism lives on tribute, a Classical Republic borrows from its citizens, Communism plans production, and more. The Fiscal tab shows what yours changes. Each computer player leans toward a government that suits its civilization, so they spread across the systems.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_SYSTEMS_OFF" Language="ru_RU"><Text>Off</Text></Replace>

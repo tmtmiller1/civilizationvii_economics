@@ -241,6 +241,8 @@ declare global {
     investment: boolean;
     inflation: boolean;
     cycle: string;
+    /** The Swings option: gentle, volatile or extreme; absent reads volatile. */
+    swings?: string;
     systems: boolean;
   }
 

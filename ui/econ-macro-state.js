@@ -5,7 +5,7 @@
 // key keeps the markets envelope as 1.1 left it. At most 32 KB; load refuses anything that isn't ours without
 // throwing, and save(load(x)) is a fixed point.
 
-import { CYCLE_K_PCT, CYCLE_RULES } from "./econ-params.js";
+import { CYCLE_K_PCT, CYCLE_RULES, CYCLE_SWINGS } from "./econ-params.js";
 import { effectiveL, emptyCycle, phaseOf, spreadPct } from "./econ-cycle.js";
 import { blendedTerms, isSystemId, termsOf } from "./econ-systems.js";
 import { utf8Bytes } from "./econ-state.js";
@@ -95,7 +95,9 @@ export function sanitizeCycle(input) {
   const raw = /** @type {Record<string, any>} */ (input);
   const inRange = (/** @type {unknown} */ x, /** @type {number} */ lo, /** @type {number} */ hi) => isInt(x)
     && /** @type {number} */ (x) >= lo && /** @type {number} */ (x) <= hi;
-  if (inRange(raw.e, CYCLE_RULES.eMin, CYCLE_RULES.eMax)) out.e = raw.e;
+  // The widest range any Swings profile allows: a save doesn't say which profile wrote it.
+  const swings = Object.values(CYCLE_SWINGS);
+  if (inRange(raw.e, Math.min(...swings.map((p) => p.eMin)), Math.max(...swings.map((p) => p.eMax)))) out.e = raw.e;
   out.l = cleanByPid(raw.l, (v) => inRange(v, -CYCLE_RULES.lMax, CYCLE_RULES.lMax));
   out.history = cleanInts(raw.history, CYCLE_RULES.historyTurns);
   out.wars = Array.isArray(raw.wars) ? [...new Set(raw.wars.filter(isPair))].sort() : [];

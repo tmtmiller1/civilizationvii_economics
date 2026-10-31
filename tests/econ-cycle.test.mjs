@@ -3,8 +3,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { civSum, crisisEvents, cycleGoldCents, effectiveL, emptyCycle, engineEvents, growthBp, ledgerEvents, leverPct,
-  nextBoomTurns, nextE, nextL, nextTrendBp, overheatEvents, pairKey, panicStarts, phaseOf, routeEvents, spreadPct,
-  stageScalePct, trendEvents, warEvents, worldSum } from "../ui/econ-cycle.js";
+  nextBoomTurns, nextE, nextL, nextTrendBp, overheatEvents, pairKey, panicDropBp, panicStarts, phaseOf, routeEvents,
+  spreadPct, stageScalePct, swingFor, trendEvents, warEvents, worldSum } from "../ui/econ-cycle.js";
 
 test("E reverts a tenth of the way to 1.0 a turn and doesn't move on a turn with no events", () => {
   assert.equal(nextE(10000, 0, 100, 100), 10000);
@@ -13,16 +13,30 @@ test("E reverts a tenth of the way to 1.0 a turn and doesn't move on a turn with
   assert.equal(nextE(9000, 0, 0, 100), 9100, "k only scales the events");
 });
 
-test("E: k * s * the clamped sum, then 0.7 to 1.3", () => {
+const gentle = swingFor("gentle");
+
+test("E: k * s * the clamped sum, then the profile's range (0.5 to 1.5, 0.7 to 1.3 Gentle)", () => {
   assert.equal(nextE(10000, -200, 100, 100), 9800);
   assert.equal(nextE(10000, -200, 150, 100), 9700, "Strong");
   assert.equal(nextE(10000, -200, 50, 100), 9900, "Mild");
   assert.equal(nextE(10000, -200, 100, 25), 9950, "before Public debt the world barely moves");
   assert.equal(nextE(10000, -200, 100, 60), 9880);
-  assert.equal(nextE(7100, -1000, 150, 100), 7000, "never below 0.7");
-  assert.equal(nextE(12900, 1000, 150, 100), 13000, "never above 1.3");
+  assert.equal(nextE(7100, -1000, 150, 100, { swing: gentle }), 7000, "Gentle: never below 0.7");
+  assert.equal(nextE(12900, 1000, 150, 100, { swing: gentle }), 13000, "Gentle: never above 1.3");
+  assert.equal(nextE(5100, -1000, 150, 100), 5000, "never below 0.5");
+  assert.equal(nextE(14900, 1000, 150, 100), 15000, "never above 1.5");
   assert.equal(worldSum([{ kind: "x", a: null, b: null, w: -5000, world: true }]), -1000, "the turn's sum is +-0.1");
   assert.equal(worldSum([{ kind: "x", a: null, b: null, w: 5000, world: true }]), 1000);
+});
+
+test("momentum carries a share of last turn's move: 0.8 Volatile, 0.9 Extreme, none Gentle", () => {
+  assert.equal(nextE(9500, 0, 100, 100, { prev: 10000 }), 9150, "0.95 + 0.005 back - 0.04 carried");
+  assert.equal(nextE(9500, 0, 100, 100, { prev: 10000, swing: swingFor("extreme") }), 9100);
+  assert.equal(nextE(9500, 0, 100, 100, { prev: 10000, swing: gentle }), 9550);
+  assert.equal(nextE(10500, 0, 100, 100, { prev: 10000 }), 10850, "a rise carries the same way");
+  assert.equal(nextE(9500, 0, 100, 100), 9550, "no last turn, nothing carried");
+  assert.equal(swingFor("nonsense"), swingFor("volatile"), "an unknown value reads Volatile");
+  assert.equal(swingFor(undefined), swingFor("volatile"));
 });
 
 test("L decays at 0.8 (0.7 for Market), takes k * mult * its own events, and stays within +-0.2", () => {
@@ -148,8 +162,10 @@ test("phases: Depression below 0.8, Slump to 0.95, Steady to 1.05, Boom above", 
   assert.equal(phaseOf(10501), "boom");
 });
 
-test("the stage scale: 0.25, then 0.6 from Public debt, 1.0 from Capitalism", () => {
-  assert.equal(stageScalePct({ publicDebt: false, capitalism: false }), 25);
+test("the stage scale: 0.4 (0.25 Gentle), then 0.6 from Public debt, 1.0 from Capitalism", () => {
+  assert.equal(stageScalePct({ publicDebt: false, capitalism: false }), 40);
+  assert.equal(stageScalePct({ publicDebt: false, capitalism: false }, gentle), 25);
+  assert.equal(stageScalePct({ publicDebt: true, capitalism: false }, gentle), 60);
   assert.equal(stageScalePct({ publicDebt: true, capitalism: false }), 60);
   assert.equal(stageScalePct({ publicDebt: true, capitalism: true }), 100);
   assert.equal(stageScalePct({ publicDebt: false, capitalism: true }), 100);
@@ -171,20 +187,27 @@ test("the spread is 2 - (E + L), +0.5 in a Panic; cycle Gold follows E + L - 1 o
   assert.equal(spreadPct(8000, false), 120);
   assert.equal(spreadPct(12000, false), 80);
   assert.equal(spreadPct(10000, true), 150);
-  assert.equal(cycleGoldCents(11000, 10000), 200, "a boom pays 0.1 * 0.2 of income");
-  assert.equal(cycleGoldCents(9000, 10000), -200, "a slump charges the same");
+  assert.equal(cycleGoldCents(11000, 10000), 1000, "a boom pays 0.1 of income");
+  assert.equal(cycleGoldCents(9000, 10000), -1000, "a slump charges the same");
+  assert.equal(cycleGoldCents(6000, 10000), -4000, "a depression at 0.6 takes 40%");
+  assert.equal(cycleGoldCents(11000, 10000, gentle), 200, "Gentle pays 0.1 * 0.2 of income");
   assert.equal(cycleGoldCents(10000, 10000), 0);
   assert.equal(cycleGoldCents(9000, -500), 0, "nothing on negative income");
 });
 
-test("Panic: from the Banking stage, leverage above 1.7 turns of world income, E above 1.05, none in 60 turns", () => {
-  const base = { allowed: true, leverPct: 171, e: 10501, lastPanic: null, turn: 80 };
+test("Panic: from the Banking stage, leverage above 1.7 turns of world income, E above 1.05, none in 80 turns", () => {
+  const base = { allowed: true, leverPct: 171, e: 10501, lastPanic: null, turn: 100 };
   assert.equal(panicStarts(base), true);
   assert.equal(panicStarts({ ...base, allowed: false }), false);
   assert.equal(panicStarts({ ...base, leverPct: 170 }), false);
   assert.equal(panicStarts({ ...base, e: 10500 }), false);
   assert.equal(panicStarts({ ...base, lastPanic: 21 }), false);
   assert.equal(panicStarts({ ...base, lastPanic: 20 }), true);
+  assert.equal(panicStarts({ ...base, turn: 80, lastPanic: 20, swing: gentle }), true, "Gentle: 60 turns");
+  assert.equal(panicStarts({ ...base, turn: 80, lastPanic: 21, swing: gentle }), false);
+  assert.equal(panicDropBp(100), 2000, "a Panic drops E 0.2 at Standard");
+  assert.equal(panicDropBp(50), 1000, "0.1 Mild");
+  assert.equal(panicDropBp(150), 3000, "0.3 Strong");
   assert.equal(leverPct(300000, [100000, 100000, -500000]), 150, "1.5 turns of income; a negative income counts 0");
   assert.equal(leverPct(1500, [0]), 150, "the world's income counts as at least 10 Gold");
   assert.equal(leverPct(-5, [100000]), 0);

@@ -98,11 +98,22 @@ export const INVEST = { goldPerProgress: 3, term: 25, projectMille: 50, roleProj
 // all outstanding loans in hundredths of a turn of the world's positive income: panicLeverPct 170 is 1.7 turns.
 /** @type {Record<string, number>} */
 export const CYCLE_K_PCT = { off: 0, mild: 50, standard: 100, strong: 150 };
-export const CYCLE_RULES = { one: 10000, reversionPct: 10, worldClamp: 1000, eMin: 7000, eMax: 13000, lMax: 2000,
+export const CYCLE_RULES = { one: 10000, reversionPct: 10, worldClamp: 1000, lMax: 2000,
   lDecayPct: 80, depression: 8000, slump: 9500, boom: 10500, panicLeverPct: 170, panicDrop: 2000, panicTurns: 5,
-  panicEveryTurns: 60, panicSpreadPct: 50, goldPct: 20, historyTurns: 30, eventsKept: 24, warehouseBp: 300,
-  warehouseMaxBp: 3000, cushionMaxBp: 1000, cutMaxBp: 3500, scaleEarlyPct: 25, scalePublicDebtPct: 60,
+  panicSpreadPct: 50, historyTurns: 30, eventsKept: 24, warehouseBp: 300,
+  warehouseMaxBp: 3000, cushionMaxBp: 1000, cutMaxBp: 3500, scalePublicDebtPct: 60,
   scaleCapitalismPct: 100, minLeverIncomeCents: 1000 };
+// The Swings setup option: how far the cycle runs. Momentum carries that share of last turn's move into this one, so
+// a fall feeds on itself and a boom overshoots when it turns; goldPct is the share of E + L - 1 paid or charged on
+// income; E stays within eMin to eMax; scaleEarlyPct is s before Public debt; Panics come at most once in
+// panicEveryTurns. Gentle is the cycle before 0.5.3. Volatile's worst turns cost about half a civ's income in the
+// Node simulation, about what an age's crisis takes (NOTES 118).
+/** @type {Record<string, { momentumPct: number, goldPct: number, eMin: number, eMax: number, scaleEarlyPct: number,
+ *   panicEveryTurns: number }>} */
+export const CYCLE_SWINGS = {
+  gentle: { momentumPct: 0, goldPct: 20, eMin: 7000, eMax: 13000, scaleEarlyPct: 25, panicEveryTurns: 60 },
+  volatile: { momentumPct: 80, goldPct: 100, eMin: 5000, eMax: 15000, scaleEarlyPct: 40, panicEveryTurns: 80 },
+  extreme: { momentumPct: 90, goldPct: 100, eMin: 5000, eMax: 15000, scaleEarlyPct: 40, panicEveryTurns: 80 } };
 // Event weights in basis points (DESIGN 4.11's table). The caps bound a sum of one kind in a turn. World income is
 // read against its own trend, an average of its 10-turn growth that moves 4% of the way to each new read (about 50
 // turns); each turn the world has spent in Boom pulls E down by 0.002 more, up to the cap.
