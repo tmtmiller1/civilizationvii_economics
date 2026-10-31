@@ -117,6 +117,7 @@
         <Row Tag="LOC_ECONOMICS_TREASURY_BALANCE"><Text>Balance</Text></Row>
         <Row Tag="LOC_ECONOMICS_TREASURY_INCOME"><Text>Income per turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_TREASURY_UPKEEP"><Text>Upkeep per turn</Text></Row>
+        <Row Tag="LOC_ECONOMICS_TREASURY_ESCROW"><Text>In escrow for next turn's payments</Text></Row>
         <Row Tag="LOC_ECONOMICS_TREASURY_OUTSTANDING"><Text>Owed on loans</Text></Row>
         <Row Tag="LOC_ECONOMICS_TREASURY_DUE_NEXT"><Text>Loan payments due next turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_TREASURY_SERVICE_SHARE"><Text>Share of income going to loans</Text></Row>
@@ -181,6 +182,7 @@
         <Row Tag="LOC_ECONOMICS_TREASURY_MOD_NET_LATER"><Text>The breakdown shows again after the next turn.</Text></Row>
         <Row Tag="LOC_ECONOMICS_TREASURY_MOD_NET_NONE"><Text>Economics didn't move any of your Gold last turn.</Text></Row>
         <Row Tag="LOC_ECONOMICS_FLOW_LABEL_LOANS"><Text>Loans</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FLOW_LABEL_ESCROW"><Text>Escrow (held for payments, back when they're made)</Text></Row>
         <Row Tag="LOC_ECONOMICS_FLOW_LABEL_TRADE"><Text>Trade bills</Text></Row>
         <Row Tag="LOC_ECONOMICS_FLOW_LABEL_INVESTMENT"><Text>Investment</Text></Row>
         <Row Tag="LOC_ECONOMICS_FLOW_LABEL_CYCLE"><Text>Business cycle</Text></Row>
@@ -358,6 +360,7 @@
         <Row Tag="LOC_ECONOMICS_NOTICE_NET"><Text>Your treasury moved by {1_Amount} Gold this turn, from {2_Flows}.</Text></Row>
         <Row Tag="LOC_ECONOMICS_NOTICE_NET_PLAIN"><Text>Your treasury moved by {1_Amount} Gold this turn.</Text></Row>
         <Row Tag="LOC_ECONOMICS_FLOW_LOANS"><Text>loans</Text></Row>
+        <Row Tag="LOC_ECONOMICS_FLOW_ESCROW"><Text>the escrow for your next payments</Text></Row>
         <Row Tag="LOC_ECONOMICS_FLOW_TRADE"><Text>trade bills</Text></Row>
         <Row Tag="LOC_ECONOMICS_FLOW_INVESTMENT"><Text>investment</Text></Row>
         <Row Tag="LOC_ECONOMICS_FLOW_CYCLE"><Text>the business cycle</Text></Row>
@@ -633,6 +636,7 @@
         <Row Tag="LOC_ECONOMICS_LENDER_INFLATION"><Text>inflation</Text></Row>
         <Row Tag="LOC_ECONOMICS_LENDER_CYCLE"><Text>the business cycle</Text></Row>
         <Row Tag="LOC_ECONOMICS_LENDER_PLAN"><Text>the plan</Text></Row>
+        <Row Tag="LOC_ECONOMICS_LENDER_ESCROW"><Text>the escrow</Text></Row>
         <Row Tag="LOC_ECONOMICS_REASON_UNMET"><Text>you haven't met them yet.</Text></Row>
         <Row Tag="LOC_OPTIONS_GROUP_ECONOMICS"><Text>Economics</Text></Row>
         <Row Tag="LOC_ECONOMICS_OPTIONS_SPOIL_GUARD"><Text>Spoil Guard</Text></Row>

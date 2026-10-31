@@ -26,6 +26,7 @@ import { aiMacro, cycleInflows, macroPayerSteps, macroSnapshot } from "./econ-ma
 import { citizenInterest, citizenMiss } from "./econ-citizens.js";
 import { cycleKPct, emptyMacro } from "./econ-macro-state.js";
 import { distressOf, loanGrowth } from "./econ-distress.js";
+import { aiPreferenceRows, holdEscrow, releaseEscrow } from "./econ-escrow.js";
 
 /** The smallest drop across an age change that's recorded as the game's cap, not the turn's own spending. */
 const AGE_GOLD_MIN_CENTS = 10000;
@@ -53,7 +54,7 @@ export function planTurn(input) {
   /** @type {PlanOutput} */
   const out = { ledger, transfers: [], influence: [], celebration: [], grievances: [], relationships: [], events: [],
     notices: [], batch: null, skipped: null, markets: input.markets || emptyMarkets(), progress: [], trade: [],
-    macro: input.macro || emptyMacro() };
+    macro: input.macro || emptyMacro(), aiPreferences: [] };
   const skipped = skipReason(input, options, ledger);
   if (skipped) return { ...out, skipped };
   const ctx = turnContext(input, options, out);
@@ -97,12 +98,24 @@ function proposeStep(ctx) {
   aiCommerce(ctx, ai);
   aiMacro(ctx, ai);
   if (ctx.options.loans) for (const civ of ai) aiBuildBorrow(ctx, civ);
-  cycleInflows(ctx);
+  inflowStep(ctx);
   if (ctx.options.taxFallback) for (const civ of live) taxOne(ctx, civ);
   refinanceStep(ctx, live, ai);
   for (const civ of live) payerSteps(ctx, civ.id, extras);
   tradeNotices(ctx);
+  holdEscrow(ctx, live);
   if (ctx.options.loans) shortfallStep(ctx, live, ai);
+  ctx.out.aiPreferences = aiPreferenceRows(ctx, ai);
+}
+
+/**
+ * The world inflows a payer's funds count this turn (DESIGN 4.14 step 3): a boom's cycle Gold, and what the civ held
+ * in escrow for this turn's payments (AI-PLAN 4.2).
+ * @param {TurnContext} ctx
+ */
+function inflowStep(ctx) {
+  cycleInflows(ctx);
+  releaseEscrow(ctx);
 }
 
 /**
@@ -356,6 +369,7 @@ function finishTurn(ctx) {
   ledger.repudiations = ledger.repudiations.filter((row) => turn - row.turn < STANDING.repudiationWindowTurns);
   ledger.blocks = ledger.blocks.filter((block) => block.untilTurn === null || turn < block.untilTurn);
   ledger.capHits = ledger.capHits.filter((row) => turn - row.turn <= 1 && isAlive(ctx, row.pid));
+  ledger.distress = ledger.distress.filter((row) => turn - row.turn <= 1 && isAlive(ctx, row.pid));
   ledger.lastTurn = turn;
   ledger.batchSeq += 1;
   ledger.lastBatch = commitBatch(ctx.batch, { id: `B${ledger.batchSeq}`, turn, civs: ctx.civs, prior: ledger.lastBatch });

@@ -94,7 +94,7 @@ test("on load, a batch saved this turn whose grants never landed is re-sent, and
   // The balance still reads the snapshot: the save fell before the grant landed.
   const reloaded = loadSession();
   assert.deepEqual(resendLostBatch(reloaded).map((r) => r.pid), [0]);
-  assert.ok(world.calls.some((c) => c === `grant 0 1 ${row.net / 100}`));
+  assert.ok(world.calls.some((c) => c === `grant 0 1 ${row.paid / 100}`), world.calls.join("\n"));
   // Now the balance reads snapshot + net: nothing to do.
   world.civs.get(0).balance = (row.snapshot + row.net) / 100;
   assert.deepEqual(resendLostBatch(loadSession()), []);

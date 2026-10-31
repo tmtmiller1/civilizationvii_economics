@@ -48,7 +48,8 @@ test("an AI borrows from the bond market and the Gold lands on its role building
   assert.deepEqual([loan.lender, loan.borrower, loan.term, loan.ratePpm], ["bond", AI, 10, 20000]);
   assert.equal(loan.principal, 16400, "the most whose first payment fits half of 40 Gold, in whole 4 Gold points");
   assert.deepEqual(out.transfers.map((t) => [t.loanId, t.from, t.to, t.cents, t.reason]),
-    [[loan.id, "bond", "progress", 16400, "principal"]], "the borrower never holds the Gold");
+    [[loan.id, "bond", "progress", 16400, "principal"], [`EH${AI}`, AI, "escrow", 1968, "escrow"]],
+    "the borrower never holds the Gold; it puts next turn's payment (16.40 and 3.28) into escrow");
   assert.deepEqual(out.progress, [{ host: AI, cityId: "6:2", amount: 41, investmentId: loan.id }]);
   assert.deepEqual(out.ledger.buildTurns, [{ pid: AI, turn: 50 }]);
   const soon = plan({ civs: [civ(ME, { human: true }), ai()], turn: 59, ledger: out.ledger });
@@ -76,7 +77,8 @@ test("a civ lender lends cheaper than the bond market, and its Gold goes straigh
   assert.deepEqual([loan.lender, loan.ratePpm], [LENDER, 8000]);
   assert.deepEqual(out.transfers.find((t) => t.loanId === loan.id).to, "progress");
   assert.equal(out.batch.civs.find((row) => row.pid === LENDER).net, -loan.principal);
-  assert.equal(out.batch.civs.find((row) => row.pid === AI).net, 0, "the borrower's Gold doesn't move this turn");
+  assert.equal(out.batch.civs.find((row) => row.pid === AI).net, -1987,
+    "the borrower's Gold moves only into escrow, for next turn's payment");
 });
 
 test("none in a Slump, a Panic, a default, insolvency, at the open-loan limit, for the player, or with Loans off", () => {

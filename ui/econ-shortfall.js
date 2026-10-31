@@ -108,6 +108,7 @@ export function guardFor(ctx, civ) {
 export function refinanceFor(ctx, civ) {
   const read = distressOf(ctx, civ.id);
   if (!read.short) return { read, loan: null, reason: null };
+  noteDistress(ctx, civ.id);
   const why = () => {
     if (!(civ.incomeCents > 0) || isInsolventCiv(ctx, civ.id)) return "income";
     if (isAtLoanLimit(ctx, civ.id)) return "loan-limit";
@@ -130,6 +131,29 @@ export function refinanceFor(ctx, civ) {
   event(ctx, fields);
   notice(ctx, civ.id, fields);
   return { read, loan, reason: null };
+}
+
+/**
+ * A civ whose dues passed its funds is in distress this turn and the next (the escrow's two-turn hold and the AI's
+ * budget scaling read it, AI-PLAN 4.2); the ledger keeps the turn so a reload agrees.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ */
+function noteDistress(ctx, pid) {
+  ctx.distressed.add(pid);
+  const row = ctx.ledger.distress.find((x) => x.pid === pid);
+  if (row) row.turn = ctx.turn; else ctx.ledger.distress.push({ pid, turn: ctx.turn });
+}
+
+/**
+ * Whether a civ is in distress: short this turn, or last turn (AI-PLAN 4.2).
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ */
+export function inDistress(ctx, pid) {
+  if (ctx.distressed.has(pid)) return true;
+  const row = ctx.ledger.distress.find((x) => x.pid === pid);
+  return !!row && ctx.turn - row.turn <= 1;
 }
 
 /**

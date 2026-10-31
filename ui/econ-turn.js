@@ -41,7 +41,7 @@ export function turnContext(input, options, out) {
     capPpm: rateCapPpm(age, rates) ?? Infinity, civ: new Map(civs.map((civ) => [civ.id, civ])),
     batch: createBatch(civs), routes: Array.isArray(input.routes) ? input.routes : [],
     markets: input.markets ? cloneMarkets(input.markets) : emptyMarkets(), trade: [], owed: [], macro,
-    readings: macroReadings(macro, { civs, turn, options }), basePrices: {}, unmet };
+    readings: macroReadings(macro, { civs, turn, options }), basePrices: {}, unmet, distressed: new Set() };
 }
 
 /**

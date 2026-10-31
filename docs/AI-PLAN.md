@@ -111,6 +111,10 @@ borrower's treasury into an escrow account in the ledger; the payment is made fr
 read the balance, so the committed Gold is out of its reach; the human sees an "in escrow" line on the Treasury tab
 and the same hold. Conservation (4.14) gets an escrow account; invariants check it nets to zero over a loan's life.
 
+Built 2026-10-31 (stage B, NOTES choices 123 to 125): the account is `escrow`, the hold runs after the payments
+within what the civ has left, distress lasts the turn and the next (so the two-turn hold bites the turn after, when
+the income is in), debt-8 checks the books, and the Treasury tab shows the line.
+
 This is the one lever that's certain. The second is now watched (4.7): `Players.AI.get(pid).scaleAiPreference(system,
 item, factor)` changes what an AI builds and earns, in the direction of the arguments. Decided use, for an AI whose
 debt service is above a tenth of its income, called each turn while that holds:

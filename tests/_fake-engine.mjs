@@ -95,6 +95,7 @@ export function installFakeEngine(spec = {}) {
     },
     getAliveMajorIds: () => [...world.civs.values()].filter((c) => c.alive && c.major).map((c) => c.id),
     grantYield: (pid, yieldType, amount) => record(`grant ${pid} ${yieldType} ${amount}`),
+    AI: { get: (pid) => ({ scaleAiPreference: (system, item, factor) => record(`scale ${pid} ${system} ${item} ${factor}`) }) },
   };
   const fake = {
     Players: players,

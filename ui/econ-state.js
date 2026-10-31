@@ -14,8 +14,8 @@ export const VERSION = 3;
 /** @returns {Ledger} */
 export function emptyLedger() {
   return { age: null, nextId: 1, lastTurn: null, batchSeq: 0, loans: [], blocks: [], misses: [], repudiations: [],
-    guardTurns: [], buildTurns: [], capHits: [], lowIncome: [], taxes: [], events: [], lastBatch: null, investments: [],
-    offers: [], nextInvestId: 1 };
+    guardTurns: [], buildTurns: [], capHits: [], lowIncome: [], escrow: [], distress: [], taxes: [], events: [],
+    lastBatch: null, investments: [], offers: [], nextInvestId: 1 };
 }
 
 /**
@@ -35,7 +35,8 @@ export function cloneLedger(ledger) {
     loans: copyRows(ledger.loans), blocks: copyRows(ledger.blocks), misses: copyRows(ledger.misses),
     repudiations: copyRows(ledger.repudiations), guardTurns: copyRows(ledger.guardTurns),
     buildTurns: copyRows(ledger.buildTurns || []),
-    capHits: copyRows(ledger.capHits), lowIncome: copyRows(ledger.lowIncome), taxes: copyRows(ledger.taxes),
+    capHits: copyRows(ledger.capHits), lowIncome: copyRows(ledger.lowIncome), escrow: copyRows(ledger.escrow || []),
+    distress: copyRows(ledger.distress || []), taxes: copyRows(ledger.taxes),
     events: copyRows(ledger.events),
     lastBatch: ledger.lastBatch ? { ...ledger.lastBatch, civs: copyRows(ledger.lastBatch.civs) } : null,
     investments: copyRows(ledger.investments || []), offers: copyRows(ledger.offers || []),
@@ -146,7 +147,7 @@ function cleanBlocks(raw) {
 /**
  * Rows of { pid, <field> } with an integer field; `unique` keeps the first row per pid.
  * @param {unknown} raw
- * @param {"turn" | "turns"} field
+ * @param {"turn" | "turns" | "cents"} field
  * @param {boolean} unique
  */
 function cleanPidRows(raw, field, unique) {
@@ -314,6 +315,9 @@ function cleanCounters(ledger, raw) {
   ledger.buildTurns = /** @type {TurnRow[]} */ (cleanPidRows(raw.buildTurns, "turn", true));
   ledger.capHits = /** @type {TurnRow[]} */ (cleanPidRows(raw.capHits, "turn", true));
   ledger.lowIncome = /** @type {LowIncomeRow[]} */ (cleanPidRows(raw.lowIncome, "turns", true));
+  // A save from before the escrow account (0.5.4) holds nothing in it, and knows no distress.
+  ledger.escrow = /** @type {EscrowRow[]} */ (cleanPidRows(raw.escrow, "cents", true)).filter((row) => row.cents > 0);
+  ledger.distress = /** @type {TurnRow[]} */ (cleanPidRows(raw.distress, "turn", true));
 }
 
 /**

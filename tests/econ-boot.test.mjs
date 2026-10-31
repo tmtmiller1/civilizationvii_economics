@@ -54,7 +54,8 @@ test("single player: one boot line, the batch at TurnBegin, the notification at 
   assert.equal(harness.request({ kind: "borrow", borrower: 0, lender: "bond", principal: 3000, term: 10 }), true);
   world.turn = 11;
   quietly(() => fire(world, "TurnBegin", {}));
-  assert.ok(world.calls.includes("grant 0 1 30"), world.calls.join("\n"));
+  assert.ok(world.calls.includes("grant 0 1 26"), world.calls.join("\n"), "30 less the 3.60 held for next turn");
+  assert.ok(world.calls.includes("scale 1 YieldBiases YIELD_GOLD 1"), "the AI's preference factors go out each turn");
   assert.equal(load(world.config[MOD_ID]).ledger.lastTurn, 11);
   quietly(() => fire(world, "PlayerTurnActivated", { player: 1 }));
   assert.equal(world.notifications.length, 0, "an AI's turn sends nothing");

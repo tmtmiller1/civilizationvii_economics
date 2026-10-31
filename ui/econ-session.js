@@ -26,8 +26,8 @@ import { readCrisisStage, readEconomy, readGovernment, readIdeology, readPopulat
   sanitizePending, withPending } from "./econ-macro-read.js";
 import { aliveMajorIds, ageType, bankGoldYield, bookGrievance, bookRelationship, buildingData, gameTurn, isAliveMajor,
   player, readAtWar, readBalanceCents, readConfig, readEnvelope, readGlobalParameters, readHappinessCents,
-  readIncomeCents, readRelations, readUpkeepCents, safe, sendCelebration, sendGold, sendInfluence, writeEnvelope }
-  from "./econ-engine.js";
+  readIncomeCents, readRelations, readUpkeepCents, safe, scaleAiPreference, sendCelebration, sendGold, sendInfluence,
+  writeEnvelope } from "./econ-engine.js";
 
 export const GLUE_KEY = "tower-economics-glue";
 export const GLUE_VERSION = 2;
@@ -347,7 +347,18 @@ export function sendPlan(plan) {
   for (const [pid, amount] of sumBy(plan.influence)) if (sendInfluence(pid, amount)) sent += 1;
   for (const row of plan.grievances) bookGrievance(row);
   for (const row of plan.relationships) bookRelationship(row);
+  sendPreferences(plan.aiPreferences);
   return sent + sendProgressRows(plan.progress);
+}
+
+/**
+ * AI-PLAN 4.2: every AI's preference factors, every turn, so one that isn't needed is set back to 1.
+ * @param {AiPreferenceRow[] | undefined} rows
+ */
+function sendPreferences(rows) {
+  let sent = 0;
+  for (const row of rows || []) if (scaleAiPreference(row)) sent += 1;
+  return sent;
 }
 
 /**

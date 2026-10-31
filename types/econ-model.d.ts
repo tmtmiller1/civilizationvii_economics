@@ -5,7 +5,7 @@ export {};
 
 declare global {
   /** A civ by player id, or one of the world accounts (DESIGN 4.14): the bond market, temple treasuries, tax. */
-  type Party = number | "bond" | "temple" | "tax" | "progress" | "citizens" | "inflation" | "cycle" | "plan";
+  type Party = number | "bond" | "temple" | "tax" | "progress" | "citizens" | "inflation" | "cycle" | "plan" | "escrow";
   type LoanState = "active" | "default" | "closed" | "repudiated";
   /** `project` and `general` are 1.1's investment records; 1.0 only writes `loan`. */
   type LoanKind = "loan" | "project" | "general";
@@ -51,6 +51,10 @@ declare global {
   interface RepudiationRow { pid: number; lender: Party; turn: number; cents: number; atWar: boolean }
   interface TurnRow { pid: number; turn: number }
   interface LowIncomeRow { pid: number; turns: number }
+  /** What a civ holds in escrow for its next payments (AI-PLAN 4.2). */
+  interface EscrowRow { pid: number; cents: number }
+  /** One scaleAiPreference call the glue makes for an AI (AI-PLAN 4.2). */
+  interface AiPreferenceRow { pid: number; system: string; item: string; factor: number }
   interface TaxRow { pid: number; level: string; changedTurn: number }
 
   /** One line of the event log; the glue and the screens read `kind` and the fields each kind carries. */
@@ -82,6 +86,9 @@ declare global {
     buildTurns: TurnRow[];
     capHits: TurnRow[];
     lowIncome: LowIncomeRow[];
+    escrow: EscrowRow[];
+    /** The last turn each civ's dues passed its funds (AI-PLAN 4.1); distress lasts that turn and the next. */
+    distress: TurnRow[];
     taxes: TaxRow[];
     events: LedgerEvent[];
     lastBatch: BatchRecord | null;
@@ -311,6 +318,8 @@ declare global {
     progress: ProgressRow[];
     trade: TradeRow[];
     macro: import("../ui/econ-macro-state.js").MacroState;
+    /** The AI preference factors to send this turn, every AI's every turn (AI-PLAN 4.2). */
+    aiPreferences: AiPreferenceRow[];
   }
 
   /** The turn's Gold bookkeeping (DESIGN 4.14), each Map keyed by player id. */
@@ -387,6 +396,8 @@ declare global {
     unmet: Set<string>;
     /** Each resource's class price (DESIGN 4.9's base_c), for a Planned importer's fixed prices (4.17). */
     basePrices: Record<string, number>;
+    /** The civs whose dues passed their funds this turn, before any refinancing (AI-PLAN 4.1, 4.2). */
+    distressed: Set<number>;
   }
 
   interface TradeRow { payer: number; payee: number; owed: number; cents: number; waived: number; paid: number }

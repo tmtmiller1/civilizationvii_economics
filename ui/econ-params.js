@@ -15,8 +15,11 @@ export const CITIZENS = "citizens";
 export const INFLATION = "inflation";
 export const CYCLE = "cycle";
 export const PLAN = "plan";
+// AI-PLAN 4.2: next turn's dues are held outside the treasury between the payments, so the native AI can't spend
+// them; the account nets to zero over a loan's life.
+export const ESCROW = "escrow";
 /** @type {Party[]} */
-export const WORLD_ACCOUNTS = [BOND, TEMPLE, TAX, PROGRESS, CITIZENS, INFLATION, CYCLE, PLAN];
+export const WORLD_ACCOUNTS = [BOND, TEMPLE, TAX, PROGRESS, CITIZENS, INFLATION, CYCLE, PLAN, ESCROW];
 
 export const AGE = { ANTIQUITY: "AGE_ANTIQUITY", EXPLORATION: "AGE_EXPLORATION", MODERN: "AGE_MODERN" };
 
@@ -49,6 +52,14 @@ export const GARNISH = { outstandingPct: 10, incomePct: 50, lowOutstandingPct: 5
 // AI-PLAN 4.1: a civ whose dues this turn pass its funds, with income above 0, gets a refinancing loan for the gap
 // over 10 turns, judged by the credit cap alone.
 export const REFINANCE = { term: 10 };
+// AI-PLAN 4.2: a civ in distress this turn has two turns' dues held.
+export const ESCROW_RULES = { distressTurns: 2 };
+// AI-PLAN 4.2 (watched 4.7): while an AI's debt service is above a tenth of its income, its Gold yield bias is scaled
+// by 1 + 10 * service / income, at most 5; while it's in distress its army and expansion budgets are scaled by the
+// inverse, never below 0.25. Each factor is sent every turn, 1 when not needed.
+export const AI_PREFERENCE = { serviceSharePct: 10, goldPerShare: 10, goldMax: 5, budgetMin: 0.25,
+  goldSystem: "YieldBiases", goldItem: "YIELD_GOLD", budgetSystem: "AiBudgetBiases",
+  budgetItems: ["AI_BUDGET_STANDING_ARMY", "AI_BUDGET_EXPANSION"] };
 // DESIGN 4.5: the grudge is 5 grievances per turn of the lender's income lost, 10 to 40; witnesses lose 3
 // relationship, doubled for the bond market and temple treasuries, halved against an enemy at war.
 export const REPUDIATION = { grudgePerTurn: 5, grudgeMin: 10, grudgeMax: 40, witness: 3, worldWitnessMultiple: 2,

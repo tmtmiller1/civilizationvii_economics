@@ -237,7 +237,7 @@ export function describeRefusalProject(event, ctx) {
 
 /** What a transfer's reason moved, for the net line. @type {Record<string, string>} */
 const FLOW_OF = { principal: "LOANS", payment: "LOANS", garnish: "LOANS", trade: "TRADE", invest: "INVESTMENT",
-  dividend: "INVESTMENT", cycle: "CYCLE", erosion: "INFLATION", plan: "PLAN", tax: "TAX" };
+  dividend: "INVESTMENT", cycle: "CYCLE", erosion: "INFLATION", plan: "PLAN", tax: "TAX", escrow: "ESCROW" };
 
 /**
  * The kinds of flow that moved a civ's Gold this turn, as name keys in a fixed order (loans, trade, ...).

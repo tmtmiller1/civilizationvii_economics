@@ -15,22 +15,26 @@ const loan = (id, over = {}) => ({ ...makeLoan({ id, lender: "bond", borrower: M
   term: 20, turn: 1 }), ...over });
 const me = (over = {}) => civ(ME, { human: true, incomeCents: 10000, ...over });
 const refusal = (plan) => plan.events.find((e) => e.kind === "refused")?.reason;
+// The escrow's hold and release (AI-PLAN 4.2) ride on every turn a civ owes; the loan tests read past them.
+const noEscrow = (transfers) => transfers.filter((t) => t.reason !== "escrow");
 
 test("borrow from the bond market: principal arrives this turn, the first payment is next turn", () => {
   const plan = planTurn(input({ civs: [me()], requests: [borrow()] }));
-  assert.deepEqual(plan.transfers.map((t) => [t.from, t.to, t.cents, t.reason]), [["bond", ME, 30000, "principal"]]);
+  assert.deepEqual(plan.transfers.map((t) => [t.from, t.to, t.cents, t.reason]), [["bond", ME, 30000, "principal"],
+    [ME, "escrow", 2100, "escrow"]], "the principal lands; next turn's payment goes into escrow");
   assert.equal(plan.ledger.loans[0].ratePpm, 20000);
   assert.equal(plan.ledger.loans[0].source, "borrow");
   assert.equal(plan.ledger.loans[0].emergency, false);
   const next = planTurn(input({ turn: 51, ledger: plan.ledger, civs: [me()] }));
-  assert.deepEqual(next.transfers.map((t) => [t.reason, t.cents]), [["payment", 600 + 1500]]);
+  assert.deepEqual(next.transfers.map((t) => [t.reason, t.cents]), [["escrow", 2100], ["payment", 600 + 1500],
+    ["escrow", 2070]], "the escrow comes back, the payment is made, the next one is held");
 });
 
 test("borrow from a civ: the principal is a civ pair, at that civ's relation rate", () => {
   const civs = [me(), civ(6, { balanceCents: 60000, depthTurns: 2 })];
   const relations = [{ a: 6, b: ME, level: "friendly" }];
   const plan = planTurn(input({ civs, relations, requests: [borrow({ lender: 6 })] }));
-  assert.deepEqual(grantsFor(plan.transfers).map((g) => [g.pid, g.cents]), [[6, -30000], [ME, 30000]]);
+  assert.deepEqual(grantsFor(noEscrow(plan.transfers)).map((g) => [g.pid, g.cents]), [[6, -30000], [ME, 30000]]);
   assert.equal(plan.ledger.loans[0].ratePpm, 8000);
   assert.equal(plan.batch.civs.find((c) => c.pid === 6).net, -30000);
 });
@@ -184,7 +188,7 @@ test("repudiating a civ (DESIGN 4.5): records close, grievances and witness rows
     requests: [{ kind: "repudiate", borrower: ME, lender: 6 }] }));
   assert.deepEqual(plan.ledger.loans.map((l) => [l.id, l.state, l.writtenOff]),
     [["L1", "repudiated", 30000], ["L2", "repudiated", 5000], ["L3", "active", 0]]);
-  assert.deepEqual(plan.transfers.map((t) => t.loanId), ["L3"], "the stiffed lender gets nothing, now or later");
+  assert.deepEqual(noEscrow(plan.transfers).map((t) => t.loanId), ["L3"], "the stiffed lender gets nothing, now or later");
   assert.deepEqual(plan.grievances, [{ from: ME, against: 6, amount: 40 }], "35000 / 2000 = 17.5 turns, capped");
   assert.deepEqual(plan.relationships, [{ a: ME, b: 8, delta: -3 }, { a: ME, b: 9, delta: -3 }],
     "met and alive civs other than the lender");
@@ -498,8 +502,9 @@ test("Gold from another civ counts next turn: a payment received this turn can't
 test("the batch (DESIGN 4.14): a batch id, each civ's snapshot balance and net, kept in the ledger", () => {
   const civs = [me({ balanceCents: 12345 }), civ(6, { balanceCents: 60000 })];
   const plan = planTurn(input({ civs, requests: [borrow({ lender: 6, principal: 20000, term: 10 })] }));
-  assert.deepEqual(plan.batch, { id: "B1", turn: 50, civs: [{ pid: ME, snapshot: 12345, net: 20000, influence: 0,
-    celebration: 0, paid: 20000, carry: 0, celebrationPaid: 0, celebrationCarry: 0 }, { pid: 6, snapshot: 60000,
+  // The borrower's net is the principal less the 22 (2 of interest and 20 of principal) held for next turn.
+  assert.deepEqual(plan.batch, { id: "B1", turn: 50, civs: [{ pid: ME, snapshot: 12345, net: 17800, influence: 0,
+    celebration: 0, paid: 17800, carry: 0, celebrationPaid: 0, celebrationCarry: 0 }, { pid: 6, snapshot: 60000,
     net: -20000, influence: 0, celebration: 0, paid: -20000, carry: 0, celebrationPaid: 0, celebrationCarry: 0 }] });
   assert.deepEqual(plan.ledger.lastBatch, plan.batch);
   const next = planTurn(input({ turn: 51, ledger: plan.ledger, civs }));
@@ -512,7 +517,7 @@ test("a loan run to term through the planner closes on its last turn with O exac
   let paid = 0;
   for (let k = 0; k < 10; k += 1) {
     const { plan, next } = step(w);
-    paid += plan.transfers.reduce((s, t) => s + t.parts.amortisation, 0);
+    paid += plan.transfers.filter((t) => t.reason === "payment").reduce((s, t) => s + t.parts.amortisation, 0);
     w = next;
   }
   assert.equal(paid, 12345);
@@ -534,7 +539,7 @@ test("repay requests for unknown, closed or same-turn loans are ignored", () => 
   const plan = planTurn(input({ ledger, civs: [me()],
     requests: [{ kind: "repay", loanId: "L1", cents: 5 }, { kind: "repay", loanId: "L2", cents: 5 },
       { kind: "repay", loanId: "L9", cents: 5 }, { kind: "repay", loanId: "L2", cents: -5 }, null, { kind: "odd" }] }));
-  assert.deepEqual(plan.transfers, []);
+  assert.deepEqual(noEscrow(plan.transfers), []);
 });
 
 test("lender eliminated mid-loan: the loan is written off, nothing is sent to the dead lender", () => {
@@ -556,7 +561,8 @@ test("lender eliminated mid-loan, mid-simulation: payments stop the turn it dies
   const before = w.balances.get(6);
   w = { ...w, civs: [civs[0], { ...civs[1], alive: false }] };
   const { plan, next } = step(w);
-  assert.deepEqual(plan.transfers, []);
+  assert.deepEqual(noEscrow(plan.transfers), []);
+  assert.deepEqual(plan.transfers.map((t) => [t.from, t.to]), [["escrow", ME]], "the held payment comes back");
   assert.equal(next.balances.get(6), before);
 });
 
@@ -577,7 +583,7 @@ test("every part Off: no write of any kind; Loans Off alone: no loan rule runs",
 test("a turn already planned is not planned again (no double charge on a stale re-run or a reload)", () => {
   const civs = [me()];
   const first = planTurn(input({ ledger: ledgerWith([loan("L1")]), civs }));
-  assert.equal(first.transfers.length, 1);
+  assert.equal(noEscrow(first.transfers).length, 1);
   const again = planTurn(input({ ledger: first.ledger, civs }));
   assert.equal(again.skipped, "already-planned");
   assert.deepEqual(again.transfers, []);
@@ -607,7 +613,7 @@ test("projection: 20 balances per civ, moving by income less each payment", () =
   const s = projectBalances(input({ ledger: ledgerWith([loan("L1", { term: 20 })]), civs }), 20);
   assert.equal(s.length, 1);
   assert.equal(s[0].balances.length, 20);
-  assert.equal(s[0].balances[0], 10000 + 3000 - 2100);
+  assert.equal(s[0].balances[0], 10000 + 3000 - 2100 - 2070, "the payment, and the next one held in escrow");
   assert.equal(s[0].balances[19] > s[0].balances[0], true);
   assert.equal(projectBalances(input({ civs }), 3)[0].balances.at(-1), 19000);
 });

@@ -102,6 +102,8 @@ function nowSection(input, view, rules, api) {
   if (rules.sections["treasury.loanFigures"]) {
     now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_OUTSTANDING"), goldAmount(api, view.outstandingCents)));
     now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_DUE_NEXT"), goldAmount(api, view.dueNextCents)));
+    // AI-PLAN 4.2: what's held outside the treasury for those payments; it comes back the turn they're made.
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_ESCROW"), goldAmount(api, view.escrowCents)));
     now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_SERVICE_SHARE"), `${Math.max(0, view.servicePct)}%`,
       view.servicePct > CREDIT.servicePct ? "econ-negative" : ""));
   }

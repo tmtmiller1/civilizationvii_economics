@@ -96,6 +96,7 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_BALANCE" Language="ja_JP"><Text>Balance</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_INCOME" Language="ja_JP"><Text>Income per turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_UPKEEP" Language="ja_JP"><Text>Upkeep per turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_ESCROW" Language="ja_JP"><Text>In escrow for next turn's payments</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OUTSTANDING" Language="ja_JP"><Text>Owed on loans</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_DUE_NEXT" Language="ja_JP"><Text>Loan payments due next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_SERVICE_SHARE" Language="ja_JP"><Text>Share of income going to loans</Text></Replace>
@@ -158,6 +159,7 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_MOD_NET_LATER" Language="ja_JP"><Text>The breakdown shows again after the next turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_MOD_NET_NONE" Language="ja_JP"><Text>Economics didn't move any of your Gold last turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_LOANS" Language="ja_JP"><Text>Loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_ESCROW" Language="ja_JP"><Text>Escrow (held for payments, back when they're made)</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_TRADE" Language="ja_JP"><Text>Trade bills</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_INVESTMENT" Language="ja_JP"><Text>Investment</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_CYCLE" Language="ja_JP"><Text>Business cycle</Text></Replace>
@@ -328,6 +330,7 @@
         <Replace Tag="LOC_ECONOMICS_NOTICE_NET" Language="ja_JP"><Text>Your treasury moved by {1_Amount} Gold this turn, from {2_Flows}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_NET_PLAIN" Language="ja_JP"><Text>Your treasury moved by {1_Amount} Gold this turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LOANS" Language="ja_JP"><Text>loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_ESCROW" Language="ja_JP"><Text>the escrow for your next payments</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_TRADE" Language="ja_JP"><Text>trade bills</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_INVESTMENT" Language="ja_JP"><Text>investment</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_CYCLE" Language="ja_JP"><Text>the business cycle</Text></Replace>
@@ -597,6 +600,7 @@
         <Replace Tag="LOC_ECONOMICS_LENDER_INFLATION" Language="ja_JP"><Text>inflation</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_CYCLE" Language="ja_JP"><Text>the business cycle</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_PLAN" Language="ja_JP"><Text>the plan</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_ESCROW" Language="ja_JP"><Text>the escrow</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_UNMET" Language="ja_JP"><Text>you haven't met them yet.</Text></Replace>
         <Replace Tag="LOC_OPTIONS_GROUP_ECONOMICS" Language="ja_JP"><Text>Economics</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPTIONS_SPOIL_GUARD" Language="ja_JP"><Text>Spoil Guard</Text></Replace>

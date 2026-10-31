@@ -792,10 +792,13 @@ has the lower player id, and a turn is never applied twice.
    6. trade settlement (4.10)
    7. garnish on defaulted loans
    8. scheduled loan and dividend payments, oldest first
-   Then, on each civ's projected end balance with all resolved flows in and out:
+   Then the escrow (AI-PLAN 4.2, NOTES choice 123): what the civ held for this turn's payments came back into its funds
+   with the world inflows before step 3, and after step 8 it holds next turn's dues (two turns' while in distress)
+   within what it has left. Then, on each civ's projected end balance with all resolved flows in and out:
    9. guard
    10. AI shortfall borrowing. Competing borrowers go largest shortfall first, ties by player id, and each lender's
        committed principal counts against its `2 * P` test (4.3).
+   11. The AI's preference rows (AI-PLAN 4.2): each AI's Gold bias and budgets as `scaleAiPreference` calls.
    A missed transaction leaves both sides as they were, so a lender is only credited for payments it gets.
 4. Commit. Net each civ's flows into one Gold, one Influence and one celebration grant, sent with the plan's
    `addProgress` calls: one 3 s lag per civ. Before sending, write the ledger with the turn, a batch id, each civ's

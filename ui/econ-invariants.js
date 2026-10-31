@@ -124,6 +124,55 @@ export function debt7(grants, transfers) {
 }
 
 /**
+ * debt-8 (AI-PLAN 4.2): the escrow account's books agree with its flows. What a civ holds after the turn is what it
+ * put in this turn (the last hold came back at the start), never negative, and only a civ with an open loan or
+ * investment holds anything.
+ * @param {Ledger} ledger
+ * @param {Transfer[]} transfers
+ * @returns {Violation[]}
+ */
+export function debt8(ledger, transfers) {
+  /** @type {Map<Party, number>} */
+  const held = new Map();
+  for (const transfer of transfers) {
+    if (transfer.to === "escrow") held.set(transfer.from, (held.get(transfer.from) || 0) + transfer.cents);
+  }
+  const rows = ledger.escrow || [];
+  const violations = rows.flatMap((row) => escrowRowViolations(row, held.get(row.pid) || 0,
+    hasOpenRecord(ledger, row.pid)));
+  for (const [pid, cents] of held) {
+    if (cents > 0 && !rows.some((row) => row.pid === pid)) {
+      violations.push({ id: "debt-8", detail: `${pid} put in ${cents} with no row` });
+    }
+  }
+  return violations;
+}
+
+/**
+ * @param {Ledger} ledger
+ * @param {number} pid
+ */
+function hasOpenRecord(ledger, pid) {
+  return ledger.loans.some((loan) => loan.borrower === pid && (loan.state === "active" || loan.state === "default"))
+    || (ledger.investments || []).some((record) => record.host === pid && record.state === "active");
+}
+
+/**
+ * @param {EscrowRow} row
+ * @param {number} held what the civ put into escrow this turn
+ * @param {boolean} open whether it has an open loan or investment
+ * @returns {Violation[]}
+ */
+function escrowRowViolations(row, held, open) {
+  /** @type {Violation[]} */
+  const out = [];
+  if (row.cents < 0) out.push({ id: "debt-8", detail: `${row.pid} holds ${row.cents}` });
+  if (held !== row.cents) out.push({ id: "debt-8", detail: `${row.pid} holds ${row.cents}, put in ${held}` });
+  if (row.cents > 0 && !open) out.push({ id: "debt-8", detail: `${row.pid} holds with nothing open` });
+  return out;
+}
+
+/**
  * TEST-PLAN 6: no grant targets a player who is not alive; a world account is never a grant target.
  * @param {Grant[]} grants
  * @param {Civ[]} civs
@@ -186,6 +235,7 @@ export function checkPlan({ plan, civs, envelopeText, issued, marketsText, macro
     ...(envelopeText === undefined ? [] : debt5(envelopeText)),
     ...debt6(plan.transfers, civs),
     ...debt7(grants, plan.transfers),
+    ...debt8(plan.ledger, plan.transfers),
     ...aliveTargets(grants, civs),
     ...econ3(plan.progress),
     ...(marketsText === undefined ? [] : econ5(marketsText)),

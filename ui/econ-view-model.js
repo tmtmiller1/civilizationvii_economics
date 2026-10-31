@@ -19,6 +19,7 @@ import { STANDING, REPUDIATION } from "./econ-params.js";
 import { emptyLedger } from "./econ-state.js";
 import { emptyMarkets } from "./econ-markets.js";
 import { emptyMacro } from "./econ-macro-state.js";
+import { escrowOf } from "./econ-escrow.js";
 
 /**
  * A turn context for reading offers and limits without planning anything.
@@ -29,7 +30,7 @@ export function viewContext(input) {
   /** @type {PlanOutput} */
   const out = { ledger: input.ledger || emptyLedger(), transfers: [], influence: [], celebration: [], grievances: [],
     relationships: [], events: [], notices: [], batch: null, skipped: null, markets: emptyMarkets(), progress: [],
-    trade: [], macro: input.macro || emptyMacro() };
+    trade: [], macro: input.macro || emptyMacro(), aiPreferences: [] };
   return turnContext(input, options, out);
 }
 
@@ -72,7 +73,7 @@ export function treasuryView(input, pid) {
   const lowTurns = ledger.lowIncome.find((row) => row.pid === pid)?.turns || 0;
   return { balanceCents, incomeCents, upkeepCents: civ.upkeepCents || 0, dueNextCents: dueNext(ledger, pid),
     serviceCents: service, servicePct: servicePct(service, incomeCents), outstandingCents: outstandingOf(ledger, pid),
-    projection: { withLoans, without }, insolvent: isInsolvent(lowTurns) };
+    projection: { withLoans, without }, insolvent: isInsolvent(lowTurns), escrowCents: escrowOf(ledger, pid) };
 }
 
 /**

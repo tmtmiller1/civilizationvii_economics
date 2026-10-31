@@ -399,6 +399,20 @@ export function bookRelationship(row) {
 }
 
 /**
+ * AI-PLAN 4.2: scales one of an AI's preference lists (watched 4.7: YieldBiases, AiBudgetBiases, PseudoYieldBiases).
+ * Only for a living AI; the call's return says nothing, so success is the call not throwing.
+ * @param {AiPreferenceRow} row
+ */
+export function scaleAiPreference(row) {
+  if (!isAliveMajor(row.pid) || safe(() => Players.get(row.pid).isHuman === true, true)) return false;
+  if (!Number.isFinite(row.factor) || row.factor <= 0) return false;
+  const ok = safe(() => { Players.AI.get(row.pid).scaleAiPreference(row.system, row.item, row.factor); return true; },
+    false);
+  if (!ok) logDebug(`scaleAiPreference failed for player ${row.pid}: ${row.system} ${row.item} ${row.factor}`);
+  return ok;
+}
+
+/**
  * @param {string} event
  * @param {(...args: any[]) => void} handler
  */
