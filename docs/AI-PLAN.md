@@ -1,8 +1,9 @@
 # A more robust AI: findings and plan (2026-10-31)
 
-Status: proposal, nothing built. Written after the AI rules watch run (`verification-runs.md`, third run) and the
-owner's nine questions on it. Sections 1 to 3 are facts, read from the game's data and watched in a lab game; 4 is the
-plan, with each change tied to the question it answers.
+Status: approved for building in the stage order of 4.6 (owner, 2026-10-31); nothing built yet. Written after the
+AI rules watch run (`verification-runs.md`, third run) and the owner's nine questions on it. Sections 1 to 3 are
+facts, read from the game's data and watched in a lab game; 4 is the plan, with each change tied to the question it
+answers. The owner's decisions are marked "Decided".
 
 ## 1. What the engine lets a mod read and do (watched 2026-10-31, Modern seed 4242, turns 1 and 13)
 
@@ -58,7 +59,13 @@ sees is already positive; "short" has to be read from the mod's own books (secti
   a debt the host owes the giver.
 
 Two defects fall out: the garnish needs a floor (the greater of 10% and 1 Gold, and close under 1 Gold), and aid to a
-civ that's in default to the giver should clear that debt first.
+civ that's in default to the giver should clear that debt first. Decided: both are fixes in stage A.
+
+Decided, the order of penalties: walking away from a debt costs more reputation than failing to pay it. Default is
+what happens to a civ; repudiation is what a civ does. In 4.4's numbers a repudiation costs 30 `creditRep`, books
+grievances and a relationship hit with the lender, and blocks the lender for two ages; a default costs 20, blocks the
+lender for one age and books neither grievances nor a relationship hit; a miss costs 5. The garnish stays with
+default only (the lender still gets paid, slowly); repudiation writes the debt off.
 
 ## 3. Where the current AI rules are thin
 
@@ -87,9 +94,11 @@ purpose is to meet payments already inside the service figure is tested on total
 offer is accepted on the same test, so lending to a short AI becomes possible. Over the credit cap, or insolvent: the
 emergency loan as now.
 
-Option the owner decides (changes NOTES choice 3): arrears instead of all-or-nothing misses. When funds are short the
-borrower pays what it has and carries the rest as arrears, collected first the next turn from the post-income
-balance, which the wipe can't touch. A miss still counts (`m`, rate, standing); it stops meaning "keep the Gold".
+Decided (the owner asked for whatever plays the same for both sides; this is my call under that): arrears replace
+all-or-nothing misses, NOTES choice 3 retired. When funds are short the borrower pays what it has and carries the
+rest as arrears, collected first the next turn from the post-income balance, which the wipe can't touch. A miss still
+counts (`m`, rate step, Influence, standing); it stops meaning "keep the Gold". The same for the human and the AI,
+and the Loans tab shows arrears on the loan.
 
 ### 4.2 Escrow: the native AI can't spend what's set aside (question 6)
 
@@ -98,12 +107,19 @@ borrower's treasury into an escrow account in the ledger; the payment is made fr
 read the balance, so the committed Gold is out of its reach; the human sees an "in escrow" line on the Treasury tab
 and the same hold. Conservation (4.14) gets an escrow account; invariants check it nets to zero over a loan's life.
 
-This is the one lever that's certain. Two more to test, in order:
+This is the one lever that's certain. The second is now watched (4.7): `Players.AI.get(pid).scaleAiPreference(system,
+item, factor)` changes what an AI builds and earns, in the direction of the arguments. Decided use, for an AI whose
+debt service is above a tenth of its income, called each turn while that holds:
 
-- `Players.AI.get(pid).scaleAiPreference(system, item, factor)`, called each turn for an indebted AI: scale
-  `YieldBiases` `YIELD_GOLD` up and the spending budgets down in proportion to debt service over income. A controlled
-  lab test first: two AIs, one scaled, Gold yields and purchases compared over 30 turns. If it does nothing, drop it.
-- A data strategy keyed on `YieldIncome` can't see the ledger; the two the mod has stay as they are.
+- `YieldBiases` `YIELD_GOLD` scaled up with the service share (1 + 10 × service / income, at most 5), so the AI's own
+  city planning leans to Gold while it's paying debts, the way a player builds Gold when the payments bite;
+- `AiBudgetBiases` `AI_BUDGET_STANDING_ARMY` and `AI_BUDGET_EXPANSION` scaled down to 1 / that factor while the AI is
+  in distress (4.1), never below 0.25, and back to 1 the turn it clears. The factor is reset to 1 explicitly each turn
+  it isn't needed, since the scale is assumed to persist.
+
+The human's side of "knowing": the Treasury tab's escrow line, the distress notice (4.3) and the reserve reading.
+
+A data strategy keyed on `YieldIncome` can't see the ledger; the two the mod has stay as they are.
 
 A per-civ negative Gold yield equal to debt service (a tradition or hidden building) would put debt into the AI's
 income reading, but the owner has ruled out standing hidden effects; listed for completeness, not proposed.
@@ -120,7 +136,8 @@ restructuring opens at `m = 0` for both sides at the same standing cost as today
 Early repayment, the same mechanism the player uses (`extras` on the turn's payment): an AI with no distress and a
 balance above its reserve (10 turns of income, or the next three turns of dues plus upkeep, whichever is more) puts
 half the surplus into its dearest loan, never into one it's about to repudiate. Mirrors the player's "repay early,
-any amount, no penalty".
+any amount, no penalty". Decided: the same for both sides. The player still chooses the amount and the turn; the
+Loans tab shows the same reserve reading ("you hold X above your reserve") so the player has the AI's own yardstick.
 
 ### 4.4 Credit reputation: a lender grudge and a world memory that can be repaired (question 5)
 
@@ -167,6 +184,9 @@ stake = relationship level / 3                     -10 to 10
 The agenda text itself isn't parsed: the engine already turns each agenda into relationship-history rows with a
 `LEADER_AGENDA` type, and those carry the AI's like or dislike of each civ as a number.
 
+Decided: investment and aid are built together in one stage (E), on one `stake` read, and the aid rule's "once an
+age" goes.
+
 ### 4.6 Order of work and what each stage watches
 
 | Stage | Builds | Watch |
@@ -178,5 +198,32 @@ The agenda text itself isn't parsed: the engine already turns each agenda into r
 | E | 4.5 stakes | investment and aid follow trade partners and allies, not the clock |
 | F | `scaleAiPreference` A/B lab test | Gold yield and purchases of a scaled AI against a control |
 
-Arrears (4.1 option) and the owner's answers on the reserve size, stake weights and `creditRep` costs are needed before
-stage A.
+Stages A to E are approved (2026-10-31). The reserve size, stake weights and `creditRep` costs above are the working
+numbers; the balance run (DESIGN section 10) re-checks them after stage E. Stage F's test ran on 2026-10-31 (4.7), so
+F becomes a build: the scaling in 4.2, inside stage B with escrow.
+
+### 4.7 The `scaleAiPreference` test (watched 2026-10-31)
+
+Two 30-turn drives of the same seeded game (Modern, seed 4242, `--setup fast --quick`, the usual mod set), sampled
+every turn. Treated run: each turn, AI 1 `("AiBudgetBiases", "AI_BUDGET_STANDING_ARMY", 50)`, AI 2 `("YieldBiases",
+"YIELD_GOLD", 50)`, AI 3 `("PseudoYieldBiases", "PSEUDOYIELD_STANDING_ARMY_UNIT", 50)`; AIs 4 and 5 untouched.
+Control run: no calls. Every call returned null, including one with a made-up system name, so the return value says
+nothing.
+
+| AI | Treatment | Combat units t30, treated / control | Gold income t30 | Balance t30 |
+| --- | --- | --- | --- | --- |
+| 1 | army budget x50 | 23 / 21 | 210 / 263 | 415 / 392 |
+| 2 | Gold yield bias x50 | 18 / 18 | 204 / 105 | 2372 / 556 |
+| 3 | standing-army pseudo-yield x50 | 20 / 18 | 138 / 146 | 178 / 1408 |
+| 4 | none | 17 / 17 | 183 / 183 | 886 / 698 |
+| 5 | none | 17 / 17 | 143 / 148 | 422 / 549 |
+
+The two untreated AIs stayed in step across the runs (identical readings at turns 3 to 5, the same unit counts and
+income at turn 30). The two army treatments ended with more units and the Gold treatment with double the income and
+four times the treasury; AI 1 was already 879 Gold apart at turn 2 and queued a Frigate and Cuirassiers where the
+control built a Museum, a Port and a Wonder. One replicate, so the size of the effect is unmeasured; the direction is
+consistent across the three treatments and absent from the controls. Readings: `~/.tower-bench/runs/2026-10-31T14-04-19`
+(treated) and `2026-10-31T14-09-18` (control); the sample scripts and both drive logs are under
+`mod_ideas_tested/economics/devtools/` (`econ-ai-pref-ab-sample.js`, `econ-ai-pref-ab-control.js`,
+`probe-runs/2026-10-31-ai-pref-ab/`), with the API probes (`econ-api-probe.js`, `econ-api-probe2.js`) that confirmed
+section 1.

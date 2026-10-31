@@ -639,6 +639,24 @@ and restructure below was the AI rule's own decision.
   percent service limit, so any standard loan is refused. Offline: an AI at 0 Gold, income +20, 36 due, missed and
   borrowed nothing. The owner's call.
 
+## Watched 2026-10-31, fourth run (the engine's script surface and `scaleAiPreference`)
+
+Three short Modern games (seed 4242, `--setup fast --quick`, the usual mod set, no probe mod), for `docs/AI-PLAN.md`.
+
+- API: from a mod's context, for AI players and AI-to-AI pairs, `Game.Diplomacy.getAgendaNames` and
+  `getAgendaDescriptions` answer (every leader's two agendas); `Diplomacy.getPlayerRelationshipHistory(b)` returns the
+  events with amounts and `getFavorGrievanceEventTypeName` names them (shared government +10, leader agenda -10,
+  trade route favor +10, close land claim -20 at turn 13); `Trade.countPlayerTradeRoutesTo(b)` counts (1 route Xerxes
+  to Alexander); capitals and `GameplayMap.getPlotDistance` give distance. `Players.AI.get(pid)` exposes
+  `requestUnit`, `requestConstructible`, `scaleAiPreference`, `clearRequest`, `getProgressionTreePath` and the two
+  settle and placement helpers. `Stats.getMilitaryStrength()` returned null without arguments; its signature is open.
+- `scaleAiPreference(system, item, factor)`: treated against control over 30 turns, AI-PLAN 4.7. The untreated AIs
+  stayed in step across the two runs; the three treated ones moved the way their arguments pointed (army budget x50:
+  23 units against 21; Gold yield bias x50: income 204 against 105). One replicate.
+
+Lab stopped and restored after each game; registry unchanged. Readings in `~/.tower-bench/runs/2026-10-31T13-40-08`,
+`T14-04-19` and `T14-09-18` (about 630 MB together), scripts and logs under `mod_ideas_tested/economics/devtools/`.
+
 ## Owed: whole-Gold payments
 
 Built 2026-10-31 (NOTES 119). The engine fact was watched that day; the fix itself hasn't been seen in a game.
