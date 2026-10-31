@@ -28,7 +28,7 @@ test("every major is read with the same fields, human and AI alike; stages come 
   for (const c of input.civs) {
     assert.deepEqual(Object.keys(c).sort(), ["alive", "atWar", "balanceCents", "cities", "commerceSettlements",
       "cushionBp", "depthFactorPct", "depthTurns", "government", "happinessCents", "human", "id", "ideology", "incomeCents",
-      "stages", "tradeIncomeCents", "upkeepCents", "warehouses"], `civ ${c.id}`);
+      "stages", "strength", "tradeIncomeCents", "upkeepCents", "warehouses"], `civ ${c.id}`);
   }
   assert.deepEqual(input.civs.map((c) => [c.balanceCents, c.incomeCents, c.human, c.atWar]),
     [[5000, 1200, true, false], [40000, 1200, false, true], [1000, 300, false, true]]);

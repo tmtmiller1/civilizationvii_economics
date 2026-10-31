@@ -53,6 +53,10 @@ declare global {
   interface LowIncomeRow { pid: number; turns: number }
   /** What a civ holds in escrow for its next payments (AI-PLAN 4.2). */
   interface EscrowRow { pid: number; cents: number }
+  /** A civ's credit reputation (AI-PLAN 4.4) in hundredths of a point, as of `turn`; it mends toward 100 from there. */
+  interface CreditRepRow { pid: number; rep: number; turn: number }
+  /** Favors booked on the game's own ledger: `from` did `to` a good turn (a loan repaid in full). */
+  interface FavorRow { from: number; to: number; amount: number }
   /** One scaleAiPreference call the glue makes for an AI (AI-PLAN 4.2). */
   interface AiPreferenceRow { pid: number; system: string; item: string; factor: number }
   interface TaxRow { pid: number; level: string; changedTurn: number }
@@ -89,6 +93,7 @@ declare global {
     escrow: EscrowRow[];
     /** The last turn each civ's dues passed its funds (AI-PLAN 4.1); distress lasts that turn and the next. */
     distress: TurnRow[];
+    creditRep: CreditRepRow[];
     taxes: TaxRow[];
     events: LedgerEvent[];
     lastBatch: BatchRecord | null;
@@ -232,6 +237,8 @@ declare global {
     cushionBp?: number;
     /** Settlements with a Commerce building, for citizen_cap (DESIGN 4.17). */
     commerceSettlements?: number;
+    /** The engine's military strength, or its combat units when that read fails; null when neither answers. */
+    strength?: number | null;
   }
 
   /** What the glue saw between batches that the cycle weighs (DESIGN 4.11): `pid` is the civ that took part. */
@@ -320,6 +327,8 @@ declare global {
     macro: import("../ui/econ-macro-state.js").MacroState;
     /** The AI preference factors to send this turn, every AI's every turn (AI-PLAN 4.2). */
     aiPreferences: AiPreferenceRow[];
+    /** Favors to book on the game's ledger (AI-PLAN 4.4). */
+    favors: FavorRow[];
   }
 
   /** The turn's Gold bookkeeping (DESIGN 4.14), each Map keyed by player id. */

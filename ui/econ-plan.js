@@ -5,7 +5,7 @@
 // The 1.1 steps (prices, trade settlement, dividends, the investment and tariff rules) are in econ-commerce.js; the
 // 1.2 steps (systems, the cycle, inflation, the plan, citizen loans) in econ-macro.js.
 
-import { EMERGENCY, MISS, STANDING, TAX } from "./econ-params.js";
+import { EMERGENCY, MISS, REPUTATION, STANDING, TAX, isWorldAccount } from "./econ-params.js";
 import { isOpen } from "./econ-loan.js";
 import { addMiss } from "./econ-credit.js";
 import { blockFor, blocksAfterAge } from "./econ-lenders.js";
@@ -16,7 +16,7 @@ import { addCelebration, addInfluence, commitBatch, funds, projected } from "./e
 import { aiTaxLevel, canChangeTax, taxFlow } from "./econ-tax.js";
 import { cloneLedger, emptyLedger, prune } from "./econ-state.js";
 import { emptyMarkets } from "./econ-markets.js";
-import { isAlive, closeLoan, emit, event, notice, replaceLoan, turnContext } from "./econ-turn.js";
+import { isAlive, closeLoan, emit, event, notice, repChange, replaceLoan, turnContext } from "./econ-turn.js";
 import { runRequests } from "./econ-requests.js";
 import { aiBorrow, aiBuildBorrow, aiDecide, aiRepayEarly, aiRepudiate, guardFor, guardRefinance, isInsolventCiv,
   lookAheadNotice, refinanceFor } from "./econ-shortfall.js";
@@ -54,7 +54,7 @@ export function planTurn(input) {
   /** @type {PlanOutput} */
   const out = { ledger, transfers: [], influence: [], celebration: [], grievances: [], relationships: [], events: [],
     notices: [], batch: null, skipped: null, markets: input.markets || emptyMarkets(), progress: [], trade: [],
-    macro: input.macro || emptyMacro(), aiPreferences: [] };
+    macro: input.macro || emptyMacro(), aiPreferences: [], favors: [] };
   const skipped = skipReason(input, options, ledger);
   if (skipped) return { ...out, skipped };
   const ctx = turnContext(input, options, out);
@@ -351,7 +351,17 @@ function payOne(ctx, loan, extras) {
       short: result.capitalised } });
   citizenInterest(ctx, loan, result.interest);
   if (result.missed) { recordMiss(ctx, loan, result); return; }
-  if (result.closed) closeLoan(ctx, result.loan);
+  // AI-PLAN 4.4: ten payments on time earn 2; a loan repaid in full earns 5 and books favors on a civ lender.
+  if (result.loan.paid > 0 && result.loan.paid % REPUTATION.onTimeEvery === 0) {
+    repChange(ctx, loan.borrower, REPUTATION.onTime, "on-time", loan.id);
+  }
+  if (!result.closed) return;
+  repChange(ctx, loan.borrower, REPUTATION.repaid, "repaid", loan.id);
+  closeLoan(ctx, result.loan);
+  if (!isWorldAccount(loan.lender)) {
+    ctx.out.favors.push({ from: loan.borrower, to: /** @type {number} */ (loan.lender),
+      amount: REPUTATION.favorsOnRepayment });
+  }
 }
 
 /**
@@ -370,7 +380,9 @@ function recordMiss(ctx, loan, result) {
     capitalised: result.capitalised, paid: result.cents, due: result.due });
   notice(ctx, loan.borrower, { kind: "miss", loanId: loan.id, missed: result.loan.missed, paid: result.cents,
     due: result.due, short: result.capitalised });
+  repChange(ctx, loan.borrower, -REPUTATION.miss, "miss", loan.id);
   if (!result.defaulted) return;
+  repChange(ctx, loan.borrower, -REPUTATION.default, "default", loan.id);
   ledger.blocks = withBlock(ledger.blocks, blockFor({ lender: loan.lender, borrower: loan.borrower, reason: "default",
     turn }));
   event(ctx, { kind: "default", loanId: loan.id, lender: loan.lender, borrower: loan.borrower, chronicle: 1 });

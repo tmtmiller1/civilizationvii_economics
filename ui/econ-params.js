@@ -35,11 +35,21 @@ export const RELATION_PCT = { friendly: 80, neutral: 100, unfriendly: 130 };
 /** @type {Record<string, number>} */
 export const RATES_PCT = { low: 75, standard: 100, high: 125 };
 
-// Standing in hundredths (DESIGN 4.2): 1.0 less 0.2 per active default, 0.1 per miss in the last 20 turns and 0.3
-// per repudiation in the last 40 turns (half for a debt to an enemy at war), floored at 0.1.
+// The standing of DESIGN 4.2 as it was before credit reputation (AI-PLAN 4.4): 1.0 less 0.2 per active default, 0.1
+// per miss in the last 20 turns and 0.3 per repudiation in the last 40 turns (half for a debt to an enemy at war),
+// floored at 0.1. The floor still bounds the rate's divisor; the rest converts an older save's rows into its
+// opening reputation (NOTES 129). The windows still bound the rows the ledger keeps.
 export const STANDING = { full: 100, perDefault: 20, perMiss: 10, perRepudiation: 30, perRepudiationAtWar: 15,
   windowTurns: 20, repudiationWindowTurns: 40, floor: 10 };
-// DESIGN 4.2: credit_cap = (12 + depth_turns - 4 * repudiations) * income - outstanding; service_cap = 0.5 * income.
+// AI-PLAN 4.4: credit reputation, 0 to 100 per civ, the standing every rate and the credit cap read. A repudiation
+// costs 30 (15 against an enemy at war), a default 20, a miss 5; a loan repaid in full earns 5, ten payments on
+// time 2, a loan made or aid given 3, never above 100; what's lost mends by half every 50 turns. A loan repaid in
+// full also books favors on the lender; a repudiation hits the lender's relationship by 10 to 30, sized like the
+// grudge.
+export const REPUTATION = { full: 100, repudiation: 30, repudiationAtWar: 15, default: 20, miss: 5, repaid: 5,
+  onTime: 2, onTimeEvery: 10, lent: 3, halfLifeTurns: 50, favorsOnRepayment: 5 };
+// DESIGN 4.2: credit_cap = (12 + depth_turns - lost turns) * income - outstanding, with 4 turns lost for every 30
+// points of reputation gone (a fresh repudiation's worth, AI-PLAN 4.4); service_cap = 0.5 * income.
 export const CREDIT = { baseTurns: 12, perRepudiationTurns: 4, maxDepthTurns: 12, servicePct: 50 };
 export const LENDER_BALANCE_MULTIPLE = 2;
 export const MISS = { rateNum: 5, rateDen: 4, influence: -5, defaultAt: 3 };
@@ -66,7 +76,8 @@ export const AI_PREFERENCE = { serviceSharePct: 10, goldPerShare: 10, goldMax: 5
 // DESIGN 4.5: the grudge is 5 grievances per turn of the lender's income lost, 10 to 40; witnesses lose 3
 // relationship, doubled for the bond market and temple treasuries, halved against an enemy at war.
 export const REPUDIATION = { grudgePerTurn: 5, grudgeMin: 10, grudgeMax: 40, witness: 3, worldWitnessMultiple: 2,
-  worldBlockTurns: 30, lenderBlockAges: 1, minLenderIncomeCents: 1000, maxTermWhileCounting: 10 };
+  worldBlockTurns: 30, lenderBlockAges: 1, minLenderIncomeCents: 1000, maxTermWhileCounting: 10, lenderHitMin: 10,
+  lenderHitMax: 30 };
 // DESIGN 4.6: emergency_cap = max(100 Gold, 10 * |income|); insolvent after 5 turns at or below 0 income.
 export const EMERGENCY = { minCapCents: 10000, incomeMultiple: 10, term: 10, insolventTurns: 5 };
 export const TERMS = [10, 20, 30];
@@ -76,8 +87,10 @@ export const MID_TERM = 20;
 // The build loan (DESIGN 6): an AI with positive income borrows to put progress on its own current build while its
 // credit is cheap (Boom or Steady), at most once per 10 turns, up to 5 turns of income over 10 turns and within the
 // 4.2 limits.
+// AI-PLAN 4.4: an AI weighs a repudiation when the Gold it would keep is above 4 turns of income (10 Gold at the
+// least) and the lender is at war with it, or Unfriendly and weaker, or it's insolvent and the lender isn't Friendly.
 export const AI = { lendIncomeMultiple: 20, acceptRatePct: 120, repudiateEveryTurns: 20,
-  repudiateDebtMultiple: 10, minIncomeCents: 1000, buildEveryTurns: 10, buildSizeTurns: 5, buildTerm: 10 };
+  repudiateKeepTurns: 4, minIncomeCents: 1000, buildEveryTurns: 10, buildSizeTurns: 5, buildTerm: 10 };
 // openPerBorrower and closedLoans are not in DESIGN: they bound the saved envelope (debt-5) with the event log DESIGN
 // 9 asks for; see docs/NOTES.md choice 25.
 export const LIMITS = { events: 100, closedLoans: 32, envelopeBytes: 65536, openPerBorrower: 6 };

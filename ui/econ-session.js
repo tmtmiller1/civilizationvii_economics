@@ -24,10 +24,10 @@ import { MACRO_KEY, loadMacro, saveMacro } from "./econ-macro-state.js";
 import { blendedTerms, termsOf } from "./econ-systems.js";
 import { readCrisisStage, readEconomy, readGovernment, readIdeology, readPopulations, resolveCycleEvents,
   sanitizePending, withPending } from "./econ-macro-read.js";
-import { aliveMajorIds, ageType, bankGoldYield, bookGrievance, bookRelationship, buildingData, gameTurn, isAliveMajor,
-  player, readAtWar, readBalanceCents, readConfig, readEnvelope, readGlobalParameters, readHappinessCents,
-  readIncomeCents, readRelations, readUpkeepCents, safe, scaleAiPreference, sendCelebration, sendGold, sendInfluence,
-  writeEnvelope } from "./econ-engine.js";
+import { aliveMajorIds, ageType, bankGoldYield, bookFavor, bookGrievance, bookRelationship, buildingData, gameTurn,
+  isAliveMajor, player, readAtWar, readBalanceCents, readConfig, readEnvelope, readGlobalParameters,
+  readHappinessCents, readIncomeCents, readRelations, readStrength, readUpkeepCents, safe, scaleAiPreference,
+  sendCelebration, sendGold, sendInfluence, writeEnvelope } from "./econ-engine.js";
 
 export const GLUE_KEY = "tower-economics-glue";
 export const GLUE_VERSION = 2;
@@ -204,7 +204,8 @@ export function readCiv(pid, majors, stages, extra = {}) {
   /** @type {Civ} */
   const civ = { id: pid, alive: true, human, balanceCents: readBalanceCents(pid), incomeCents: readIncomeCents(pid),
     upkeepCents: readUpkeepCents(pid), stages, atWar: readAtWar(pid, majors), happinessCents: readHappinessCents(pid),
-    government: readGovernment(pid), ideology: readIdeology(pid), ...economyFields(extra.economy) };
+    government: readGovernment(pid), ideology: readIdeology(pid), strength: readStrength(pid),
+    ...economyFields(extra.economy) };
   if (extra.cities) Object.assign(civ, { cities: extra.cities, tradeIncomeCents: readTradeIncomeCents(pid) });
   return civ;
 }
@@ -345,10 +346,19 @@ export function sendPlan(plan) {
     if (sendCelebration(row.pid, celebrationPaidOf(row))) sent += 1;
   }
   for (const [pid, amount] of sumBy(plan.influence)) if (sendInfluence(pid, amount)) sent += 1;
-  for (const row of plan.grievances) bookGrievance(row);
-  for (const row of plan.relationships) bookRelationship(row);
+  bookDiplomacy(plan);
   sendPreferences(plan.aiPreferences);
   return sent + sendProgressRows(plan.progress);
+}
+
+/**
+ * The grievance, relationship and favor rows on the game's own ledgers (DESIGN 4.5, 4.12, AI-PLAN 4.4).
+ * @param {PlanOutput} plan
+ */
+function bookDiplomacy(plan) {
+  for (const row of plan.grievances) bookGrievance(row);
+  for (const row of plan.relationships) bookRelationship(row);
+  for (const row of plan.favors || []) bookFavor(row);
 }
 
 /**

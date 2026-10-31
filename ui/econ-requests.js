@@ -6,8 +6,9 @@
 import { BOND, CITIZENS, LIMITS, SHORT_TERM, TERMS, isWorldAccount } from "./econ-params.js";
 import { citizenRepudiation, servicePrincipalCents } from "./econ-citizens.js";
 import { firstPayment, isOpen, restructure } from "./econ-loan.js";
-import { addMiss, creditCap, fitsService, outstandingOf, recentRepudiations, serviceCap, serviceOf }
+import { addMiss, creditCap, fitsService, outstandingOf, repTurnsLost, serviceCap, serviceOf }
   from "./econ-credit.js";
+import { REPUTATION } from "./econ-params.js";
 import { bondRatePpm, civLenderRefusal, offersFor, relationLevel, termRefusal } from "./econ-lenders.js";
 import { aiAccepts } from "./econ-ai.js";
 import { funds, lenderBalance } from "./econ-batch.js";
@@ -17,8 +18,8 @@ import { canChangeTax, isTaxLevel } from "./econ-tax.js";
 import { canChangeTariff, isTariffLevel, withTariff } from "./econ-trade.js";
 import { hasStage } from "./econ-stages.js";
 import { investRequestRefusal, offerAnswerRefusal } from "./econ-invest-open.js";
-import { haveNotMet, isAlive, event, incomeOf, isHuman, lendersFor, notice, offerQuery, openLoan, replaceLoan,
-  standing, termsFor } from "./econ-turn.js";
+import { haveNotMet, isAlive, event, incomeOf, isHuman, lendersFor, notice, offerQuery, openLoan, repChange,
+  replaceLoan, standing, termsFor } from "./econ-turn.js";
 
 // A request as the glue hands it over: the fields each kind carries are read where the kind is handled.
 /** @typedef {Record<string, any>} Request */
@@ -39,7 +40,7 @@ export function creditRoom(ctx, pid) {
   const civ = /** @type {Civ} */ (ctx.civ.get(pid));
   const terms = termsFor(ctx, pid);
   return creditCap({ incomeCents: civ.incomeCents, outstandingCents: outstandingOf(ctx.ledger, pid),
-    depthTurns: civ.depthTurns, repudiations: recentRepudiations(ctx.ledger, pid, ctx.turn).length,
+    depthTurns: civ.depthTurns, lostTurns: repTurnsLost(standing(ctx, pid)),
     systemTurns: terms.creditTurns, systemPct: terms.creditPct });
 }
 
@@ -217,6 +218,7 @@ export function restructureLoan(ctx, loan, by) {
   addMiss(ctx.ledger, loan.borrower, ctx.turn);
   event(ctx, { kind: "restructure", loanId: loan.id, borrower: loan.borrower, lender: loan.lender,
     cents: loan.outstanding });
+  repChange(ctx, loan.borrower, -REPUTATION.miss, "restructure", loan.id);
   notice(ctx, loan.borrower, { kind: "restructure", loanId: loan.id });
   if (!isWorldAccount(loan.lender)) notice(ctx, loan.lender, { kind: "restructure", loanId: loan.id });
   return null;
@@ -255,6 +257,8 @@ export function repudiateFor(ctx, borrower, lender) {
   if (home) citizenRepudiation(ctx, borrower);
   Object.assign(ctx.ledger, { loans: result.ledger.loans, blocks: result.ledger.blocks,
     repudiations: result.ledger.repudiations, investments: result.ledger.investments });
+  repChange(ctx, borrower, -(result.record.atWar ? REPUTATION.repudiationAtWar : REPUTATION.repudiation),
+    "repudiation");
   ctx.out.grievances.push(...result.grievances);
   ctx.out.relationships.push(...result.relationships);
   event(ctx, { kind: "repudiation", borrower, lender, cents: result.writtenOff, loans: result.loanIds.length,

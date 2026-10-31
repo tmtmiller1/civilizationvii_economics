@@ -10,8 +10,9 @@ import { activeDefaults } from "./econ-credit.js";
 import { isBlocked, relationLevel } from "./econ-lenders.js";
 import { hasStage } from "./econ-stages.js";
 import { funds } from "./econ-batch.js";
-import { closeLoan, emit, event, haveNotMet, incomeOf, isAlive, isHuman, notice, replaceLoan, termsFor }
+import { closeLoan, emit, event, haveNotMet, incomeOf, isAlive, isHuman, notice, repChange, replaceLoan, termsFor }
   from "./econ-turn.js";
+import { REPUTATION } from "./econ-params.js";
 
 /**
  * @typedef {{ investor: number, host: number, form: InvestKind, cents: number, cityId: string | null,
@@ -182,6 +183,7 @@ export function openInvestment(ctx, spec, source) {
     ctx.out.progress.push({ host: spec.host, cityId: spend.city.id, amount: spend.progress, investmentId: id });
   }
   if (!spec.asAid) bookRecord(ctx, spec, { id, spent: spend.cents, city: spend.city });
+  else repChange(ctx, spec.investor, REPUTATION.lent, "aid", id);
   bookGoodwill(ctx, spec, { id, spend, cleared: clearing.cleared, source });
   return id;
 }

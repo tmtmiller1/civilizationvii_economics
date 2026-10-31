@@ -11,7 +11,7 @@ import { batchStatus, paidGrants } from "../ui/econ-batch.js";
 import { emergencyCap } from "../ui/econ-guard.js";
 import { emergencyOutstandingOf } from "../ui/econ-credit.js";
 import { civRatePpm } from "../ui/econ-lenders.js";
-import { totalInterest } from "../ui/econ-loan.js";
+import { paymentDue, totalInterest } from "../ui/econ-loan.js";
 import { BASE_RATE_PPM } from "../ui/econ-params.js";
 import { gen } from "./_prng.mjs";
 import { PARAMS } from "./_fixtures.mjs";
@@ -92,19 +92,30 @@ function civsAt(game, turn, balances) {
   });
 }
 
-/** The human's requests: a 10-turn bond or civ loan of 5 turns' income now and then; loans to every short AI. */
+/**
+ * The human's requests: a 10-turn bond or civ loan of 5 turns' income now and then; loans to every short AI, where
+ * short is the distress read of AI-PLAN 4.1 (its scheduled payments this turn pass its balance plus income, with the
+ * escrow it holds counted), the gap at the base rate.
+ */
 function humanRequests(game, turn, civs, ledger, age, lend) {
   const me = civs.find((c) => c.human);
   const out = [];
   if (turn % game.humanBorrowEvery === 0 && me.incomeCents > 0) {
     out.push({ kind: "borrow", borrower: me.id, lender: "bond", principal: 5 * me.incomeCents, term: 10 });
   }
-  if (!lend) return out;
+  if (!lend || !ledger) return out;
   const rate = civRatePpm({ age, standing: 100, level: "neutral" });
   for (const c of civs) {
-    if (c.human || c.balanceCents + c.incomeCents >= 0 || c.incomeCents <= 0) continue;
-    out.push({ kind: "lend", lender: me.id, borrower: c.id, principal: -(c.balanceCents + c.incomeCents),
-      ratePpm: rate, term: 10 });
+    if (c.human || c.incomeCents <= 0) continue;
+    let dues = 0;
+    for (const loan of ledger.loans) {
+      if (loan.borrower === c.id && loan.state === "active" && loan.opened < turn) dues += paymentDue(loan).total;
+    }
+    const held = (ledger.escrow || []).find((row) => row.pid === c.id)?.cents || 0;
+    const gap = dues - (c.balanceCents + c.incomeCents + held);
+    if (dues > 0 && gap > 0) {
+      out.push({ kind: "lend", lender: me.id, borrower: c.id, principal: gap, ratePpm: rate, term: 10 });
+    }
   }
   return out;
 }

@@ -162,6 +162,10 @@ witness, standing -0.3 for 40 turns, and blocks the lender this age and the next
   war), default -20, miss -5, each with a 50-turn half-life; repaid in full +5, ten payments on time +2, a loan made or
   aid given +3, capped at 100. Rates and the credit cap read it where they read standing today. The native side: a
   loan repaid in full books `changeNumFavors` on the lender, so the engine's relationship remembers good conduct too.
+Built 2026-10-31 (stage D, NOTES choices 129 to 132): the reputation rows with the half-life, the costs and the
+climb-backs, the lender's own hit, favors on a loan repaid in full, the weighing with a strength read, and the
+0.5.4 save's standing carried over as its opening reputation.
+
 - The AI's repudiation becomes a weighing: what it keeps (outstanding to that lender, in turns of income) against what
   it pays (the grievance, war risk read from `getMilitaryStrength` of lender against borrower and whether the lender
   is a neighbour, and the credit it loses). It repudiates when the kept Gold is above 4 turns of income and the lender

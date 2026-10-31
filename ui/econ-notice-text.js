@@ -337,6 +337,8 @@ const EVENTS = {
     String(event.loanId), who(event.borrower)] }),
   "repay-early": (event, who) => ({ key: `${PREFIX}EVENT_REPAY_EARLY`, args: [who(event.pid), gold(event.cents),
     String(event.loanId)] }),
+  "credit-rep": (event, who) => ({ key: `${PREFIX}EVENT_CREDIT_REP`, args: [who(event.pid),
+    `${Number(event.points) > 0 ? "+" : ""}${Number(event.points) || 0}`, String(event.why), Number(event.after) || 0] }),
   default: (event, who) => ({ key: `${PREFIX}EVENT_DEFAULT`, args: [String(event.loanId), who(event.borrower)] }),
   closed: (event) => ({ key: `${PREFIX}EVENT_CLOSED`, args: [String(event.loanId)] }),
   "age-gold": (event, who) => ({ key: `${PREFIX}EVENT_AGE_GOLD`, args: [who(event.pid), gold(event.after),

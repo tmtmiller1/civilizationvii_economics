@@ -59,8 +59,7 @@ function limitsSection(view, income, limit, api) {
       limitReason(limit, api)] : []),
     row(api.loc("LOC_ECONOMICS_LOANS_SERVICE"), api.loc("LOC_ECONOMICS_LOANS_SERVICE_OF",
       formatGold(view.serviceCents), formatGold(view.serviceCapCents))),
-    row(api.loc("LOC_ECONOMICS_LOANS_STANDING"), (view.standingPct / 100).toFixed(2),
-      view.standingPct < 100 ? "econ-negative" : ""),
+    row(api.loc("LOC_ECONOMICS_LOANS_STANDING"), String(view.standingPct), view.standingPct < 100 ? "econ-negative" : ""),
     ...reserveRows(view, api),
   ]);
 }
@@ -243,10 +242,9 @@ function repudiateConfirm(input, lender, api) {
     .reduce((sum, loan) => sum + loan.outstanding, 0) : 0;
   const lines = [row(api.loc("LOC_ECONOMICS_REPUDIATE_KEEP"), gold(api, p.keptCents)),
     changeRow(api.loc("LOC_ECONOMICS_CHANGE_DEBT"), formatGold(owed), formatGold(owed - p.keptCents)),
-    changeRow(api.loc("LOC_ECONOMICS_REPUDIATE_STANDING"), (p.standingNow / 100).toFixed(2),
-      (p.standingAfter / 100).toFixed(2), -1),
+    changeRow(api.loc("LOC_ECONOMICS_REPUDIATE_STANDING"), String(p.standingNow), String(p.standingAfter), -1),
     note(api.loc("LOC_ECONOMICS_REPUDIATE_PREVIEW", formatGold(p.keptCents), api.nameOf(lender), p.grudge,
-      p.witnesses.length, p.witnessDelta, (p.standingAfter / 100).toFixed(2), closes, p.creditTurnsLost))];
+      p.witnesses.length, p.witnessDelta, String(p.standingAfter), closes, p.creditTurnsLost, p.lenderDelta))];
   if (p.atWar) lines.push(note(api.loc("LOC_ECONOMICS_REPUDIATE_AT_WAR")));
   return confirmCard({ title: api.loc("LOC_ECONOMICS_LOANS_REPUDIATE_LENDER", api.nameOf(lender)), lines,
     confirm: api.loc("LOC_ECONOMICS_CONFIRM"), cancel: api.loc("LOC_ECONOMICS_CANCEL"), warning: true,

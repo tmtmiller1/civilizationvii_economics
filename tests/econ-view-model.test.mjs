@@ -44,12 +44,12 @@ test("loan offers carry the payment, the total interest and the model's refusal;
 
 test("the Loans tab puts troubled loans first and reads the limits, standing, guard allowance and stages", () => {
   const ledger = ledgerWith([loan("L1"), loan("L2", { missed: 2 }), loan("L3", { state: "default" }),
-    loan("L4", { lender: ME, borrower: 6 })]);
+    loan("L4", { lender: ME, borrower: 6 })], { creditRep: [{ pid: ME, rep: 8000, turn: 50 }] });
   const view = loansView(input({ civs: [me(), civ(6)], ledger }), ME);
   assert.deepEqual(view.mine.map((row) => row.id), ["L2", "L3", "L1"]);
   assert.equal(view.mine[0].overdue, true);
   assert.deepEqual(view.lent.map((row) => row.id), ["L4"]);
-  assert.equal(view.standingPct, 80, "one active default");
+  assert.equal(view.standingPct, 80, "the reputation after a default");
   assert.equal(view.emergencyCapCents, 40000);
   assert.deepEqual(view.stages, { moneylending: true, publicDebt: true });
   assert.equal(view.serviceCapCents, 2000, "half of income");
@@ -85,7 +85,7 @@ test("borrower risk reads the AI rule's conditions", () => {
   const risk = borrowerRisk(input({ civs: [me(), civ(6, { incomeCents: 0 })], ledger,
     relations: [{ a: ME, b: 6, level: "unfriendly" }] }), ME, 6);
   assert.deepEqual([risk.level, risk.insolvent, risk.thresholdCents, risk.owedCents, risk.wouldLendByRule],
-    ["unfriendly", true, 10000, 9000, false]);
+    ["unfriendly", true, 4000, 9000, false], "4 turns of income, 10 Gold at the least");
 });
 
 test("the Loans tab's reserve reading (AI-PLAN 4.3): the AI's yardstick, what the player holds above it, the look-ahead", () => {

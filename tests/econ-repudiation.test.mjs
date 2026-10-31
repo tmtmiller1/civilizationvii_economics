@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { grudgeFor, repudiate, witnessDelta } from "../ui/econ-repudiation.js";
+import { grudgeFor, lenderHit, repudiate, witnessDelta } from "../ui/econ-repudiation.js";
 import { makeLoan } from "../ui/econ-loan.js";
 import { emptyLedger } from "../ui/econ-state.js";
 
@@ -33,7 +33,7 @@ test("repudiating a civ closes every open record with it, writes the debt off, b
   assert.deepEqual(r.ledger.loans.map((l) => [l.id, l.state, l.outstanding, l.writtenOff]),
     [["L1", "repudiated", 0, 7000], ["L2", "repudiated", 0, 3000], ["L3", "active", 10000, 0], ["L4", "closed", 0, 0]]);
   assert.deepEqual(r.grievances, [{ from: 2, against: 6, amount: 25 }]);
-  assert.deepEqual(r.relationships, [{ a: 2, b: 9, delta: -3 }, { a: 2, b: 11, delta: -3 }],
+  assert.deepEqual(r.relationships, [{ a: 2, b: 9, delta: -3 }, { a: 2, b: 11, delta: -3 }, { a: 2, b: 6, delta: -19 }],
     "the lender and the repudiator are never witnesses");
   assert.deepEqual(r.ledger.blocks, [{ lender: 6, borrower: 2, reason: "repudiation", agesLeft: 1, untilTurn: null }]);
   assert.deepEqual(r.ledger.repudiations, [{ pid: 2, lender: 6, turn: 30, cents: 10000, atWar: false }]);
@@ -51,9 +51,14 @@ test("repudiating the bond market: no grudge, witnesses doubled, closed for 30 t
 test("repudiating an enemy at war: half the witnesses' cost, the standing record marked", () => {
   const ledger = { ...emptyLedger(), loans: [loan("L1")] };
   const r = repudiate({ ledger, turn: 30, borrower: 2, lender: 6, atWar: true, witnesses: [9] });
-  assert.deepEqual(r.relationships, [{ a: 2, b: 9, delta: -2 }]);
+  assert.deepEqual(r.relationships, [{ a: 2, b: 9, delta: -2 }, { a: 2, b: 6, delta: -30 }],
+    "the witness halved; the lender's own hit isn't, sized like its grudge (40 is 30)");
   assert.equal(r.ledger.repudiations[0].atWar, true);
   assert.equal(r.grievances[0].amount, 40, "10000 cents over 10 Gold a turn is 10 turns");
+});
+
+test("the lender's relationship hit is sized like the grudge: 10 to 30 for a grudge of 10 to 40 (AI-PLAN 4.4)", () => {
+  assert.deepEqual([lenderHit(10), lenderHit(20), lenderHit(25), lenderHit(40)], [-10, -15, -19, -30]);
 });
 
 test("nothing owed: null, and no record", () => {

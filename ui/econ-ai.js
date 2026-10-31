@@ -3,7 +3,7 @@
 // These rules exist because no native lever carries a loan: the game's AI has no diplomatic action for borrowing or
 // lending (DESIGN section 1, "Native first"; P18 looks for one).
 
-import { AI, BOND, TEMPLE } from "./econ-params.js";
+import { AI } from "./econ-params.js";
 
 /**
  * The amount an AI is short of the guard line (the engine's amenity line, 0 on 1.5.0); 0 when it isn't.
@@ -79,36 +79,38 @@ export function loanToRestructure(loans, paymentOf) {
 }
 
 /**
- * Debt above which an Unfriendly lender is worth stiffing: 10 * max(|income|, 10 Gold).
+ * The Gold a debt must keep for a repudiation to be worth weighing (AI-PLAN 4.4): 4 turns of income, 10 Gold at the
+ * least.
  * @param {number} incomeCents
  */
 export function repudiationThreshold(incomeCents) {
-  return AI.repudiateDebtMultiple * Math.max(Math.abs(incomeCents), AI.minIncomeCents);
+  return AI.repudiateKeepTurns * Math.max(Math.abs(incomeCents), AI.minIncomeCents);
 }
 
 /**
- * DESIGN 6. `debts` is [{ lender, cents, level }] for each lender the AI owes, `level` the relationship or null for a
- * world account. Returns the lender to repudiate, or null.
- * At most once per 20 turns; never a Friendly lender; an enemy at war first, then, when insolvent or in default, an
- * Unfriendly lender owed more than the threshold, then the bond market when insolvent and at the emergency cap.
- * @param {{ debts: { lender: Party, cents: number, level: RelationLevel | null }[], insolvent: boolean,
- *   inDefault: boolean, incomeCents: number, atCap: boolean, lastRepudiationTurn?: number, turn: number }} q
+ * AI-PLAN 4.4, the weighing: a debt is repudiated when the Gold kept is above 4 turns of income and the lender is at
+ * war with the civ, or Unfriendly and weaker (both strengths read), or the civ is insolvent and the lender isn't
+ * Friendly (a world account included: the bond market, the temple treasuries and the citizens have no friends).
+ * `debts` is [{ lender, cents, level, lenderStrength }] for each lender the AI owes, `level` the relationship or
+ * null for a world account. The largest such debt is the one repudiated; at most once per 20 turns.
+ * @param {{ debts: { lender: Party, cents: number, level: RelationLevel | null, lenderStrength?: number | null }[],
+ *   insolvent: boolean, incomeCents: number, strength?: number | null, lastRepudiationTurn?: number,
+ *   turn: number }} q
  * @returns {Party | null}
  */
-export function aiRepudiationTarget({ debts, insolvent, inDefault, incomeCents, atCap, lastRepudiationTurn, turn }) {
+export function aiRepudiationTarget({ debts, insolvent, incomeCents, strength = null, lastRepudiationTurn, turn }) {
   if (Number.isInteger(lastRepudiationTurn)
     && turn - /** @type {number} */ (lastRepudiationTurn) < AI.repudiateEveryTurns) return null;
-  const byDebt = [...debts].sort((a, b) => b.cents - a.cents);
-  const war = byDebt.find((debt) => debt.level === "war");
-  if (war) return war.lender;
-  if (insolvent || inDefault) {
-    const threshold = repudiationThreshold(incomeCents);
-    const hostile = byDebt.find((debt) => debt.level === "unfriendly" && debt.cents > threshold);
-    if (hostile) return hostile.lender;
-  }
-  if (insolvent && atCap) {
-    const world = byDebt.find((debt) => debt.lender === BOND || debt.lender === TEMPLE);
-    if (world) return world.lender;
-  }
-  return null;
+  const threshold = repudiationThreshold(incomeCents);
+  const weaker = (/** @type {number | null | undefined} */ other) => typeof strength === "number"
+    && typeof other === "number" && other < strength;
+  /** @param {{ cents: number, level: RelationLevel | null, lenderStrength?: number | null }} debt */
+  const worth = (debt) => {
+    if (debt.cents <= threshold || debt.level === "friendly") return false;
+    if (debt.level === "war") return true;
+    if (debt.level === "unfriendly" && weaker(debt.lenderStrength)) return true;
+    return insolvent;
+  };
+  const picked = [...debts].filter(worth).sort((a, b) => b.cents - a.cents)[0];
+  return picked ? picked.lender : null;
 }

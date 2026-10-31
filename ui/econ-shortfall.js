@@ -271,9 +271,10 @@ export function lookAheadNotice(ctx, civ) {
 }
 
 /**
+ * What a civ owes each lender, with the relationship and the lender's strength (AI-PLAN 4.4).
  * @param {TurnContext} ctx
  * @param {number} pid
- * @returns {{ lender: Party, cents: number, level: RelationLevel | null }[]}
+ * @returns {{ lender: Party, cents: number, level: RelationLevel | null, lenderStrength: number | null }[]}
  */
 function debtsOf(ctx, pid) {
   /** @type {Map<Party, number>} */
@@ -282,11 +283,12 @@ function debtsOf(ctx, pid) {
     if (loan.borrower === pid && isOpen(loan)) sums.set(loan.lender, (sums.get(loan.lender) || 0) + loan.outstanding);
   }
   return [...sums].map(([lender, cents]) => ({ lender, cents,
-    level: isWorldAccount(lender) ? null : relationLevel(ctx.relations, pid, lender) }));
+    level: isWorldAccount(lender) ? null : relationLevel(ctx.relations, pid, lender),
+    lenderStrength: isWorldAccount(lender) ? null : ctx.civ.get(/** @type {number} */ (lender))?.strength ?? null }));
 }
 
 /**
- * DESIGN 6 repudiation, before any payment on the records it closes (DESIGN 4.14 step 2).
+ * AI-PLAN 4.4 repudiation, before any payment on the records it closes (DESIGN 4.14 step 2).
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
@@ -295,8 +297,7 @@ export function aiRepudiate(ctx, civ) {
   const last = ctx.ledger.repudiations.filter((row) => row.pid === civ.id).map((row) => row.turn)
     .sort((a, b) => b - a)[0];
   const lender = aiRepudiationTarget({ debts: debtsOf(ctx, civ.id), insolvent: isInsolventCiv(ctx, civ.id),
-    inDefault: activeDefaults(ctx.ledger, civ.id) > 0, incomeCents: civ.incomeCents,
-    atCap: lastCapHit(ctx, civ.id) === ctx.turn - 1, lastRepudiationTurn: last, turn: ctx.turn });
+    incomeCents: civ.incomeCents, strength: civ.strength ?? null, lastRepudiationTurn: last, turn: ctx.turn });
   if (lender === null || lender === undefined) return;
   repudiateFor(ctx, civ.id, lender);
 }

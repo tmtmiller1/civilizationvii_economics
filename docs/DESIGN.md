@@ -162,8 +162,11 @@ service      = next turn's scheduled interest plus amortisation over the civ's o
 credit_cap   = max(0, (12 + depth_turns - 4 * repudiations) * income) - total outstanding
                depth_turns: 4.13, 0 to 12; repudiations: in the last 40 turns (4.5)
 service_cap  = 0.5 * max(0, income)
-standing     = 1.0 - 0.2 per active default anywhere - 0.1 per miss in the last 20 turns
-               - 0.3 per repudiation in the last 40 turns, half for debt to an enemy at war (floor 0.1)
+standing     = credit reputation / 100 (floor 0.1): 100 less 30 per repudiation (15 against an enemy at war),
+               20 per default, 5 per miss or restructure; plus 5 per loan repaid in full, 2 per ten payments
+               on time, 3 per loan made or aid given, never above 100; what's lost mends by half every 50 turns
+               (AI-PLAN 4.4, NOTES choice 129; before 2026-10-31 it was fixed 20- and 40-turn windows)
+credit_cap   loses 4 turns of income per 30 points of reputation gone (a fresh repudiation's worth)
 ```
 
 - A standard loan needs `P <= credit_cap` and, with the new loan's first payment added, `service <= service_cap`.
@@ -273,7 +276,8 @@ Repudiation:
   lender grudge  = clamp(5 * loss_turns, 10, 40) grievances, booked on the repudiator:
                    Players.get(repudiator).Diplomacy.changeNumGrievances(lender, grudge * 1000)
   witnesses      = -3 relationship with each other major civ the repudiator has met
-  standing       = -0.3 for 40 turns (4.2)
+  lender         = -10 to -30 relationship with the lender, sized like the grudge (AI-PLAN 4.4)
+  reputation     = -30 (4.2), mending by half every 50 turns
   ```
 
   The grudge is sized by how much the loss hurt the lender, in turns of its own income, so it holds its meaning as
@@ -1098,7 +1102,7 @@ numbers. The AI's native spending doesn't know about them, so they follow three 
 | Borrowing | short (its dues this turn pass its funds, read before the payments) with income above 0: a refinancing loan for the gap from the cheapest bond or AI lender, 10 turns, within the credit cap alone (4.6, AI-PLAN 4.1); below the engine's line with income at or below 0: an emergency loan within `emergency_cap` (4.6); past the cap, or short with no lender or no credit: none, and it pays what it has (4.4) |
 | Build loan | income of 10 Gold or more, solvent, in no default, its own phase Boom or Steady (or outside the cycle), a city with a build at the head of its queue, at most once per 10 turns: the cheapest bond or AI loan over 10 turns for up to 5 turns of its income, no more than the build still needs at the game's purchase rate (4.17) and no more than the most the 4.2 limits allow (the sizing a player's refusal names). The principal goes from the lender straight to the build as `addProgress`, through the progress account a development loan uses, role buildings first. No native lever carries a loan (P18), so this is the AI's door to borrowing to build, which the player has through the Gold it spends. Cheap credit in a boom means more of it, which is what builds the leverage a Panic needs (4.11) |
 | Restructuring, early repayment | the look-ahead (AI-PLAN 4.3): pay when this turn and the next fit; refinance when short and a loan is on offer; else, with income above 0, restructure the loan whose payment doesn't fit, once per loan, from `m = 0`; else miss and pay what there is. Flush (funds above its reserve of 10 turns of income, or the next three turns' dues plus a turn of upkeep) and with no gap ahead, it puts half the surplus into its dearest loan, the way the player repays early |
-| Repudiation | at most once per 20 turns, never against a Friendly lender. Repudiates what it owes a civ it's at war with; or, when insolvent or in default, what it owes a lender it's Unfriendly or worse with, if that debt is above `10 * max(|income|, 10)`; or the bond market, when insolvent and at `emergency_cap` |
+| Repudiation | a weighing (AI-PLAN 4.4): a debt above 4 turns of income (10 Gold at the least) to a lender it's at war with, or to a weaker lender it's Unfriendly or worse with, or, while insolvent, to anyone but a Friendly lender (the bond market, the temple treasuries and its citizens included); the largest such debt; at most once per 20 turns, never a Friendly lender |
 | After a repudiation | doesn't lend to, invest in or aid the repudiator while the repudiation counts against its standing (4.5) |
 | Lending | income > 0 and balance > `20 * income`: lends to a short civ at the 4.3 rate, cheapest first; never to an insolvent one |
 | Taxes | native: the AI slots the tax cards in its own policy pass, steered by War Levy's requirement and the two strategy rows (4.7). Only in the script fallback: Heavy if balance < `5 * max(|income|, 10)` and falling, or insolvent (War Levy at war); Light if income > 0 and balance > `30 * income`; else Standard |

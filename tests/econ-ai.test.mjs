@@ -51,23 +51,23 @@ test("the ordered choice (AI-PLAN 4.3): pay, refinance, restructure, miss; the l
   assert.equal(loanToRestructure([l("L1", { state: "default" })], paymentOf), null);
 });
 
-test("repudiation rule (DESIGN 6): an enemy at war first, then a hostile lender owed enough when insolvent or in"
-  + " default, then the bond market when insolvent at the cap; never Friendly; once per 20 turns", () => {
-  const debts = [{ lender: 4, cents: 50000, level: "friendly" }, { lender: 5, cents: 30000, level: "unfriendly" },
-    { lender: 7, cents: 100, level: "war" }, { lender: "bond", cents: 9000, level: null }];
-  const base = { debts, insolvent: false, inDefault: false, incomeCents: 1000, atCap: false, lastRepudiationTurn: null,
-    turn: 50 };
-  assert.equal(repudiationThreshold(1000), 10000);
-  assert.equal(repudiationThreshold(-250), 10000, "10 Gold floors the income");
-  assert.equal(aiRepudiationTarget(base), 7, "at war, however small the debt");
-  const peace = { ...base, debts: debts.filter((d) => d.level !== "war") };
-  assert.equal(aiRepudiationTarget(peace), null, "solvent and paying: no repudiation");
-  assert.equal(aiRepudiationTarget({ ...peace, insolvent: true }), 5);
-  assert.equal(aiRepudiationTarget({ ...peace, inDefault: true }), 5);
-  assert.equal(aiRepudiationTarget({ ...peace, inDefault: true, incomeCents: 3000 }), null, "30000 is not above 30000");
-  const noHostile = { ...peace, debts: peace.debts.filter((d) => d.level !== "unfriendly") };
-  assert.equal(aiRepudiationTarget({ ...noHostile, insolvent: true }), null);
-  assert.equal(aiRepudiationTarget({ ...noHostile, insolvent: true, atCap: true }), "bond");
+test("the repudiation weighing (AI-PLAN 4.4): a debt worth keeping, to an enemy at war, a weaker civ it dislikes, or"
+  + " anyone but a friend while insolvent; the largest first; never Friendly; once per 20 turns", () => {
+  const debts = [{ lender: 4, cents: 50000, level: "friendly" }, { lender: 5, cents: 30000, level: "unfriendly",
+    lenderStrength: 10 }, { lender: 7, cents: 4001, level: "war" }, { lender: "bond", cents: 9000, level: null }];
+  const base = { debts, insolvent: false, incomeCents: 1000, strength: 20, lastRepudiationTurn: null, turn: 50 };
+  assert.equal(repudiationThreshold(1000), 4000, "4 turns of income");
+  assert.equal(repudiationThreshold(-250), 4000, "10 Gold floors the income");
+  assert.equal(aiRepudiationTarget(base), 5, "the weaker civ it dislikes is owed more than the enemy at war");
+  assert.equal(aiRepudiationTarget({ ...base, strength: 5 }), 7, "stronger lender: only the enemy at war qualifies");
+  assert.equal(aiRepudiationTarget({ ...base, strength: null }), 7, "no strength read: the weaker test fails safe");
+  const small = { ...base, debts: debts.map((d) => ({ ...d, cents: 4000 })) };
+  assert.equal(aiRepudiationTarget(small), null, "4 turns of income is the line, not over it: nothing worth keeping");
+  const peace = { ...base, strength: 5, debts: debts.filter((d) => d.level !== "war") };
+  assert.equal(aiRepudiationTarget(peace), null, "solvent and paying, lenders stronger: no repudiation");
+  assert.equal(aiRepudiationTarget({ ...peace, insolvent: true }), 5, "insolvent: anyone but a friend, largest first");
+  const onlyBond = { ...peace, debts: peace.debts.filter((d) => d.lender === "bond" || d.level === "friendly") };
+  assert.equal(aiRepudiationTarget({ ...onlyBond, insolvent: true }), "bond", "the bond market has no friends");
   assert.equal(aiRepudiationTarget({ ...base, lastRepudiationTurn: 31 }), null);
-  assert.equal(aiRepudiationTarget({ ...base, lastRepudiationTurn: 30 }), 7);
+  assert.equal(aiRepudiationTarget({ ...base, lastRepudiationTurn: 30 }), 5);
 });

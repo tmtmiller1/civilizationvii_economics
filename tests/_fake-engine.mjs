@@ -59,13 +59,15 @@ export function installFakeEngine(spec = {}) {
       return {
         id: pid, isAlive: c.alive, isMajor: c.major, isHuman: c.human, civilizationName: c.name || `Civ ${pid}`,
         Treasury: { goldBalance: c.balance, getMaintenanceForAllUnitsOfType: () => 1 },
-        Stats: { getNetYield: (yieldType) => (yieldType === 1 ? c.income : 2), getLifetimeYield: () => c.lifetime ?? 0 },
+        Stats: { getNetYield: (yieldType) => (yieldType === 1 ? c.income : 2), getLifetimeYield: () => c.lifetime ?? 0,
+          getMilitaryStrength: () => c.strength ?? null, getNumCombatUnits: () => c.combatUnits ?? 1 },
         Happiness: { nextGoldenAgeThreshold: c.threshold ?? 100, isInGoldenAge: () => c.celebrating === true },
         Diplomacy: {
           isAtWarWith: (other) => c.war.includes(other),
           getRelationshipEnum: (other) => c.relation[other] ?? "neutral",
           hasMet: () => spec.met !== false,
           changeNumGrievances: (other, amount) => record(`grievance ${pid}>${other} ${amount}`),
+          changeNumFavors: (other, amount) => record(`favor ${pid}>${other} ${amount}`),
           changeRelationshipLevel: (other, delta) => record(`relationship ${pid}~${other} ${delta}`),
         },
         Culture: {

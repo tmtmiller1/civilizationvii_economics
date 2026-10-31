@@ -21,6 +21,15 @@ export function grudgeFor(writtenOffCents, lenderIncomeCents) {
 }
 
 /**
+ * AI-PLAN 4.4: the lender's own relationship moves at once, sized like the grudge: 10 to 30 for a grudge of 10 to 40.
+ * @param {number} grudge
+ */
+export function lenderHit(grudge) {
+  const scaled = Math.round((grudge * REPUDIATION.lenderHitMax) / REPUDIATION.grudgeMax);
+  return -Math.max(REPUDIATION.lenderHitMin, Math.min(REPUDIATION.lenderHitMax, scaled));
+}
+
+/**
  * -3 with each witness; doubled when there's no lender to hold a grudge; halved against an enemy at war.
  * @param {{ worldLender: boolean, atWar: boolean }} q
  */
@@ -56,6 +65,9 @@ export function repudiate({ ledger, turn, borrower, lender, lenderIncomeCents = 
   /** @type {GrievanceRow[]} */
   const grievances = worldLender ? [] : [{ from: borrower, against: lender,
     amount: grudgeFor(writtenOff, lenderIncomeCents) }];
+  if (!worldLender) {
+    relationships.push({ a: borrower, b: /** @type {number} */ (lender), delta: lenderHit(grievances[0].amount) });
+  }
   const blocks = withBlock(ledger.blocks, blockFor({ lender, borrower, reason: "repudiation", turn }));
   /** @type {Ledger} */
   const next = { ...ledger, loans, blocks, repudiations: [...ledger.repudiations, record], investments: held.records };

@@ -4,18 +4,18 @@
 
 import { MID_TERM, SHORT_TERM, TERMS } from "./econ-params.js";
 import { firstPayment, isOpen, paymentDue, restructure, totalInterest } from "./econ-loan.js";
-import { emergencyOutstandingOf, outstandingOf, recentRepudiations, serviceCap, serviceOf, standingPct }
+import { emergencyOutstandingOf, outstandingOf, repTurnsLost, serviceCap, serviceOf, standingPct }
   from "./econ-credit.js";
 import { maxTerm, offersFor, relationLevel } from "./econ-lenders.js";
 import { emergencyCap, isInsolvent } from "./econ-guard.js";
-import { grudgeFor, witnessDelta } from "./econ-repudiation.js";
+import { grudgeFor, lenderHit, witnessDelta } from "./econ-repudiation.js";
 import { aiWillLend, repudiationThreshold } from "./econ-ai.js";
 import { hasStage } from "./econ-stages.js";
 import { DEFAULT_OPTIONS, projectBalances } from "./econ-plan.js";
 import { citizensFor, lendersFor, offerQuery, turnContext } from "./econ-turn.js";
 import { tabFacts, tabRules } from "./econ-view-tabs.js";
 import { creditRoom, limitRefusal, mostBorrowCents } from "./econ-requests.js";
-import { STANDING, REPUDIATION } from "./econ-params.js";
+import { REPUDIATION, REPUTATION, STANDING } from "./econ-params.js";
 import { emptyLedger } from "./econ-state.js";
 import { emptyMarkets } from "./econ-markets.js";
 import { emptyMacro } from "./econ-macro-state.js";
@@ -31,7 +31,7 @@ export function viewContext(input) {
   /** @type {PlanOutput} */
   const out = { ledger: input.ledger || emptyLedger(), transfers: [], influence: [], celebration: [], grievances: [],
     relationships: [], events: [], notices: [], batch: null, skipped: null, markets: emptyMarkets(), progress: [],
-    trade: [], macro: input.macro || emptyMacro(), aiPreferences: [] };
+    trade: [], macro: input.macro || emptyMacro(), aiPreferences: [], favors: [] };
   return turnContext(input, options, out);
 }
 
@@ -173,12 +173,14 @@ export function repudiationPreview(input, pid, lender) {
     && ctx.relations.some((row) => (row.a === pid && row.b === civ.id) || (row.b === pid && row.a === civ.id)));
   const lenderIncome = worldLender ? 0 : ctx.civ.get(/** @type {number} */ (lender))?.incomeCents || 0;
   const now = standingPct(ctx.ledger, pid, input.turn);
-  const cost = atWar ? STANDING.perRepudiationAtWar : STANDING.perRepudiation;
-  return { keptCents, loans: owed.length, grudge: worldLender ? 0 : grudgeFor(keptCents, lenderIncome),
+  const cost = atWar ? REPUTATION.repudiationAtWar : REPUTATION.repudiation;
+  const after = Math.max(STANDING.floor, now - cost);
+  const grudge = worldLender ? 0 : grudgeFor(keptCents, lenderIncome);
+  return { keptCents, loans: owed.length, grudge, lenderDelta: worldLender ? 0 : lenderHit(grudge),
     witnesses: witnesses.map((civ) => civ.id), witnessDelta: witnessDelta({ worldLender, atWar }),
-    standingNow: now, standingAfter: Math.max(STANDING.floor, now - cost),
+    standingNow: now, standingAfter: after,
     closedTurns: worldLender ? REPUDIATION.worldBlockTurns : null, closedAges: worldLender ? 0 : 1,
-    creditTurnsLost: 4 * (recentRepudiations(ctx.ledger, pid, input.turn).length + 1), atWar };
+    creditTurnsLost: repTurnsLost(after) - repTurnsLost(now), atWar };
 }
 
 /**

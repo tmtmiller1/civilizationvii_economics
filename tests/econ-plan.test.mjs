@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { planTurn, projectBalances } from "../ui/econ-plan.js";
 import { grantsFor } from "../ui/econ-conservation.js";
 import { makeLoan } from "../ui/econ-loan.js";
-import { emptyLedger } from "../ui/econ-state.js";
+import { emptyLedger, load, save } from "../ui/econ-state.js";
 import { CLOSED, PARAMS, civ, input } from "./_fixtures.mjs";
 import { step, world } from "./_sim.mjs";
 
@@ -196,8 +196,9 @@ test("repudiating a civ (DESIGN 4.5): records close, grievances and witness rows
     [["L1", "repudiated", 30000], ["L2", "repudiated", 5000], ["L3", "active", 0]]);
   assert.deepEqual(noEscrow(plan.transfers).map((t) => t.loanId), ["L3"], "the stiffed lender gets nothing, now or later");
   assert.deepEqual(plan.grievances, [{ from: ME, against: 6, amount: 40 }], "35000 / 2000 = 17.5 turns, capped");
-  assert.deepEqual(plan.relationships, [{ a: ME, b: 8, delta: -3 }, { a: ME, b: 9, delta: -3 }],
-    "met and alive civs other than the lender");
+  assert.deepEqual(plan.relationships, [{ a: ME, b: 8, delta: -3 }, { a: ME, b: 9, delta: -3 },
+    { a: ME, b: 6, delta: -30 }], "met and alive civs other than the lender at -3; the lender hit like its grudge");
+  assert.deepEqual(plan.events.find((e) => e.kind === "credit-rep" && e.why === "repudiation").after, 70);
   assert.deepEqual(plan.ledger.blocks, [{ lender: 6, borrower: ME, reason: "repudiation", agesLeft: 1, untilTurn: null }]);
   assert.equal(plan.events.find((e) => e.kind === "repudiation").chronicle, 1);
   assert.equal(plan.notices.some((n) => n.kind === "repudiated"), true);
@@ -245,7 +246,9 @@ test("the AI repudiates an enemy at war (DESIGN 6), before any payment on the re
   assert.equal(plan.ledger.loans[0].state, "repudiated");
   assert.deepEqual(plan.transfers, []);
   assert.deepEqual(plan.grievances, [{ from: 4, against: 6, amount: 40 }]);
-  assert.deepEqual(plan.relationships, [{ a: 4, b: ME, delta: -2 }], "halved: the world expects it");
+  assert.deepEqual(plan.relationships, [{ a: 4, b: ME, delta: -2 }, { a: 4, b: 6, delta: -30 }],
+    "the witness halved: the world expects it; the lender's own hit sized like the grudge");
+  assert.equal(plan.events.find((e) => e.kind === "credit-rep" && e.why === "repudiation").after, 85, "15 at war");
   assert.equal(plan.ledger.repudiations[0].atWar, true);
   const calm = planTurn(input({ ledger: ledgerWith([loan("L1", { borrower: 4, lender: 6 })]), civs,
     relations: [{ a: 4, b: 6, level: "unfriendly" }] }));
@@ -358,8 +361,8 @@ test("refinancing is judged by the credit cap alone; over it, insolvent or with 
   assert.equal(capped.events.find((e) => e.kind === "short")?.reason, "credit-cap",
     "12 turns of 10 is 120, less 119 outstanding leaves 1 against a gap of 2.19");
   assert.equal(capped.transfers.find((t) => t.loanId === "L1").cents, 1000, "L1 takes the 10 there was");
-  const insolvent = run({ incomeCents: 0 }, ledgerWith([due], { lowIncome: [{ pid: 4, turns: 5 }] }));
-  assert.equal(insolvent.events.find((e) => e.kind === "short")?.reason, "income");
+  const noIncome = run({ incomeCents: 0 }, ledgerWith([due], { lowIncome: [{ pid: 4, turns: 2 }] }));
+  assert.equal(noIncome.events.find((e) => e.kind === "short")?.reason, "income");
   const nobody = planTurn(input({ ledger: ledgerWith([due]), civs: [me(), civ(4, { balanceCents: 0, incomeCents: 1000,
     stages: { moneylending: 0, publicDebt: null } })] }));
   assert.equal(nobody.events.find((e) => e.kind === "short")?.reason, "no-offer");
@@ -683,4 +686,34 @@ test("the AI restructures one loan a turn, the one whose payment doesn't fit, an
   assert.deepEqual(plan.ledger.loans.map((l) => [l.id, l.restructured]), [["L1", true], ["L2", false]],
     "the 33 payment, not the 11");
   assert.equal(plan.events.filter((e) => e.kind === "restructure").length, 1);
+});
+
+test("credit reputation in the turn (AI-PLAN 4.4): a miss -5, a default -20 more, a loan repaid in full +5 and favors", () => {
+  const short = planTurn(input({ ledger: ledgerWith([loan("L1", { missed: 2 })]), civs: [me({ balanceCents: 0,
+    incomeCents: 0 })], options: { guard: false } }));
+  const reps = short.events.filter((e) => e.kind === "credit-rep").map((e) => [e.why, e.points, e.after]);
+  assert.deepEqual(reps, [["miss", -5, 95], ["default", -20, 75]]);
+  const owed = loan("L2", { lender: 6, principal: 1000, outstanding: 1000, term: 10, paid: 9, opened: 1 });
+  const done = planTurn(input({ ledger: ledgerWith([owed]), civs: [me({ balanceCents: 1e6 }), civ(6)] }));
+  assert.deepEqual(done.events.filter((e) => e.kind === "credit-rep").map((e) => [e.why, e.points, e.after]),
+    [["on-time", 2, 100], ["repaid", 5, 100]], "the tenth payment on time, then paid in full; never above 100");
+  assert.deepEqual(done.favors, [{ from: ME, to: 6, amount: 5 }], "favors on the civ lender");
+  assert.equal(done.events.at(-1).kind, "closed");
+  const bond = planTurn(input({ ledger: ledgerWith([loan("L3", { principal: 1000, outstanding: 1000, term: 10, paid: 9,
+    opened: 1 })]), civs: [me({ balanceCents: 1e6 })] }));
+  assert.deepEqual(bond.favors, [], "the bond market has nobody to thank");
+  const lent = planTurn(input({ civs: [me({ balanceCents: 1e6 }), civ(6, { balanceCents: 1e6 })],
+    requests: [borrow({ lender: 6, principal: 1000, term: 10 })] }));
+  assert.deepEqual(lent.events.filter((e) => e.kind === "credit-rep").map((e) => [e.pid, e.why, e.points]),
+    [[6, "lent", 3]], "a loan made earns the lender 3 (nothing to mend here, so it stays at 100)");
+});
+
+test("a 0.5.4 save's standing becomes its credit reputation on load (AI-PLAN 4.4)", () => {
+  const old = JSON.parse(save(ledgerWith([loan("L1", { state: "default", missed: 3 })], { lastTurn: 40,
+    misses: [{ pid: ME, turn: 35, n: 1 }], repudiations: [{ pid: 7, lender: 9, turn: 20, cents: 5, atWar: false }] })));
+  delete old.ledger.creditRep;
+  const loaded = load(JSON.stringify(old)).ledger;
+  assert.deepEqual(loaded.creditRep.sort((a, b) => a.pid - b.pid), [{ pid: ME, rep: 7000, turn: 40 },
+    { pid: 7, rep: 7000, turn: 40 }], "a default and a miss: 0.7; a repudiation: 0.7");
+  assert.deepEqual(load(save(loaded)).ledger.creditRep.sort((a, b) => a.pid - b.pid), loaded.creditRep, "round trip");
 });

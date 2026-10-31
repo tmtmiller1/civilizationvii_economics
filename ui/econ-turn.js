@@ -4,7 +4,8 @@
 
 import { CITIZENS, isWorldAccount, ratesPct } from "./econ-params.js";
 import { isOpen, loanId, makeLoan } from "./econ-loan.js";
-import { standingPct } from "./econ-credit.js";
+import { changeCreditRep, standingPct } from "./econ-credit.js";
+import { REPUTATION } from "./econ-params.js";
 import { rateCapPpm } from "./econ-lenders.js";
 import { createBatch, lenderBalance, record } from "./econ-batch.js";
 import { aiWillLend } from "./econ-ai.js";
@@ -75,6 +76,20 @@ export const isHuman = (ctx, pid) => ctx.civ.get(/** @type {number} */ (pid))?.h
  * @param {number} pid
  */
 export const standing = (ctx, pid) => standingPct(ctx.ledger, pid, ctx.turn);
+
+/**
+ * AI-PLAN 4.4: moves a civ's credit reputation and logs it; a world account has none.
+ * @param {TurnContext} ctx
+ * @param {Party} pid
+ * @param {number} points
+ * @param {string} why
+ * @param {string} [loanId]
+ */
+export function repChange(ctx, pid, points, why, loanId) {
+  if (isWorldAccount(pid) || !isAlive(ctx, pid)) return;
+  const after = changeCreditRep(ctx.ledger, /** @type {number} */ (pid), ctx.turn, points);
+  event(ctx, { kind: "credit-rep", pid: /** @type {number} */ (pid), points, why, after, ...(loanId ? { loanId } : {}) });
+}
 /**
  * @param {TurnContext} ctx
  * @param {Party} pid
@@ -140,7 +155,10 @@ export function openLoan(ctx, spec) {
   event(ctx, { kind: "open", loanId: loan.id, lender, borrower, cents: principal, ratePpm, term, source,
     emergency: emergency ? 1 : 0 });
   notice(ctx, borrower, { kind: "open", loanId: loan.id, source, emergency });
-  if (!isWorldAccount(lender)) notice(ctx, lender, { kind: "lent", loanId: loan.id });
+  if (!isWorldAccount(lender)) {
+    notice(ctx, lender, { kind: "lent", loanId: loan.id });
+    repChange(ctx, lender, REPUTATION.lent, "lent", loan.id);
+  }
   return loan;
 }
 

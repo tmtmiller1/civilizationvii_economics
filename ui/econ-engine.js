@@ -144,6 +144,20 @@ export function readUpkeepCents(pid) {
 }
 
 /**
+ * The civ's military strength as the engine scores it, or its combat units when that read gives nothing; null when
+ * neither answers (the fourth run saw getMilitaryStrength answer null without arguments, AI-PLAN section 1).
+ * @param {number} pid
+ */
+export function readStrength(pid) {
+  const stats = safe(() => Players.get(pid).Stats, null);
+  if (!stats) return null;
+  const strength = safe(() => Number(stats.getMilitaryStrength()), Number.NaN);
+  if (Number.isFinite(strength) && strength > 0) return strength;
+  const units = safe(() => Number(stats.getNumCombatUnits()), Number.NaN);
+  return Number.isFinite(units) ? units : null;
+}
+
+/**
  * Whether the civ is at war with any living major (minors read as at war with everyone, so they're left out).
  * @param {number} pid
  * @param {number[]} majors
@@ -381,6 +395,18 @@ export function bookGrievance(row) {
     return true;
   }, false);
   if (!ok) logLine(`changeNumGrievances failed: ${row.from} against ${row.against}`);
+  return ok;
+}
+
+/**
+ * Books favors on the game's own ledger the way grievances are booked (AI-PLAN 4.4): `from` did `to` a good turn.
+ * @param {FavorRow} row
+ */
+export function bookFavor(row) {
+  if (!isAliveMajor(row.from) || !isAliveMajor(row.to)) return false;
+  const ok = safe(() => { Players.get(row.from).Diplomacy.changeNumFavors(row.to, row.amount * 1000); return true; },
+    false);
+  if (!ok) logLine(`changeNumFavors failed: ${row.from} for ${row.to}`);
   return ok;
 }
 

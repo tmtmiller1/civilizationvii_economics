@@ -210,7 +210,7 @@
         <Row Tag="LOC_ECONOMICS_RESTRUCTURE_WHY_DONE"><Text>This loan has been restructured once already.</Text></Row>
         <Row Tag="LOC_ECONOMICS_REPAY_NOTE"><Text>If your treasury is short next turn, you pay what it holds and the rest stays on the loan.</Text></Row>
         <Row Tag="LOC_ECONOMICS_REPUDIATE_KEEP"><Text>You keep</Text></Row>
-        <Row Tag="LOC_ECONOMICS_REPUDIATE_STANDING"><Text>Your standing</Text></Row>
+        <Row Tag="LOC_ECONOMICS_REPUDIATE_STANDING"><Text>Your credit reputation</Text></Row>
         <Row Tag="LOC_ECONOMICS_LENT_TITLE"><Text>Lent to {1_Borrower}</Text></Row>
         <Row Tag="LOC_ECONOMICS_LENT_OWED"><Text>Still owed to you</Text></Row>
         <Row Tag="LOC_ECONOMICS_LENT_PAYMENT"><Text>They pay a turn</Text></Row>
@@ -240,7 +240,7 @@
         <Row Tag="LOC_ECONOMICS_LOANS_MOST"><Text>Most you can borrow over {1_Turns} turns</Text></Row>
         <Row Tag="LOC_ECONOMICS_LOANS_SERVICE"><Text>Payments per turn, of the limit</Text></Row>
         <Row Tag="LOC_ECONOMICS_LOANS_SERVICE_OF"><Text>{1_Used} of {2_Cap} Gold</Text></Row>
-        <Row Tag="LOC_ECONOMICS_LOANS_STANDING"><Text>Standing (1.00 is clean)</Text></Row>
+        <Row Tag="LOC_ECONOMICS_LOANS_STANDING"><Text>Credit reputation (100 is clean; a missed payment -5, a default -20, a repudiation -30; it mends by half every 50 turns, and a loan repaid in full earns 5)</Text></Row>
         <Row Tag="LOC_ECONOMICS_LOANS_RESERVE"><Text>Reserve (10 turns of income, or the next three turns' payments and a turn of upkeep)</Text></Row>
         <Row Tag="LOC_ECONOMICS_LOANS_ABOVE_RESERVE"><Text>You hold this much above it; the computer players repay early with half of theirs</Text></Row>
         <Row Tag="LOC_ECONOMICS_LOANS_UNDER_RESERVE"><Text>You're this much under it</Text></Row>
@@ -303,9 +303,9 @@
         <Row Tag="LOC_ECONOMICS_LOANS_REPAY_HALF"><Text>Repay half next turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_LOANS_RESTRUCTURE"><Text>Restructure</Text></Row>
         <Row Tag="LOC_ECONOMICS_LOANS_REPUDIATE_LENDER"><Text>Repudiate what you owe {1_Lender}</Text></Row>
-        <Row Tag="LOC_ECONOMICS_RESTRUCTURE_PREVIEW"><Text>What's left, {1_Owed} Gold, spreads over 10 new turns at the current {2_Rate}: about {3_Payment} Gold a turn. Your standing takes one more miss, and this loan can't be restructured again.</Text></Row>
-        <Row Tag="LOC_ECONOMICS_REPUDIATE_PREVIEW"><Text>You keep {1_Kept} Gold and stop paying. {2_Lender} books a grudge of {3_Grudge} grievances against you; {4_Count} civilizations you've met each move {5_Delta} in relationship; your standing falls to {6_Standing}; {7_Lender} closes to you for {8_For}; your credit limit loses {9_Turns} turns of income and terms stay at 10 turns for 40 turns.</Text></Row>
-        <Row Tag="LOC_ECONOMICS_REPUDIATE_AT_WAR"><Text>You're at war with this lender, so the world expects it: the witness and standing costs are halved.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_RESTRUCTURE_PREVIEW"><Text>What's left, {1_Owed} Gold, spreads over 10 new turns at the current {2_Rate}: about {3_Payment} Gold a turn. Your credit reputation takes a missed payment's 5, and this loan can't be restructured again.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_REPUDIATE_PREVIEW"><Text>You keep {1_Kept} Gold and stop paying. {2_Lender} books a grudge of {3_Grudge} grievances against you and its relationship with you moves {10_LenderDelta}; {4_Count} civilizations you've met each move {5_Delta}; your credit reputation falls to {6_Standing}; {7_Lender} closes to you for {8_For}; your credit limit loses {9_Turns} turns of income and terms stay at 10 turns for 40 turns.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_REPUDIATE_AT_WAR"><Text>You're at war with this lender, so the world expects it: the witness and reputation costs are halved.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CLOSED_TURNS"><Text>{1_Turns} turns</Text></Row>
         <Row Tag="LOC_ECONOMICS_CLOSED_AGES"><Text>the rest of this age and the whole of the next</Text></Row>
         <Row Tag="LOC_ECONOMICS_LOANS_LENT"><Text>What you've lent</Text></Row>
@@ -315,12 +315,12 @@
         <Row Tag="LOC_ECONOMICS_LEND_BOND_RATE"><Text>Their bond rate is {1_Rate}; they accept up to 1.2 times it</Text></Row>
         <Row Tag="LOC_ECONOMICS_LEND_RISK"><Text>Repudiation risk: {1_Text}</Text></Row>
         <Row Tag="LOC_ECONOMICS_LEND_RULE"><Text>They accept while they're short of Gold, their income is positive and the payments fit their limits. If they default or repudiate, the loss is yours.</Text></Row>
-        <Row Tag="LOC_ECONOMICS_RISK_LOW"><Text>low. They repudiate a debt to an enemy at war, or to a civilization they dislike while insolvent or in default.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_RISK_LOW"><Text>low. They repudiate a debt worth keeping (over four turns of their income) to an enemy at war, to a weaker civilization they dislike, or to anyone but a friend while insolvent.</Text></Row>
         <Row Tag="LOC_ECONOMICS_RISK_WAR"><Text>high: you're at war with them, and they repudiate debts to enemies.</Text></Row>
         <Row Tag="LOC_ECONOMICS_RISK_INSOLVENT"><Text>their income has been at or below 0 for {1_Turns} turns; they can't take your loan and may repudiate what they owe.</Text></Row>
         <Row Tag="LOC_ECONOMICS_RISK_NO_INCOME"><Text>their income is at or below 0, so they won't accept.</Text></Row>
         <Row Tag="LOC_ECONOMICS_RISK_DEFAULT"><Text>they're in default on another loan.</Text></Row>
-        <Row Tag="LOC_ECONOMICS_RISK_UNFRIENDLY"><Text>they dislike you: a debt over {1_Amount} Gold is one they'd repudiate while in trouble.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_RISK_UNFRIENDLY"><Text>they dislike you: a debt over {1_Amount} Gold is one they'd repudiate if they're the stronger, or while insolvent.</Text></Row>
         <Row Tag="LOC_ECONOMICS_GUARD"><Text>Auto-loan guard</Text></Row>
         <Row Tag="LOC_ECONOMICS_GUARD_STATE"><Text>The guard is</Text></Row>
         <Row Tag="LOC_ECONOMICS_GUARD_ALLOWANCE"><Text>Emergency allowance left</Text></Row>
@@ -430,6 +430,7 @@
         <Row Tag="LOC_ECONOMICS_EVENT_OPEN"><Text>Loan {1_Loan} opened: {2_Amount} Gold from {3_Lender} to {4_Borrower}.</Text></Row>
         <Row Tag="LOC_ECONOMICS_EVENT_MISS"><Text>Nothing paid on {1_Loan}, {4_Due} Gold added to it ({2_Count} missed in a row).</Text></Row>
         <Row Tag="LOC_ECONOMICS_EVENT_MISS_PART"><Text>{1_Loan}: paid {3_Paid} of {4_Due} Gold, {5_Short} added to the loan ({2_Count} missed in a row).</Text></Row>
+        <Row Tag="LOC_ECONOMICS_EVENT_CREDIT_REP"><Text>{1_Civ}'s credit reputation moved {2_Points} ({3_Why}) to {4_After}.</Text></Row>
         <Row Tag="LOC_ECONOMICS_EVENT_REPAY_EARLY"><Text>{1_Civ} repaid {2_Amount} Gold of {3_Loan} early, from what it held above its reserve.</Text></Row>
         <Row Tag="LOC_ECONOMICS_EVENT_REFINANCE"><Text>{1_Civ} refinanced: {2_Amount} Gold from {3_Lender} to meet the turn's payments.</Text></Row>
         <Row Tag="LOC_ECONOMICS_EVENT_AID_CLEARED"><Text>Aid from {1_Giver} cleared {2_Amount} Gold of {3_Loan}, which {4_Borrower} had defaulted on.</Text></Row>

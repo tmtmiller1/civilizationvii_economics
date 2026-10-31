@@ -7,6 +7,7 @@
 import { LIMITS, isWorldAccount } from "./econ-params.js";
 import { LOAN_KINDS, LOAN_SOURCES, LOAN_STATES, loanSeq } from "./econ-loan.js";
 import { INVEST_KINDS, investSeq } from "./econ-invest.js";
+import { activeDefaults, recentMisses, recentRepudiations, standingFrom } from "./econ-credit.js";
 
 export const MOD_ID = "tower-economics";
 export const VERSION = 3;
@@ -14,8 +15,8 @@ export const VERSION = 3;
 /** @returns {Ledger} */
 export function emptyLedger() {
   return { age: null, nextId: 1, lastTurn: null, batchSeq: 0, loans: [], blocks: [], misses: [], repudiations: [],
-    guardTurns: [], buildTurns: [], capHits: [], lowIncome: [], escrow: [], distress: [], taxes: [], events: [],
-    lastBatch: null, investments: [], offers: [], nextInvestId: 1 };
+    guardTurns: [], buildTurns: [], capHits: [], lowIncome: [], escrow: [], distress: [], creditRep: [], taxes: [],
+    events: [], lastBatch: null, investments: [], offers: [], nextInvestId: 1 };
 }
 
 /**
@@ -36,7 +37,8 @@ export function cloneLedger(ledger) {
     repudiations: copyRows(ledger.repudiations), guardTurns: copyRows(ledger.guardTurns),
     buildTurns: copyRows(ledger.buildTurns || []),
     capHits: copyRows(ledger.capHits), lowIncome: copyRows(ledger.lowIncome), escrow: copyRows(ledger.escrow || []),
-    distress: copyRows(ledger.distress || []), taxes: copyRows(ledger.taxes),
+    distress: copyRows(ledger.distress || []), creditRep: copyRows(ledger.creditRep || []),
+    taxes: copyRows(ledger.taxes),
     events: copyRows(ledger.events),
     lastBatch: ledger.lastBatch ? { ...ledger.lastBatch, civs: copyRows(ledger.lastBatch.civs) } : null,
     investments: copyRows(ledger.investments || []), offers: copyRows(ledger.offers || []),
@@ -320,6 +322,42 @@ function cleanCounters(ledger, raw) {
   ledger.distress = /** @type {TurnRow[]} */ (cleanPidRows(raw.distress, "turn", true));
 }
 
+/** @param {Raw[]} raw */
+function creditRepRows(raw) {
+  /** @type {CreditRepRow[]} */
+  const rows = [];
+  for (const row of raw) {
+    const ok = row && isPid(row.pid) && isInt(row.rep) && isTurn(row.turn) && !rows.some((x) => x.pid === row.pid);
+    if (ok) rows.push({ pid: row.pid, rep: Math.max(0, Math.min(10000, row.rep)), turn: row.turn });
+  }
+  return rows.filter((row) => row.rep < 10000);
+}
+
+/**
+ * The credit reputation rows (AI-PLAN 4.4), one per civ at 0 to 10000 as of a turn. A save from before them (0.5.4)
+ * has none: each civ with a row in the misses, repudiations or defaulted loans starts at the standing those rows
+ * gave it at the save's last turn (DESIGN 4.2 as it was), and everyone else at 100 (no row).
+ * @param {Ledger} ledger
+ * @param {Raw} raw
+ */
+function cleanCreditRep(ledger, raw) {
+  if (Array.isArray(raw.creditRep)) {
+    ledger.creditRep = creditRepRows(raw.creditRep);
+    return;
+  }
+  const turn = ledger.lastTurn ?? 0;
+  const pids = new Set([...ledger.misses.map((row) => row.pid), ...ledger.repudiations.map((row) => row.pid),
+    ...ledger.loans.filter((loan) => loan.state === "default").map((loan) => loan.borrower)]);
+  ledger.creditRep = [];
+  for (const pid of pids) {
+    const repudiations = recentRepudiations(ledger, pid, turn);
+    const standing = standingFrom({ defaults: activeDefaults(ledger, pid), misses: recentMisses(ledger, pid, turn),
+      repudiations: repudiations.filter((row) => !row.atWar).length,
+      repudiationsAtWar: repudiations.filter((row) => row.atWar).length });
+    if (standing < 100) ledger.creditRep.push({ pid, rep: standing * 100, turn });
+  }
+}
+
 /**
  * The 1.1 records (DESIGN 4.12): investments, open offers and the id counter they share.
  * @param {Ledger} ledger
@@ -348,6 +386,7 @@ export function sanitizeLedger(input) {
   ledger.misses = cleanMisses(raw.misses);
   ledger.repudiations = cleanRepudiations(raw.repudiations);
   cleanCounters(ledger, raw);
+  cleanCreditRep(ledger, raw);
   ledger.taxes = cleanTaxes(raw.taxes);
   ledger.events = /** @type {LedgerEvent[]} */ (list(raw.events).map(cleanEvent).filter(Boolean));
   ledger.lastBatch = cleanBatch(raw.lastBatch);

@@ -5,7 +5,7 @@
 // bill, a tariff between two civs or a return on an investment the AI can see (DESIGN section 1, "Native first").
 // Nothing here reads the engine.
 
-import { INVEST, MISS, STANDING, TRADE } from "./econ-params.js";
+import { INVEST, MISS, REPUTATION, STANDING, TRADE } from "./econ-params.js";
 import { anyWar, nextPrices } from "./econ-prices.js";
 import { aiTariffStep, canChangeTariff, capPayments, highTariffCosts, netPairs, owedByPair, withTariff }
   from "./econ-trade.js";
@@ -16,7 +16,7 @@ import { blockFor, relationLevel } from "./econ-lenders.js";
 import { withBlock } from "./econ-payments.js";
 import { hasStage } from "./econ-stages.js";
 import { addInfluence, funds, lenderBalance } from "./econ-batch.js";
-import { emit, event, incomeOf, isAlive, notice, termsFor } from "./econ-turn.js";
+import { emit, event, incomeOf, isAlive, notice, repChange, termsFor } from "./econ-turn.js";
 import { basePriceCents } from "./econ-prices.js";
 import { takesCapitalism } from "./econ-systems.js";
 import { isInDepression } from "./econ-macro.js";
@@ -169,12 +169,24 @@ function payDividend(ctx, record) {
     if (result.closed) event(ctx, { kind: "invest-closed", loanId: record.id });
     return;
   }
+  recordInvestMiss(ctx, record, result);
+}
+
+/**
+ * A missed return: standing, Influence and reputation as for a loan; the third in a row is default (DESIGN 4.12).
+ * @param {TurnContext} ctx
+ * @param {Investment} record
+ * @param {ReturnType<typeof settleDividend>} result
+ */
+function recordInvestMiss(ctx, record, result) {
   addMiss(ctx.ledger, record.host, ctx.turn);
   addInfluence(ctx.batch, record.host, MISS.influence);
   ctx.out.influence.push({ pid: record.host, amount: MISS.influence, loanId: record.id, reason: "miss" });
   event(ctx, { kind: "invest-miss", loanId: record.id, borrower: record.host, missed: result.record.missed });
   notice(ctx, record.host, { kind: "invest-miss", loanId: record.id, missed: result.record.missed });
+  repChange(ctx, record.host, -REPUTATION.miss, "miss", record.id);
   if (!result.defaulted) return;
+  repChange(ctx, record.host, -REPUTATION.default, "default", record.id);
   ctx.ledger.blocks = withBlock(ctx.ledger.blocks, blockFor({ lender: record.investor, borrower: record.host,
     reason: "default", turn: ctx.turn }));
   event(ctx, { kind: "invest-default", loanId: record.id, lender: record.investor, borrower: record.host });
