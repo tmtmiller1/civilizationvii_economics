@@ -123,8 +123,18 @@ export const TRADE = { billPermille: 25, tradeBuildingPct: 10, tradeBuildingMaxP
 export const INVEST = { goldPerProgress: 3, term: 25, projectMille: 50, roleProjectMille: 60, generalMille: 45,
   growthMinMille: 500, growthMaxMille: 2000, equityMinMille: 250, equityMaxMille: 3000,
   minHostIncomeCents: 1000, projectTenthsPerPoint: 50,
-  generalTenthsPerPoint: 75, aidTenthsPerPoint: 25, maxRelationship: 10, aiEveryTurns: 10, aiSizeTurns: 5,
+  generalTenthsPerPoint: 75, aidTenthsPerPoint: 25, maxRelationship: 10, aiSizeTurns: 5,
   offerTurns: 3, incomeHistoryTurns: 10 };
+// AI-PLAN 4.5: the stake score (the terms of stakeOf in econ-stake.js) and the rules on it. An AI invests from what
+// it holds above its reserve in the host with the best stake of 8 or more, 3 to 8 turns of income rising with the
+// stake, one open investment per host; aids a host with a stake of 10 or more that's in default, in Depression, or
+// at war with the AI's enemy and short, sized to buy it back to Friendly (a working level of 20; the engine's own
+// threshold is unread) within 5 turns of income, once per 15 turns per host; lends to a civ with a reputation of 50
+// or more and a stake of 0 or more. Hostile is a level at or under -20 (a working number too).
+export const STAKE = { levelDiv: 3, perRoute: 3, routesMax: 9, allied: 6, sharedEnemy: 4, neighbourPlots: 20,
+  neighbour: 3, agendaDiv: 2, growing: 3, hostile: -6, hostileLevel: -20, repDiv: 10, investMin: 8,
+  investTurnsMin: 3, investTurnsMax: 8, investTurnsPerStake: 0.5, aidMin: 10, aidEveryTurns: 15, aidIncomeTurns: 5,
+  friendlyLevel: 20, lendRepMin: 50, lendStakeMin: 0, offerEveryTurns: 10 };
 
 // DESIGN 4.11, in basis points (1/10000) so every weight is an integer: E starts at 10000 (1.0) and L at 0, and
 // war declared, -0.02, is -200. k is the Business cycle option; s the world stage scale (DESIGN 4.15). Leverage is

@@ -207,6 +207,10 @@ declare global {
     tariffPeace: Record<string, number>;
     /** By "<ai>-<other>": a civ the AI has eased off, with the lowest tariff that civ has held since (DESIGN 6). */
     tariffEased: Record<string, TariffLevel>;
+    /** By "<ai>-<host>": the turn the AI last gave that host aid (once per 15 turns, AI-PLAN 4.5). */
+    aidTurns: Record<string, number>;
+    /** By "<ai>-<host>": the turn the AI last offered the human host an investment (once per 10 turns). */
+    offerTurns: Record<string, number>;
   }
 
   /** Build progress the glue lands with `addProgress` on the city's current build (DESIGN 4.12). */
@@ -245,7 +249,15 @@ declare global {
   interface CycleInputEvent { kind: "capture" | "raze" | "disaster"; pid: number; populationLost?: boolean;
     foodWarehouse?: boolean }
 
-  interface Relation { a: number; b: number; level: RelationLevel }
+  /**
+   * One pair of majors as the glue reads it (AI-PLAN 4.5): the level number as a sees b, the routes both ways, an
+   * alliance, the distance between capitals, and each side's own agenda rows toward the other (agendaAB is a's).
+   */
+  interface Relation {
+    a: number; b: number; level: RelationLevel;
+    levelNum?: number; routes?: number; allied?: boolean; distance?: number | null;
+    agendaAB?: number; agendaBA?: number;
+  }
 
   interface PlanOptions {
     loans: boolean;
@@ -329,6 +341,8 @@ declare global {
     aiPreferences: AiPreferenceRow[];
     /** Favors to book on the game's ledger (AI-PLAN 4.4). */
     favors: FavorRow[];
+    /** Each AI's stake in each host the turn read, by "ai:host" (AI-PLAN 4.5), for the screens and the lab. */
+    stakes: Record<string, number>;
   }
 
   /** The turn's Gold bookkeeping (DESIGN 4.14), each Map keyed by player id. */
@@ -374,6 +388,8 @@ declare global {
     noBond?: boolean;
     /** Whether the borrower hasn't met a civ, which then makes no offer. */
     unmet?: (lender: number) => boolean;
+    /** An AI lender's own refusal by reputation and stake (AI-PLAN 4.5); a human lender never refuses by rule. */
+    refuses?: (lender: number) => boolean;
     /** A Civic market civ's citizens, with what they'd lend and at what rate (DESIGN 4.17). */
     citizens?: { ratePpm: number; roomCents: number } | null;
   }
@@ -407,6 +423,8 @@ declare global {
     basePrices: Record<string, number>;
     /** The civs whose dues passed their funds this turn, before any refinancing (AI-PLAN 4.1, 4.2). */
     distressed: Set<number>;
+    /** Each AI's stake in each host this turn, by "ai:host", read once (AI-PLAN 4.5). */
+    stakes: Map<string, number>;
   }
 
   interface TradeRow { payer: number; payee: number; owed: number; cents: number; waived: number; paid: number }

@@ -260,28 +260,33 @@ test("repudiating an investor closes what the host holds from it, with the loan 
   assert.deepEqual(out.transfers, []);
 });
 
-test("the AI invests in a Friendly civ once per 10 turns: general when the host grows, else its current build", () => {
-  const relations = [{ a: AI, b: OTHER, level: "friendly" }];
+test("the AI invests by its stake (AI-PLAN 4.5): general when the host grows, else its current build; 3 to 8 turns", () => {
+  // Friendly at 30 is a stake of 10; a growing host adds 3: 3 turns of income at 8, half a turn more per point.
+  const relations = [{ a: AI, b: OTHER, level: "friendly", levelNum: 30 }];
   const growing = { [OTHER]: [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900] };
   const host = ai(OTHER, { incomeCents: 2000, balanceCents: 0, cities: [city("9:1")] });
   const general = plan({ civs: [ai(AI), host], relations, markets: markets({ incomes: growing }) });
   assert.deepEqual(general.events.filter((e) => e.kind === "invest").map((e) => [e.lender, e.borrower, e.form, e.cents]),
-    [[AI, OTHER, "general", 50000]], "5 turns of the investor's income");
+    [[AI, OTHER, "general", 55000]], "a stake of 13: 5.5 turns of the investor's income");
   const flat = plan({ civs: [ai(AI), host], relations });
-  assert.deepEqual(flat.progress, [{ host: OTHER, cityId: "9:1", amount: 166, investmentId: "I1" }]);
+  assert.deepEqual(flat.progress, [{ host: OTHER, cityId: "9:1", amount: 133, investmentId: "I1" }],
+    "a stake of 10: 4 turns, 400 Gold, at 3 Gold a point");
   const again = plan({ civs: [ai(AI), host], relations, turn: 55, ledger: flat.ledger, markets: flat.markets });
-  assert.equal(again.events.some((e) => e.kind === "invest"), false, "not within 10 turns");
-  const poor = plan({ civs: [ai(AI, { balanceCents: 100000 }), host], relations });
-  assert.equal(poor.events.some((e) => e.kind === "invest"), false, "balance at or below 20 turns of income");
+  assert.equal(again.events.some((e) => e.kind === "invest"), false, "one open investment per host");
+  const poor = plan({ civs: [ai(AI, { balanceCents: 90000 }), host], relations });
+  assert.equal(poor.events.some((e) => e.kind === "invest"), false, "nothing above its reserve of 10 turns of income");
   const neutral = plan({ civs: [ai(AI), host], relations: [] });
-  assert.equal(neutral.events.some((e) => e.kind === "invest"), false, "Friendly hosts only");
+  assert.equal(neutral.events.some((e) => e.kind === "invest"), false, "a stake of 0: nothing to invest for");
+  const allies = plan({ civs: [ai(AI), host], relations: [{ a: AI, b: OTHER, level: "neutral", levelNum: 0,
+    allied: true, routes: 1 }] });
+  assert.equal(allies.events.find((e) => e.kind === "invest")?.cents, 34800, "allied and a route: 9, 3.5 turns, 116 points");
   const repudiated = { ...emptyLedger(), repudiations: [{ pid: OTHER, lender: AI, turn: 30, cents: 1, atWar: false }] };
   assert.equal(plan({ civs: [ai(AI), host], relations, ledger: repudiated }).events.some((e) => e.kind === "invest"),
     false, "never in a civ that stiffed it lately");
 });
 
 test("an AI host in default turns down another AI's general investment, as it turns down the player's", () => {
-  const relations = [{ a: AI, b: OTHER, level: "friendly" }];
+  const relations = [{ a: AI, b: OTHER, level: "friendly", levelNum: 30 }];
   const growing = { [OTHER]: [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900] };
   const host = ai(OTHER, { incomeCents: 2000, balanceCents: 0, cities: [city("9:1")] });
   const inDefault = { ...emptyLedger(), nextId: 2, loans: [{ id: "L1", kind: "loan", lender: "bond", borrower: OTHER,
@@ -291,13 +296,13 @@ test("an AI host in default turns down another AI's general investment, as it tu
   assert.equal(out.events.some((e) => e.kind === "invest" && e.form === "general" && e.aid !== 1), false);
   const meInDefault = { ...inDefault, loans: [{ ...inDefault.loans[0], borrower: ME }] };
   const offered = plan({ civs: [ai(AI), me({ incomeCents: 2000, cities: [city("3:1")] })],
-    relations: [{ a: AI, b: ME, level: "friendly" }], ledger: meInDefault,
+    relations: [{ a: AI, b: ME, level: "friendly", levelNum: 30 }], ledger: meInDefault,
     markets: markets({ incomes: { [ME]: growing[OTHER] } }) });
   assert.deepEqual(offered.ledger.offers.map((o) => o.kind), ["general"], "the player answers an offer for itself");
 });
 
 test("to the player an AI investment is an offer: accepted it opens, declined or left it goes", () => {
-  const relations = [{ a: AI, b: ME, level: "friendly" }];
+  const relations = [{ a: AI, b: ME, level: "friendly", levelNum: 30 }];
   const civs = [me({ cities: [city("3:1")] }), ai(AI)];
   const offered = plan({ civs, relations });
   assert.equal(offered.ledger.offers.length, 1);
@@ -307,12 +312,14 @@ test("to the player an AI investment is an offer: accepted it opens, declined or
   assert.equal(offered.notices.find((n) => n.kind === "offer").offerId, offer.id);
   const accepted = plan({ civs, relations, turn: 51, ledger: offered.ledger, markets: offered.markets,
     requests: [{ kind: "accept-offer", offerId: offer.id }] });
-  assert.deepEqual(accepted.transfers.map((t) => [t.from, t.to, t.cents]), [[AI, "progress", 49800]], "500 Gold offered, 166 points used");
+  assert.deepEqual(accepted.transfers.map((t) => [t.from, t.to, t.cents]), [[AI, "progress", 39900]], "400 Gold offered, 133 points used");
   assert.equal(accepted.ledger.investments[0].host, ME);
   assert.deepEqual(accepted.ledger.offers, []);
   const declined = plan({ civs, relations, turn: 51, ledger: offered.ledger, markets: offered.markets,
     requests: [{ kind: "decline-offer", offerId: offer.id }] });
-  assert.deepEqual([declined.ledger.offers.length, declined.transfers.length], [0, 0]);
+  assert.deepEqual([declined.ledger.offers.length, declined.transfers.length], [0, 0], "not offered again for 10 turns");
+  const renewed = plan({ civs, relations, turn: 60, ledger: declined.ledger, markets: declined.markets });
+  assert.equal(renewed.ledger.offers.length, 1, "ten turns on, offered again");
   assert.equal(refusal(plan({ civs, relations, turn: 51, ledger: offered.ledger,
     requests: [{ kind: "accept-offer", offerId: "I99" }] }), "accept-offer"), "offer-gone");
   const expired = plan({ civs, relations, turn: 53, ledger: offered.ledger, markets: offered.markets });
@@ -350,20 +357,27 @@ test("aid to a civ in default to the giver clears that debt first (AI-PLAN 2); t
   assert.equal(refusal(broke, "invest"), "balance");
 });
 
-test("AI aid: to a Friendly civ in default, once per age, 5 turns of its own income", () => {
+test("AI aid (AI-PLAN 4.5): to a host with a stake of 10 in default, sized to buy it back to Friendly, once per 15 turns per host", () => {
   const inDefault = { ...emptyLedger(), nextId: 2, loans: [{ id: "L1", kind: "loan", lender: "bond", borrower: OTHER,
     principal: 100, outstanding: 100, ratePpm: 20000, term: 10, paid: 0, missed: 3, state: "default",
     emergency: false, restructured: false, opened: 1, closedTurn: null, writtenOff: 0, source: "borrow" }] };
-  const relations = [{ a: AI, b: OTHER, level: "friendly" }];
+  // Friendly at 30 is a stake of 10; already past the working Friendly level of 20, so the gift is the one point's
+  // worth: 2.5 turns of the host's income.
+  const relations = [{ a: AI, b: OTHER, level: "friendly", levelNum: 30 }];
   const civs = [ai(AI, { stages: {} }), ai(OTHER, { balanceCents: 10000, stages: {} })];
   const out = plan({ civs, relations, ledger: inDefault });
   const aid = out.transfers.find((t) => t.reason === "invest");
-  assert.deepEqual([aid.from, aid.to, aid.cents], [AI, OTHER, 50000]);
-  assert.equal(out.markets.aidAge[AI], "AGE_EXPLORATION");
-  const again = plan({ civs, relations, ledger: out.ledger, markets: out.markets, turn: 70 });
-  assert.equal(again.transfers.some((t) => t.reason === "invest"), false, "once per age");
-  const later = plan({ civs, relations, ledger: out.ledger, markets: out.markets, turn: 70, age: "AGE_MODERN" });
+  assert.deepEqual([aid.from, aid.to, aid.cents], [AI, OTHER, 25000]);
+  assert.equal(out.markets.aidTurns[`${AI}-${OTHER}`], 50);
+  const again = plan({ civs, relations, ledger: out.ledger, markets: out.markets, turn: 64 });
+  assert.equal(again.transfers.some((t) => t.reason === "invest"), false, "not within 15 turns of the last to this host");
+  const later = plan({ civs, relations, ledger: out.ledger, markets: out.markets, turn: 65 });
   assert.equal(later.transfers.some((t) => t.reason === "invest"), true);
+  const cold = plan({ civs, relations: [{ a: AI, b: OTHER, level: "neutral", levelNum: 8, routes: 3 }], ledger: inDefault });
+  const gift = cold.transfers.find((t) => t.reason === "invest");
+  assert.equal(gift?.cents, 50000, "a stake of 11.7 at level 8: 12 points to Friendly, 10 at most, 25 turns of the host's income capped at 5 of the giver's");
+  const weak = plan({ civs, relations: [{ a: AI, b: OTHER, level: "neutral", levelNum: 20 }], ledger: inDefault });
+  assert.equal(weak.transfers.some((t) => t.reason === "invest"), false, "a stake of 6.7: under 10");
   const solvent = plan({ civs, relations });
   assert.equal(solvent.transfers.some((t) => t.reason === "invest"), false, "only to a civ in default");
   const offOption = plan({ civs, relations, ledger: inDefault, options: { investment: false } });

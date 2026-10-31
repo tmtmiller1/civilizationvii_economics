@@ -54,7 +54,7 @@ export function planTurn(input) {
   /** @type {PlanOutput} */
   const out = { ledger, transfers: [], influence: [], celebration: [], grievances: [], relationships: [], events: [],
     notices: [], batch: null, skipped: null, markets: input.markets || emptyMarkets(), progress: [], trade: [],
-    macro: input.macro || emptyMacro(), aiPreferences: [], favors: [] };
+    macro: input.macro || emptyMacro(), aiPreferences: [], favors: [], stakes: {} };
   const skipped = skipReason(input, options, ledger);
   if (skipped) return { ...out, skipped };
   const ctx = turnContext(input, options, out);
@@ -405,6 +405,7 @@ function finishTurn(ctx) {
   ctx.out.markets = ctx.markets;
   ctx.out.trade = ctx.trade;
   ctx.out.macro = ctx.macro;
+  ctx.out.stakes = Object.fromEntries(ctx.stakes);
   prune(ledger);
 }
 

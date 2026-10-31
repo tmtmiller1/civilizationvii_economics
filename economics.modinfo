@@ -238,6 +238,7 @@
                     <Item>ui/econ-shortfall.js</Item>
                     <Item>ui/econ-distress.js</Item>
                     <Item>ui/econ-escrow.js</Item>
+                    <Item>ui/econ-stake.js</Item>
                     <Item>ui/econ-spoil.js</Item>
                     <Item>ui/econ-stage-read.js</Item>
                     <Item>ui/econ-stage-rules.js</Item>

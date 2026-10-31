@@ -285,8 +285,8 @@ test("the AI's citizen rule: a Civic market AI short of 10 turns of income borro
   assert.equal(flush.ledger.loans.length, 0, "a civ holding 10 turns of income doesn't");
 });
 
-test("the AI aids a Friendly civ in its own Depression; from Capitalism it invests in Neutral equity hosts", () => {
-  const relations = [{ a: AI, b: OTHER, level: "friendly" }];
+test("the AI aids a host with a stake of 10 in its own Depression; a Neutral host is invested in by its stake", () => {
+  const relations = [{ a: AI, b: OTHER, level: "friendly", levelNum: 30 }];
   const civs = [ai(AI), ai(OTHER, { balanceCents: 0 })];
   const aid = plan({ civs, relations, macro: macroWith({ e: 7500 }) });
   assert.ok(aid.events.some((e) => e.kind === "invest" && e.aid === 1 && e.borrower === OTHER));
@@ -294,11 +294,12 @@ test("the AI aids a Friendly civ in its own Depression; from Capitalism it inves
   assert.equal(calm.events.some((e) => e.kind === "invest" && e.aid === 1), false);
   const city = { id: "9:1", build: "BUILDING_LIBRARY", neededProgress: 200 };
   const equity = [ai(AI, { stages: OPEN_MACRO }), ai(OTHER, { stages: OPEN_MACRO, balanceCents: 0, cities: [city] })];
-  const neutral = plan({ civs: equity, relations: [{ a: AI, b: OTHER, level: "neutral" }] });
+  // AI-PLAN 4.5: the stake, not the Capitalism stage, decides. Neutral at 15 with two routes is 11.
+  const neutral = plan({ civs: equity, relations: [{ a: AI, b: OTHER, level: "neutral", levelNum: 15, routes: 2 }] });
   assert.ok(neutral.events.some((e) => e.kind === "invest" && e.aid === 0 && e.borrower === OTHER));
-  const early = plan({ civs: [ai(AI), ai(OTHER, { balanceCents: 0, cities: [city] })],
+  const nothing = plan({ civs: [ai(AI), ai(OTHER, { balanceCents: 0, cities: [city] })],
     relations: [{ a: AI, b: OTHER, level: "neutral" }] });
-  assert.equal(early.events.some((e) => e.kind === "invest"), false, "before Capitalism, Friendly hosts only");
+  assert.equal(nothing.events.some((e) => e.kind === "invest"), false, "a Neutral host with nothing else at stake");
 });
 
 test("a Corporatist host takes development loans only; Mercantile investors earn a point more", () => {

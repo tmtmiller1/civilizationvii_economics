@@ -14,6 +14,7 @@ import { cloneMacro, emptyMacro, macroReadings } from "./econ-macro-state.js";
 import { termsOf } from "./econ-systems.js";
 import { citizenCapCents, citizenRatePpm } from "./econ-citizens.js";
 import { premiumPct } from "./econ-inflation.js";
+import { lenderGate } from "./econ-stake.js";
 
 /**
  * @param {Civ} a
@@ -42,7 +43,8 @@ export function turnContext(input, options, out) {
     capPpm: rateCapPpm(age, rates) ?? Infinity, civ: new Map(civs.map((civ) => [civ.id, civ])),
     batch: createBatch(civs), routes: Array.isArray(input.routes) ? input.routes : [],
     markets: input.markets ? cloneMarkets(input.markets) : emptyMarkets(), trade: [], owed: [], macro,
-    readings: macroReadings(macro, { civs, turn, options }), basePrices: {}, unmet, distressed: new Set() };
+    readings: macroReadings(macro, { civs, turn, options }), basePrices: {}, unmet, distressed: new Set(),
+    stakes: new Map() };
 }
 
 /**
@@ -223,6 +225,9 @@ export function offerQuery(ctx, borrower, extra = {}) {
     civPct: (lender) => Math.round((own.borrowPct * termsFor(ctx, lender).lendPct) / 100),
     civLendersClosed: ctx.readings.panic, noBond: own.civLendersOnly, citizens: citizensFor(ctx, borrower),
     unmet: (lender) => haveNotMet(ctx, lender, borrower),
+    // AI-PLAN 4.5: an AI lender wants a reputation of 50 and a stake of 0 or more; the human lends as it likes.
+    refuses: (lender) => ctx.options.ai !== false && ctx.civ.get(lender)?.human !== true
+      && !lenderGate(ctx, lender, borrower),
     ...extra };
 }
 

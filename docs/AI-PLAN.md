@@ -197,6 +197,9 @@ stake = relationship level / 3                     -10 to 10
 - Lend to a short civ when it isn't blocked, its `creditRep` is 50 or more, and the stake is 0 or more; cheaper by
   stake (Friendly already pays 0.8 of the base rate, 4.3).
 
+Built 2026-10-31 (stage E, NOTES choices 133 to 135): the stake read per pair, investment and aid on it, the lending
+gate, the timers gone (an offer to the player isn't repeated for 10 turns, and aid keeps its 15 turns per host).
+
 The agenda text itself isn't parsed: the engine already turns each agenda into relationship-history rows with a
 `LEADER_AGENDA` type, and those carry the AI's like or dislike of each civ as a number.
 

@@ -306,7 +306,55 @@ export function haveMet(a, b) {
 }
 
 /**
- * One row per pair of living majors that have met (docs/glue-contract.md).
+ * The sum of a's own agenda rows toward b in a's relationship history with b (AI-PLAN 4.5; the fourth run read the
+ * rows and their names): rows whose event name carries LEADER_AGENDA and whose trigger is a.
+ * @param {number} a
+ * @param {number} b
+ */
+function readAgenda(a, b) {
+  return safe(() => {
+    const diplomacy = Players.get(a).Diplomacy;
+    let sum = 0;
+    for (const row of diplomacy.getPlayerRelationshipHistory(b) || []) {
+      if (row.triggeredBy !== a) continue;
+      const name = String(diplomacy.getFavorGrievanceEventTypeName(row.eventType, row.triggeredBy) || "");
+      if (name.includes("LEADER_AGENDA")) sum += Number(row.amount) || 0;
+    }
+    return sum;
+  }, 0);
+}
+
+/**
+ * The plot distance between two civs' capitals, or null when either has none.
+ * @param {number} a
+ * @param {number} b
+ */
+function readCapitalDistance(a, b) {
+  return safe(() => {
+    const ca = Players.get(a).Cities.getCapital();
+    const cb = Players.get(b).Cities.getCapital();
+    if (!ca || !cb) return null;
+    const distance = Number(GameplayMap.getPlotDistance(ca.location.x, ca.location.y, cb.location.x, cb.location.y));
+    return Number.isFinite(distance) ? distance : null;
+  }, /** @type {number | null} */ (null));
+}
+
+/**
+ * The facts a stake reads for one met pair (AI-PLAN 4.5), each behind its own guard.
+ * @param {number} a
+ * @param {number} b
+ */
+export function readPairFacts(a, b) {
+  const level = safe(() => Number(Players.get(a).Diplomacy.getRelationshipLevel(b)), Number.NaN);
+  const routes = safe(() => Number(Players.get(a).Trade.countPlayerTradeRoutesTo(b)), 0)
+    + safe(() => Number(Players.get(b).Trade.countPlayerTradeRoutesTo(a)), 0);
+  return { levelNum: Number.isFinite(level) ? level : undefined, routes: Number.isFinite(routes) ? routes : 0,
+    allied: safe(() => Players.get(a).Diplomacy.hasAllied(b) === true, false), distance: readCapitalDistance(a, b),
+    agendaAB: readAgenda(a, b), agendaBA: readAgenda(b, a) };
+}
+
+/**
+ * One row per pair of living majors that have met (docs/glue-contract.md), with the pair facts the stake reads.
  * @param {number[]} majors
  * @returns {Relation[]}
  */
@@ -317,7 +365,7 @@ export function readRelations(majors) {
     for (let j = i + 1; j < majors.length; j += 1) {
       const [a, b] = [majors[i], majors[j]];
       // An unmet pair has a row of its own, so the model can tell it from a met pair it reads as neutral.
-      out.push(haveMet(a, b) ? { a, b, level: readRelation(a, b) } : { a, b, level: "unmet" });
+      out.push(haveMet(a, b) ? { a, b, level: readRelation(a, b), ...readPairFacts(a, b) } : { a, b, level: "unmet" });
     }
   }
   return out;

@@ -49,11 +49,13 @@ test("sanitize keeps only well-formed rows; save(load(x)) is a fixed point", () 
       { pid: 1, level: "low", changedTurn: 4 }, { pid: -1, level: "low", changedTurn: 1 },
       { pid: 2, level: "max", changedTurn: 1 }, null], incomes: { 3: [1, 2], x: [1] },
     aidAge: { 3: "AGE_EXPLORATION", 4: 7, y: "AGE_MODERN" }, investTurn: { 3: 40, 4: "x" },
-    tariffPeace: { "3-5": 12, "3-x": 4, "4-6": 1.5, 5: 3 }, tariffEased: { "3-5": "low", "4-6": "max", "1234-5": "high" } };
+    tariffPeace: { "3-5": 12, "3-x": 4, "4-6": 1.5, 5: 3 }, tariffEased: { "3-5": "low", "4-6": "max", "1234-5": "high" },
+    aidTurns: { "3-5": 7, "x-5": 1 } };
   const clean = sanitizeMarkets(raw);
   assert.deepEqual(clean, { lastTurn: 9, prices: { RESOURCE_A: 300 }, history: { RESOURCE_A: [1, 2] },
     tariffs: [{ pid: 1, level: "high", changedTurn: 3 }], incomes: { 3: [1, 2] }, aidAge: { 3: "AGE_EXPLORATION" },
-    investTurn: { 3: 40 }, tariffPeace: { "3-5": 12 }, tariffEased: { "3-5": "low" } });
+    investTurn: { 3: 40 }, tariffPeace: { "3-5": 12 }, tariffEased: { "3-5": "low" }, aidTurns: { "3-5": 7 },
+    offerTurns: {} });
   const text = saveMarkets(clean);
   assert.equal(saveMarkets(loadMarkets(text).markets), text);
   assert.deepEqual(cloneMarkets(clean), clean);

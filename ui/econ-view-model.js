@@ -31,7 +31,7 @@ export function viewContext(input) {
   /** @type {PlanOutput} */
   const out = { ledger: input.ledger || emptyLedger(), transfers: [], influence: [], celebration: [], grievances: [],
     relationships: [], events: [], notices: [], batch: null, skipped: null, markets: emptyMarkets(), progress: [],
-    trade: [], macro: input.macro || emptyMacro(), aiPreferences: [], favors: [] };
+    trade: [], macro: input.macro || emptyMacro(), aiPreferences: [], favors: [], stakes: {} };
   return turnContext(input, options, out);
 }
 

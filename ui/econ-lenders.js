@@ -163,7 +163,7 @@ function civOffers(query) {
   const out = [];
   if (query.civLendersClosed || !hasStage(borrowerCiv, "moneylending", turn, options)) return out;
   for (const lender of lenders) {
-    if (!hasStage(lender, "moneylending", turn, options) || query.unmet?.(lender.id)) continue;
+    if (!hasStage(lender, "moneylending", turn, options) || declines(query, lender.id)) continue;
     const level = relationLevel(relations, lender.id, borrower);
     if (civLenderRefusal({ ledger, lender: lender.id, borrower, principal, balanceCents: lender.balanceCents, level,
       turn })) continue;
@@ -174,6 +174,15 @@ function civOffers(query) {
   }
   out.sort((x, y) => x.ratePpm - y.ratePpm || Number(x.lender) - Number(y.lender));
   return out;
+}
+
+/**
+ * A lender the borrower hasn't met, or an AI lender whose own rule (reputation and stake, AI-PLAN 4.5) says no.
+ * @param {OfferQuery} query
+ * @param {number} lender
+ */
+function declines(query, lender) {
+  return query.unmet?.(lender) === true || query.refuses?.(lender) === true;
 }
 
 /**

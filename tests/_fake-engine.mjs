@@ -65,6 +65,10 @@ export function installFakeEngine(spec = {}) {
         Diplomacy: {
           isAtWarWith: (other) => c.war.includes(other),
           getRelationshipEnum: (other) => c.relation[other] ?? "neutral",
+          getRelationshipLevel: (other) => c.levels?.[other] ?? 0,
+          hasAllied: (other) => (c.allies || []).includes(other),
+          getPlayerRelationshipHistory: (other) => c.history?.[other] || [],
+          getFavorGrievanceEventTypeName: (eventType) => String(eventType),
           hasMet: () => spec.met !== false,
           changeNumGrievances: (other, amount) => record(`grievance ${pid}>${other} ${amount}`),
           changeNumFavors: (other, amount) => record(`favor ${pid}>${other} ${amount}`),
@@ -91,7 +95,7 @@ export function installFakeEngine(spec = {}) {
           }] : []) },
         Resources: { getResources: () => (c.held || []).map((h, k) => ({ value: `${pid}/${k}`,
           uniqueResource: { resource: h.type } })) },
-        Trade: { getCurrentTradeRoutes: () => c.routes || [] },
+        Trade: { getCurrentTradeRoutes: () => c.routes || [], countPlayerTradeRoutesTo: (other) => c.routesTo?.[other] ?? 0 },
         Units: { getUnitIds: () => [1] },
       };
     },

@@ -5,22 +5,26 @@
 // bill, a tariff between two civs or a return on an investment the AI can see (DESIGN section 1, "Native first").
 // Nothing here reads the engine.
 
-import { INVEST, MISS, REPUTATION, STANDING, TRADE } from "./econ-params.js";
+import { INVEST, MISS, REPUTATION, STAKE, STANDING, TRADE } from "./econ-params.js";
 import { anyWar, nextPrices } from "./econ-prices.js";
 import { aiTariffStep, canChangeTariff, capPayments, highTariffCosts, netPairs, owedByPair, withTariff }
   from "./econ-trade.js";
-import { investId, isOpenInvestment, lostCityWriteOff, settleDividend, settleInvestmentDefault } from "./econ-invest.js";
+import { investId, isOpenInvestment, lostCityWriteOff, relationshipGain, settleDividend, settleInvestmentDefault,
+  tenthsFor } from "./econ-invest.js";
 import { isIncomeGrowing, withIncomes } from "./econ-markets.js";
 import { addMiss, activeDefaults } from "./econ-credit.js";
 import { blockFor, relationLevel } from "./econ-lenders.js";
 import { withBlock } from "./econ-payments.js";
 import { hasStage } from "./econ-stages.js";
-import { addInfluence, funds, lenderBalance } from "./econ-batch.js";
+import { addInfluence, funds } from "./econ-batch.js";
 import { emit, event, incomeOf, isAlive, notice, repChange, termsFor } from "./econ-turn.js";
 import { basePriceCents } from "./econ-prices.js";
 import { takesCapitalism } from "./econ-systems.js";
 import { isInDepression } from "./econ-macro.js";
 import { aiHostRefusal, openInvestment, investRefusal } from "./econ-invest-open.js";
+import { reserveOf } from "./econ-distress.js";
+import { inDistress, isInsolventCiv } from "./econ-shortfall.js";
+import { levelNumber, relationRow, stakeFor } from "./econ-stake.js";
 
 /**
  * Snapshot (step 1): the prices from this turn's market read, and each civ's income mark.
@@ -276,23 +280,13 @@ function tariffTrade(ctx, pid) {
 }
 
 /**
- * Whether an AI can spare Gold for others: income above 0 and a balance above 20 turns of it (DESIGN 6). A civ with
- * income above 0 this turn is never insolvent, so the "never when insolvent" rule needs no check of its own.
+ * What an AI can spare for others (AI-PLAN 4.5): what it holds above its reserve, with income above 0 and solvent.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
-function canSpare(ctx, civ) {
-  return civ.incomeCents > 0 && lenderBalance(ctx.batch, civ.id) > 20 * civ.incomeCents;
-}
-
-/**
- * The last turn this AI invested or made an offer, answered or not.
- * @param {TurnContext} ctx
- * @param {number} pid
- */
-function lastInvestTurn(ctx, pid) {
-  const turn = ctx.markets.investTurn[String(pid)];
-  return Number.isInteger(turn) ? turn : -Infinity;
+function spareCents(ctx, civ) {
+  if (!(civ.incomeCents > 0) || isInsolventCiv(ctx, civ.id)) return 0;
+  return Math.max(0, reserveOf(ctx, civ.id).aboveCents);
 }
 
 /**
@@ -308,20 +302,28 @@ function hasRepudiated(ctx, host, investor) {
 }
 
 /**
- * The living civs this AI is Friendly with and that haven't repudiated a debt to it lately, in id order. From the
- * Capitalism stage, AI civs invest in each other (DESIGN 4.15): a Market or Mixed investor past it also takes Neutral
- * hosts that are too.
+ * The living civs an AI could put Gold into, by its stake in each, best first (AI-PLAN 4.5): everyone it has met
+ * that hasn't repudiated a debt to it lately; the stake's own terms carry the relationship.
  * @param {TurnContext} ctx
  * @param {Civ} civ
- * @param {boolean} [equity] whether Neutral equity hosts count
+ * @param {number} least the stake a host needs
  */
-function friendlyHosts(ctx, civ, equity = false) {
-  const wide = equity && hasEquity(ctx, civ.id);
-  return ctx.civs.filter((host) => {
-    if (host.id === civ.id || host.alive !== true || hasRepudiated(ctx, host.id, civ.id)) return false;
-    const level = relationLevel(ctx.relations, civ.id, host.id);
-    return level === "friendly" || (wide && level === "neutral" && hasEquity(ctx, host.id));
-  });
+function hostsByStake(ctx, civ, least) {
+  return ctx.civs.filter((host) => host.id !== civ.id && host.alive === true && !hasRepudiated(ctx, host.id, civ.id))
+    .map((host) => ({ host, stake: stakeFor(ctx, civ.id, host.id) })).filter((row) => row.stake >= least)
+    .sort((x, y) => y.stake - x.stake || x.host.id - y.host.id);
+}
+
+/**
+ * Whether the AI already has an investment open with the host, or an offer waiting for the host's answer.
+ * @param {TurnContext} ctx
+ * @param {number} investor
+ * @param {number} host
+ */
+function hasOpenWith(ctx, investor, host) {
+  return ctx.ledger.investments.some((record) => record.investor === investor && record.host === host
+    && isOpenInvestment(record))
+    || ctx.ledger.offers.some((offer) => offer.investor === investor && offer.host === host);
 }
 
 /**
@@ -352,26 +354,50 @@ function aiTargetFor(ctx, civ, host) {
 }
 
 /**
- * DESIGN 6 investment: at most once per 10 turns, Friendly hosts only, 5 turns of the investor's income; to the
- * human it's an offer the player answers.
+ * AI-PLAN 4.5 investment: from what the AI holds above its reserve, into the host with the best stake of 8 or more,
+ * 3 to 8 turns of its income rising with the stake, one open investment per host and no world timer; to the human
+ * it's an offer the player answers. The form is as before: general when the host grows, else a development loan.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 export function aiInvest(ctx, civ) {
-  if (!ctx.options.investment || !canSpare(ctx, civ)) return;
-  if (ctx.turn - lastInvestTurn(ctx, civ.id) < INVEST.aiEveryTurns) return;
-  const cents = INVEST.aiSizeTurns * civ.incomeCents;
-  for (const host of friendlyHosts(ctx, civ, true)) {
-    const target = aiTargetFor(ctx, civ, host);
-    if (!target) continue;
-    const spec = { investor: civ.id, host: host.id, form: target.form, cents, cityId: target.cityId, asAid: false };
-    // An AI host answers by the same "Accepting" rule the player's investment meets (DESIGN 6).
-    if (investRefusal(ctx, spec) || (host.human !== true && aiHostRefusal(ctx, spec))) continue;
+  if (!ctx.options.investment) return;
+  const spare = spareCents(ctx, civ);
+  if (spare <= 0) return;
+  for (const { host, stake } of hostsByStake(ctx, civ, STAKE.investMin)) {
+    const spec = investSpec(ctx, civ, host, stake, spare);
+    if (!spec) continue;
     ctx.markets.investTurn[String(civ.id)] = ctx.turn;
     if (host.human === true) offerTo(ctx, spec);
     else openInvestment(ctx, spec, "ai");
     return;
   }
+}
+
+/**
+ * The investment an AI would open in a host this turn, or null: not with one already open there, a form the
+ * stages and the host's cities allow, 3 to 8 turns of income by the stake within the spare, and the host's own
+ * answer (an AI host by the same "Accepting" rule the player's investment meets, DESIGN 6).
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @param {Civ} host
+ * @param {number} stake
+ * @param {number} spare
+ */
+function investSpec(ctx, civ, host, stake, spare) {
+  if (hasOpenWith(ctx, civ.id, host.id)) return null;
+  // An offer the player declined or let lapse isn't made again for 10 turns.
+  const offered = ctx.markets.offerTurns[`${civ.id}-${host.id}`];
+  if (host.human === true && Number.isInteger(offered) && ctx.turn - offered < STAKE.offerEveryTurns) return null;
+  const target = aiTargetFor(ctx, civ, host);
+  if (!target) return null;
+  const turns = Math.min(STAKE.investTurnsMax,
+    STAKE.investTurnsMin + (stake - STAKE.investMin) * STAKE.investTurnsPerStake);
+  const cents = Math.floor(Math.min(turns * civ.incomeCents, spare) / 100) * 100;
+  if (cents <= 0) return null;
+  const spec = { investor: civ.id, host: host.id, form: target.form, cents, cityId: target.cityId, asAid: false };
+  if (investRefusal(ctx, spec) || (host.human !== true && aiHostRefusal(ctx, spec))) return null;
+  return spec;
 }
 
 /**
@@ -383,28 +409,78 @@ function offerTo(ctx, spec) {
   ctx.ledger.nextInvestId += 1;
   ctx.ledger.offers.push({ id, investor: spec.investor, host: spec.host, kind: spec.form, cents: spec.cents,
     cityId: spec.cityId, turn: ctx.turn });
+  ctx.markets.offerTurns[`${spec.investor}-${spec.host}`] = ctx.turn;
   event(ctx, { kind: "offer", loanId: id, lender: spec.investor, borrower: spec.host, cents: spec.cents,
     form: spec.form });
   notice(ctx, spec.host, { kind: "offer", offerId: id, investor: spec.investor, cents: spec.cents, form: spec.form });
 }
 
 /**
- * DESIGN 6 aid: income above 0; to a Friendly civ in default or in its own Depression (4.11), once per age, up to 5
- * turns of its own income.
+ * Whether the host is at war with a civ the AI is at war with, and short this turn or last.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @param {Civ} host
+ */
+function fightsBeside(ctx, civ, host) {
+  if (!inDistress(ctx, host.id)) return false;
+  return ctx.civs.some((other) => other.id !== civ.id && other.id !== host.id && other.alive === true
+    && relationLevel(ctx.relations, civ.id, other.id) === "war" && relationLevel(ctx.relations, host.id, other.id) === "war");
+}
+
+/**
+ * AI-PLAN 4.5 aid: income above 0; to a host with a stake of 10 or more that's in default, in its own Depression
+ * (4.11), or at war with the AI's enemy and short; sized to buy it back to Friendly (the aid's +1 relationship per
+ * 2.5 turns of the host's income, up to the 10 one gift can give), within 5 turns of the AI's income and what it
+ * has; at most once per 15 turns per host. A debt the host has defaulted on to the giver is cleared first.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 export function aiAid(ctx, civ) {
   if (!ctx.options.investment || !(civ.incomeCents > 0)) return;
-  if (ctx.markets.aidAge[String(civ.id)] === ctx.age) return;
-  const cents = Math.min(INVEST.aiSizeTurns * civ.incomeCents, Math.max(0, funds(ctx.batch, civ.id)));
-  for (const host of friendlyHosts(ctx, civ)) {
-    if (activeDefaults(ctx.ledger, host.id) === 0 && !isInDepression(ctx, host.id)) continue;
+  for (const { host } of hostsByStake(ctx, civ, STAKE.aidMin)) {
+    const key = `${civ.id}-${host.id}`;
+    if (!needsAid(ctx, civ, host, key)) continue;
+    const cents = aidSize(ctx, civ, host);
     const spec = { investor: civ.id, host: host.id, form: /** @type {InvestKind} */ ("general"), cents,
       cityId: null, asAid: true };
-    if (investRefusal(ctx, spec)) continue;
+    if (cents <= 0 || investRefusal(ctx, spec)) continue;
     openInvestment(ctx, spec, "ai");
-    ctx.markets.aidAge[String(civ.id)] = ctx.age;
+    ctx.markets.aidTurns[key] = ctx.turn;
     return;
   }
+}
+
+/**
+ * Whether the host is one the AI aids now: in default, in Depression, or fighting beside it and short, and not
+ * aided by this AI in the last 15 turns.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @param {Civ} host
+ * @param {string} key
+ */
+function needsAid(ctx, civ, host, key) {
+  const last = ctx.markets.aidTurns[key];
+  if (Number.isInteger(last) && ctx.turn - last < STAKE.aidEveryTurns) return false;
+  return activeDefaults(ctx.ledger, host.id) > 0 || isInDepression(ctx, host.id) || fightsBeside(ctx, civ, host);
+}
+
+/**
+ * What buys the host back to Friendly: the points short of the working Friendly level (1 at the least, the 10 one
+ * gift can give at most) at the aid's rate, within 5 turns of the giver's income and its funds, in whole Gold.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @param {Civ} host
+ */
+function aidSize(ctx, civ, host) {
+  const row = relationRow(ctx.relations, civ.id, host.id);
+  const level = levelNumber(row, relationLevel(ctx.relations, civ.id, host.id));
+  const points = Math.max(1, Math.min(INVEST.maxRelationship, Math.ceil(STAKE.friendlyLevel - level)));
+  const perTurn = Math.max(INVEST.minHostIncomeCents, incomeOf(ctx, host.id));
+  let cents = Math.ceil((points * tenthsFor("general", true) * perTurn) / 10);
+  // relationshipGain rounds down, so a Gold more where the arithmetic falls short of the points.
+  while (relationshipGain(cents, incomeOf(ctx, host.id), tenthsFor("general", true)) < points && cents < 1e9) {
+    cents += 100;
+  }
+  cents = Math.min(cents, STAKE.aidIncomeTurns * civ.incomeCents, Math.max(0, funds(ctx.batch, civ.id)));
+  return Math.floor(cents / 100) * 100;
 }

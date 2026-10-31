@@ -285,8 +285,10 @@ test("guard lenders by stage: temple treasuries first, a civ from Moneylending, 
   assert.equal(ml.ledger.loans[0].emergency, true);
   const mlAlone = planTurn(input({ civs: [me({ ...short, stages: { moneylending: 1, publicDebt: null } })] }));
   assert.equal(mlAlone.transfers[0].from, "temple");
-  const pd = planTurn(input({ civs: [me(short), lender], relations: [{ a: 6, b: ME, level: "unfriendly" }] }));
-  assert.equal(pd.transfers[0].from, 6, "0.013 beats the bond market's 0.02");
+  const pd = planTurn(input({ civs: [me(short), lender], relations: [{ a: 6, b: ME, level: "neutral" }] }));
+  assert.equal(pd.transfers[0].from, 6, "0.01 beats the bond market's 0.02");
+  const cold = planTurn(input({ civs: [me(short), lender], relations: [{ a: 6, b: ME, level: "unfriendly" }] }));
+  assert.equal(cold.transfers[0].from, "bond", "an Unfriendly AI's stake is under 0: it won't lend (AI-PLAN 4.5)");
   const pdAlone = planTurn(input({ civs: [me(short)] }));
   assert.equal(pdAlone.transfers[0].from, "bond", "temple treasuries close at Public debt");
 });
@@ -335,7 +337,7 @@ test("refinancing (AI-PLAN 4.1): an AI whose dues pass its funds, with income ab
     const due = loan("L1", { borrower: 4, principal: 10000, outstanding: 10000, ratePpm: 20000, term: 10, opened: 1 });
     const civs = [me({ balanceCents: 1e7 }), civ(4, { balanceCents: 0, incomeCents: 1000 }),
       civ(6, { balanceCents: 300000, incomeCents: 1000 }), civ(8, { balanceCents: 30000, incomeCents: 2000 })];
-    const plan = planTurn(input({ ledger: ledgerWith([due]), civs, relations: [{ a: 6, b: 4, level: "unfriendly" }] }));
+    const plan = planTurn(input({ ledger: ledgerWith([due]), civs, relations: [{ a: 6, b: 4, level: "neutral" }] }));
     assert.deepEqual(plan.transfers.map((t) => [t.from, t.to, t.cents, t.reason]),
       [[6, 4, 200, "principal"], [4, "bond", 1200, "payment"]],
       "12 due against 10: 2 from the cheapest lender (8 fails 20 * income; the human never lends by rule)");
