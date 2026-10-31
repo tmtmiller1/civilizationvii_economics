@@ -1,11 +1,13 @@
-// The AI's build loan (DESIGN 6, NOTES finding Q): an AI with positive income borrows while its credit is cheap and
-// puts the Gold straight into its own current build, through the progress account a development loan uses. Sized by
-// the same limits the player's refusal names, at the game's purchase rate, once per 10 turns.
+// The AI's build loan (DESIGN 6, NOTES finding Q): what an AI asks for when it wants capital, as against the
+// emergency loan it takes when it needs it. While its credit is cheap it borrows for a build that pays for itself or
+// is slow on the city's own production, with the service within its income and no build loan already open, and puts
+// the Gold straight into the build through the progress account a development loan uses. Sized by the same limits
+// the player's refusal names, at the game's purchase rate. No timer.
 import test from "node:test";
 import assert from "node:assert/strict";
 
 import { planTurn } from "../ui/econ-plan.js";
-import { aiBuildBorrowWanted } from "../ui/econ-ai.js";
+import { aiBuildBorrowStanding, aiBuildBorrowWanted, buildPays } from "../ui/econ-ai.js";
 import { emptyLedger } from "../ui/econ-state.js";
 import { emptyMacro } from "../ui/econ-macro-state.js";
 import { makeLoan } from "../ui/econ-loan.js";
@@ -15,7 +17,8 @@ import { OPEN, civ, input } from "./_fixtures.mjs";
 const ME = 3;
 const AI = 6;
 const LENDER = 8;
-const city = (id, over = {}) => ({ id, build: "BUILDING_LIBRARY", neededProgress: 500, population: 3, ...over });
+const city = (id, over = {}) => ({ id, build: "BUILDING_LIBRARY", neededProgress: 500, population: 3, turnsLeft: 12,
+  buildGoldYield: 0, ...over });
 const ai = (over = {}) => civ(AI, { incomeCents: 4000, balanceCents: 20000, stages: OPEN,
   cities: [city("6:1"), city("6:2", { roleBuilding: true })], ...over });
 const plan = (over) => {
@@ -25,37 +28,68 @@ const plan = (over) => {
 };
 const built = (out) => out.ledger.loans.filter((loan) => loan.source === "ai-build");
 
-test("the rule: income of 10 Gold or more, solvent, no default, a build, cheap credit, once per 10 turns", () => {
-  const base = { incomeCents: 1000, phase: "steady", insolvent: false, inDefault: false, hasBuild: true,
-    lastTurn: undefined, turn: 50 };
-  assert.equal(aiBuildBorrowWanted(base), true);
-  assert.equal(aiBuildBorrowWanted({ ...base, phase: "boom" }), true);
-  assert.equal(aiBuildBorrowWanted({ ...base, phase: "outside" }), true, "a Planned civ's spread is 1.0");
+test("the standing: income of 10 Gold or more, solvent, no default, no distress, a build, none open, cheap credit", () => {
+  const base = { incomeCents: 1000, phase: "steady", insolvent: false, inDefault: false, distressed: false,
+    hasBuild: true, openBuildLoan: false };
+  assert.equal(aiBuildBorrowStanding(base), true);
+  assert.equal(aiBuildBorrowStanding({ ...base, phase: "boom" }), true);
+  assert.equal(aiBuildBorrowStanding({ ...base, phase: "outside" }), true, "a Planned civ's spread is 1.0");
   for (const phase of ["slump", "depression", "panic", ""]) {
-    assert.equal(aiBuildBorrowWanted({ ...base, phase }), false, phase);
+    assert.equal(aiBuildBorrowStanding({ ...base, phase }), false, phase);
   }
-  assert.equal(aiBuildBorrowWanted({ ...base, incomeCents: 999 }), false);
-  assert.equal(aiBuildBorrowWanted({ ...base, insolvent: true }), false);
-  assert.equal(aiBuildBorrowWanted({ ...base, inDefault: true }), false);
-  assert.equal(aiBuildBorrowWanted({ ...base, hasBuild: false }), false);
-  assert.equal(aiBuildBorrowWanted({ ...base, lastTurn: 41 }), false);
-  assert.equal(aiBuildBorrowWanted({ ...base, lastTurn: 40 }), true, "10 turns on");
+  assert.equal(aiBuildBorrowStanding({ ...base, incomeCents: 999 }), false);
+  assert.equal(aiBuildBorrowStanding({ ...base, insolvent: true }), false);
+  assert.equal(aiBuildBorrowStanding({ ...base, inDefault: true }), false);
+  assert.equal(aiBuildBorrowStanding({ ...base, distressed: true }), false, "a civ short on its dues needs, it doesn't want");
+  assert.equal(aiBuildBorrowStanding({ ...base, hasBuild: false }), false);
+  assert.equal(aiBuildBorrowStanding({ ...base, openBuildLoan: true }), false, "one at a time, not one per 10 turns");
+});
+
+test("the want: the build pays for the loan or is slow on the city's own production", () => {
+  const base = { pays: false, turnsLeft: 8 };
+  assert.equal(aiBuildBorrowWanted(base), true, "8 turns left: slow");
+  assert.equal(aiBuildBorrowWanted({ ...base, turnsLeft: 7 }), false, "7 turns: the city gets there on its own");
+  assert.equal(aiBuildBorrowWanted({ ...base, turnsLeft: null }), false, "unread: no reason");
+  assert.equal(aiBuildBorrowWanted({ ...base, turnsLeft: 3, pays: true }), true, "quick, but the build pays");
+  // A Market's +3 Gold over 10 turns (30) against the interest on 164 Gold at 2% on a declining balance (18.04).
+  assert.equal(buildPays({ goldYieldCents: 300, principal: 16400, ratePpm: 20000, term: 10 }), true);
+  assert.equal(buildPays({ goldYieldCents: 100, principal: 16400, ratePpm: 20000, term: 10 }), false, "+1 Gold: 10 under 18");
+  assert.equal(buildPays({ goldYieldCents: 0, principal: 16400, ratePpm: 20000, term: 10 }), false, "a Granary");
 });
 
 test("an AI borrows from the bond market and the Gold lands on its role building as progress", () => {
   const out = plan({ civs: [civ(ME, { human: true }), ai()] });
   const [loan] = built(out);
   assert.deepEqual([loan.lender, loan.borrower, loan.term, loan.ratePpm], ["bond", AI, 10, 20000]);
-  assert.equal(loan.principal, 16400, "the most whose first payment fits half of 40 Gold, in whole 4 Gold points");
+  assert.equal(loan.principal, 9600, "the most whose first payment (9.60 and 1.92) fits 30% of 40 Gold, in 4 Gold points");
   assert.deepEqual(out.transfers.map((t) => [t.loanId, t.from, t.to, t.cents, t.reason]),
-    [[loan.id, "bond", "progress", 16400, "principal"], [`EH${AI}`, AI, "escrow", 1968, "escrow"]],
-    "the borrower never holds the Gold; it puts next turn's payment (16.40 and 3.28) into escrow");
-  assert.deepEqual(out.progress, [{ host: AI, cityId: "6:2", amount: 41, investmentId: loan.id }]);
-  assert.deepEqual(out.ledger.buildTurns, [{ pid: AI, turn: 50 }]);
+    [[loan.id, "bond", "progress", 9600, "principal"], [`EH${AI}`, AI, "escrow", 1152, "escrow"]],
+    "the borrower never holds the Gold; it puts next turn's payment into escrow");
+  assert.deepEqual(out.progress, [{ host: AI, cityId: "6:2", amount: 24, investmentId: loan.id }]);
+  assert.deepEqual(out.ledger.buildTurns, [], "no timer row");
   const soon = plan({ civs: [civ(ME, { human: true }), ai()], turn: 59, ledger: out.ledger });
-  assert.deepEqual(built(soon).length, 1, "not again within 10 turns");
-  const later = plan({ civs: [civ(ME, { human: true }), ai()], turn: 60, ledger: soon.ledger });
-  assert.equal(built(later).length, 1, "the first one's payments still fill the limit");
+  assert.deepEqual(built(soon).length, 1, "not again while the first is open");
+  const closed = { ...soon.ledger, loans: soon.ledger.loans.map((l) => ({ ...l, state: "closed", closedTurn: 60 })) };
+  const later = plan({ civs: [civ(ME, { human: true }), ai()], turn: 61, ledger: closed });
+  assert.equal(built(later).length, 2, "once it's closed, the slow build is a reason again");
+});
+
+test("a want, not a need: a quick build that pays for itself gets a loan, a quick Granary doesn't, nor a short civ", () => {
+  const market = (over = {}) => ai({ cities: [city("6:1", { build: "BUILDING_MARKET", turnsLeft: 3, buildGoldYield: 3,
+    roleBuilding: true, ...over })] });
+  assert.equal(built(plan({ civs: [market()] })).length, 1, "+3 Gold over 10 turns covers the interest");
+  assert.equal(built(plan({ civs: [market({ build: "BUILDING_GRANARY", buildGoldYield: 0, roleBuilding: false })] })).length,
+    0, "3 turns out and no Gold in it");
+  const heavy = { ...emptyLedger(), nextId: 2, loans: [makeLoan({ id: "L1", lender: "bond", borrower: AI,
+    principal: 40000, ratePpm: 20000, term: 10, turn: 45 })] };
+  assert.equal(built(plan({ civs: [ai()], ledger: heavy })).length, 0,
+    "48 a turn on 40 of income is already past 30%: it can't afford to want");
+  const due = { ...emptyLedger(), nextId: 2, loans: [makeLoan({ id: "L1", lender: "bond", borrower: AI,
+    principal: 10000, ratePpm: 20000, term: 10, turn: 45 })] };
+  const short = plan({ civs: [ai({ balanceCents: 0, incomeCents: 1000 }), civ(LENDER, { balanceCents: 300000,
+    incomeCents: 1000, stages: OPEN })], ledger: due });
+  assert.equal(built(short).length, 0, "short on its dues: the emergency rule, not this one");
+  assert.equal(short.events.some((e) => e.kind === "refinance" && e.pid === AI), true);
 });
 
 test("sized by the build: no more than its points at the purchase rate, or 5 turns of income", () => {
@@ -77,8 +111,8 @@ test("a civ lender lends cheaper than the bond market, and its Gold goes straigh
   assert.deepEqual([loan.lender, loan.ratePpm], [LENDER, 8000]);
   assert.deepEqual(out.transfers.find((t) => t.loanId === loan.id).to, "progress");
   assert.equal(out.batch.civs.find((row) => row.pid === LENDER).net, -loan.principal);
-  assert.equal(out.batch.civs.find((row) => row.pid === AI).net, -1987,
-    "the borrower's Gold moves only into escrow, for next turn's payment");
+  assert.equal(out.batch.civs.find((row) => row.pid === AI).net, -1166,
+    "the borrower's Gold moves only into escrow, for next turn's payment (10.80 and 0.86 on 108 Gold at 0.8%)");
 });
 
 test("none in a Slump, a Panic, a default, insolvency, at the open-loan limit, for the player, or with Loans off", () => {

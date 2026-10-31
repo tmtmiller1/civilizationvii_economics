@@ -830,6 +830,14 @@ Ottomans to Goryeo into the ledger. No invariant line in `UI.log`.
 | E.3 | An offer the player declined isn't made again for 10 turns, then comes back | a player declining an AI offer | `ui/econ-commerce.js` `investSpec` |
 | E.4 | A pair the game shows as Hostile reads under -60 in the drive log's `rel` column and the AI's stake in that civ drops by 6; a Friendly pair reads above 30 (the ninth run saw 31 to 44) | a game with a Hostile pair | `ui/econ-params.js` `relationshipBands`, `ui/econ-stake.js` `bandsOf` |
 
+## Owed: the build loan as a want (2026-10-31, unreleased)
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| W.1 | An AI's build loan opens on a slow build (the drive log's city read shows `turnsLeft` of 8 or more) or on a Market, Bazaar or Bank, and a city 3 turns from a Granary gets none; the `rel`-style dump shows `turnsLeft` and `buildGoldYield` read from the engine, not null and 0 | Antiquity or Modern, any AI with a build queue | `ui/econ-shortfall.js` `aiBuildBorrow`, `ui/econ-commerce-read.js` `turnsLeftOf` |
+| W.2 | An AI with a build loan open takes no second one until the first closes, whatever the turn count | the same game, 12 turns on | `ui/econ-shortfall.js` `buildTarget` |
+| W.3 | An AI already carrying loan service near 30% of its income takes a smaller build loan or none | an AI with an emergency loan open | `ui/econ-shortfall.js` `aiBuildBorrow` |
+
 ## Owed: AI plan stage D
 
 | # | What the player sees when it works | Setup | Source |

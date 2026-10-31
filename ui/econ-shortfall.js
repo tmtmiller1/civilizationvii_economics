@@ -9,11 +9,13 @@
 
 import { AI, CITIZENS, PROGRESS, REFINANCE, RESERVE, SHORT_TERM, isWorldAccount } from "./econ-params.js";
 import { isOpen } from "./econ-loan.js";
-import { activeDefaults, emergencyOutstandingOf, outstandingOf } from "./econ-credit.js";
+import { activeDefaults, emergencyOutstandingOf, outstandingOf, serviceOf } from "./econ-credit.js";
+import { servicePrincipalCents } from "./econ-citizens.js";
 import { emergencyOffersFor, offersFor, relationLevel } from "./econ-lenders.js";
 import { distressOf, lookAhead, reserveOf } from "./econ-distress.js";
 import { paymentDue } from "./econ-loan.js";
-import { aiBuildBorrowWanted, aiChoice, aiRepudiationTarget, aiShortfall, loanToRestructure } from "./econ-ai.js";
+import { aiBuildBorrowStanding, aiBuildBorrowWanted, aiChoice, aiRepudiationTarget, aiShortfall, buildPays,
+  loanToRestructure } from "./econ-ai.js";
 import { emergencyCap, guardDecision, isInsolvent } from "./econ-guard.js";
 import { projected } from "./econ-batch.js";
 import { aiLendersFor, event, incomeOf, isHuman, notice, offerQuery, openLoan } from "./econ-turn.js";
@@ -331,37 +333,51 @@ function buildOffer(ctx, pid, principal) {
 }
 
 /**
- * The city an AI's build loan would back this turn, or null when the rule says no or its loans are at the limit.
+ * The city an AI's build loan would back this turn, or null when it isn't in standing for one (aiBuildBorrowStanding)
+ * or its loans are at the limit.
  * @param {TurnContext} ctx
  * @param {Civ} civ
- * @param {TurnRow | undefined} last
  */
-function buildTarget(ctx, civ, last) {
+function buildTarget(ctx, civ) {
   const target = buildCity(ctx, civ);
-  const wanted = aiBuildBorrowWanted({ incomeCents: civ.incomeCents, phase: ctx.readings.civ.get(civ.id)?.phase ?? "",
-    insolvent: isInsolventCiv(ctx, civ.id), inDefault: activeDefaults(ctx.ledger, civ.id) > 0, hasBuild: !!target,
-    lastTurn: last?.turn, turn: ctx.turn });
-  return wanted && !isAtLoanLimit(ctx, civ.id) ? target : null;
+  const openBuildLoan = ctx.ledger.loans.some((loan) => loan.borrower === civ.id && loan.source === "ai-build"
+    && isOpen(loan));
+  const standing = aiBuildBorrowStanding({ incomeCents: civ.incomeCents,
+    phase: ctx.readings.civ.get(civ.id)?.phase ?? "", insolvent: isInsolventCiv(ctx, civ.id),
+    inDefault: activeDefaults(ctx.ledger, civ.id) > 0, distressed: inDistress(ctx, civ.id), hasBuild: !!target,
+    openBuildLoan });
+  return standing && !isAtLoanLimit(ctx, civ.id) ? target : null;
 }
 
 /**
- * DESIGN 6 build loan: up to 5 turns of income, within the 4.2 limits by the same sizing the player's refusal names,
- * in whole points at the game's purchase rate; the Gold goes straight into the build as addProgress, beside any
+ * DESIGN 6 build loan: what an AI asks for when it wants capital. In standing, it sizes the loan (up to 5 turns of
+ * income, within the 4.2 limits by the same sizing the player's refusal names, in whole points at the game's
+ * purchase rate), takes the cheapest offer, and borrows when the build pays for the loan or is slow and the service
+ * stays within its income (aiBuildBorrowWanted). The Gold goes straight into the build as addProgress, beside any
  * development loan's or the plan's row for the same city.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 export function aiBuildBorrow(ctx, civ) {
-  const last = ctx.ledger.buildTurns.find((row) => row.pid === civ.id);
-  const target = buildTarget(ctx, civ, last);
+  const target = buildTarget(ctx, civ);
   if (!target) return;
   const price = pointPriceCents(ctx.params.goldPerPointCents, target.city.progressScalePct);
   const want = Math.min(AI.buildSizeTurns * civ.incomeCents, target.need * price);
   const offer = buildOffer(ctx, civ.id, want);
   if (!offer) return;
-  const most = Math.min(want, mostBorrowCents(ctx, civ.id, offer));
+  // What it can carry as a want: its loan service with this loan's first payment within buildServiceMaxPct of
+  // income (the 4.2 limit, at 50%, is the most anyone may borrow; a want stops well short of it).
+  const room = Math.floor((civ.incomeCents * AI.buildServiceMaxPct) / 100) - serviceOf(ctx.ledger, civ.id);
+  const carry = Math.max(0, servicePrincipalCents({ roomCents: room, ratePpm: offer.ratePpm, term: offer.term }));
+  const most = Math.min(want, mostBorrowCents(ctx, civ.id, offer), carry);
   const points = Math.floor(most / price);
   if (points * price < AI.minIncomeCents) return;
+  const principal = points * price;
+  const yieldCents = Math.round((target.city.buildGoldYield ?? 0) * 100);
+  const wanted = aiBuildBorrowWanted({
+    pays: buildPays({ goldYieldCents: yieldCents, principal, ratePpm: offer.ratePpm, term: offer.term }),
+    turnsLeft: Number.isFinite(target.city.turnsLeft) ? /** @type {number} */ (target.city.turnsLeft) : null });
+  if (!wanted) return;
   // The principal goes from the lender straight to the progress account: Gold from a civ counts in the borrower's
   // funds only next turn (DESIGN 4.14), and the borrower never holds it.
   const loan = openLoan(ctx, { lender: offer.lender, borrower: civ.id, principal: points * price,
@@ -369,5 +385,4 @@ export function aiBuildBorrow(ctx, civ) {
   const same = ctx.out.progress.find((row) => row.cityId === target.city.id);
   if (same) same.amount += points;
   else ctx.out.progress.push({ host: civ.id, cityId: target.city.id, amount: points, investmentId: loan.id });
-  if (last) last.turn = ctx.turn; else ctx.ledger.buildTurns.push({ pid: civ.id, turn: ctx.turn });
 }

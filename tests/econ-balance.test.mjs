@@ -57,6 +57,7 @@ function aiRules(games) {
       else if (e.kind === "offer") add("offer");
       else if (e.kind === "credit-rep") add(`credit-rep:${e.why}`);
     }
+    add("build-loan", on.buildLoans);
   }
   return Object.fromEntries(Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)));
 }

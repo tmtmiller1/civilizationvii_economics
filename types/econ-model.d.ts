@@ -87,6 +87,7 @@ declare global {
     repudiations: RepudiationRow[];
     guardTurns: TurnRow[];
     /** The last turn each AI took a build loan (DESIGN 6). */
+    /** Kept for saves written before 2026-10-31; the build loan no longer runs on a timer. */
     buildTurns: TurnRow[];
     capHits: TurnRow[];
     lowIncome: LowIncomeRow[];
@@ -168,6 +169,10 @@ declare global {
     population?: number;
     /** Percent of a point sent by addProgress that lands in this city (NOTES finding L); 100 until it's read. */
     progressScalePct?: number;
+    /** Turns the current build needs on the city's own production (`BuildQueue.currentTurnsLeft`); null unread. */
+    turnsLeft?: number | null;
+    /** The current build's base Gold yield, for the build loan's "pays for itself" test (DESIGN 6). */
+    buildGoldYield?: number;
   }
 
   /** One trade route between two major civs: the importer owns it (the merchant's civ). */

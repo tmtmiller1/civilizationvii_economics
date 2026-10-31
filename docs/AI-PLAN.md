@@ -75,6 +75,10 @@ default only (the lender still gets paid, slowly); repudiation writes the debt o
 - Repudiation of a civ by the AI has never fired outside unit tests (balance run: 77 repudiations, all of the bond
   market by insolvent civs).
 - Investment and aid run on timers (once per 10 turns, once an age) and relationship level only.
+- The build loan runs on a timer too (once per 10 turns). Decided 2026-10-31 (the owner): no AI rule runs on a
+  cadence. The build loan is what a civ asks for when it wants capital (a build that pays for the loan, or one too
+  slow on its own production, sized to what it can carry), the emergency loan is what it takes when it needs capital,
+  and a development loan is another civ's choice to invest in it. Built the same day (NOTES choice 136).
 - The native AI's spending can't see the mod's debts, so every rule is hedged with "only when flush".
 
 ## 4. The plan

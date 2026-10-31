@@ -84,13 +84,17 @@ export const TERMS = [10, 20, 30];
 export const SHORT_TERM = 10;
 // DESIGN 4.3: 20-turn terms open with Moneylending, 30-turn terms with Public debt.
 export const MID_TERM = 20;
-// The build loan (DESIGN 6): an AI with positive income borrows to put progress on its own current build while its
-// credit is cheap (Boom or Steady), at most once per 10 turns, up to 5 turns of income over 10 turns and within the
-// 4.2 limits.
+// The build loan (DESIGN 6): what an AI asks for when it wants capital, as against the emergency loan it takes when
+// it needs it. It borrows for its own current build when the build pays for itself (its Gold yield over the term
+// covers the interest) or is slow (8 turns or more left on the city's own production), its credit is cheap (Boom or
+// Steady), it isn't in distress and it has no build loan open; sized to what it can carry as a want (its loan service
+// with the new loan within 30% of income), up to 5 turns of income over 10 turns and within the 4.2 limits. No
+// timer: the reasons decide.
 // AI-PLAN 4.4: an AI weighs a repudiation when the Gold it would keep is above 4 turns of income (10 Gold at the
 // least) and the lender is at war with it, or Unfriendly and weaker, or it's insolvent and the lender isn't Friendly.
 export const AI = { lendIncomeMultiple: 20, acceptRatePct: 120, repudiateEveryTurns: 20,
-  repudiateKeepTurns: 4, minIncomeCents: 1000, buildEveryTurns: 10, buildSizeTurns: 5, buildTerm: 10 };
+  repudiateKeepTurns: 4, minIncomeCents: 1000, buildSizeTurns: 5, buildTerm: 10, buildSlowTurns: 8,
+  buildServiceMaxPct: 30 };
 // openPerBorrower and closedLoans are not in DESIGN: they bound the saved envelope (debt-5) with the event log DESIGN
 // 9 asks for; see docs/NOTES.md choice 25.
 export const LIMITS = { events: 100, closedLoans: 32, envelopeBytes: 65536, openPerBorrower: 6 };

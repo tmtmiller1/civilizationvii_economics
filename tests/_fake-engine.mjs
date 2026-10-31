@@ -38,6 +38,7 @@ function fakeCity(pid, spec, world) {
     population: spec.population ?? 3,
     BuildQueue: { isEmpty: !spec.build, currentProductionTypeHash: spec.build ? `#${spec.build}` : null,
       currentBuildProgress: spec.progress ?? 0, getPercentComplete: () => spec.percent ?? 0,
+      currentTurnsLeft: spec.turnsLeft ?? 5,
       addProgress: (n) => world.calls.push(`progress ${pid}:${spec.id} ${n}`) },
   };
 }

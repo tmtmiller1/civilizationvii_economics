@@ -91,9 +91,10 @@ function civsAt(game, turn, balances) {
   return game.civs.map((c) => {
     const { incomeCents, atWar } = c.income(turn);
     // Three cities, each with a build at the head of its queue, so the AI's build loans (DESIGN 6) have something to
-    // back; a build is never finished here, which is the most an AI could borrow for.
+    // back; a build is never finished here, which is the most an AI could borrow for. The first is a slow role
+    // building (12 turns on its own production), the others quick, so the want rule has one reason per civ.
     const cities = [0, 1, 2].map((k) => ({ id: `${c.id}:${k}`, build: "BUILDING_LIBRARY", neededProgress: 200,
-      population: 3 + k, roleBuilding: k === 0 }));
+      population: 3 + k, roleBuilding: k === 0, turnsLeft: k === 0 ? 12 : 4, buildGoldYield: 0 }));
     return { id: c.id, alive: true, human: c.human, balanceCents: balances.get(c.id), incomeCents,
       upkeepCents: Math.round(Math.abs(incomeCents) * 0.5) + 300, stages: c.stages, atWar,
       depthTurns: turn >= c.banking ? 2 : 0, depthFactorPct: turn >= c.banking ? 90 : 100, cities };
@@ -137,7 +138,7 @@ export function runGame(game, { on = true, lend = true, roundTrip = true } = {})
   // The markets envelope carries the AI's aid-once-an-age and investment turns, as the glue's save does.
   let markets;
   const facts = { balances: new Map(game.civs.map((c) => [c.id, []])), events: [], maxBytes: 0, planMs: [],
-    lostResend: 0, lent: 0, received: 0, writtenOffToHuman: 0, capBreaches: 0, capHits: [] };
+    lostResend: 0, lent: 0, received: 0, writtenOffToHuman: 0, capBreaches: 0, capHits: [], buildLoans: 0 };
   const me = game.civs.find((c) => c.human).id;
   for (let turn = 1; turn <= TURNS; turn += 1) {
     const age = ageAt(turn);
@@ -153,6 +154,7 @@ export function runGame(game, { on = true, lend = true, roundTrip = true } = {})
     const next = applyGrants(earned, paidGrants(plan.batch));
     if (on) {
       readTurn(facts, plan, civs, me, next, earned, incomes);
+      facts.buildLoans += plan.ledger.loans.filter((l) => l.source === "ai-build" && l.opened === turn).length;
       const text = save(plan.ledger);
       facts.maxBytes = Math.max(facts.maxBytes, utf8Bytes(text));
       ledger = roundTrip ? load(text).ledger : plan.ledger;

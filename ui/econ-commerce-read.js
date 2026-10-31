@@ -155,6 +155,15 @@ function neededProgress(queue, hash, type) {
   return Math.max(0, Math.round((cost * speed) / 100) - progress);
 }
 
+/**
+ * Turns the current build needs on the city's own production (`BuildQueue.currentTurnsLeft`), or null unread.
+ * @param {any} queue
+ */
+function turnsLeftOf(queue) {
+  const turns = Number(safe(() => queue.currentTurnsLeft, Number.NaN));
+  return Number.isFinite(turns) && turns >= 0 ? turns : null;
+}
+
 // How much of a point sent by addProgress lands in a city, in percent; the plan and the AI's build loans divide the
 // points they send by it. 100: the lab found a grant lands times the city's own production multiplier, as its own
 // production does, and the lead kept the price at the purchase rate (NOTES finding L).
@@ -166,9 +175,10 @@ export const PROGRESS_SCALE_PCT = 100;
  * @param {any} city
  * @param {(type: string) => import("./econ-depth.js").BuildingRoles | null} rolesFor
  * @param {number} trade
+ * @param {(type: string) => number} goldYieldOf
  * @returns {CityRead | null}
  */
-function readCity(city, rolesFor, trade) {
+function readCity(city, rolesFor, trade, goldYieldOf) {
   const id = cityKey(safe(() => city.id, null));
   if (!id) return null;
   const queue = safe(() => city.BuildQueue, null);
@@ -183,7 +193,7 @@ function readCity(city, rolesFor, trade) {
   return { id, build: type, neededProgress: neededProgress(queue, hash, type),
     roleBuilding: roles ? isRoleBuilding(roles) : false, tradeBuildings: trade,
     purchaseCents: roles ? readPurchaseCents(city, type) : null, population: readPopulation(city),
-    progressScalePct: PROGRESS_SCALE_PCT };
+    progressScalePct: PROGRESS_SCALE_PCT, turnsLeft: turnsLeftOf(queue), buildGoldYield: goldYieldOf(type) };
 }
 
 /**
@@ -210,13 +220,14 @@ function readPurchaseCents(city, type) {
  * @param {number} pid
  * @param {(type: string) => import("./econ-depth.js").BuildingRoles | null} rolesFor
  * @param {(city: any) => { roles: import("./econ-depth.js").BuildingRoles, weight: number }[]} buildingsOf
+ * @param {(type: string) => number} [goldYieldOf] the build's base Gold yield, for the build loan's "pays" test
  * @returns {CityRead[]}
  */
-export function readCities(pid, rolesFor, buildingsOf) {
+export function readCities(pid, rolesFor, buildingsOf, goldYieldOf = (/** @type {string} */ _type) => 0) {
   /** @type {CityRead[]} */
   const out = [];
   for (const city of safe(() => Players.get(pid).Cities.getCities(), []) || []) {
-    const row = readCity(city, rolesFor, Math.round(countRoles(buildingsOf(city)).trade));
+    const row = readCity(city, rolesFor, Math.round(countRoles(buildingsOf(city)).trade), goldYieldOf);
     if (row) out.push(row);
   }
   return out;
@@ -253,6 +264,18 @@ export function sendProgress(row) {
   if (ok) logDebug(`progress ${row.amount} on ${row.cityId} (${row.investmentId})`);
   else logLine(`addProgress failed on ${row.cityId}`);
   return ok;
+}
+
+/**
+ * A build's base Gold yield from the building data econ-engine.js caches, for the build loan's "pays" test; 0 for
+ * a unit, a project or a building without Gold.
+ * @param {Map<string, import("./econ-depth.js").BuildingData>} data
+ */
+export function makeGoldYieldOf(data) {
+  return (/** @type {string} */ type) => {
+    const gold = Number(data.get(type)?.goldYield);
+    return Number.isFinite(gold) && gold > 0 ? gold : 0;
+  };
 }
 
 /**

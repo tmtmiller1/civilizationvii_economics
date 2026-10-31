@@ -40,15 +40,39 @@ export function aiAccepts({ offerRatePpm, bondRatePpm, shortfallCents, incomeCen
 const CHEAP_PHASES = ["boom", "steady", "outside"];
 
 /**
- * DESIGN 6 build loan: an AI with positive income, solvent and in no default, borrows for its own current build while
- * its credit is cheap (its own phase Boom or Steady, or outside the cycle), at most once per 10 turns.
- * @param {{ incomeCents: number, phase: string, insolvent: boolean, inDefault: boolean, hasBuild: boolean,
- *   lastTurn: number | undefined, turn: number }} q
+ * DESIGN 6 build loan, the standing: an AI with positive income, solvent, in no default and not in distress, with a
+ * build to back, no build loan open, and cheap credit (its own phase Boom or Steady, or outside the cycle), is in a
+ * position to want one. Whether it does is aiBuildBorrowWanted, once the offer is known.
+ * @param {{ incomeCents: number, phase: string, insolvent: boolean, inDefault: boolean, distressed: boolean,
+ *   hasBuild: boolean, openBuildLoan: boolean }} q
  */
-export function aiBuildBorrowWanted({ incomeCents, phase, insolvent, inDefault, hasBuild, lastTurn, turn }) {
-  if (!(incomeCents >= AI.minIncomeCents) || insolvent || inDefault || !hasBuild) return false;
-  if (!CHEAP_PHASES.includes(phase)) return false;
-  return !Number.isInteger(lastTurn) || turn - /** @type {number} */ (lastTurn) >= AI.buildEveryTurns;
+export function aiBuildBorrowStanding({ incomeCents, phase, insolvent, inDefault, distressed, hasBuild,
+  openBuildLoan }) {
+  if (!(incomeCents >= AI.minIncomeCents) || insolvent || inDefault || distressed || !hasBuild) return false;
+  if (openBuildLoan) return false;
+  return CHEAP_PHASES.includes(phase);
+}
+
+/**
+ * Whether a build's Gold yield over the loan's term covers the loan's interest (a declining balance: about half the
+ * principal outstanding on average), so the build pays for the borrowing.
+ * @param {{ goldYieldCents: number, principal: number, ratePpm: number, term: number }} q
+ */
+export function buildPays({ goldYieldCents, principal, ratePpm, term }) {
+  if (!(goldYieldCents > 0) || !(principal > 0)) return false;
+  const interest = (principal * ratePpm * (term + 1)) / (2 * term * 1e6) * term;
+  return goldYieldCents * term >= interest;
+}
+
+/**
+ * DESIGN 6 build loan, the want: a civ in standing asks for the loan when the build pays for itself or is slow on
+ * its own production (AI.buildSlowTurns or more turns left). A want, not a need: the emergency loan is the need, and
+ * the loan is sized to what the civ can carry (aiBuildBorrow).
+ * @param {{ pays: boolean, turnsLeft: number | null }} q
+ */
+export function aiBuildBorrowWanted({ pays, turnsLeft }) {
+  const slow = Number.isFinite(turnsLeft) && /** @type {number} */ (turnsLeft) >= AI.buildSlowTurns;
+  return pays || slow;
 }
 
 /**

@@ -64,7 +64,8 @@ test("cities: the build at the head of the queue, what it still needs, its price
   const rolesFor = makeRolesFor(buildingData(), bankGoldYield());
   const rows = readCities(0, rolesFor, (c) => readCityBuildings(c));
   assert.deepEqual(rows, [{ id: "0:1", build: "BUILDING_LIBRARY", neededProgress: 90, roleBuilding: false,
-    tradeBuildings: 1, purchaseCents: 24000, population: 3, progressScalePct: 100 }], "30 done at 25%: 90 to go; the Bank's trade advisory counts");
+    tradeBuildings: 1, purchaseCents: 24000, population: 3, progressScalePct: 100, turnsLeft: 5, buildGoldYield: 0 }],
+  "30 done at 25%: 90 to go; the Bank's trade advisory counts; 5 turns left; a Library yields no Gold");
   const empty = readCities(4, rolesFor, () => []);
   assert.deepEqual(empty, [{ id: "4:7", build: null, neededProgress: 0, roleBuilding: false, tradeBuildings: 0,
     purchaseCents: null, population: 3, progressScalePct: 100 }]);

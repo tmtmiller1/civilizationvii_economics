@@ -18,7 +18,8 @@ import { logDebug, logLine } from "./econ-log.js";
 import { countTurn, emptyTurnCount, gameTurnOf, sanitizeTurnCount } from "./econ-turn-count.js";
 import { MARKETS_KEY, loadMarkets, saveMarkets } from "./econ-markets.js";
 import { countRoles } from "./econ-depth.js";
-import { cityKey, makeRolesFor, readCities, readMarket, readRoutes, readTradeIncomeCents, sendProgress }
+import { cityKey, makeGoldYieldOf, makeRolesFor, readCities, readMarket, readRoutes, readTradeIncomeCents,
+  sendProgress }
   from "./econ-commerce-read.js";
 import { MACRO_KEY, loadMacro, saveMacro } from "./econ-macro-state.js";
 import { blendedTerms, termsOf } from "./econ-systems.js";
@@ -257,6 +258,7 @@ export function economyOf(session, pid, turn, options) {
  */
 export function readCommerce(majors, economies, industryPct) {
   const rolesFor = makeRolesFor(buildingData(), bankGoldYield());
+  const goldYieldOf = makeGoldYieldOf(buildingData());
   /** @type {Map<string, number>} */
   const tradeByCity = new Map();
   let industry = 0;
@@ -271,7 +273,7 @@ export function readCommerce(majors, economies, industryPct) {
       if (key) tradeByCity.set(key, Math.round(countRoles(list).trade));
       return list;
     };
-    cities.set(pid, readCities(pid, rolesFor, buildingsOf));
+    cities.set(pid, readCities(pid, rolesFor, buildingsOf, goldYieldOf));
   }
   return { cities, routes: readRoutes(majors, tradeByCity), market: readMarket(majors, Math.round(industry)) };
 }
