@@ -211,30 +211,26 @@ function refinanceOpen(ctx, civ, gap) {
 /**
  * AI-PLAN 4.3: the AI's ordered choice on the look-ahead. Pay when this turn and the next fit; a refinancing loan
  * when short and one's on offer (the refinancing step takes it); otherwise, with income above 0, restructure the
- * loan whose payment doesn't fit, once per loan, and again if still short; a human lender is asked instead. What's
- * still short after that is a miss, paid as far as the funds go. Returns the choice made.
+ * loan whose payment doesn't fit, one loan a turn and once per loan (the stage C watch run restructured six in one
+ * turn on a civ with nothing in hand, which no schedule could fix); a human lender is asked instead. What's still
+ * short after that is a miss, paid as far as the funds go. Returns the choice made.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 export function aiDecide(ctx, civ) {
-  const mine = () => ctx.ledger.loans.filter((loan) => loan.borrower === civ.id && loan.state === "active");
-  const read = () => {
-    const ahead = lookAhead(ctx, civ.id, 1);
-    const gapNow = ahead[0].gap;
-    return aiChoice({ gapNow, gapAhead: ahead[1].gap, refinanceOpen: refinanceOpen(ctx, civ, gapNow),
-      incomeCents: civ.incomeCents, restructurable: mine().some((loan) => !loan.restructured) });
-  };
-  let choice = read();
-  for (let step = 0; choice === "restructure" && step < 6; step += 1) {
-    const loan = loanToRestructure(mine(), (row) => paymentDue(row).total);
-    if (!loan) break;
-    if (isHuman(ctx, loan.lender)) {
-      notice(ctx, loan.lender, { kind: "restructure-ask", loanId: loan.id, borrower: civ.id });
-      break;
-    }
-    if (restructureLoan(ctx, loan, civ.id)) break;
-    choice = read();
+  const mine = ctx.ledger.loans.filter((loan) => loan.borrower === civ.id && loan.state === "active");
+  const ahead = lookAhead(ctx, civ.id, 1);
+  const gapNow = ahead[0].gap;
+  const choice = aiChoice({ gapNow, gapAhead: ahead[1].gap, refinanceOpen: refinanceOpen(ctx, civ, gapNow),
+    incomeCents: civ.incomeCents, restructurable: mine.some((loan) => !loan.restructured) });
+  if (choice !== "restructure") return choice;
+  const loan = loanToRestructure(mine, (row) => paymentDue(row).total);
+  if (!loan) return "miss";
+  if (isHuman(ctx, loan.lender)) {
+    notice(ctx, loan.lender, { kind: "restructure-ask", loanId: loan.id, borrower: civ.id });
+    return choice;
   }
+  restructureLoan(ctx, loan, civ.id);
   return choice;
 }
 

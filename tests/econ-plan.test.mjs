@@ -674,3 +674,13 @@ test("the AI repays early (AI-PLAN 4.3): half of what it holds above its reserve
   assert.ok(planTurn(input({ ledger: ledgerWith([{ ...dear, borrower: ME }]), civs: [me({ balanceCents: 1e6 })] }))
     .ledger.loans.length, "the Loans tab shows the player the same reserve reading instead");
 });
+
+test("the AI restructures one loan a turn, the one whose payment doesn't fit, and misses the rest for now", () => {
+  const big = loan("L1", { borrower: 4, principal: 30000, outstanding: 30000, term: 10, ratePpm: 10000, opened: 1 });
+  const small = loan("L2", { borrower: 4, principal: 10000, outstanding: 10000, term: 10, ratePpm: 10000, opened: 2 });
+  const plan = planTurn(input({ ledger: ledgerWith([big, small]), civs: [me(), civ(4, { balanceCents: 0,
+    incomeCents: 500, stages: CLOSED })] }));
+  assert.deepEqual(plan.ledger.loans.map((l) => [l.id, l.restructured]), [["L1", true], ["L2", false]],
+    "the 33 payment, not the 11");
+  assert.equal(plan.events.filter((e) => e.kind === "restructure").length, 1);
+});
