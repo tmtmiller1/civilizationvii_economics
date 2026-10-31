@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { BASE_RATE_PPM, engineLines, isWorldAccount, purchasePointCents, ratesPct } from "../ui/econ-params.js";
+import { BASE_RATE_PPM, STAKE, engineLines, isWorldAccount, purchasePointCents, ratesPct, relationshipBands }
+  from "../ui/econ-params.js";
 import { ENGINE } from "./_fixtures.mjs";
 
 test("engine lines: the 1.5.0 gameplay DB fixture gives the -10 disband line and the 0 amenity line", () => {
@@ -44,4 +45,16 @@ test("the purchase rate: GOLD_PURCHASE_MULTIPLIER in cents from either row shape
   assert.equal(purchasePointCents([null]), null);
   assert.equal(purchasePointCents(null), null);
   assert.equal(purchasePointCents({}), null);
+});
+
+test("relationship bands: the game's band edges times its scale; a missing row or scale leaves STAKE's number", () => {
+  const rows = { DIPLOMACY_RELATIONSHIP_CHARACTERISTIC_SCALE: "30" };
+  const bands = [{ DiplomacyPlayerRelationshipType: "PLAYER_RELATIONSHIP_HOSTILE", MinRelationship: -30, MaxRelationship: -2 },
+    { DiplomacyPlayerRelationshipType: "PLAYER_RELATIONSHIP_FRIENDLY", MinRelationship: 1, MaxRelationship: 2 }];
+  assert.deepEqual(relationshipBands(rows, bands), { friendlyLevel: 30, hostileLevel: -60 });
+  assert.deepEqual(relationshipBands([{ Name: "DIPLOMACY_RELATIONSHIP_CHARACTERISTIC_SCALE", Value: 25 }], bands),
+    { friendlyLevel: 25, hostileLevel: -50 }, "another mod's scale is read as it stands");
+  assert.deepEqual(relationshipBands(rows, [bands[1]]), { friendlyLevel: 30, hostileLevel: STAKE.hostileLevel });
+  assert.deepEqual(relationshipBands({}, bands), { friendlyLevel: STAKE.friendlyLevel, hostileLevel: STAKE.hostileLevel });
+  assert.deepEqual(relationshipBands(null, null), { friendlyLevel: 30, hostileLevel: -60 }, "the fallbacks are the 1.5.0 bands");
 });

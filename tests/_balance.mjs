@@ -19,9 +19,10 @@ import { PARAMS } from "./_fixtures.mjs";
 export const TURNS = 500;
 export const AGES = [[1, "AGE_ANTIQUITY"], [151, "AGE_EXPLORATION"], [331, "AGE_MODERN"]];
 const LEVELS = ["friendly", "neutral", "neutral", "neutral", "unfriendly"];
-// The engine's level numbers behind each name, as the lab read them (the ninth run: Friendly pairs at 30 to 44,
-// Neutral at 10 to 22); the stake (AI-PLAN 4.5) reads the number.
-const LEVEL_NUMS = { friendly: 30, neutral: 10, unfriendly: -15, war: -30 };
+// The engine's level numbers behind each name: the game's bands are Neutral -30 to 30, Friendly 30 to 60,
+// Unfriendly -60 to -30, Hostile under -60 (DiplomacyPlayerRelationships times the scale of 30; the ninth run read
+// Friendly pairs at 31 to 44, Neutral at -15 to 30); the stake (AI-PLAN 4.5) reads the number.
+const LEVEL_NUMS = { friendly: 38, neutral: 10, unfriendly: -45, war: -60 };
 
 export function ageAt(turn) {
   let age = AGES[0][1];

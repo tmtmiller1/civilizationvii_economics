@@ -200,6 +200,13 @@ stake = relationship level / 3                     -10 to 10
 Built 2026-10-31 (stage E, NOTES choices 133 to 135): the stake read per pair, investment and aid on it, the lending
 gate, the timers gone (an offer to the player isn't repeated for 10 turns, and aid keeps its 15 turns per host).
 
+Decided 2026-10-31 (the Friendly and Hostile edges): the game's own bands, not working numbers. The compiled DB's
+`DiplomacyPlayerRelationships` rows give Hostile -30 to -2, Unfriendly -2 to -1, Neutral -1 to 1, Friendly 1 to 2 and
+Helpful 2 to 30, in units of `DIPLOMACY_RELATIONSHIP_CHARACTERISTIC_SCALE` (30), so Neutral runs -30 to 30, Friendly
+30 to 60 and Hostile sits under -60. The ninth run's readings fit (Neutral up to 30, Friendly from 31). The session
+reads both edges once (`relationshipBands`), the aid buys the points past the Friendly line, and the stake's Hostile
+test uses the band's top. The Hostile edge is unwatched: the lab's lowest reading was -15.
+
 The agenda text itself isn't parsed: the engine already turns each agenda into relationship-history rows with a
 `LEADER_AGENDA` type, and those carry the AI's like or dislike of each civ as a number.
 

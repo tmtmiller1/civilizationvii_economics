@@ -8,7 +8,7 @@
 import { planTurn } from "./econ-plan.js";
 import { MOD_ID, emptyLedger, load, save } from "./econ-state.js";
 import { batchStatus, celebrationPaidOf, paidOf } from "./econ-batch.js";
-import { engineLines, purchasePointCents } from "./econ-params.js";
+import { engineLines, purchasePointCents, relationshipBands } from "./econ-params.js";
 import { checkPlan } from "./econ-invariants.js";
 import { viewRules } from "./econ-view-model.js";
 import { TAB_KEYS, newlyOpened, openParts } from "./econ-view-tabs.js";
@@ -26,8 +26,8 @@ import { readCrisisStage, readEconomy, readGovernment, readIdeology, readPopulat
   sanitizePending, withPending } from "./econ-macro-read.js";
 import { aliveMajorIds, ageType, bankGoldYield, bookFavor, bookGrievance, bookRelationship, buildingData, gameTurn,
   isAliveMajor, player, readAtWar, readBalanceCents, readConfig, readEnvelope, readGlobalParameters,
-  readHappinessCents, readIncomeCents, readRelations, readStrength, readUpkeepCents, safe, scaleAiPreference,
-  sendCelebration, sendGold, sendInfluence, writeEnvelope } from "./econ-engine.js";
+  readHappinessCents, readIncomeCents, readRelations, readRelationshipRows, readStrength, readUpkeepCents, safe,
+  scaleAiPreference, sendCelebration, sendGold, sendInfluence, writeEnvelope } from "./econ-engine.js";
 
 export const GLUE_KEY = "tower-economics-glue";
 export const GLUE_VERSION = 2;
@@ -303,7 +303,8 @@ export function displayTurn(session, turn) {
  */
 function readParams() {
   const rows = readGlobalParameters();
-  return { ...engineLines(rows), goldPerPointCents: purchasePointCents(rows) };
+  return { ...engineLines(rows), goldPerPointCents: purchasePointCents(rows),
+    ...relationshipBands(rows, readRelationshipRows()) };
 }
 
 /**

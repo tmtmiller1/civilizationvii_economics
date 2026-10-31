@@ -20,13 +20,26 @@ export function relationRow(relations, a, b) {
 }
 
 /**
- * A relationship level as a number: the row's own reading when the glue has it, else a stand-in by level name.
+ * A relationship level as a number: the row's own reading when the glue has it, else a stand-in by level name at
+ * the middle of the game's band (Friendly 30 to 60, Unfriendly -60 to -30, war read as Hostile's top).
  * @param {Relation | null} row
  * @param {RelationLevel} level
  */
 export function levelNumber(row, level) {
   if (row && Number.isFinite(row.levelNum)) return /** @type {number} */ (row.levelNum);
-  return { war: -30, unfriendly: -15, neutral: 0, friendly: 20, unmet: 0 }[level] ?? 0;
+  return { war: -60, unfriendly: -45, neutral: 0, friendly: 45, unmet: 0 }[level] ?? 0;
+}
+
+/**
+ * The Friendly line and the top of Hostile for this game: the engine's bands when the session read them
+ * (relationshipBands in econ-params.js), else STAKE's numbers.
+ * @param {TurnContext} ctx
+ */
+export function bandsOf(ctx) {
+  const params = ctx.params || {};
+  return { friendlyLevel: Number.isFinite(params.friendlyLevel) ? /** @type {number} */ (params.friendlyLevel)
+    : STAKE.friendlyLevel, hostileLevel: Number.isFinite(params.hostileLevel)
+    ? /** @type {number} */ (params.hostileLevel) : STAKE.hostileLevel };
 }
 
 /**
@@ -70,7 +83,7 @@ export function stakeOf(f) {
 function hostileTo(ctx, ai, host) {
   const row = relationRow(ctx.relations, ai, host);
   const level = relationLevel(ctx.relations, ai, host);
-  if (level === "unfriendly" && levelNumber(row, level) <= STAKE.hostileLevel) return true;
+  if (level === "unfriendly" && levelNumber(row, level) <= bandsOf(ctx).hostileLevel) return true;
   for (const other of ctx.civs) {
     if (other.id === ai || other.id === host || other.alive !== true) continue;
     const allied = relationRow(ctx.relations, ai, other.id)?.allied === true;

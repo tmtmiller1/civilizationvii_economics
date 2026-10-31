@@ -128,13 +128,42 @@ export const INVEST = { goldPerProgress: 3, term: 25, projectMille: 50, roleProj
 // AI-PLAN 4.5: the stake score (the terms of stakeOf in econ-stake.js) and the rules on it. An AI invests from what
 // it holds above its reserve in the host with the best stake of 8 or more, 3 to 8 turns of income rising with the
 // stake, one open investment per host; aids a host with a stake of 10 or more that's in default, in Depression, or
-// at war with the AI's enemy and short, sized to buy it back to Friendly (a working level of 20; the engine's own
-// threshold is unread) within 5 turns of income, once per 15 turns per host; lends to a civ with a reputation of 50
-// or more and a stake of 0 or more. Hostile is a level at or under -20 (a working number too).
+// at war with the AI's enemy and short, sized to buy it back past the Friendly line within 5 turns of income, once per
+// 15 turns per host; lends to a civ with a reputation of 50 or more and a stake of 0 or more. The Friendly line and
+// the top of Hostile come from the game's DiplomacyPlayerRelationships rows times its relationship scale (30 and -60
+// in 1.5.0: relationshipBands), read once a session; friendlyLevel and hostileLevel here stand in when that read
+// fails. Lab readings (the ninth run) had Neutral up to 30 and Friendly from 31.
 export const STAKE = { levelDiv: 3, perRoute: 3, routesMax: 9, allied: 6, sharedEnemy: 4, neighbourPlots: 20,
-  neighbour: 3, agendaDiv: 2, growing: 3, hostile: -6, hostileLevel: -20, repDiv: 10, investMin: 8,
+  neighbour: 3, agendaDiv: 2, growing: 3, hostile: -6, hostileLevel: -60, repDiv: 10, investMin: 8,
   investTurnsMin: 3, investTurnsMax: 8, investTurnsPerStake: 0.5, aidMin: 10, aidEveryTurns: 15, aidIncomeTurns: 5,
-  friendlyLevel: 20, lendRepMin: 50, lendStakeMin: 0, offerEveryTurns: 10 };
+  friendlyLevel: 30, lendRepMin: 50, lendStakeMin: 0, offerEveryTurns: 10 };
+
+/**
+ * The relationship bands the stake reads (AI-PLAN 4.5): the Friendly line is PLAYER_RELATIONSHIP_FRIENDLY's
+ * MinRelationship and the top of Hostile is PLAYER_RELATIONSHIP_HOSTILE's MaxRelationship, both times the game's
+ * DIPLOMACY_RELATIONSHIP_CHARACTERISTIC_SCALE (30 in 1.5.0, so 30 and -60; the ninth run read Neutral up to 30 and
+ * Friendly from 31). A row another mod changed is read as it stands; a missing row or scale leaves STAKE's number.
+ * @param {unknown} rows GlobalParameters as { Name: Value } or [{ Name, Value }]
+ * @param {unknown} bands DiplomacyPlayerRelationships rows, each with its type, MinRelationship and MaxRelationship
+ * @returns {{ friendlyLevel: number, hostileLevel: number }}
+ */
+export function relationshipBands(rows, bands) {
+  /** @type {unknown} */
+  let scaleValue;
+  const name = "DIPLOMACY_RELATIONSHIP_CHARACTERISTIC_SCALE";
+  if (Array.isArray(rows)) scaleValue = rows.find((row) => row && row.Name === name)?.Value;
+  else if (rows && typeof rows === "object") scaleValue = /** @type {Record<string, unknown>} */ (rows)[name];
+  const scale = Number(scaleValue);
+  /** @param {string} type @param {string} field @param {number} fallback */
+  const edge = (type, field, fallback) => {
+    if (!Number.isFinite(scale) || scale <= 0 || !Array.isArray(bands)) return fallback;
+    const row = bands.find((b) => b && b.DiplomacyPlayerRelationshipType === type);
+    const value = Number(row?.[field]);
+    return Number.isFinite(value) ? value * scale : fallback;
+  };
+  return { friendlyLevel: edge("PLAYER_RELATIONSHIP_FRIENDLY", "MinRelationship", STAKE.friendlyLevel),
+    hostileLevel: edge("PLAYER_RELATIONSHIP_HOSTILE", "MaxRelationship", STAKE.hostileLevel) };
+}
 
 // DESIGN 4.11, in basis points (1/10000) so every weight is an integer: E starts at 10000 (1.0) and L at 0, and
 // war declared, -0.02, is -200. k is the Business cycle option; s the world stage scale (DESIGN 4.15). Leverage is

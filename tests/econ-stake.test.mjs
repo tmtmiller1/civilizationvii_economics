@@ -6,7 +6,7 @@ import { lenderGate, levelNumber, stakeFacts, stakeFor, stakeOf } from "../ui/ec
 import { viewContext } from "../ui/econ-view-model.js";
 import { emptyLedger } from "../ui/econ-state.js";
 import { emptyMarkets } from "../ui/econ-markets.js";
-import { civ, input } from "./_fixtures.mjs";
+import { PARAMS, civ, input } from "./_fixtures.mjs";
 
 const base = { levelNum: 0, routes: 0, allied: false, sharedEnemy: false, distance: null, agenda: 0, growing: false,
   hostile: false, repPoints: 100 };
@@ -39,11 +39,14 @@ test("the facts come from the relation row the glue read, with stand-ins when it
   assert.equal(stakeFor(ctx, 6, 9), stakeOf(stakeFacts(ctx, 6, 9)));
   assert.equal(ctx.stakes.get("6:9"), stakeFor(ctx, 6, 9), "read once per pair per turn");
   assert.deepEqual([levelNumber(null, "friendly"), levelNumber(null, "unfriendly"), levelNumber(null, "war"),
-    levelNumber({ a: 1, b: 2, level: "neutral", levelNum: 7 }, "neutral")], [20, -15, -30, 7]);
+    levelNumber({ a: 1, b: 2, level: "neutral", levelNum: 7 }, "neutral")], [45, -45, -60, 7]);
   const hostile = viewContext(input({ civs: [civ(6), civ(9)], relations: [{ a: 6, b: 9, level: "unfriendly",
-    levelNum: -25 }] }));
-  assert.equal(stakeFacts(hostile, 6, 9).hostile, true, "Hostile: a level at or under -20");
-  const mild = viewContext(input({ civs: [civ(6), civ(9)], relations: [{ a: 6, b: 9, level: "unfriendly", levelNum: -5 }] }));
+    levelNum: -65 }] }));
+  assert.equal(stakeFacts(hostile, 6, 9).hostile, true, "Hostile: a level at or under -60, the game's band");
+  const read = viewContext(input({ civs: [civ(6), civ(9)], relations: [{ a: 6, b: 9, level: "unfriendly",
+    levelNum: -40 }], params: { ...PARAMS, hostileLevel: -35 } }));
+  assert.equal(stakeFacts(read, 6, 9).hostile, true, "the session's read band wins over STAKE's number");
+  const mild = viewContext(input({ civs: [civ(6), civ(9)], relations: [{ a: 6, b: 9, level: "unfriendly", levelNum: -40 }] }));
   assert.equal(stakeFacts(mild, 6, 9).hostile, false);
 });
 

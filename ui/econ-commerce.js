@@ -24,7 +24,7 @@ import { isInDepression } from "./econ-macro.js";
 import { aiHostRefusal, openInvestment, investRefusal } from "./econ-invest-open.js";
 import { reserveOf } from "./econ-distress.js";
 import { inDistress, isInsolventCiv } from "./econ-shortfall.js";
-import { levelNumber, relationRow, stakeFor } from "./econ-stake.js";
+import { bandsOf, levelNumber, relationRow, stakeFor } from "./econ-stake.js";
 
 /**
  * Snapshot (step 1): the prices from this turn's market read, and each civ's income mark.
@@ -465,8 +465,8 @@ function needsAid(ctx, civ, host, key) {
 }
 
 /**
- * What buys the host back to Friendly: the points short of the working Friendly level (1 at the least, the 10 one
- * gift can give at most) at the aid's rate, within 5 turns of the giver's income and its funds, in whole Gold.
+ * What buys the host back to Friendly: the points that take it past the game's Friendly line (1 at the least, the 10
+ * one gift can give at most) at the aid's rate, within 5 turns of the giver's income and its funds, in whole Gold.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  * @param {Civ} host
@@ -474,7 +474,7 @@ function needsAid(ctx, civ, host, key) {
 function aidSize(ctx, civ, host) {
   const row = relationRow(ctx.relations, civ.id, host.id);
   const level = levelNumber(row, relationLevel(ctx.relations, civ.id, host.id));
-  const points = Math.max(1, Math.min(INVEST.maxRelationship, Math.ceil(STAKE.friendlyLevel - level)));
+  const points = Math.max(1, Math.min(INVEST.maxRelationship, Math.floor(bandsOf(ctx).friendlyLevel - level) + 1));
   const perTurn = Math.max(INVEST.minHostIncomeCents, incomeOf(ctx, host.id));
   let cents = Math.ceil((points * tenthsFor("general", true) * perTurn) / 10);
   // relationshipGain rounds down, so a Gold more where the arithmetic falls short of the points.

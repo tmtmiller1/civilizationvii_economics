@@ -371,6 +371,22 @@ export function readRelations(majors) {
   return out;
 }
 
+/**
+ * The game's DiplomacyPlayerRelationships rows (type and band edges), for relationshipBands; [] when unreadable.
+ * @returns {{ DiplomacyPlayerRelationshipType: string, MinRelationship: number, MaxRelationship: number }[]}
+ */
+export function readRelationshipRows() {
+  return safe(() => {
+    /** @type {{ DiplomacyPlayerRelationshipType: string, MinRelationship: number, MaxRelationship: number }[]} */
+    const rows = [];
+    for (const row of GameInfo.DiplomacyPlayerRelationships) {
+      rows.push({ DiplomacyPlayerRelationshipType: String(row.DiplomacyPlayerRelationshipType),
+        MinRelationship: Number(row.MinRelationship), MaxRelationship: Number(row.MaxRelationship) });
+    }
+    return rows;
+  }, []);
+}
+
 /** The GlobalParameters rows as { Name: Value }, for engineLines. */
 export function readGlobalParameters() {
   return safe(() => {

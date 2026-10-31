@@ -828,6 +828,7 @@ Ottomans to Goryeo into the ledger. No invariant line in `UI.log`.
 | E.1 | An AI that's Unfriendly with the player (a stake under 0) makes no loan offer on the Loans tab's borrow form, and comes back once Neutral | a game where an AI dislikes the player | `ui/econ-stake.js` `lenderGate`, `ui/econ-lenders.js` `declines` |
 | E.2 | An AI allied with another, or sharing an enemy at war with it, invests in it ahead of a richer neutral neighbour | Modern, an alliance or a shared war | `ui/econ-stake.js` `stakeFacts` |
 | E.3 | An offer the player declined isn't made again for 10 turns, then comes back | a player declining an AI offer | `ui/econ-commerce.js` `investSpec` |
+| E.4 | A pair the game shows as Hostile reads under -60 in the drive log's `rel` column and the AI's stake in that civ drops by 6; a Friendly pair reads above 30 (the ninth run saw 31 to 44) | a game with a Hostile pair | `ui/econ-params.js` `relationshipBands`, `ui/econ-stake.js` `bandsOf` |
 
 ## Owed: AI plan stage D
 

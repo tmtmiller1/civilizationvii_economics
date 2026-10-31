@@ -21,7 +21,7 @@ input = {
   civs: [civ, ...],                // every major civ that has ever been alive this game (dead ones with alive: false)
   relations: [{ a, b, level }],    // one row per pair that has met, either order; see levels below
   requests: [request, ...],        // the local player's asks since the last turn, in the order made
-  params: { amenityLineCents, disbandLineCents },   // engineLines(GlobalParameters rows), read once
+  params: { amenityLineCents, disbandLineCents, goldPerPointCents, friendlyLevel, hostileLevel },  // read once
   options: { loans, guard, ai, rates, stages, taxFallback }  // from the setup parameters (DESIGN 8)
 }
 ```

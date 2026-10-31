@@ -282,6 +282,9 @@ declare global {
     disbandLineCents?: number | null;
     /** GOLD_PURCHASE_MULTIPLIER in cents: the game's Gold price of a point of production (DESIGN 4.17 the plan). */
     goldPerPointCents?: number | null;
+    /** The game's Friendly line and the top of Hostile (relationshipBands); absent reads STAKE's numbers. */
+    friendlyLevel?: number;
+    hostileLevel?: number;
   }
 
   interface PlanRequest { kind: string; [field: string]: unknown }

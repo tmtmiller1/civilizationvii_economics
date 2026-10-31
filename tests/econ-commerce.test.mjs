@@ -361,8 +361,8 @@ test("AI aid (AI-PLAN 4.5): to a host with a stake of 10 in default, sized to bu
   const inDefault = { ...emptyLedger(), nextId: 2, loans: [{ id: "L1", kind: "loan", lender: "bond", borrower: OTHER,
     principal: 100, outstanding: 100, ratePpm: 20000, term: 10, paid: 0, missed: 3, state: "default",
     emergency: false, restructured: false, opened: 1, closedTurn: null, writtenOff: 0, source: "borrow" }] };
-  // Friendly at 30 is a stake of 10; already past the working Friendly level of 20, so the gift is the one point's
-  // worth: 2.5 turns of the host's income.
+  // Friendly at 30 is a stake of 10 and sits on the game's Friendly line, so the gift is the one point that takes it
+  // past: 2.5 turns of the host's income.
   const relations = [{ a: AI, b: OTHER, level: "friendly", levelNum: 30 }];
   const civs = [ai(AI, { stages: {} }), ai(OTHER, { balanceCents: 10000, stages: {} })];
   const out = plan({ civs, relations, ledger: inDefault });
@@ -375,7 +375,7 @@ test("AI aid (AI-PLAN 4.5): to a host with a stake of 10 in default, sized to bu
   assert.equal(later.transfers.some((t) => t.reason === "invest"), true);
   const cold = plan({ civs, relations: [{ a: AI, b: OTHER, level: "neutral", levelNum: 8, routes: 3 }], ledger: inDefault });
   const gift = cold.transfers.find((t) => t.reason === "invest");
-  assert.equal(gift?.cents, 50000, "a stake of 11.7 at level 8: 12 points to Friendly, 10 at most, 25 turns of the host's income capped at 5 of the giver's");
+  assert.equal(gift?.cents, 50000, "a stake of 11.7 at level 8: 23 points past the Friendly line, 10 at most, 25 turns of the host's income capped at 5 of the giver's");
   const weak = plan({ civs, relations: [{ a: AI, b: OTHER, level: "neutral", levelNum: 20 }], ledger: inDefault });
   assert.equal(weak.transfers.some((t) => t.reason === "invest"), false, "a stake of 6.7: under 10");
   const solvent = plan({ civs, relations });
