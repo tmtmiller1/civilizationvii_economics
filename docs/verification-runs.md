@@ -40,7 +40,7 @@ Exploration seed 9001 are the probe run's seeds.
 | 2.3 | Repay all or half: the next payment takes the extra and the loan closes early, with a `closed` line in the Treasury flows (2026-10-30, B2: repay half watched (35.00 to 12.50 outstanding); repay all and the closed line owed) | same | `ui/econ-requests.js` `addExtra` |
 | 2.4 | Spend to 0 and miss three payments in a row: three miss notices with the climbing rate, Influence -5 each, then the default notice; the garnish lines show each turn; the lender refuses a new loan for the age | same | `ui/econ-plan.js` `recordMiss`, `garnishOne` |
 | 2.5 | Restructure an overdue loan: the preview shows the 10-turn schedule, after confirming the next payment is the smaller one, a second restructure button is greyed; with income at or below 0 the refusal names it | same | `ui/econ-view-loans.js` `restructureConfirm`, `ui/econ-requests.js` `restructureLoan` |
-| 2.8 | Lend to an AI in shortfall with positive income: it accepts by rule, the player's balance falls by `P` and rises each turn; an AI with income at or below 0 declines with the reason in the notice (2026-10-30, B: the decline with its reason watched (no AI was short); the accept side owed) | Exploration 4242 | `ui/econ-requests.js` `lendRefusal`, `ui/econ-ai.js` `aiAccepts` |
+| 2.8 | Lend to an AI in shortfall with positive income: it accepts by rule, the player's balance falls by `P` and rises each turn; an AI with income at or below 0 declines with the reason in the notice (2026-10-30, B: the decline with its reason watched (no AI was short); 2026-10-31, the fifth run: the accept side watched four times on the Ottomans, through the queue; the click on the Lend form is still owed) | Exploration 4242 | `ui/econ-requests.js` `lendRefusal`, `ui/econ-ai.js` `aiAccepts` |
 
 ### Phase 3: guard
 
@@ -637,7 +637,7 @@ and restructure below was the AI rule's own decision.
   player's loan (2.8). The engine wipes a negative balance while income is positive (P4), so the projected dip only
   comes with income at or below 0; and an AI whose payments run past its balance plus income is already past the 35
   percent service limit, so any standard loan is refused. Offline: an AI at 0 Gold, income +20, 36 due, missed and
-  borrowed nothing. The owner's call.
+  borrowed nothing. Answered by the distress read of AI-PLAN 4.1 (stage A, the fifth run below).
 
 ## Watched 2026-10-31, fourth run (the engine's script surface and `scaleAiPreference`)
 
@@ -656,6 +656,57 @@ Three short Modern games (seed 4242, `--setup fast --quick`, the usual mod set, 
 
 Lab stopped and restored after each game; registry unchanged. Readings in `~/.tower-bench/runs/2026-10-31T13-40-08`,
 `T14-04-19` and `T14-09-18` (about 630 MB together), scripts and logs under `mod_ideas_tested/economics/devtools/`.
+
+## Watched 2026-10-31, fifth run (AI plan stage A: the distress read, refinancing, short payments, the garnish floor)
+
+Two lab games, seed 4242, Modern, `--setup fast,ECONOMICS_STAGES=ECONOMICS_STAGES_OFF --quick`, the usual mod set,
+the stage A build (commit `2b99755`, then the dues fix below) copied into `Mods/economics` for the runs (the 0.5.4
+copy is kept in `_backups/econ-stage-a-2026-10-31/`). A per-turn script
+(`mod_ideas_tested/economics/devtools/econ-stage-a-sample.js`) wrote four situations into the live ledger at turn 2
+and then emptied the treasuries each turn: Persia and the human seat with a 3-turn bond loan whose slice is 1.5
+turns of income; the Ottomans the same, with the seat's loan for 0.3 turns of income queued before each batch;
+Hawai'i with a 3-turn loan of 13 turns of income, past its credit cap; Goryeo with a bond loan already in default
+and 4.61 Gold left (the first AI watch run's turn-40 figure). Run 1: 20 turns (`~/.tower-bench/runs/2026-10-31T18-05-48`);
+run 2, after the fix: 10 turns (`2026-10-31T18-14-00`). Drive logs, the per-turn dumps and `UI.log` are under
+`mod_ideas_tested/economics/devtools/probe-runs/2026-10-31-stage-a/`. No invariant line in either `UI.log`.
+
+- A short AI with income above 0 takes a refinancing loan before its payment (AI-PLAN 4.1): Persia, run 1 turns 3
+  to 5 (L12, L15, L18 from the bond market, `refinance` events with the dues and funds), Hawai'i turns 5 and 9 to 11
+  once its outstanding came under its cap (L19, L21 to L23), and run 2 Persia turn 4 (L11, 71.44 Gold) and Hawai'i
+  turns 5 and 6. The loans carry `source: refinance`, 10 turns, not emergency.
+- The player's loan to a short AI is accepted on the credit cap alone: run 1 turns 3 to 6, the seat's 14.86, 14.91,
+  15.00 and 15.00 Gold to the Ottomans each opened as `lend` (L11, L13, L16, L20) while the Ottomans' dues passed
+  their funds; at turns 7 and 8 the request was refused `loan-limit` (six open). In run 2 the Ottomans weren't
+  short and every offer was `declined`, as the rule says.
+- Short payments pay what there is (AI-PLAN 4.1): Hawai'i, over its cap, paid 191.33 of 518.41 Gold on L9 at turn
+  3 and 327.08 joined the loan (`miss` with `paid`, `due`, `capitalised`; `short` event `credit-cap`), then 77.00 of
+  519.57 at turn 4; the Ottomans, with nothing in hand, paid 0 (the plain miss). The human seat's notice at run 1
+  turn 4 read `paid 13881, due 14007, short 126` on L6, and its `refinance` notice carried the amount, the lender
+  and the dues.
+- A default closes: Goryeo's 4.61 Gold took the 1 Gold floor each turn (4.61, 3.61, 2.61, 1.61) and closed at turn 6
+  with 0.61 forgiven, in both runs. The Ottomans' L11 (defaulted at turn 6 on the seat's loan, 15.26 Gold) was
+  garnished 1.53, 1.38, 1.24 and then the 1 Gold floor, and closed at turn 19 with 0.99 forgiven. The seat got the
+  `defaulted-on` and `restructure-ask` notices.
+- Found and fixed between the runs: in run 1 a refinanced civ still came up short by its slump charge, to the
+  cent (Persia turn 3: 2.73 short, the cycle charge 2.73; the seat turn 4: 1.26 and 1.26). The cycle's charge, the
+  plan's take and erosion come off a payer's funds before its loans, and the dues read left them out. They're in it
+  now (`econ-distress.js` `macroDues`), and run 2 had no miss on a turn a civ refinanced (run 1 had three).
+- Not a defect, noted: the Ottomans' balance stayed below 0 for four turns with income above 0 (-401, -281, -161,
+  -39), so the engine's negative-balance wipe (P4, watched on the human seat) didn't apply to that AI. The hole was
+  the script's own (run 1 emptied a lender's treasury before the build loans it had just made went out); run 2
+  empties to the batch's own expectation and had no such hole.
+- Aid clearing a default to the giver wasn't driven: no AI was Friendly with a civ in default to it in these runs
+  (owed below).
+
+## Owed: AI plan stage A
+
+Built 2026-10-31 (commit `2b99755` and the dues fix). The rules above were watched; these weren't.
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| A.1 | An AI Friendly with a civ in default to it sends aid: the Treasury flows read "Aid from X cleared N Gold of Ln", the defaulted loan closes or shrinks by that much, and only the rest lands as Gold | Modern 4242, the AI watch probe's Ottomans drain, the lender Friendly with them | `ui/econ-invest-open.js` `aidClearing` |
+| A.2 | The player's own aid to a civ in default to the player: the confirmation's Gold leaves only for the part sent, the notice reads "N Gold of it cleared the debt" | same, a player loan defaulted on | `ui/econ-invest-open.js` `openInvestment` |
+| A.3 | The human's guard refinancing with a civ lender (a civ's principal counting the same turn, NOTES 120): the seat short with the bond market closed (civ lenders only, a Tribute system) | Modern, the seat under Despotism | `ui/econ-batch.js` `principalIn` |
 
 ## Owed: whole-Gold payments
 

@@ -207,6 +207,19 @@ test("a Planned importer pays the class price; the plan turns 20% of income into
   assert.ok(out.notices.length === 0 || out.notices.every((n) => n.pid === ME));
 });
 
+test("the distress read counts the turn's own macro charges: a Planned AI refinances the plan's take too", () => {
+  // Income 10, 12 due on L1, the plan takes 2 before the loan: the gap is 4, not 2 (the stage A watch run's miss).
+  const owed = makeLoan({ id: "L1", lender: "bond", borrower: AI, principal: 10000, ratePpm: 20000, term: 10, turn: 1 });
+  const ledger = { ...emptyLedger(), nextId: 2, loans: [owed] };
+  const civs = [me(), ai(AI, { ideology: "IDEOLOGY_COMMUNISM", balanceCents: 0, incomeCents: 1000,
+    cities: [{ id: "6:1", build: "B", neededProgress: 100, population: 3 }] }), ai(OTHER, { balanceCents: 300000 })];
+  const out = plan({ civs, ledger, options: { loans: true, cycle: "off" } });
+  const refinance = out.events.find((e) => e.kind === "refinance");
+  assert.deepEqual([refinance.cents, refinance.dues], [400, 1400], "2 of plan and 12 of loan against 10");
+  assert.deepEqual(out.transfers.filter((t) => t.loanId === "L1").map((t) => [t.cents, t.parts.short]), [[1200, 0]]);
+  assert.deepEqual(out.influence, [], "no miss");
+});
+
 test("citizen loans: offered to a Civic market civ within citizen_cap; the interest comes back 6-fold as celebration", () => {
   const cr = (over = {}) => me({ government: "GOVERNMENT_CLASSICAL_REPUBLIC", incomeCents: 30000,
     commerceSettlements: 2, happinessCents: 600, ...over });
