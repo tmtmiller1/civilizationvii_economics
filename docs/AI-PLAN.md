@@ -201,6 +201,11 @@ stake = relationship level / 3                     -10 to 10
 - Lend to a short civ when it isn't blocked, its `creditRep` is 50 or more, and the stake is 0 or more; cheaper by
   stake (Friendly already pays 0.8 of the base rate, 4.3).
 
+Decided 2026-10-31 (the owner, after the tenth watch run): a giver in a Depression of its own doesn't aid. A world Depression put every civ in one at once, so every pair with a stake
+of 10 aided each other within two turns while the index stood still (aid isn't a cycle event). What lifts a world
+Depression is open: a Public Works policy card that spends Gold into builds through the progress account and counts
+as an income event on the index is the shape that fits the native levers; the owner decides.
+
 Built 2026-10-31 (stage E, NOTES choices 133 to 135): the stake read per pair, investment and aid on it, the lending
 gate, the timers gone (an offer to the player isn't repeated for 10 turns, and aid keeps its 15 turns per host).
 

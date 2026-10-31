@@ -287,9 +287,13 @@ test("the AI's citizen rule: a Civic market AI short of 10 turns of income borro
 
 test("the AI aids a host with a stake of 10 in its own Depression; a Neutral host is invested in by its stake", () => {
   const relations = [{ a: AI, b: OTHER, level: "friendly", levelNum: 30 }];
-  const civs = [ai(AI), ai(OTHER, { balanceCents: 0 })];
-  const aid = plan({ civs, relations, macro: macroWith({ e: 7500 }) });
+  const civs = [ai(AI, { stages: OPEN_MACRO }), ai(OTHER, { stages: OPEN_MACRO, balanceCents: 0 })];
+  // The host's own Depression (the world Steady at 0.95, its offset -0.20 before the turn's decay, 0.79 after); a
+  // world Depression would put the giver in one too, and a giver in a Depression doesn't give (choice 139).
+  const aid = plan({ civs, relations, macro: macroWith({ e: 9500, l: { [String(OTHER)]: -2000 } }) });
   assert.ok(aid.events.some((e) => e.kind === "invest" && e.aid === 1 && e.borrower === OTHER));
+  const world = plan({ civs, relations, macro: macroWith({ e: 7500 }) });
+  assert.equal(world.events.some((e) => e.kind === "invest" && e.aid === 1), false, "a world Depression: nobody outside it to give");
   const calm = plan({ civs, relations });
   assert.equal(calm.events.some((e) => e.kind === "invest" && e.aid === 1), false);
   const city = { id: "9:1", build: "BUILDING_LIBRARY", neededProgress: 200 };

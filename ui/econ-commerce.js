@@ -438,7 +438,7 @@ function fightsBeside(ctx, civ, host) {
  * @param {Civ} civ
  */
 export function aiAid(ctx, civ) {
-  if (!ctx.options.investment || !(civ.incomeCents > 0)) return;
+  if (!ctx.options.investment || !canGiveAid(ctx, civ)) return;
   for (const { host } of hostsByStake(ctx, civ, STAKE.aidMin)) {
     const key = `${civ.id}-${host.id}`;
     if (!needsAid(ctx, civ, host, key)) continue;
@@ -450,6 +450,17 @@ export function aiAid(ctx, civ) {
     ctx.markets.aidTurns[key] = ctx.turn;
     return;
   }
+}
+
+/**
+ * Whether the AI is in a position to give (decided 2026-10-31, the owner): income above 0 and not in a Depression
+ * of its own. The tenth run of 2026-10-31 had every AI aiding every other within two turns of a world Depression,
+ * each in the same hole as the civ it helped.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ */
+function canGiveAid(ctx, civ) {
+  return civ.incomeCents > 0 && !isInDepression(ctx, civ.id);
 }
 
 /**

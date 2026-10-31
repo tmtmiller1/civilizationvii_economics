@@ -9,6 +9,7 @@ import { planTurn } from "../ui/econ-plan.js";
 import { checkPlan } from "../ui/econ-invariants.js";
 import { emptyLedger } from "../ui/econ-state.js";
 import { emptyMarkets } from "../ui/econ-markets.js";
+import { emptyMacro } from "../ui/econ-macro-state.js";
 import { makeInvestment } from "../ui/econ-invest.js";
 import { OPEN_ALL, civ, input } from "./_fixtures.mjs";
 
@@ -382,4 +383,21 @@ test("AI aid (AI-PLAN 4.5): to a host with a stake of 10 in default, sized to bu
   assert.equal(solvent.transfers.some((t) => t.reason === "invest"), false, "only to a civ in default");
   const offOption = plan({ civs, relations, ledger: inDefault, options: { investment: false } });
   assert.equal(offOption.transfers.some((t) => t.reason === "invest"), false);
+});
+
+test("a giver in a Depression of its own sends no aid; one outside it aids a host in one (decided 2026-10-31)", () => {
+  const inDefault = { ...emptyLedger(), nextId: 2, loans: [{ id: "L1", kind: "loan", lender: "bond", borrower: OTHER,
+    principal: 100, outstanding: 100, ratePpm: 20000, term: 10, paid: 0, missed: 3, state: "default",
+    emergency: false, restructured: false, opened: 1, closedTurn: null, writtenOff: 0, source: "borrow" }] };
+  const relations = [{ a: AI, b: OTHER, level: "friendly", levelNum: 38 }];
+  const civs = [ai(AI, { stages: {} }), ai(OTHER, { balanceCents: 10000, stages: {} })];
+  assert.equal(plan({ civs, relations, ledger: inDefault }).transfers.some((t) => t.reason === "invest"), true, "flush and steady: aid");
+  const depression = { ...emptyMacro(), cycle: { ...emptyMacro().cycle, e: 7000 } };
+  const low = plan({ civs, relations, ledger: inDefault, macro: depression, options: { cycle: "standard" } });
+  assert.equal(low.transfers.some((t) => t.reason === "invest"), false, "a world Depression: the giver is in it too");
+  const hostOnly = { ...emptyMacro(), cycle: { ...emptyMacro().cycle, e: 9500, l: { [String(OTHER)]: -2000 } } };
+  const open = [ai(AI, { stages: OPEN_ALL }), ai(OTHER, { stages: OPEN_ALL, balanceCents: 10000 })];
+  const out = plan({ civs: open, relations, macro: hostOnly, options: { cycle: "standard" } });
+  assert.equal(out.macro.cycle.phases[String(OTHER)], "depression");
+  assert.equal(out.transfers.some((t) => t.reason === "invest"), true, "the host's own Depression, the giver Steady: aid");
 });
