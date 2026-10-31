@@ -666,6 +666,53 @@ with Gentle kept as it was. In the Node simulation (7 games, 300 turns), Volatil
 income, best +27%, the world in Depression 5% of turns, Slump 24%, Boom 21%, floors 0.51 to 0.69 and ceilings 1.14 to
 1.27 across games, two Panics a game, no defaults (NOTES 118).
 
+### 4.11a Depressions: what happens today, and a way out (proposed 2026-10-31, nothing built)
+
+What the model does once the world is under 0.80, read from the code and the runs of 2026-10-31:
+
+- How it gets there. Only events and the world's own income move `E`; the tenth run's Depression came "after credit
+  growing fast and the world's income growing slower than usual" on top of three defaults (-0.03 each) from the
+  loans the probe wrote, with Volatile's momentum (0.8) carrying each fall into the next turn. The 0.5.3 balance run
+  put the world in Depression 5% of turns on Volatile with floors of 0.51 to 0.69; Gentle never got there.
+- How it gets out. Reversion alone: 10% of the gap a turn, so 0.77 is 0.79 next turn and 0.81 the turn after unless
+  momentum and new events hold it down. The only positive events are peace (+0.01), a new route (+0.005), income above
+  its trend (up to +0.01) and credit growing fast (+0.015). Nothing a civ chooses lifts the index.
+- What it does to a civ meanwhile, all of it pro-cyclical. The cycle charge takes `(E + L - 1) * g * income` a turn
+  (at 0.77 on Volatile, 23% of income), which feeds the "income growing slower" reading next turn. The bond spread is
+  `2 - (E + L)`, so credit costs 1.23x when it's needed most, and a Panic freezes the civ lenders. Prices follow `E`
+  down. Emigration adds push, Partisans hardship. The guard and the refinancing rule still work, so the mod borrows
+  for a civ's dues at the dearer rate.
+- What the aid rule did (fixed in choice 139): a world Depression put every civ in one, so every pair with a stake of
+  10 aided each other, 2,800 Gold in two turns, and the index stood still, since aid isn't an event.
+
+Three levers, in the order they'd be built. Each is a few numbers; the first two are model-only.
+
+1. The bank steps in. While the world is in Depression the bond spread floors at 1.0 (`cycle_spread = max(1, ...)`
+   for a civ whose phase is Depression) and the Panic freeze doesn't start or ends early. Counter-cyclical credit
+   where today it's pro-cyclical. Cost to the model: one clamp and one condition.
+2. A floor on the cycle charge in Depression: the charge is capped at `g * income * 0.1` a turn below 0.80, so a
+   Depression stops eating the income reading that keeps it there. Same shape as the legacy cushion (4.16), which
+   already cuts a civ's own `L` by up to 35% through old buildings and warehouses.
+3. Public Works, one policy card per age, the Keynesian lever, native first. The card is an ordinary tradition like
+   the tax cards (4.7, `econ-tax-cards.sql`'s pattern: unlocked on the age's root civic, in the game's own policy
+   slot, never a slot of its own), with native yields the AI plays by itself: +10% Production in every settlement for
+   -2 Gold a settlement in Antiquity, +10% and -4 in Exploration, +15% and -8 in Modern (`EFFECT_CITY_ADJUST_YIELD`,
+   the same effect the tax cards use for Gold and Happiness). The AI's card pass takes it through a strategy row
+   that favours it while the civ's phase is Slump or Depression, the way `STRATEGY_ECONOMICS_SHORT_OF_GOLD` steers
+   the tax cards. The script side is one event: a civ holding the card weighs `+0.01` a turn on its own `L` and
+   `+0.0025` on the world, the world part only while `E` is under 0.95 and capped at `+0.01` a turn across all
+   holders, so stimulus pulls toward Steady and never past it (a constant world weight `w` settles `E` at
+   `1 + w / 0.1`, which is why it has to stop at the line). With `L` decaying at 0.8 the civ's own lift settles at
+   +0.05, enough to take a civ at 0.77 to Steady three to four turns ahead of reversion alone, and the Gold it costs
+   is the deficit spending, shown on the Fiscal tab beside the tax cards. One card per age because the game's cards
+   are per age and the production and Gold figures scale with it; the same text and icon for all three.
+
+What stays open for the owner: whether the card should also spend Gold into builds through the progress account
+(the Planned economy's mechanism, 4.17), which would double-count with the native production bonus, so the proposal
+keeps the yields native and the index pull in the script; and whether a narrative event ("the bank steps in", a
+one-off grant from the bond market at a Depression's floor) is wanted on top, which would be the game's event data
+plus a `grantYield` from the world account.
+
 ### 4.12 Foreign investment
 
 | | Development loan | General | Aid (either kind) |
