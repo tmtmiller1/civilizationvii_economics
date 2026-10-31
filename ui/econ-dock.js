@@ -1,6 +1,7 @@
-// econ-dock.js - Economics: the dock button that opens the Economics screen, and the status pill (DESIGN 9's
-// top-bar pill: outstanding debt, red in default). The button rides the subsystem dock (Demographics, Emigration:
-// Controls.decorate on panel-sub-system-dock, addButton with a modifier class painted through a CSS mask). The pill
+// econ-dock.js - Economics: the dock button that opens the Economics screen, and the status pills (DESIGN 9's
+// top-bar pills: the debt while there is one, red in default; the phase; inflation while it runs). The button rides
+// the subsystem dock (Demographics, Emigration: Controls.decorate on panel-sub-system-dock, addButton with a modifier
+// class painted through a CSS mask). The pill
 // sits in the resource bar, in the yield banner's own mod slot after the settlement limit
 // (panel-yield-banner.js, #yield-banner-mod-slot). Several views carry their own banner, so each banner gets its own
 // pill and a redraw updates them all.
@@ -19,7 +20,9 @@ const STYLE_ID = "econ-dock-icon-style";
 
 /** Each attached banner's slot and the pill in it. @type {Map<HTMLElement, HTMLElement>} */
 const pillNodes = new Map();
-/** @type {(() => { text: string, warning: boolean }) | null} */
+/** @typedef {{ text: string, tone: "plain" | "caution" | "warning" }} PillItem */
+/** @typedef {{ pills: PillItem[], text: string, warning: boolean }} PillState */
+/** @type {(() => PillState) | null} */
 let pillSource = null;
 /** The dock buttons drawn (one per dock the game attaches). @type {Set<HTMLElement>} */
 const dockButtons = new Set();
@@ -59,13 +62,29 @@ export function refreshDock() {
   refreshMarker();
 }
 
-/** Redraws every banner's pill from its source; called after each batch and when the screen acts. */
+/**
+ * One row of pills, each coloured on its own (DESIGN 9); an empty row when there's nothing to say.
+ * @param {{ text: string, tone: "plain" | "caution" | "warning" }[]} pills
+ */
+function pillRow(pills) {
+  const row = document.createElement("div");
+  row.className = "econ-bar-pill econ-bar-pills";
+  row.style.display = "flex";
+  row.style.alignItems = "center";
+  for (const item of pills) {
+    const node = pill(item.text, item.tone);
+    node.style.marginLeft = "0.35rem";
+    row.appendChild(node);
+  }
+  return row;
+}
+
+/** Redraws every banner's pills from their source; called after each batch and when the screen acts. */
 export function refreshPill() {
   if (!pillSource) return;
-  const { text, warning } = pillSource();
+  const { pills } = pillSource();
   for (const [slot, old] of [...pillNodes]) {
-    const fresh = pill(text, warning);
-    fresh.classList.add("econ-bar-pill");
+    const fresh = pillRow(pills);
     // The game's page has no Element.replaceWith (engine-closed); swap through the parent.
     if (old.parentNode === slot) slot.replaceChild(fresh, old);
     else slot.appendChild(fresh);
@@ -134,8 +153,7 @@ class EconomicsBannerDecorator {
       const slot = root && (root.querySelector("#yield-banner-mod-slot")
         || root.querySelector(".panel-yield__top-bar-content"));
       if (!slot) { logDebug("banner: no mod slot"); return; }
-      const node = pill("", false);
-      node.classList.add("econ-bar-pill");
+      const node = pillRow([]);
       slot.appendChild(node);
       this.slot = slot;
       pillNodes.set(slot, node);
@@ -156,7 +174,7 @@ class EconomicsBannerDecorator {
 /**
  * Registers the dock decorator; `source` gives the pill's text and colour whenever it's redrawn, `marker` the names
  * of the tabs the player hasn't opened since something new appeared on them.
- * @param {() => { text: string, warning: boolean }} source
+ * @param {() => PillState} source
  * @param {() => string[]} [marker]
  */
 export function installDock(source, marker) {

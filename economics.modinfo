@@ -203,6 +203,7 @@
                     <Item>ui/econ-depth.js</Item>
                     <Item>ui/econ-dock.js</Item>
                     <Item>ui/econ-dom.js</Item>
+                    <Item>ui/econ-pills.js</Item>
                     <Item>ui/econ-engine.js</Item>
                     <Item>ui/econ-fiscal.js</Item>
                     <Item>ui/econ-format.js</Item>

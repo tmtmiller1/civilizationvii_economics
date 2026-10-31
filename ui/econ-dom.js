@@ -243,11 +243,13 @@ export function chips(items, chosen, onPick) {
 /**
  * The red status pill (memory: status text as a red pill) for what needs attention; the plain one for a state.
  * @param {string} text
- * @param {boolean} warning
+ * @param {boolean | "plain" | "caution" | "warning"} warning red when true or "warning", amber when "caution"
  */
 export function pill(text, warning) {
-  const node = el("div", `econ-pill font-body${warning ? " econ-pill--warning" : ""}`, text);
-  const look = warning ? { border: "1px solid #FF7A66", background: "#A8201A", color: "#FFF3E3" }
+  const tone = warning === true ? "warning" : warning === false || warning === undefined ? "plain" : warning;
+  const node = el("div", `econ-pill font-body${tone === "plain" ? "" : ` econ-pill--${tone}`}`, text);
+  const look = tone === "warning" ? { border: "1px solid #FF7A66", background: "#A8201A", color: "#FFF3E3" }
+    : tone === "caution" ? { border: "1px solid #E0A24A", background: "#7A4E10", color: "#FFF3E3" }
     : { border: "1px solid #6a5a3c", background: "#302E2A", color: "#EAE0CD" };
   node.style.border = look.border;
   node.style.background = look.background;

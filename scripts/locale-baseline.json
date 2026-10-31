@@ -669,6 +669,5 @@
  "LOC_ECONOMICS_STAGE_NAME_PUBLIC_DEBT": "Public debt",
  "LOC_ECONOMICS_STAGE_NAME_GUILD_PATRONAGE": "Guild patronage",
  "LOC_ECONOMICS_STAGE_NAME_CAPITALISM": "Capitalism",
- "LOC_ECONOMICS_PILL_MACRO": "{1_Debt} · {2_Phase}",
- "LOC_ECONOMICS_PILL_MACRO_INFLATION": "{1_Debt} · {2_Phase} · {3_Rate} inflation"
+ "LOC_ECONOMICS_PILL_INFLATION": "{1_Rate} inflation"
 }

@@ -9,6 +9,7 @@ import { buildInput, displayTurn, dropRequest, economyOf, loadSession, markSeen,
   noteOpened, queueRequest, readOptions, resendLostBatch, runTurn, setGuard, stageTurnsOf, turnNow } from "./econ-session.js";
 import { captureEvent, disasterEvent, razeEvent, readPopulations } from "./econ-macro-read.js";
 import { phaseKey } from "./econ-notice-text.js";
+import { pillsFor } from "./econ-pills.js";
 import { formatRate } from "./econ-format.js";
 import { flushNotice, holdNotice, installClickHandler, nameOf } from "./econ-notify.js";
 import { stageOpenerName } from "./econ-stage-read.js";
@@ -32,23 +33,19 @@ const state = { session: null, activeTurn: -1, multiplayer: false };
 
 /**
  * The pill: the player's outstanding debt, red while any loan of theirs is in default, with the cycle's phase and
- * inflation beside it when those options are on (DESIGN 9).
+ * inflation beside it when those options are on (DESIGN 9), as separate pills, each coloured on its own.
  */
 function pillSource() {
   const session = state.session;
   const me = localId();
-  if (!session || me < 0) return { text: loc("LOC_ECONOMICS_PILL_NONE"), warning: false };
-  const inDefault = session.ledger.loans.some((loan) => loan.borrower === me && loan.state === "default");
-  const owed = outstandingOf(session.ledger, me);
-  const debt = inDefault ? loc("LOC_ECONOMICS_PILL_DEFAULT")
-    : owed > 0 ? loc("LOC_ECONOMICS_PILL", formatGold(owed)) : loc("LOC_ECONOMICS_PILL_NONE");
+  if (!session || me < 0) return { pills: [], text: "", warning: false };
   const options = readOptions(session.glue);
-  const phase = session.macro.cycle.phases[String(me)];
-  if (options.cycle === "off" || !phase) return { text: debt, warning: inDefault };
-  const pi = options.inflation ? session.macro.inflation.piPpm : 0;
-  const text = pi > 0 ? loc("LOC_ECONOMICS_PILL_MACRO_INFLATION", debt, loc(phaseKey(phase)), formatRate(pi))
-    : loc("LOC_ECONOMICS_PILL_MACRO", debt, loc(phaseKey(phase)));
-  return { text, warning: inDefault };
+  const pills = pillsFor({
+    inDefault: session.ledger.loans.some((loan) => loan.borrower === me && loan.state === "default"),
+    owedCents: outstandingOf(session.ledger, me), phase: session.macro.cycle.phases[String(me)] ?? null,
+    cycleOn: options.cycle !== "off", inflationOn: options.inflation, piPpm: session.macro.inflation.piPpm,
+  }, { loc, gold: formatGold, rate: formatRate, phaseKey });
+  return { pills, text: pills.map((p) => p.text).join(" · "), warning: pills.some((p) => p.tone === "warning") };
 }
 
 /**

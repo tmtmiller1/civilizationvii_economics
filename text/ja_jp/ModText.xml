@@ -673,7 +673,6 @@
         <Replace Tag="LOC_ECONOMICS_STAGE_NAME_PUBLIC_DEBT" Language="ja_JP"><Text>Public debt</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_STAGE_NAME_GUILD_PATRONAGE" Language="ja_JP"><Text>Guild patronage</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_STAGE_NAME_CAPITALISM" Language="ja_JP"><Text>Capitalism</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PILL_MACRO" Language="ja_JP"><Text>{1_Debt} · {2_Phase}</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PILL_MACRO_INFLATION" Language="ja_JP"><Text>{1_Debt} · {2_Phase} · {3_Rate} inflation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL_INFLATION" Language="ja_JP"><Text>{1_Rate} inflation</Text></Replace>
     </LocalizedText>
 </Database>

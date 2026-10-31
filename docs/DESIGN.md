@@ -1081,7 +1081,7 @@ price; priced at that rate since (choice 104), it's worth the Gold it takes (sec
 - Invest from the Trade tab: a civ for general, or a city for a development loan on its current build; "as aid"
   means no return. See the progress or Gold, the return and the relationship gain first.
 - Accept or decline AI offers to invest in the player's civ or builds.
-- Read: the Economics screen, a dock button, and a top-bar pill (phase, inflation, outstanding; red in default).
+- Read: the Economics screen, a dock button, and top-bar pills, each coloured on its own (decided 2026-10-31, the owner): the debt while there is one, red in default; the phase, amber in a Slump and red in a Depression or a Panic; inflation while the rate is above 0, amber from 1% a turn. Nothing is shown when there's nothing to say.
 
 ## 6. The AI
 
@@ -1202,7 +1202,7 @@ leaves the game alone.
   - Markets: prices, holders, 30-turn history.
   - Trade: settlement by partner and the cap, the bill a new route would add where P7 allows, investment targets.
   - World: `E`, phase and its events, inflation and its cause, world debt, legacy.
-- Top-bar pill: phase, inflation, outstanding; red in default.
+- Top-bar pills: the debt (red in default), the phase (amber in a Slump, red in a Depression or a Panic), inflation while it runs; each its own pill, shown only while it has something to say.
 - Turn notification: one per turn, listing the mod's changes to the player's Gold, Influence and celebration meter.
 - State: ledger envelope (records, standing history, event log, the last batch for 4.14; at most 64 KB) and markets
   envelope (prices, `E` history, tax and tariff levels, the AI's tariff peace counts, systems; at most 32 KB). Closed

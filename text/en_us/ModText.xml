@@ -709,7 +709,6 @@
         <Row Tag="LOC_ECONOMICS_STAGE_NAME_PUBLIC_DEBT"><Text>Public debt</Text></Row>
         <Row Tag="LOC_ECONOMICS_STAGE_NAME_GUILD_PATRONAGE"><Text>Guild patronage</Text></Row>
         <Row Tag="LOC_ECONOMICS_STAGE_NAME_CAPITALISM"><Text>Capitalism</Text></Row>
-        <Row Tag="LOC_ECONOMICS_PILL_MACRO"><Text>{1_Debt} · {2_Phase}</Text></Row>
-        <Row Tag="LOC_ECONOMICS_PILL_MACRO_INFLATION"><Text>{1_Debt} · {2_Phase} · {3_Rate} inflation</Text></Row>
+        <Row Tag="LOC_ECONOMICS_PILL_INFLATION"><Text>{1_Rate} inflation</Text></Row>
     </EnglishText>
 </Database>
