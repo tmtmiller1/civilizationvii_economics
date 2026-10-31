@@ -498,6 +498,26 @@ Built 2026-10-30, offline only (NOTES 118). Nothing here has been seen in a game
   .macro.cycle.e`), not 1.0.
 - SW.5 On Gentle the cycle runs as 0.5.2 did; on Mild a Panic drops the index by 0.1.
 
+## Owed: UI polish
+
+Built 2026-10-31 on the `ui-polish` branch, offline only: the fake-DOM tests in `tests/econ-views.test.mjs` and
+`tests/econ-view-tabs.test.mjs` cover the rules and the text keys, and nothing here has been seen in a game. One
+Antiquity game reaches UP.1 to UP.6 and UP.9 (Economics alone, Antiquity seed 4242, `--setup fast --quick`, the screen
+open on turn 1, again after Code of Laws and again after Moneylending); UP.7 and UP.8 are captures of the same screen
+at three window sizes.
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| UP.1 | Turn 1, Treasury tab: no Debt figure in the strip at the top, no "Owed on loans", "Loan payments due next turn" or "Share of income going to loans" rows, no debt-service scale (and no "At a glance" box when the cycle and inflation are off too), and "Next 20 turns" draws one gold line with "Balance in 20 turns" under it and no "With your loans" legend | Antiquity turn 1 | `ui/econ-view-tabs.js` `sectionsFor` (`treasury.loanFigures`), `ui/econ-view-treasury.js` `balanceProjection` |
+| UP.2 | The turn the Loans tab appears (Moneylending, an emergency loan, or a citizens' offer), the Debt figure and the Treasury tab's three loan rows, the scale and the two-line chart appear | same game, after Moneylending | same |
+| UP.3 | With Economic stages Off, turn 1's Treasury tab shows the loan rows, the scale and the two-line chart | Antiquity, Economic stages Off | same |
+| UP.4 | The Loans tab's "Your limits" reads "Most you can borrow over 10 turns" with the figure the borrow form's amount opens on, and both say the same; when the payment limit holds it back, the line under it reads "A bigger loan would push your loan payments past 50% of your income, and lenders stop there." Picking 20 turns changes the figure in both places | after Moneylending, a human seat with a low income (about 10 to 20 Gold) | `ui/econ-view-borrow.js` `borrowLimit`, `limitLines`; `ui/econ-view-loans.js` `limitsSection` |
+| UP.5 | Before Code of Laws, the Treasury tab has a "Send aid" section: the amount, then a card per met civ with its Aid line and relationship gain; Aid opens the confirmation and next turn the Treasury history reads "... sent ... Gold of aid". A civ the Spoil Guard hides has no card | Antiquity, before Code of Laws, one civ met and one not | `ui/econ-view-trade.js` `aidSection`, `ui/econ-view-tabs.js` (`treasury.aid`) |
+| UP.6 | After Code of Laws the "Send aid" section is gone from the Treasury tab and aid is on the Trade tab only | same game, after Code of Laws | same |
+| UP.7 | At 1720p full screen the screen's body text reads at the size of the Civilopedia's text and the section titles a step larger; the frame ends a little under the last section rather than at the bottom of the screen, with a 50vh floor, and a long tab (Loans after Moneylending) still reaches 93vh and scrolls | 1720p full screen; Treasury on turn 1 and Loans later | `ui/econ-screen.css` (`.econ-screen-frame`, every `font-size`) |
+| UP.8 | At 1280x720 and at a 4:3 window the screen still fits: the frame stays inside the window, the tab scrolls, the columns stack at 4:3, and nothing is cut off at the right | windowed 1280x720 and 1024x768 | same |
+| UP.9 | The citizens' offer card in the borrow form reads "Your citizens" as its title, while a loan from them reads "Owed to your citizens" | Antiquity as Classical Republic with a Commerce building, so the citizens offer | `ui/econ-view-borrow.js` `lenderTitle`, `text/en_us/ModText.xml` |
+
 ## Owed: model fixes
 
 Built 2026-10-30 on the `model-fixes` branch, offline only (NOTES findings P to U and W to Y, choices from 102). Nothing here has

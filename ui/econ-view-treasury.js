@@ -1,18 +1,20 @@
 // econ-view-treasury.js - Economics: the Treasury tab (DESIGN 9). The main column is the ledger: balance, income,
 // what Economics moved last turn (open it for each kind), upkeep, what's owed and due, the inflation reserve, and the
-// cycle's Gold before the World tab opens; then the 20-turn projection with and without your loans; then what moved,
-// and why. The side column holds the debt-service gauge, your loans and the guard until the Loans tab opens, and the
-// buildings that set financial depth.
+// cycle's Gold before the World tab opens; then the 20-turn projection with and without your loans; then aid before
+// the Trade tab opens; then what moved, and why. The side column holds the debt-service gauge, your loans and the
+// guard until the Loans tab opens, and the buildings that set financial depth. Until the rule that opens the Loans tab
+// is met, the loan figures are left out and the projection is the balance alone.
 
 import { formatFactor, formatGold } from "./econ-format.js";
 import { composeArgs, describeEvent, eventConcerns, flowBreakdown, phaseKey } from "./econ-notice-text.js";
 import { loansView, treasuryView } from "./econ-view-model.js";
 import { cycleGoldLine, inflationLines, worldView } from "./econ-view-macro.js";
-import { amount, changeRow, columns, el, empty, expander, note, pill, projectionChart, row, section }
+import { amount, changeRow, columns, el, empty, expander, lineChart, note, pill, projectionChart, row, section }
   from "./econ-dom.js";
 import { opensNext, rulesFor, turnLabels } from "./econ-view-common.js";
 import { cycleDial, inflationMeter, serviceMeter } from "./econ-view-instruments.js";
 import { guardSection, mineSection, pendingSection } from "./econ-view-loans.js";
+import { aidSection } from "./econ-view-trade.js";
 import { CREDIT } from "./econ-params.js";
 import { emptyLedger } from "./econ-state.js";
 
@@ -40,14 +42,19 @@ export function renderTreasury(host, api) {
   const view = treasuryView(input, api.me);
   const { rules } = rulesFor(api);
   /** @type {HTMLElement[]} */
-  const side = [instrumentSection(input, view, api)];
-  // Before the Loans tab opens, the player's loans and the guard switch are here.
+  const side = [];
+  const loanFigures = rules.sections["treasury.loanFigures"];
+  const instruments = instrumentSection(input, view, loanFigures, api);
+  if (instruments) side.push(instruments);
   const since = sinceSection(input, api);
   if (since) side.push(since);
+  // Before the Loans tab opens, the player's loans and the guard switch are here.
   if (rules.sections["treasury.loans"]) side.push(...earlyLoans(input, api));
   if (rules.sections["treasury.depth"]) side.push(depthSection(api));
   if (rules.sections["treasury.old"]) side.push(oldSection(api));
-  const main = [nowSection(input, view, rules, api), projectionSection(view, api), flowsSection(api)];
+  const main = [nowSection(input, view, rules, api), projectionSection(view, loanFigures, api)];
+  if (rules.sections["treasury.aid"]) main.push(aidSection(input, api));
+  main.push(flowsSection(api));
   host.appendChild(columns(main, side));
   const next = opensNext(api, rules.next.treasury);
   if (next) host.appendChild(next);
@@ -56,24 +63,26 @@ export function renderTreasury(host, api) {
 /**
  * Conditions at a glance: the cycle's dial for the player's own index (the one dial on the screen), then the share
  * of income the loans take on a slim scale with the lenders' limit marked, and inflation on its own scale for a civ
- * it reaches.
+ * it reaches. The loan scale waits for loans (`loanFigures`); with nothing to show there's no section.
  * @param {PlanInput} input
  * @param {ReturnType<typeof treasuryView>} view
+ * @param {boolean} loanFigures
  * @param {ScreenApi} api
  */
-function instrumentSection(input, view, api) {
-  const block = section(api.loc("LOC_ECONOMICS_TREASURY_INSTRUMENTS"), [], { variant: "minor" });
+function instrumentSection(input, view, loanFigures, api) {
+  /** @type {HTMLElement[]} */
+  const parts = [];
   const world = worldView(input, api.me);
-  if (world.cycleOn) block.appendChild(cycleDial(world, api));
-  block.appendChild(serviceMeter(view.servicePct, api));
+  if (world.cycleOn) parts.push(cycleDial(world, api));
+  if (loanFigures) parts.push(serviceMeter(view.servicePct, api));
   const inflation = inflationLines(input, api.me);
-  if (inflation.member) block.appendChild(inflationMeter(world.inflation.piPpm, api));
-  return block;
+  if (inflation.member) parts.push(inflationMeter(world.inflation.piPpm, api));
+  return parts.length ? section(api.loc("LOC_ECONOMICS_TREASURY_INSTRUMENTS"), parts, { variant: "minor" }) : null;
 }
 
 /**
- * The ledger: balance, income, the mod's net with its parts, upkeep, debt, what's due; the inflation reserve for a
- * member; this turn's cycle Gold before the World tab.
+ * The ledger: balance, income, the mod's net with its parts, upkeep, debt, what's due (once loans are open); the
+ * inflation reserve for a member; this turn's cycle Gold before the World tab.
  * @param {PlanInput} input
  * @param {ReturnType<typeof treasuryView>} view
  * @param {import("./econ-view-tabs.js").TabRules} rules
@@ -90,10 +99,12 @@ function nowSection(input, view, rules, api) {
     { signed: true, tone: true })));
   now.appendChild(modNetRow(input, api));
   now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_UPKEEP"), goldAmount(api, view.upkeepCents)));
-  now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_OUTSTANDING"), goldAmount(api, view.outstandingCents)));
-  now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_DUE_NEXT"), goldAmount(api, view.dueNextCents)));
-  now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_SERVICE_SHARE"), `${Math.max(0, view.servicePct)}%`,
-    view.servicePct > CREDIT.servicePct ? "econ-negative" : ""));
+  if (rules.sections["treasury.loanFigures"]) {
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_OUTSTANDING"), goldAmount(api, view.outstandingCents)));
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_DUE_NEXT"), goldAmount(api, view.dueNextCents)));
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_SERVICE_SHARE"), `${Math.max(0, view.servicePct)}%`,
+      view.servicePct > CREDIT.servicePct ? "econ-negative" : ""));
+  }
   for (const line of macroLines(input, rules, api)) now.appendChild(line);
   return now;
 }
@@ -230,11 +241,14 @@ function triggerText(building, weight, api) {
 }
 
 /**
+ * The 20-turn projection: with and without the player's loans once loans are open, the balance alone before.
  * @param {ReturnType<typeof treasuryView>} view
+ * @param {boolean} loanFigures
  * @param {ScreenApi} api
  */
-function projectionSection(view, api) {
+function projectionSection(view, loanFigures, api) {
   const last = (/** @type {number[]} */ series) => series[series.length - 1] ?? 0;
+  if (!loanFigures) return balanceProjection(view.projection.withLoans, last(view.projection.withLoans), api);
   const withEnd = last(view.projection.withLoans);
   const withoutEnd = last(view.projection.without);
   const turns = turnLabels(api, api.input().turn, view.projection.withLoans.length, { ahead: true });
@@ -246,6 +260,23 @@ function projectionSection(view, api) {
   ]);
   block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_PROJECTION_NOTE")));
   return block;
+}
+
+/**
+ * The projected balance on its own, before loans are open: the model's own projection (the guard and the mod's
+ * flows run in it), one line on the chart.
+ * @param {number[]} series
+ * @param {number} end
+ * @param {ScreenApi} api
+ */
+function balanceProjection(series, end, api) {
+  const turns = turnLabels(api, api.input().turn, series.length, { ahead: true });
+  return section(api.loc("LOC_ECONOMICS_TREASURY_PROJECTION"), [
+    lineChart([{ values: series, tone: "gilt" }], { format: (cents) => formatGold(cents), turns, reference: 0,
+      height: "8rem" }),
+    row(api.loc("LOC_ECONOMICS_TREASURY_PROJECTION_BALANCE"), goldAmount(api, end, { tone: end < 0 })),
+    note(api.loc("LOC_ECONOMICS_TREASURY_PROJECTION_BALANCE_NOTE")),
+  ]);
 }
 
 /**

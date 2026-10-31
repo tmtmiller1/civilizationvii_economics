@@ -2,7 +2,10 @@
    charcoal panels, ivory figures, antique gold kept for focus, money and one rule under each major section, the cycle
    on one dial and the rest on slim scales.
    GameFace rules (engine-closed.md, "UI runtime"): flexbox only, no grid, no italic, no clamp(), no var() in
-   shorthands, border colours as longhands. Sizes in rem. */
+   shorthands, border colours as longhands. Sizes in rem.
+   Type follows the game's own ladder (1rem is its 18px, text-sm): body text and figures sit at text-base (1.11rem),
+   the way the Civilopedia sets its reading text, notes at text-sm (1rem), small print at text-xs (0.89rem), and a
+   major section's title at text-lg (1.33rem). */
 
 /* Out of the popups' flex row: when a game popup is up beside the screen, a shared flex parent would squeeze the frame
    (Demographics met the same; its screen root is fixed too). */
@@ -20,18 +23,20 @@
     pointer-events: auto;
 }
 
+/* The frame is as tall as the open tab needs, up to 93vh, where the tab scrolls inside it (econ-screen-host). A short
+   tab, early in the game, gets a short frame instead of a tall empty one; the 50vh floor keeps a change of tab from
+   jumping the frame between very different heights. */
 .econ-screen-frame {
     width: 92vw;
-    height: 93vh;
+    height: auto;
     max-width: 92vw;
     max-height: 93vh;
-    min-height: 0;
+    min-height: 50vh;
 }
 
 @media (max-height: 55.5555555556rem), (max-aspect-ratio: 3/2) {
     .econ-screen-frame {
         width: 98vw;
-        height: 96vh;
         max-width: 98vw;
         max-height: 96vh;
     }
@@ -50,7 +55,7 @@
     min-height: 1.4rem;
     margin-bottom: 0.5rem;
     color: #D0B270;
-    font-size: 0.95rem;
+    font-size: 1.06rem;
     letter-spacing: 0.06rem;
 }
 
@@ -174,24 +179,24 @@
 
 .econ-section-title {
     color: #EAE0CD;
-    font-size: 1rem;
+    font-size: 1.11rem;
 }
 
 .econ-section--major .econ-section-title {
     color: #D0B270;
-    font-size: 1.05rem;
+    font-size: 1.33rem;
     letter-spacing: 0.1rem;
 }
 
 .econ-section--minor .econ-section-title {
     color: #D0B270;
-    font-size: 0.95rem;
+    font-size: 1.06rem;
     margin-bottom: 0.3rem;
 }
 
 .econ-section-subtitle {
     color: #a39b8b;
-    font-size: 0.85rem;
+    font-size: 0.94rem;
 }
 
 .econ-rule {
@@ -213,14 +218,14 @@
 
 .econ-row-label {
     color: #c9c0ae;
-    font-size: 1rem;
+    font-size: 1.11rem;
     flex: 1 1 auto;
     margin-right: 1rem;
 }
 
 .econ-row-value {
     color: #EAE0CD;
-    font-size: 1.05rem;
+    font-size: 1.17rem;
     text-align: right;
 }
 
@@ -238,14 +243,14 @@
 
 .econ-note {
     color: #a39b8b;
-    font-size: 0.9rem;
+    font-size: 1rem;
     line-height: 1.4;
     margin-top: 0.45rem;
 }
 
 .econ-empty {
     color: #b8ae98;
-    font-size: 0.95rem;
+    font-size: 1.06rem;
     line-height: 1.4;
     padding: 0.7rem 0.8rem;
     background-color: rgba(48, 46, 42, 0.7);
@@ -255,7 +260,7 @@
     margin: 0.2rem 0 1rem 0;
     padding: 0.55rem 0.9rem;
     color: #D0B270;
-    font-size: 0.95rem;
+    font-size: 1.06rem;
     background-color: #20252A;
     border-left: 3px solid #D0B270;
 }
@@ -264,7 +269,7 @@
     margin: 0.3rem 0 0.6rem 0;
     padding: 0.5rem 0.9rem;
     color: #EAE0CD;
-    font-size: 1rem;
+    font-size: 1.11rem;
     background-color: rgba(165, 182, 139, 0.18);
     border-left: 3px solid #A5B68B;
 }
@@ -277,7 +282,7 @@
 .econ-line {
     color: #EAE0CD;
     padding: 0.15rem 0;
-    font-size: 0.95rem;
+    font-size: 1.06rem;
 }
 
 .econ-history-line {
@@ -290,7 +295,7 @@
 .econ-history-turn {
     min-width: 4.2rem;
     color: #D0B270;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .econ-history-text {
@@ -314,18 +319,18 @@
 }
 
 .econ-amount-value {
-    font-size: 1.05rem;
+    font-size: 1.17rem;
     color: #EAE0CD;
 }
 
 .econ-amount-unit {
     margin-left: 0.3rem;
     color: #a39b8b;
-    font-size: 0.85rem;
+    font-size: 0.94rem;
 }
 
 .econ-amount--big .econ-amount-value {
-    font-size: 1.6rem;
+    font-size: 1.78rem;
 }
 
 .econ-change {
@@ -356,13 +361,13 @@
 
 .econ-stat-label {
     color: #b8ae98;
-    font-size: 0.85rem;
+    font-size: 0.94rem;
     margin-bottom: 0.15rem;
 }
 
 .econ-stat-value {
     color: #EAE0CD;
-    font-size: 1.35rem;
+    font-size: 1.5rem;
 }
 
 .econ-stat .econ-amount {
@@ -371,7 +376,7 @@
 
 .econ-stat-sub {
     color: #9a9384;
-    font-size: 0.82rem;
+    font-size: 0.91rem;
     margin-top: 0.1rem;
 }
 
@@ -388,7 +393,7 @@
 }
 
 .econ-facts .econ-stat-value {
-    font-size: 1.1rem;
+    font-size: 1.22rem;
 }
 
 .econ-facts .econ-amount {
@@ -428,12 +433,12 @@
 
 .econ-card-title {
     color: #EAE0CD;
-    font-size: 1.08rem;
+    font-size: 1.2rem;
 }
 
 .econ-card-sub {
     color: #9a9384;
-    font-size: 0.85rem;
+    font-size: 0.94rem;
 }
 
 .econ-actions {
@@ -514,13 +519,13 @@
 .econ-button-label {
     position: relative;
     color: #f3efe6;
-    font-size: 0.92rem;
+    font-size: 1.02rem;
     letter-spacing: 0.06rem;
 }
 
 .econ-button--primary .econ-button-label {
     color: #fff8e6;
-    font-size: 1rem;
+    font-size: 1.11rem;
 }
 
 .econ-button--disabled .econ-button-bg--base {
@@ -553,7 +558,7 @@
 }
 
 .econ-button--small .econ-button-label {
-    font-size: 0.8rem;
+    font-size: 0.89rem;
 }
 
 .econ-button--warning .econ-button-art {
@@ -579,7 +584,7 @@
 
 .econ-why {
     color: #CA8174;
-    font-size: 0.9rem;
+    font-size: 1rem;
     margin-left: 0.2rem;
 }
 
@@ -605,7 +610,7 @@
 
 .econ-chip-label {
     color: #c9c0ae;
-    font-size: 0.9rem;
+    font-size: 1rem;
     white-space: nowrap;
 }
 
@@ -636,7 +641,7 @@
 .econ-field-label {
     min-width: 7rem;
     color: #b8ae98;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .econ-pill {
@@ -644,7 +649,7 @@
     min-height: 1.5rem;
     display: flex;
     align-items: center;
-    font-size: 0.85rem;
+    font-size: 0.94rem;
     border-radius: 0.75rem;
     white-space: nowrap;
     pointer-events: none;
@@ -670,7 +675,7 @@
 
 .econ-step-label {
     color: #EAE0CD;
-    font-size: 0.88rem;
+    font-size: 0.98rem;
 }
 
 .econ-step:hover,
@@ -715,7 +720,7 @@
 
 .econ-confirm-title {
     color: #EAE0CD;
-    font-size: 1rem;
+    font-size: 1.11rem;
     margin-bottom: 0.3rem;
 }
 
@@ -729,7 +734,7 @@
 
 .econ-gauge-title {
     color: #b8ae98;
-    font-size: 0.85rem;
+    font-size: 0.94rem;
     margin-bottom: 0.1rem;
 }
 
@@ -764,18 +769,18 @@
     width: 13.5rem;
     margin-top: -0.9rem;
     color: #9a9384;
-    font-size: 0.75rem;
+    font-size: 0.83rem;
 }
 
 .econ-gauge-reading {
     color: #EAE0CD;
-    font-size: 1.2rem;
+    font-size: 1.33rem;
     margin-top: 0.1rem;
 }
 
 .econ-gauge-sub {
     color: #9a9384;
-    font-size: 0.82rem;
+    font-size: 0.91rem;
     text-align: center;
 }
 
@@ -795,12 +800,12 @@
 
 .econ-meter-title {
     color: #c9c0ae;
-    font-size: 0.95rem;
+    font-size: 1.06rem;
 }
 
 .econ-meter-reading {
     color: #EAE0CD;
-    font-size: 0.95rem;
+    font-size: 1.06rem;
 }
 
 .econ-meter-track {
@@ -835,7 +840,7 @@
     justify-content: space-between;
     margin-top: 0.2rem;
     color: #9a9384;
-    font-size: 0.75rem;
+    font-size: 0.83rem;
 }
 
 .econ-meter-limit-label {
@@ -861,7 +866,7 @@
     min-width: 3.2rem;
     margin-right: 0.4rem;
     color: #9a9384;
-    font-size: 0.75rem;
+    font-size: 0.83rem;
     text-align: right;
 }
 
@@ -907,13 +912,13 @@
     justify-content: space-between;
     margin-left: 3.6rem;
     color: #9a9384;
-    font-size: 0.75rem;
+    font-size: 0.83rem;
 }
 
 .econ-chart-readout {
     margin: 0.25rem 0 0 3.6rem;
     color: #EAE0CD;
-    font-size: 0.88rem;
+    font-size: 0.98rem;
 }
 
 .econ-legend {
@@ -922,7 +927,7 @@
     flex-wrap: wrap;
     margin: 0.25rem 0 0 3.6rem;
     color: #a39b8b;
-    font-size: 0.82rem;
+    font-size: 0.91rem;
 }
 
 .econ-legend-swatch {
@@ -946,7 +951,7 @@
 
 .econ-spark .econ-chart-readout {
     margin-left: 0;
-    font-size: 0.75rem;
+    font-size: 0.83rem;
     color: #9a9384;
 }
 
@@ -983,7 +988,7 @@
 .econ-expand-word {
     margin-left: 0.6rem;
     color: #D0B270;
-    font-size: 0.8rem;
+    font-size: 0.89rem;
 }
 
 .econ-expand-body {
@@ -998,7 +1003,7 @@
 
 .econ-expand-body .econ-row-label,
 .econ-expand-body .econ-row-value {
-    font-size: 0.92rem;
+    font-size: 1.02rem;
 }
 
 .econ-bar-pill {
@@ -1019,13 +1024,13 @@
 .econ-price-name {
     flex: 1.4 1 0;
     color: #EAE0CD;
-    font-size: 1rem;
+    font-size: 1.11rem;
 }
 
 .econ-price-cell {
     flex: 0.8 1 0;
     color: #c9c0ae;
-    font-size: 0.98rem;
+    font-size: 1.09rem;
     text-align: right;
 }
 
@@ -1039,5 +1044,5 @@
     flex-direction: row;
     padding: 0 0.3rem 0.2rem 0.3rem;
     color: #b8ae98;
-    font-size: 0.82rem;
+    font-size: 0.91rem;
 }

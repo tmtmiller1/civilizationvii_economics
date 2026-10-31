@@ -2,7 +2,8 @@
 // with each partner and the cap, beside the Trade Income the game pays you; then the AI offers waiting for an answer;
 // then what you can do: a development loan on a city's current build, general investment or aid, each with what it
 // would return and the relationship it buys; then the routes the game would let you make and what each would add to
-// your bill; then your open investments.
+// your bill; then your open investments. Aid needs no stage, so before this tab opens its own section sits on the
+// Treasury tab (aidSection).
 
 import { amount, button, changeRow, columns, confirmCard, el, empty, facts, feedbackLine, goldStepper, isConfirming,
   note, row, section, setConfirming, stat } from "./econ-dom.js";
@@ -117,18 +118,56 @@ function ask(api, request, at) {
 function investSection(input, api, open) {
   const block = section(api.loc("LOC_ECONOMICS_INVEST"), [], { subtitle: api.loc("LOC_ECONOMICS_INVEST_SUB") });
   if (input.options?.investment === false) { block.appendChild(empty(api.loc("LOC_ECONOMICS_INVEST_OFF"))); return block; }
-  const amountLine = el("div", "econ-field");
-  amountLine.appendChild(el("div", "econ-field-label font-title uppercase", api.loc("LOC_ECONOMICS_INVEST_AMOUNT")));
-  amountLine.appendChild(goldStepper({ value: form.cents, min: 1000, max: 10000000, format: formatGold,
-    onChange: (cents) => { form.cents = cents; api.rerender(); } }));
-  block.appendChild(amountLine);
+  block.appendChild(amountField(api));
   const said = feedbackLine("invest");
   if (said) block.appendChild(said);
-  const targets = investTargets(input, api.me, form.cents).filter((target) => !api.hidden?.(target.pid));
+  const targets = shownTargets(input, api);
   const chosen = open.project ? targets.find((target) => target.pid === form.projectFor) : undefined;
   if (chosen) block.appendChild(projectCard(chosen, api));
   for (const target of targets) block.appendChild(targetCard(target, api, open));
   block.appendChild(note(api.loc("LOC_ECONOMICS_INVEST_NOTE")));
+  return block;
+}
+
+/**
+ * The amount the investment and aid lines send, kept across tabs.
+ * @param {ScreenApi} api
+ */
+function amountField(api) {
+  const line = el("div", "econ-field");
+  line.appendChild(el("div", "econ-field-label font-title uppercase", api.loc("LOC_ECONOMICS_INVEST_AMOUNT")));
+  line.appendChild(goldStepper({ value: form.cents, min: 1000, max: 10000000, format: formatGold,
+    onChange: (cents) => { form.cents = cents; api.rerender(); } }));
+  return line;
+}
+
+/**
+ * The civs the player could send Gold to, less those the Spoil Guard hides.
+ * @param {PlanInput} input
+ * @param {ScreenApi} api
+ */
+function shownTargets(input, api) {
+  return investTargets(input, api.me, form.cents).filter((target) => !api.hidden?.(target.pid));
+}
+
+/**
+ * Aid on its own, for the Treasury tab before the Trade tab opens: the amount, then each civ with its aid line.
+ * @param {PlanInput} input
+ * @param {ScreenApi} api
+ */
+export function aidSection(input, api) {
+  const block = section(api.loc("LOC_ECONOMICS_AID"), [], { subtitle: api.loc("LOC_ECONOMICS_AID_SUB") });
+  block.appendChild(amountField(api));
+  const said = feedbackLine("invest");
+  if (said) block.appendChild(said);
+  const targets = shownTargets(input, api);
+  if (!targets.length) block.appendChild(empty(api.loc("LOC_ECONOMICS_AID_NOBODY")));
+  for (const target of targets) {
+    const box = el("div", "econ-card");
+    box.appendChild(el("div", "econ-card-title", api.nameOf(target.pid)));
+    box.appendChild(aidRow(target, api));
+    block.appendChild(box);
+  }
   return block;
 }
 
@@ -175,14 +214,23 @@ function targetCard(target, api, open) {
       api.rerender();
     }));
   }
-  box.appendChild(actionRow(api, { ...host, form: "general", asAid: true, refusal: target.aid,
-    caption: "LOC_ECONOMICS_INVEST_AID" }));
+  box.appendChild(aidRow(target, api));
   if (!open.project) return box;
   for (const { city, refusal } of target.cities) {
     box.appendChild(actionRow(api, { ...host, form: "project", asAid: false, refusal, city,
       caption: "LOC_ECONOMICS_INVEST_PROJECT" }));
   }
   return box;
+}
+
+/**
+ * Aid to one civ: a gift, its relationship gain beside it.
+ * @param {ReturnType<typeof investTargets>[number]} target
+ * @param {ScreenApi} api
+ */
+function aidRow(target, api) {
+  return actionRow(api, { host: target.pid, hostIncomeCents: target.incomeCents, form: "general", asAid: true,
+    refusal: target.aid, caption: "LOC_ECONOMICS_INVEST_AID" });
 }
 
 /**

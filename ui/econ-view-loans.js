@@ -1,6 +1,7 @@
 // econ-view-loans.js - Economics: the Loans tab (DESIGN 5, 9). The main column: the borrow form (econ-view-borrow.js)
 // where the player's stages open one, then the player's loans (overdue first) with repay, restructure and repudiate,
-// then what it has lent and the lend form. The side column: the debt-service gauge with the credit room and standing,
+// then what it has lent and the lend form. The side column: the debt-service gauge, the most the player can borrow
+// (the same figure the borrow form opens on, with the limit that sets it) and standing,
 // the guard switch with its allowance, and the requests waiting for the next turn. Each action opens a confirmation in
 // place that says what it costs and what changes, and one more click sends it.
 
@@ -8,7 +9,7 @@ import { amount, button, changeRow, columns, confirmCard, el, empty, expander, f
   pill, row, say, section, setConfirming, stat } from "./econ-dom.js";
 import { formatGold, formatRate } from "./econ-format.js";
 import { loansView, repudiationPreview, restructurePreview } from "./econ-view-model.js";
-import { renderBorrow, renderLend } from "./econ-view-borrow.js";
+import { borrowLimit, borrowTerm, limitReason, renderBorrow, renderLend } from "./econ-view-borrow.js";
 import { requestKey } from "./econ-notice-text.js";
 import { opensNext, rulesFor, send } from "./econ-view-common.js";
 import { isOpen, paymentDue } from "./econ-loan.js";
@@ -30,26 +31,32 @@ export function renderLoans(host, api) {
   const { rules } = rulesFor(api);
   /** @type {HTMLElement[]} */
   const main = [];
-  if (rules.sections["loans.borrow"]) main.push(renderBorrow(input, view, api));
+  const borrow = rules.sections["loans.borrow"];
+  const limit = borrow ? borrowLimit(input, api.me, view.creditRoomCents, borrowTerm(input, api.me)) : null;
+  if (limit) main.push(renderBorrow(input, view, api, limit));
   main.push(mineSection(input, view, api));
   if (view.lent.length) main.push(lentSection(view, api));
   if (rules.sections["loans.lend"]) main.push(renderLend(input, api));
   const income = input.civs.find((civ) => civ.id === api.me)?.incomeCents ?? 0;
-  host.appendChild(columns(main, [limitsSection(view, income, api), guardSection(view, api), pendingSection(api)]));
+  host.appendChild(columns(main, [limitsSection(view, income, limit, api), guardSection(view, api),
+    pendingSection(api)]));
   const next = opensNext(api, rules.next.loans);
   if (next) host.appendChild(next);
 }
 
 /**
- * The debt-service gauge, what the player can still borrow and its standing.
+ * The debt-service gauge, the most the player can borrow over the form's term with the limit that sets it (while the
+ * borrow form is open), and its standing.
  * @param {ReturnType<typeof loansView>} view
  * @param {number} income
+ * @param {import("./econ-view-borrow.js").BorrowLimit | null} limit
  * @param {ScreenApi} api
  */
-function limitsSection(view, income, api) {
+function limitsSection(view, income, limit, api) {
   const share = income > 0 ? Math.round((100 * view.serviceCents) / income) : view.serviceCents > 0 ? 100 : 0;
   return section(api.loc("LOC_ECONOMICS_LOANS_LIMITS"), [serviceMeter(share, api),
-    row(api.loc("LOC_ECONOMICS_LOANS_CREDIT_ROOM"), gold(api, view.creditRoomCents)),
+    ...(limit ? [row(api.loc("LOC_ECONOMICS_LOANS_MOST", limit.term), gold(api, limit.mostCents)),
+      limitReason(limit, api)] : []),
     row(api.loc("LOC_ECONOMICS_LOANS_SERVICE"), api.loc("LOC_ECONOMICS_LOANS_SERVICE_OF",
       formatGold(view.serviceCents), formatGold(view.serviceCapCents))),
     row(api.loc("LOC_ECONOMICS_LOANS_STANDING"), (view.standingPct / 100).toFixed(2),

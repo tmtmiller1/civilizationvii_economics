@@ -160,6 +160,19 @@ release is generated from the matching section below by `scripts/steam-changelog
 - Loans Off now turns off the loans alone; trade bills and investment keep their own options.
 - The auto-loan guard only borrows while your income is at or below 0: with positive income the game wipes a
   negative balance to 0 at the turn roll without charging you, so a loan there would be Gold the game gives for free.
+- The Treasury tab keeps loans out of sight until they're a thing for you: what you owe (and the Debt figure at the
+  top of the screen), the payments due, the debt-service scale and the projection with and without loans appear when
+  the Loans tab does (Moneylending, an open loan, or your citizens offering to lend). Until then the 20-turn chart
+  shows your balance alone. With Economic stages Off everything shows from the start, as before.
+- The Loans tab gives one answer to how much you can borrow: the most you can actually take over the term you've
+  picked, the same figure the borrow form opens on. When your loan payments are what holds it back, it says a bigger
+  loan would push them past half your income.
+- The Economics screen's text is larger, in step with the game's own panels, and the screen is only as tall as the
+  open tab needs, up to nearly the whole screen, so an early-game tab isn't a tall empty frame.
+- Aid is on the Treasury tab until the Trade tab opens, since it needs no stage; then it lives on the Trade tab.
+  Civilizations you haven't met are left out there too.
+- The citizens' loan offer reads "Your citizens" as its title, and the bond market's and temple treasuries' titles
+  start with a capital too.
 
 ### Fixed
 - Payments under one Gold never reached anyone's treasury, because the game pays grants in whole Gold. That was most
