@@ -170,7 +170,7 @@ function payDividend(ctx, record) {
   replaceInvestment(ctx, { ...result.record, closedTurn });
   if (!result.missed) {
     emit(ctx, record, { from: record.host, to: record.investor, cents: result.cents, reason: "dividend" });
-    if (result.closed) event(ctx, { kind: "invest-closed", loanId: record.id });
+    if (result.closed) event(ctx, { kind: "invest-closed", loanId: record.id, lender: record.investor, borrower: record.host });
     return;
   }
   recordInvestMiss(ctx, record, result);
@@ -186,7 +186,8 @@ function recordInvestMiss(ctx, record, result) {
   addMiss(ctx.ledger, record.host, ctx.turn);
   addInfluence(ctx.batch, record.host, MISS.influence);
   ctx.out.influence.push({ pid: record.host, amount: MISS.influence, loanId: record.id, reason: "miss" });
-  event(ctx, { kind: "invest-miss", loanId: record.id, borrower: record.host, missed: result.record.missed });
+  event(ctx, { kind: "invest-miss", loanId: record.id, lender: record.investor, borrower: record.host,
+    missed: result.record.missed });
   notice(ctx, record.host, { kind: "invest-miss", loanId: record.id, missed: result.record.missed });
   repChange(ctx, record.host, -REPUTATION.miss, "miss", record.id);
   if (!result.defaulted) return;
@@ -208,7 +209,7 @@ function garnishInvestment(ctx, record) {
     cashCents: Math.max(0, funds(ctx.batch, record.host)) });
   replaceInvestment(ctx, { ...result.record, closedTurn: result.closed ? ctx.turn : null });
   emit(ctx, record, { from: record.host, to: record.investor, cents: result.cents, reason: "garnish" });
-  if (result.closed) event(ctx, { kind: "invest-closed", loanId: record.id });
+  if (result.closed) event(ctx, { kind: "invest-closed", loanId: record.id, lender: record.investor, borrower: record.host });
 }
 
 /**
@@ -225,7 +226,8 @@ export function investWriteOffs(ctx) {
       writtenOff: record.outstanding, outstanding: 0 } : cities && lostCityWriteOff(record, cities, ctx.turn);
     if (!closed) continue;
     replaceInvestment(ctx, closed);
-    event(ctx, { kind: "invest-writeoff", loanId: record.id, cents: record.outstanding, gone: gone ? 1 : 0 });
+    event(ctx, { kind: "invest-writeoff", loanId: record.id, lender: record.investor, borrower: record.host,
+      cents: record.outstanding, gone: gone ? 1 : 0 });
     notice(ctx, record.investor, { kind: "invest-writeoff", loanId: record.id, cents: record.outstanding });
   }
   ctx.ledger.offers = ctx.ledger.offers.filter((offer) => ctx.turn - offer.turn < INVEST.offerTurns

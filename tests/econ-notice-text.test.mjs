@@ -159,3 +159,17 @@ test("general investment refused for default names the development loan still op
   assert.equal(describeRefusalProject({ ...event, request: "borrow" }, ctx), null);
   assert.ok(english.has("LOC_ECONOMICS_NOTICE_REFUSED_PROJECT"));
 });
+
+test("a closed loan's event names both sides, so the Treasury history lists \"paid off\" for them", async () => {
+  const { planTurn } = await import("../ui/econ-plan.js");
+  const { makeLoan } = await import("../ui/econ-loan.js");
+  const { emptyLedger } = await import("../ui/econ-state.js");
+  const { civ, input } = await import("./_fixtures.mjs");
+  const loan = { ...makeLoan({ id: "L1", lender: 6, borrower: 3, principal: 1000, ratePpm: 10000, term: 10, turn: 1 }),
+    outstanding: 100, paid: 9 };
+  const out = planTurn(input({ ledger: { ...emptyLedger(), loans: [loan], nextId: 2 }, civs: [civ(3, { balanceCents: 5000 }),
+    civ(6, { balanceCents: 5000 })] }));
+  const closed = out.events.find((e) => e.kind === "closed");
+  assert.deepEqual([closed.loanId, closed.borrower, closed.lender], ["L1", 3, 6]);
+  assert.equal(eventConcerns(closed, 3) && eventConcerns(closed, 6) && !eventConcerns(closed, 4), true);
+});

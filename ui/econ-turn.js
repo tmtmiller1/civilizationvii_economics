@@ -179,7 +179,7 @@ export function replaceLoan(ctx, loan) {
  */
 export function closeLoan(ctx, loan) {
   replaceLoan(ctx, { ...loan, state: "closed", closedTurn: ctx.turn });
-  event(ctx, { kind: "closed", loanId: loan.id });
+  event(ctx, { kind: "closed", loanId: loan.id, borrower: loan.borrower, lender: loan.lender });
 }
 
 /**

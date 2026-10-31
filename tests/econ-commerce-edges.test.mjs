@@ -96,7 +96,7 @@ test("dividends are paid oldest first, then each record's events and notices say
   assert.deepEqual(out.influence.find((row) => row.loanId === "I2"), { pid: AI, amount: -5, loanId: "I2", reason: "miss" });
   const closing = { ...emptyLedger(), investments: [{ ...record(), paid: 24, outstanding: 1500 }] };
   const closed = plan({ civs: [me(), ai(AI)], ledger: closing });
-  assert.deepEqual(closed.events.find((e) => e.kind === "invest-closed"), { turn: 50, kind: "invest-closed", loanId: "I1" });
+  assert.deepEqual(closed.events.find((e) => e.kind === "invest-closed"), { turn: 50, kind: "invest-closed", loanId: "I1", lender: 3, borrower: 6 });
   assert.equal(closed.ledger.investments[0].closedTurn, 50);
   const open = plan({ civs: [me(), ai(AI)], ledger: { ...emptyLedger(), investments: [record()] } });
   assert.equal(open.events.some((e) => e.kind === "invest-closed"), false);
@@ -114,7 +114,7 @@ test("the default notices name the record and the borrower; the garnish closes t
   assert.equal(out.ledger.blocks[0].reason, "default");
   const last = { ...record(), state: "default", outstanding: 1 };
   const done = plan({ civs: [me(), ai(AI)], ledger: { ...emptyLedger(), investments: [last] } });
-  assert.deepEqual(done.events.find((e) => e.kind === "invest-closed"), { turn: 50, kind: "invest-closed", loanId: "I1" });
+  assert.deepEqual(done.events.find((e) => e.kind === "invest-closed"), { turn: 50, kind: "invest-closed", loanId: "I1", lender: ME, borrower: AI });
   assert.deepEqual([done.ledger.investments[0].state, done.ledger.investments[0].closedTurn], ["closed", 50]);
   const going = { ...record(), state: "default", outstanding: 10000 };
   const still = plan({ civs: [me(), ai(AI)], ledger: { ...emptyLedger(), investments: [going] } });
@@ -131,7 +131,7 @@ test("a write-off's event carries what was lost and why; closed records are left
   const ledger = { ...emptyLedger(), investments: [record(), { ...record({ id: "I2" }), state: "closed" }] };
   const lost = plan({ civs: [me(), ai(AI, { cities: [] })], ledger });
   assert.deepEqual(lost.events.filter((e) => e.kind === "invest-writeoff"),
-    [{ turn: 50, kind: "invest-writeoff", loanId: "I1", cents: 37500, gone: 0 }]);
+    [{ turn: 50, kind: "invest-writeoff", loanId: "I1", lender: 3, borrower: 6, cents: 37500, gone: 0 }]);
   const dead = plan({ civs: [me(), ai(AI, { alive: false })], ledger });
   assert.equal(dead.events.find((e) => e.kind === "invest-writeoff").gone, 1);
 });
