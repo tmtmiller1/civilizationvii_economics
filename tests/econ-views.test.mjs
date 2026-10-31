@@ -219,7 +219,8 @@ test("the borrow form opens on the largest loan the limits allow", () => {
   renderLoans(none, broke);
   assert.ok(textOf(none).includes("LOC_ECONOMICS_LOANS_MOST|10 | 0"));
   assert.ok(textOf(none).includes("LOC_ECONOMICS_BORROW_MOST_ZERO|10"));
-  assert.ok(textOf(none).includes("LOC_ECONOMICS_BORROW_BOUND_CREDIT_ZERO"), "no income, no credit");
+  assert.ok(textOf(none).includes("LOC_ECONOMICS_BORROW_BOUND_INCOME_ZERO"), "no income, no credit: says so");
+  assert.equal(textOf(none).includes("LOC_ECONOMICS_OFFER_PAYMENT"), false, "and no offers");
   resetFormForTests();
   const poor = document.createElement("div");
   renderLoans(poor, makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: 20000, incomeCents: 1000,
@@ -256,7 +257,8 @@ test("a borrow over a limit shows the most that lender would lend, and one click
     principal: 4500, ratePpm: 10000, term: 10, turn: 40 })], nextId: 2 } } });
   const full = document.createElement("div");
   renderLoans(full, spoken);
-  assert.ok(textOf(full).includes("LOC_ECONOMICS_BORROW_MOST_NONE|Civ 6|10"));
+  assert.ok(textOf(full).includes("LOC_ECONOMICS_BORROW_MOST_ZERO|10"), "nothing left over 10 turns: one line says so");
+  assert.equal(textOf(full).includes("LOC_ECONOMICS_OFFER_PAYMENT"), false, "with no offers to argue with it");
   assert.equal(byClass(full, "econ-button").some((b) => b.textContent === "LOC_ECONOMICS_BORROW_THAT"), false);
 });
 

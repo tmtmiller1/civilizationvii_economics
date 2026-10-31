@@ -254,6 +254,7 @@
         <Replace Tag="LOC_ECONOMICS_BORROW_MOST_ZERO" Language="ja_JP"><Text>You can't take out a new loan over {1_Turns} turns right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_CREDIT" Language="ja_JP"><Text>That's what's left of your credit limit.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_CREDIT_ZERO" Language="ja_JP"><Text>Your credit limit is used up.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_INCOME_ZERO" Language="ja_JP"><Text>Lenders size your credit limit by your income, so it opens once you're earning Gold each turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_PAYMENTS" Language="ja_JP"><Text>A bigger loan would push your loan payments past {1_Percent}% of your income, and lenders stop there.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_PAYMENTS_ZERO" Language="ja_JP"><Text>Even 10 Gold more would push your loan payments past {1_Percent}% of your income, and lenders stop there.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_BOUND_LENDERS" Language="ja_JP"><Text>That's as much as any lender will lend you right now.</Text></Replace>

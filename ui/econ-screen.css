@@ -97,6 +97,35 @@
     border-left: 0;
 }
 
+/* A short window (720p and the like): the strip drops its small print and tightens, so the tab keeps most of the
+   height. Each figure keeps its label and its tooltip. */
+@media (max-height: 48rem) {
+    .econ-subtitle {
+        margin-bottom: 0.2rem;
+    }
+
+    .econ-summary {
+        padding: 0.25rem 0.4rem;
+    }
+
+    .econ-summary .econ-stat-sub {
+        display: none;
+    }
+
+    .econ-summary .econ-stat-label {
+        margin-bottom: 0;
+    }
+
+    .econ-summary .econ-amount--big .econ-amount-value,
+    .econ-summary .econ-stat-value {
+        font-size: 1.2rem;
+    }
+
+    .econ-summary-host {
+        margin-bottom: 0.3rem;
+    }
+}
+
 .econ-tab-host {
     margin-bottom: 0.7rem;
 }

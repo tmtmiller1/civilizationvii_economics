@@ -34,8 +34,9 @@ const RATE_CHOICES = [80, 100, 120];
 const gold = (api, cents, tone = 0) => amount(formatGold(cents), { tone,
   tooltip: api.loc("LOC_ECONOMICS_GOLD_AMOUNT", formatGold(cents)) });
 
-/** @typedef {{ mostCents: number, bound: "credit" | "payments" | "lenders", term: number }} BorrowLimit the most the
- * player can take over `term`, in whole tens of Gold, and the limit that stops a bigger loan */
+/** @typedef {{ mostCents: number, bound: "credit" | "income" | "payments" | "lenders", term: number }} BorrowLimit
+ * the most the player can take over `term`, in whole tens of Gold, and the limit that stops a bigger loan ("income":
+ * the credit limit is nothing yet because the player has no income to size it by) */
 
 /**
  * The most the player can take over `term` and the limit that sets it: the credit room, or less where the payment
@@ -60,7 +61,8 @@ export function borrowLimit(input, me, roomCents, term) {
   }
   const mostCents = low * 1000;
   const next = mostCents + 1000;
-  if (next > roomCents) return { mostCents, bound: "credit", term };
+  const income = input.civs.find((civ) => civ.id === me)?.incomeCents ?? 0;
+  if (next > roomCents) return { mostCents, bound: mostCents <= 0 && income <= 0 ? "income" : "credit", term };
   const payments = loanOffers(input, me, next, term).some((offer) => offer.refusal === "service-cap");
   return { mostCents, bound: payments ? "payments" : "lenders", term };
 }
@@ -122,12 +124,17 @@ export function renderBorrow(input, view, api, limit = borrowLimit(input, api.me
   const term = limit.term;
   const principal = form.principal ?? Math.max(MIN_PRINCIPAL, limit.mostCents);
   const block = section(api.loc("LOC_ECONOMICS_BORROW"), [], { subtitle: api.loc("LOC_ECONOMICS_BORROW_SUB") });
-  block.appendChild(field(api.loc("LOC_ECONOMICS_PRINCIPAL"), goldStepper({ value: principal, min: MIN_PRINCIPAL,
-    max: MAX_PRINCIPAL, format: formatGold, onChange: (cents) => { form.principal = cents; api.rerender(); } })));
+  // With nothing to borrow over this term the form says why and keeps the term chips, since another term may open
+  // some room; an amount and offers nobody would make would only argue with that line.
+  const open = limit.mostCents > 0;
+  if (open) {
+    block.appendChild(field(api.loc("LOC_ECONOMICS_PRINCIPAL"), goldStepper({ value: principal, min: MIN_PRINCIPAL,
+      max: MAX_PRINCIPAL, format: formatGold, onChange: (cents) => { form.principal = cents; api.rerender(); } })));
+  }
   block.appendChild(field(api.loc("LOC_ECONOMICS_TERM"), chips(terms.map((t) => ({ id: String(t),
     label: api.loc("LOC_ECONOMICS_TURNS", t) })), String(term), (id) => { form.term = Number(id); api.rerender(); })));
   for (const line of limitLines(limit, api)) block.appendChild(line);
-  for (const node of offerCards(input, view, { principal, term }, api)) block.appendChild(node);
+  if (open) for (const node of offerCards(input, view, { principal, term }, api)) block.appendChild(node);
   return block;
 }
 
