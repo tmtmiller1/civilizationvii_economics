@@ -18,6 +18,7 @@ import { installDock, refreshDock, refreshPill } from "./econ-dock.js";
 import { formatGold } from "./econ-format.js";
 import { outstandingOf } from "./econ-credit.js";
 import { readCityName, readPossibleRoutes, readTypeName } from "./econ-commerce-read.js";
+import { civHidden } from "./econ-spoil.js";
 
 const VERSION = "0.5.3";
 const KEY = "__towerEconomics";
@@ -59,7 +60,9 @@ function screenApi(session) {
     me: localId(),
     input: () => buildInput(session),
     loc,
-    nameOf,
+    nameOf: (party) => (typeof party === "number" && civHidden(party, localId()) ? loc("LOC_ECONOMICS_UNMET_CIV")
+      : nameOf(party)),
+    hidden: (pid) => civHidden(pid, localId()),
     request: (request) => queueRequest(session, request),
     dropRequest: (index) => dropRequest(session, index),
     pending: () => session.glue.requests,

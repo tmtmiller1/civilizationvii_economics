@@ -538,6 +538,18 @@ Cartography and Guilds unlocked the same way. Captures in `working_screenshots/e
 | The bar pill reads "Debt 22 · Steady" after a loan landed | `exploration/09-next-turn-pill-crop.png` |
 | What Economics moved last turn opens to its parts ("Loans -8.3") | `exploration/11-*` |
 
+## Owed: Spoil Guard
+
+Built 2026-10-31, offline only (`ui/econ-spoil.js`, `ui/econ-options.js`). Nothing here has been seen in a game.
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| SG.1 | Options, Mods shows an Economics group with a Spoil Guard checkbox, ticked, from the main menu and in a game | any | `ui/econ-options.js` |
+| SG.2 | With civs unmet: the pill under the title reads "Unmet civilizations hidden: N", the Trade tab and the lending chips list only met civs, and a World event between unmet civs reads "an unmet civilization" | Antiquity, early turns | `ui/econ-spoil.js`, `ui/econ-view-summary.js` |
+| SG.3 | Unticked, the pill goes and every civ is listed (the unmet ones with "you haven't met them yet"); ticked again after a game restart, the choice is kept | any | `ui/econ-settings.js` |
+| SG.4 | With Demographics installed and its guard on, unticking ours still hides unmet civs | Demographics on | `ui/econ-spoil.js` `combinedPolicy` |
+| SG.5 | Meeting a civ adds it to the Trade tab and drops the pill's count on the next redraw | first contact | `ui/econ-spoil.js` `civHidden` |
+
 ## Owed: ui-pass
 
 | # | What the player sees when it works | Setup | Source |

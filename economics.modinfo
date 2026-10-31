@@ -150,7 +150,13 @@
                 <UIScripts>
                     <!-- Tower Settings Keeper: listed first, imports nothing, so it runs before anything reads storage. -->
                     <Item>ui/settings-keeper.js</Item>
+                    <!-- The Spoil Guard's checkbox on the Options screen's Mods tab. -->
+                    <Item>ui/econ-options.js</Item>
                 </UIScripts>
+                <ImportFiles>
+                    <Item>ui/econ-settings.js</Item>
+                    <Item>ui/econ-spoil.js</Item>
+                </ImportFiles>
             </Actions>
         </ActionGroup>
         <ActionGroup id="economics-game" scope="game" criteria="always">
@@ -182,6 +188,7 @@
                     <!-- The screen's Controls.define has to run at load (a later define never initialises), so the
                          bootstrap imports econ-screen.js statically. -->
                     <Item>ui/econ-bootstrap.js</Item>
+                    <Item>ui/econ-options.js</Item>
                 </UIScripts>
                 <ImportFiles>
                     <Item>ui/econ-ai.js</Item>
@@ -229,6 +236,7 @@
                     <Item>ui/econ-session.js</Item>
                     <Item>ui/econ-settings.js</Item>
                     <Item>ui/econ-shortfall.js</Item>
+                    <Item>ui/econ-spoil.js</Item>
                     <Item>ui/econ-stage-read.js</Item>
                     <Item>ui/econ-stage-rules.js</Item>
                     <Item>ui/econ-stages.js</Item>

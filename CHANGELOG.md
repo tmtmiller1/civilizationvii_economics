@@ -70,6 +70,9 @@ release is generated from the matching section below by `scripts/steam-changelog
   legacy. The Fiscal tab names your economic system and what it changes.
 - Three setup options for these: Inflation (Off), Business cycle (Off, Mild, Standard, Strong; Standard) and
   Economic systems (On).
+- The Spoil Guard, under Options, Mods, Economics, on by default: civilizations you haven't met are left off the
+  Trade tab and the list you can lend to, a line that would name one says "an unmet civilization", and a pill under
+  the title says how many are hidden. With Demographics installed, the stricter of the two guards wins.
 
 ### Changed
 - Booms and slumps can be big. A new setup option, Economic swings, sets how far they run: on Volatile, the default, a

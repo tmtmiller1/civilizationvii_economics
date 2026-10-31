@@ -194,7 +194,7 @@ function mostRow(offer, term, api) {
  * @param {ScreenApi} api
  */
 export function renderLend(input, api) {
-  const others = input.civs.filter((civ) => civ.alive && !civ.human && civ.id !== api.me);
+  const others = input.civs.filter((civ) => civ.alive && !civ.human && civ.id !== api.me && !api.hidden?.(civ.id));
   const block = section(api.loc("LOC_ECONOMICS_LEND"), [], { subtitle: api.loc("LOC_ECONOMICS_LEND_SUB") });
   if (!others.length) { block.appendChild(empty(api.loc("LOC_ECONOMICS_LEND_NOBODY"))); return block; }
   if (form.lendTo === null || !others.some((civ) => civ.id === form.lendTo)) form.lendTo = others[0].id;

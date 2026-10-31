@@ -159,6 +159,15 @@ option off, everything is open from the start.
 | Economic swings | Volatile | Gentle, Volatile or Extreme: how far booms and slumps run. On Volatile a depression can take a third to half of your income for a few turns, about what an age's crisis takes |
 | Economic systems | On | Government and ideology set each civilization's economic system, and each computer player leans toward a government that suits its civilization; Off runs everyone mixed |
 
+## Options
+
+Under Options, Mods, Economics, the Spoil Guard is on by default. It keeps civilizations you haven't met off the
+Economics screen: they're left out of the Trade tab and the list of civilizations you can lend to, and a line that
+would name one, like a world event on the World tab, says "an unmet civilization" instead. A pill under the screen's
+title says how many are hidden. With Demographics installed, the stricter of the two guards wins, so you'll only see
+everyone once both are off. The guard only changes what the screen shows; the computer players deal with each other
+the same either way.
+
 ## Compatibility
 
 Single-player. In a hotseat or network game the mod says once in the log that it's off and leaves the game as it

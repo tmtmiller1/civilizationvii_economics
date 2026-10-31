@@ -574,6 +574,12 @@
         <Replace Tag="LOC_ECONOMICS_LENDER_CYCLE" Language="zh_Hant_HK"><Text>the business cycle</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_PLAN" Language="zh_Hant_HK"><Text>the plan</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_UNMET" Language="zh_Hant_HK"><Text>you haven't met them yet.</Text></Replace>
+        <Replace Tag="LOC_OPTIONS_GROUP_ECONOMICS" Language="zh_Hant_HK"><Text>Economics</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPTIONS_SPOIL_GUARD" Language="zh_Hant_HK"><Text>Spoil Guard</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPTIONS_SPOIL_GUARD_DESCRIPTION" Language="zh_Hant_HK"><Text>Keeps civilizations you haven't met off the Economics screen. They're left out of the Trade tab and the list of civilizations you can lend to, and anything that would name one says "an unmet civilization" instead. On by default. With Demographics installed, the stricter of the two guards wins, so you'll only see everyone once both are off.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_UNMET_CIV" Language="zh_Hant_HK"><Text>an unmet civilization</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SPOIL_PILL" Language="zh_Hant_HK"><Text>Unmet civilizations hidden: {1_Count}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SPOIL_PILL_TIP" Language="zh_Hant_HK"><Text>The Spoil Guard is on. You can turn it off under Options, Mods, Economics. With Demographics installed, the stricter of the two guards wins.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_HOST_SYSTEM" Language="zh_Hant_HK"><Text>their economic system takes development loans only.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TAB_WORLD" Language="zh_Hant_HK"><Text>World</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_NOW" Language="zh_Hant_HK"><Text>The world economy</Text></Replace>

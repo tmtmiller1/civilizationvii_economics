@@ -7,7 +7,8 @@
  * @property {number} me the local player's id
  * @property {() => PlanInput} input the plan input as the next batch would read it
  * @property {(key: string, ...args: (string | number)[]) => string} loc
- * @property {(party: Party) => string} nameOf
+ * @property {(party: Party) => string} nameOf a civ the Spoil Guard hides reads "an unmet civilization"
+ * @property {(pid: number) => boolean} [hidden] whether the Spoil Guard keeps this civ off the screen (econ-spoil.js)
  * @property {(request: PlanRequest) => boolean} request queue one of the player's requests for the next batch
  * @property {(index: number) => boolean} dropRequest
  * @property {() => PlanRequest[]} pending

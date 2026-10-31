@@ -17,7 +17,8 @@ export const LANGUAGES = {
 };
 
 /** Base-game keys the mod uses without defining. */
-const BASE_KEYS = new Set(["LOC_MODULE_BASE_STANDARD_NAME"]);
+const BASE_KEYS = new Set(["LOC_MODULE_BASE_STANDARD_NAME", "LOC_UI_CONTENT_MGR_SUBTITLE",
+  "LOC_UI_CONTENT_MGR_SUBTITLE_DESCRIPTION"]);
 
 function textsIn(paths) {
   const out = new Map();
@@ -52,7 +53,8 @@ test("every LOC_ key the code, data, setup SQL and modinfo use has English text"
 
 test("every tag is LOC_ECONOMICS_ (the names table) and every English text is non-empty", () => {
   for (const [tag, text] of english.texts) {
-    assert.match(tag, /^LOC_ECONOMICS_[A-Z0-9_]+$/, tag);
+    // The Options screen names a mod's group by the game's own pattern, LOC_OPTIONS_GROUP_<group>.
+    if (tag !== "LOC_OPTIONS_GROUP_ECONOMICS") assert.match(tag, /^LOC_ECONOMICS_[A-Z0-9_]+$/, tag);
     assert.ok(text.trim().length > 0, `${tag} is empty`);
   }
 });

@@ -124,7 +124,7 @@ function investSection(input, api, open) {
   block.appendChild(amountLine);
   const said = feedbackLine("invest");
   if (said) block.appendChild(said);
-  const targets = investTargets(input, api.me, form.cents);
+  const targets = investTargets(input, api.me, form.cents).filter((target) => !api.hidden?.(target.pid));
   const chosen = open.project ? targets.find((target) => target.pid === form.projectFor) : undefined;
   if (chosen) block.appendChild(projectCard(chosen, api));
   for (const target of targets) block.appendChild(targetCard(target, api, open));
