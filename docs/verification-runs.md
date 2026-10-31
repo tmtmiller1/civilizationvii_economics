@@ -606,6 +606,39 @@ mod set: one windowed at 1280x720, one at 4:3 (the game opened at 1920x1440). Ca
   into the next with the frame at its floor. Fixed (`flex: 0 0 auto` when stacked) and watched: Loans and Treasury
   stack in full and scroll, the frame 1382 of 1440 tall.
 
+## Watched 2026-10-31, third run (the AI rules of DESIGN 6)
+
+One lab game, seed 4242, started in Modern, Economic stages Off, Economics alone plus a throwaway probe
+(`mod_ideas_tested/economics/devtools/probe-mod-ai/econ-probe-ai-watch`): every major civ meets every other at the
+start, the Ottomans lose 15 Gold a settlement from turn 4, Persia loses 1 more a settlement every second turn, and
+Hawaii and Dai Viet lean to Elective Republic. A per-turn script (`devtools/econ-ai-watch-sample.js`) kept Goryeo
+Friendly with the human seat, Persia and the Ottomans, kept Hawaii Friendly with Goryeo, kept Hawaii, Goryeo and Dai
+Viet above 25 turns of income, emptied the Ottomans' treasury at turn 4, and accepted the first offer to the human.
+61 turns. Readings in `mod_ideas_tested/economics/devtools/probe-runs/2026-10-31-ai-watch/`, tallied by
+`devtools/tally-ai-watch.py`. The relationships and the Gold top-ups were set by script; every loan, investment, aid
+and restructure below was the AI rule's own decision.
+
+- Emergency loan from an AI lender (6, AI borrowing at or below 0 income): the Ottomans, income -25, took 97.65 Gold
+  from Goryeo at turn 5 (`guard`, not yet insolvent), missed three payments and defaulted at turn 9.
+- Aid (C.28): Goryeo sent the defaulted Ottomans 715 Gold at turn 10; their balance went from 44 to 760. Hawaii,
+  Dai Viet and Persia followed at turns 13, 17 and 21, each once in the age. Relationship +10, +3, +3, +2.
+- Investment between AIs (6): development loans to Friendly hosts (the Ottomans and Hawaii into Goryeo, Goryeo into
+  Persia), 25 turns of returns, four records closed on schedule; one missed return (Persia, turn 21).
+- Offers to the human (C.24): six from Goryeo, Hawaii and Dai Viet; the first, a development loan, was accepted and
+  opened (I5, 135 progress points). One Goryeo general investment at turn 23 opened without an offer while the seat
+  read as an AI under Autoplay.
+- Investing from Capitalism (4.15): Hawaii and Dai Viet, both Market and Neutral to each other, invested in each
+  other ten times, general and development, and offered general investment to the Neutral human seat.
+- Restructuring: no AI met its trigger (two missed payments in a row with income above 0). Persia's income held
+  between 105 and 200 under the probe. Watched by setting Dai Viet's 632 Gold build loan from Hawaii (L20) to two
+  misses at turn 61: at turn 62 the rule restructured 505.60 Gold over 10 turns, the payment fell from about 66 to
+  53.47, and 53.18 and 52.89 followed.
+- Not reachable as written: a short AI with income above 0 never borrows a standard loan, and never accepts the
+  player's loan (2.8). The engine wipes a negative balance while income is positive (P4), so the projected dip only
+  comes with income at or below 0; and an AI whose payments run past its balance plus income is already past the 35
+  percent service limit, so any standard loan is refused. Offline: an AI at 0 Gold, income +20, 36 due, missed and
+  borrowed nothing. The owner's call.
+
 ## Owed: whole-Gold payments
 
 Built 2026-10-31 (NOTES 119). The engine fact was watched that day; the fix itself hasn't been seen in a game.
