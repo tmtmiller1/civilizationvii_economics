@@ -144,12 +144,21 @@
     flex-direction: row;
     align-items: flex-start;
     width: 100%;
+    flex-shrink: 0;
 }
 
+/* Columns and sections keep their own height: the tab scrolls in econ-screen-host instead. Allowed to shrink, the
+   stacked columns at 4:3 squeezed each section into the next and the frame sat at its floor. */
 .econ-col {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    flex-shrink: 0;
+}
+
+.econ-screen-host > div,
+.econ-col > div {
+    flex-shrink: 0;
 }
 
 .econ-col--main {
@@ -166,12 +175,15 @@
         flex-direction: column;
     }
 
+    /* Stacked, a column's flex basis is its height: the row layout's basis of 0 collapsed it to nothing. */
     .econ-col--main {
+        flex: 0 0 auto;
         margin-right: 0;
         width: 100%;
     }
 
     .econ-col--side {
+        flex: 0 0 auto;
         width: 100%;
     }
 }

@@ -168,7 +168,11 @@ release is generated from the matching section below by `scripts/steam-changelog
   picked, the same figure the borrow form opens on. When your loan payments are what holds it back, it says a bigger
   loan would push them past half your income.
 - The Economics screen's text is larger, in step with the game's own panels, and the screen is only as tall as the
-  open tab needs, up to nearly the whole screen, so an early-game tab isn't a tall empty frame.
+  open tab needs, up to nearly the whole screen, so an early-game tab isn't a tall empty frame. In a 720p window the
+  figures across the top take less room, and in a 4:3 window the two columns stack in full instead of squeezing
+  together.
+- When there's nothing you can borrow over a term, the borrow form says why without offering an amount, and before
+  you have any income it says your credit limit opens once you're earning Gold.
 - Aid is on the Treasury tab until the Trade tab opens, since it needs no stage; then it lives on the Trade tab.
   Civilizations you haven't met are left out there too.
 - The citizens' loan offer reads "Your citizens" as its title, and the bond market's and temple treasuries' titles

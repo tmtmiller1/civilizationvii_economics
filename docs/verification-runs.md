@@ -582,6 +582,30 @@ One lab game, seed 4242, Antiquity, the usual mod set, full screen on the Retina
   "without them", a 13 Gold gap that was only the cycle's share. The comparison now waits for a loan the player owes
   (built, not watched).
 
+## Watched 2026-10-31, second run (Spoil Guard, stages Off, small windows)
+
+Two lab games, seed 4242, Antiquity, Economic stages Off (`--setup ECONOMICS_STAGES=ECONOMICS_STAGES_OFF`), the usual
+mod set: one windowed at 1280x720, one at 4:3 (the game opened at 1920x1440). Captures in
+`working_screenshots/econ-0.5.4/stages-off-1280x720/` and `stages-off-4x3/`.
+
+- SG.1 (in a game): Options, Add-ons has an Economics group with a ticked Spoil Guard checkbox. The main menu's Options
+  wasn't opened; the launch logged no Economics errors there.
+- SG.3: unticked through the checkbox and confirmed, the stored slice read `"spoilGuard":false` in the page and in
+  `LocalStorage.sqlite` on disk; with Demographics' guard off too, the lending chips and the Trade tab listed all five
+  civilizations, the unmet ones with "you haven't met them yet".
+- SG.4: with ours off and Demographics publishing `met-civs-only`, the Trade tab and the chips still left the unmet
+  civilizations out.
+- SG.5: ours back on, the Trade tab listed nobody until turn 29, then Greece and Dai Viet, the two just met.
+- UP.3: turn 1 Treasury with stages Off showed the loan rows and the scale, one balance line with nothing owed.
+- Two lines once a loan is owed: a 30 Gold bond loan on turn 30, and the chart showed "With your loans" and "Without
+  them".
+- UP.8, 1280x720: every tab scrolls inside the frame. Found and fixed: the strip took nearly half the height (now
+  tighter under 48rem, the small print dropped); the borrow form opened on 10 while the most was 0 (now the amount
+  and offers wait until there's room, and a limit of 0 for want of income says so). Both watched after the fix.
+- UP.8, 4:3: found the stacked columns collapsed to nothing (a row layout's flex basis of 0), squeezing each section
+  into the next with the frame at its floor. Fixed (`flex: 0 0 auto` when stacked) and watched: Loans and Treasury
+  stack in full and scroll, the frame 1382 of 1440 tall.
+
 ## Owed: whole-Gold payments
 
 Built 2026-10-31 (NOTES 119). The engine fact was watched that day; the fix itself hasn't been seen in a game.
