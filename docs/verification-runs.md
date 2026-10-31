@@ -698,6 +698,48 @@ run 2, after the fix: 10 turns (`2026-10-31T18-14-00`). Drive logs, the per-turn
 - Aid clearing a default to the giver wasn't driven: no AI was Friendly with a civ in default to it in these runs
   (owed below).
 
+## Watched 2026-10-31, sixth run (AI plan stage B: escrow and the AI's preference factors)
+
+One lab game, seed 4242, Modern, the same setup as the fifth run, the stage B build (commit `ea90f87`) in
+`Mods/economics`, 21 turns (`~/.tower-bench/runs/2026-10-31T18-28-44`; drive log, dumps and `UI.log` under
+`mod_ideas_tested/economics/devtools/probe-runs/2026-10-31-stage-b/`). The script
+(`devtools/econ-stage-b-sample.js`) wrote Persia a 10-turn bond loan of 3 turns of income and the Ottomans a 3-turn
+loan of 4.5 turns of income at turn 2, emptied the Ottomans' treasury on turns 3 to 6, and from turn 16 gave Hawai'i a
+3-turn loan of 4.5 turns of income with its treasury emptied each turn, so a civ would be short with the escrow in
+place. Every AI also took its own build loans at turns 2, 12 and 22. No invariant line and no
+`scaleAiPreference failed` line in `UI.log`.
+
+- The hold: from turn 2 every indebted AI put next turn's dues into escrow after its payments (`EH` transfers, the
+  ledger's rows), and each turn the engine balance read after the batch equalled the batch's snapshot plus what it
+  was paid, hold included (`landed` on every AI row of every turn), so the Gold was out of the treasury the AI
+  spends from.
+- The payment from escrow: at turn 3 the Ottomans' 23.65 came back (`ER2`) and their payments of 23.65 and 75.95
+  were made; at turn 4, after their treasury was emptied to 9.24, the 98.88 released covered the 98.88 due to the
+  cent, no miss. Persia the same every turn of its 10-turn loan (released 69.18 at turn 4, paid 17.08 and 52.10).
+- Conservation: the batch nets add up with the escrow as a world line both ways; no `debt-8` or other invariant
+  line in 21 turns.
+- Distress and the two-turn hold: Hawai'i was short at turns 18 and 19 (refinanced 50.69 and 126.31), held nothing
+  on those turns (nothing left after paying), held 118.77 at turn 20 (two turns of its 61.67 dues, the turn after
+  its last short turn) and 61.01 at turn 21.
+- The preference factors: every AI's Gold bias went out every turn (`YIELD_GOLD` 2.0 to 5 on all five, since their
+  build loans put the service past a tenth of income nearly every turn); Hawai'i's army and expansion budgets read
+  0.25 on turns 18 to 20 (in distress, Gold factor 5) and 1 again from turn 21. What the factors do to the AIs'
+  builds wasn't measured here (the direction was, in the fourth run at x50).
+- Not seen: the Treasury tab's "In escrow" line (the data behind it, `treasuryView.escrowCents`, read right in the
+  unit tests; the drawn tab needs a capture), and the escrow across an age change (owed below).
+- For the owner: with the build loans sized to half of income, the Gold bias sat between 2 and 5 on all five AIs
+  for most of the game. AI-PLAN 4.2's tenth-of-income threshold was meant for a civ paying debts, and the build loan
+  puts every AI there. Whether that's wanted, or the threshold should sit above the build loan's own service, is a
+  call for the balance run and the owner.
+
+## Owed: AI plan stage B
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| B.1 | The Treasury tab's "In escrow for next turn's payments" line shows the hold while a loan is owed and 0 after it closes; the projection chart dips by the hold | any, a player loan | `ui/econ-view-treasury.js` `nowSection` |
+| B.2 | Across an age change, a civ's escrow comes back on the new age's first batch (the Gold sat outside the treasury the game capped) and the age-gold notice doesn't count it | Antiquity into Exploration, a loan open at the change | `ui/econ-escrow.js` `releaseEscrow`, `ui/econ-plan.js` `ageGoldCuts` |
+| B.3 | An AI held at the Gold factor the plan sends (2 to 5, not the fourth run's 50) builds and buys differently from the same AI in a control game; its army budget at 0.25 in distress shows in its builds | two Modern 4242 games, one with AI rules off | `ui/econ-escrow.js` `aiPreferenceRows` |
+
 ## Owed: AI plan stage A
 
 Built 2026-10-31 (commit `2b99755` and the dues fix). The rules above were watched; these weren't.
