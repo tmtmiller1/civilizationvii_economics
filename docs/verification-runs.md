@@ -761,6 +761,43 @@ in the ledger. No invariant line in `UI.log`.
 - The seat's own refinancing and the escrow meant the player never saw a `short` notice with the guard off (the
   guard was on); the restructure button from `m = 0` and the reserve rows on the Loans tab weren't drawn (owed below).
 
+## Watched 2026-10-31, eighth run (AI plan stage D: credit reputation and the AI's repudiation weighing)
+
+One lab game, seed 4242, Modern, the same setup as the fifth run, the stage D build (commit `ebfce20`) in
+`Mods/economics`, 22 turns (`~/.tower-bench/runs/2026-10-31T19-00-37`; drive log, dump and `UI.log` under
+`mod_ideas_tested/economics/devtools/probe-runs/2026-10-31-stage-d/`). The script
+(`devtools/econ-stage-d-sample.js`) read each AI's strength at turn 2 (`getMilitaryStrength` answered nothing, so the
+combat-unit count: 15 for all five), wrote Persia a 20-turn loan from Dai Viet worth 6 turns of its income and set
+Persia Unfriendly to Dai Viet, and wrote Goryeo a loan from Dai Viet with nine of ten payments made; at turn 14,
+with Persia at 17 combat units to Dai Viet's 15, the Persia loan again; at turn 18 the Ottomans a loan from Hawai'i
+and a war between them through the engine's own `Diplomacy.forceDeclareWar` (on the player's Diplomacy object; it
+took, `isAtWarWith` read true the next turn). No invariant line and no failed booking in `UI.log`.
+
+- The weighing, the Unfriendly-and-weaker branch: at turn 15 Persia repudiated the 1,022.94 Gold it owed Dai Viet
+  (`repudiation`, grudge 32); the engine read 32 grievances on Dai Viet and the relationship fell from -47 to -90
+  (the lender's own hit of -24, sized like the grudge, with the witnesses' -3 each); Persia's reputation went to 70
+  (`credit-rep -30`). The first loan at turn 2 wasn't repudiated: every AI read 15 combat units, so nobody was
+  weaker, and Persia, flush, repaid it early at turn 4 instead.
+- The war branch: at turn 19 the Ottomans, at war with Hawai'i since the turn before, repudiated the 744 Gold
+  (grudge 23, read back as 23 on Hawai'i; witnesses -2, the lender -17; reputation 85, the halved cost).
+- The climb back: Persia's 70 at turn 15 had mended to 72.77 by turn 22 (half-life 50), then +2 for the tenth
+  payment on time and +5 for repaying L8 in full put it at 79.77; the Ottomans' 85 reached 90.41 with a loan repaid
+  and 93.54 with aid given. The rows carry the turn, so a reload mends from the same point.
+- Favors: Goryeo's tenth payment on Dai Viet's loan at turn 3 booked `favors 4>5:5`, and the engine's
+  `getNumFavors(5)` on Goryeo read 0 before and 5 after (the engine keeps favors in thousandths, as grievances, so
+  the call books `5 * 1000`), then 15 as the game added its own.
+- Not seen: the Loans tab's reputation figure and the repudiation preview's lender line as drawn; what the booked
+  favors do to the relationship over time (the fourth run read the favor events, not their weight); a 0.5.4 save
+  loading its standing as the opening reputation in a game (unit-tested).
+
+## Owed: AI plan stage D
+
+| # | What the player sees when it works | Setup | Source |
+| --- | --- | --- | --- |
+| D.1 | The Loans tab's limits panel shows "Credit reputation" as a whole number (100 clean), red under 100; the repudiation preview names the lender's own relationship hit and the reputation after | a player loan, then a repudiation | `ui/econ-view-loans.js` `limitsSection`, `repudiateConfirm` |
+| D.2 | Favors booked on a loan repaid in full move the lender's relationship with the player, or show in the relationship panel's breakdown | a player loan from an AI, repaid in full | `ui/econ-engine.js` `bookFavor` |
+| D.3 | A 0.5.4 save with a default or a repudiation loads with its standing as the reputation (0.80, 0.70) and the rates it paid before | a 0.5.4 save with a troubled loan | `ui/econ-state.js` `cleanCreditRep` |
+
 ## Owed: AI plan stage C
 
 | # | What the player sees when it works | Setup | Source |
