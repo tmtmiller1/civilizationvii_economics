@@ -42,12 +42,16 @@ export function opensNext(api, next, first = null) {
 }
 
 /**
- * Queues one of the player's requests for the next batch and says so at the top of the tab.
+ * Queues one of the player's requests for the next batch and says so beside the control that sent it (`at`, the
+ * place's id). The request goes through at the start of next turn, so the line says it was sent, not that it's done;
+ * a request the queue won't take says that instead.
  * @param {ScreenApi} api
  * @param {PlanRequest} request
+ * @param {string} [at]
  */
-export function send(api, request) {
-  if (api.request(request)) say(api.loc("LOC_ECONOMICS_SENT", api.loc(requestKey(request.kind))));
+export function send(api, request, at = "top") {
+  const ok = api.request(request);
+  say(api.loc(ok ? "LOC_ECONOMICS_SENT" : "LOC_ECONOMICS_SENT_FAILED", api.loc(requestKey(request.kind))), { at, ok });
   api.rerender();
 }
 

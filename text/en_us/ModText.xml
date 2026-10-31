@@ -134,7 +134,7 @@
         <Row Tag="LOC_ECONOMICS_TREASURY_DEPTH_FACTOR"><Text>Rate factor from depth</Text></Row>
 
         <!-- The screen's header, summary strip, instruments and confirmations -->
-        <Row Tag="LOC_ECONOMICS_SUMMARY_SYSTEM"><Text>{1_System} economy</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SUMMARY_SYSTEM"><Text>{1_System}</Text></Row>
         <Row Tag="LOC_ECONOMICS_SUMMARY_TREASURY"><Text>Treasury</Text></Row>
         <Row Tag="LOC_ECONOMICS_SUMMARY_TREASURY_TIP"><Text>The Gold you hold now.</Text></Row>
         <Row Tag="LOC_ECONOMICS_SUMMARY_INCOME"><Text>Income</Text></Row>
@@ -153,8 +153,14 @@
         <Row Tag="LOC_ECONOMICS_SUMMARY_WAITING"><Text>Waiting</Text></Row>
         <Row Tag="LOC_ECONOMICS_SUMMARY_WAITING_SUB"><Text>for next turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_SENT"><Text>Sent: {1_Request}. It goes through at the start of next turn, and you can still take it back under Waiting for next turn.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SENT_FAILED"><Text>Not sent: {1_Request}. The list for next turn is full; take something off it first.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CHANGE_TREASURY"><Text>Your treasury</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CHANGE_DEBT"><Text>Your debt</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CHANGE_PAYMENTS"><Text>Loan payments a turn, for {1_Turns} turns</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SHOW_PARTS"><Text>Show the parts</Text></Row>
+        <Row Tag="LOC_ECONOMICS_HIDE_PARTS"><Text>Hide the parts</Text></Row>
+        <Row Tag="LOC_ECONOMICS_SINCE_LAST_TURN"><Text>Since last turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_TURN_SHORT"><Text>Turn {1_Turn}</Text></Row>
-        <Row Tag="LOC_ECONOMICS_BALANCE_AFTER"><Text>Your treasury after</Text></Row>
         <Row Tag="LOC_ECONOMICS_GAUGE_SERVICE"><Text>Loan payments, of your income</Text></Row>
         <Row Tag="LOC_ECONOMICS_GAUGE_SERVICE_READING"><Text>{1_Percent}% of income</Text></Row>
         <Row Tag="LOC_ECONOMICS_GAUGE_LIMIT"><Text>lenders stop at {1_Percent}%</Text></Row>
@@ -196,8 +202,6 @@
         <Row Tag="LOC_ECONOMICS_LOAN_PART_PRINCIPAL"><Text>Paying down the loan</Text></Row>
         <Row Tag="LOC_ECONOMICS_RESTRUCTURE_WHY_ON_TIME"><Text>Only an overdue loan can be restructured.</Text></Row>
         <Row Tag="LOC_ECONOMICS_RESTRUCTURE_WHY_DONE"><Text>This loan has been restructured once already.</Text></Row>
-        <Row Tag="LOC_ECONOMICS_REPAY_PAYS"><Text>You pay next turn</Text></Row>
-        <Row Tag="LOC_ECONOMICS_REPAY_LEFT"><Text>Left on the loan</Text></Row>
         <Row Tag="LOC_ECONOMICS_REPAY_NOTE"><Text>If your treasury is short next turn, you pay what it holds and the rest stays on the loan.</Text></Row>
         <Row Tag="LOC_ECONOMICS_REPUDIATE_KEEP"><Text>You keep</Text></Row>
         <Row Tag="LOC_ECONOMICS_REPUDIATE_STANDING"><Text>Your standing</Text></Row>
@@ -209,7 +213,6 @@
         <Row Tag="LOC_ECONOMICS_LEND_THEY_PAY"><Text>They pay a turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_LEND_YOU_EARN"><Text>You earn in interest</Text></Row>
         <Row Tag="LOC_ECONOMICS_LEND_TO_CIV"><Text>Lend to {1_Borrower}</Text></Row>
-        <Row Tag="LOC_ECONOMICS_LEND_YOU_SEND"><Text>You send, next turn</Text></Row>
         <Row Tag="LOC_ECONOMICS_LEND_THEY_PAY_FOR"><Text>They pay a turn, for {1_Turns} turns</Text></Row>
         <Row Tag="LOC_ECONOMICS_GUARD_SAID_ON"><Text>The auto-loan guard is on.</Text></Row>
         <Row Tag="LOC_ECONOMICS_GUARD_SAID_OFF"><Text>The auto-loan guard is off. A negative balance meets the game's own penalties.</Text></Row>
@@ -261,7 +264,7 @@
         <Row Tag="LOC_ECONOMICS_OPENED_DEV_LOANS"><Text>Economics: you can fund another civilization's builds with development loans on the Trade tab now.</Text></Row>
         <Row Tag="LOC_ECONOMICS_OPENED_GENERAL"><Text>Economics: you can invest in another civilization's treasury on the Trade tab now.</Text></Row>
         <Row Tag="LOC_ECONOMICS_OPENED_INFLATION"><Text>Economics: inflation now reaches your treasury. The World tab shows its rate.</Text></Row>
-        <Row Tag="LOC_ECONOMICS_DOCK_NEW"><Text>Economics: new on the {1_Tabs} tab</Text></Row>
+        <Row Tag="LOC_ECONOMICS_DOCK_NEW"><Text>Economics: something new on {1_Tabs}</Text></Row>
         <Row Tag="LOC_ECONOMICS_FISCAL_NONE_YET"><Text>Your first tax card unlocks with this age's early civics.</Text></Row>
         <Row Tag="LOC_ECONOMICS_TREASURY_CYCLE"><Text>Business cycle ({1_Phase})</Text></Row>
         <Row Tag="LOC_ECONOMICS_BORROW"><Text>Borrow</Text></Row>

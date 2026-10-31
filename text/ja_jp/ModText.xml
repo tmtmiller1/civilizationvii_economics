@@ -111,7 +111,7 @@
         <Replace Tag="LOC_ECONOMICS_ROLE_BANKING" Language="ja_JP"><Text>Banking buildings</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_DEPTH_TURNS" Language="ja_JP"><Text>Extra turns of income on your credit limit</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_DEPTH_FACTOR" Language="ja_JP"><Text>Rate factor from depth</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SUMMARY_SYSTEM" Language="ja_JP"><Text>{1_System} economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SUMMARY_SYSTEM" Language="ja_JP"><Text>{1_System}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SUMMARY_TREASURY" Language="ja_JP"><Text>Treasury</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SUMMARY_TREASURY_TIP" Language="ja_JP"><Text>The Gold you hold now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SUMMARY_INCOME" Language="ja_JP"><Text>Income</Text></Replace>
@@ -130,8 +130,14 @@
         <Replace Tag="LOC_ECONOMICS_SUMMARY_WAITING" Language="ja_JP"><Text>Waiting</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SUMMARY_WAITING_SUB" Language="ja_JP"><Text>for next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SENT" Language="ja_JP"><Text>Sent: {1_Request}. It goes through at the start of next turn, and you can still take it back under Waiting for next turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SENT_FAILED" Language="ja_JP"><Text>Not sent: {1_Request}. The list for next turn is full; take something off it first.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CHANGE_TREASURY" Language="ja_JP"><Text>Your treasury</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CHANGE_DEBT" Language="ja_JP"><Text>Your debt</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CHANGE_PAYMENTS" Language="ja_JP"><Text>Loan payments a turn, for {1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SHOW_PARTS" Language="ja_JP"><Text>Show the parts</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_HIDE_PARTS" Language="ja_JP"><Text>Hide the parts</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SINCE_LAST_TURN" Language="ja_JP"><Text>Since last turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TURN_SHORT" Language="ja_JP"><Text>Turn {1_Turn}</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_BALANCE_AFTER" Language="ja_JP"><Text>Your treasury after</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GAUGE_SERVICE" Language="ja_JP"><Text>Loan payments, of your income</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GAUGE_SERVICE_READING" Language="ja_JP"><Text>{1_Percent}% of income</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GAUGE_LIMIT" Language="ja_JP"><Text>lenders stop at {1_Percent}%</Text></Replace>
@@ -173,8 +179,6 @@
         <Replace Tag="LOC_ECONOMICS_LOAN_PART_PRINCIPAL" Language="ja_JP"><Text>Paying down the loan</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESTRUCTURE_WHY_ON_TIME" Language="ja_JP"><Text>Only an overdue loan can be restructured.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESTRUCTURE_WHY_DONE" Language="ja_JP"><Text>This loan has been restructured once already.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REPAY_PAYS" Language="ja_JP"><Text>You pay next turn</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REPAY_LEFT" Language="ja_JP"><Text>Left on the loan</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REPAY_NOTE" Language="ja_JP"><Text>If your treasury is short next turn, you pay what it holds and the rest stays on the loan.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REPUDIATE_KEEP" Language="ja_JP"><Text>You keep</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REPUDIATE_STANDING" Language="ja_JP"><Text>Your standing</Text></Replace>
@@ -186,7 +190,6 @@
         <Replace Tag="LOC_ECONOMICS_LEND_THEY_PAY" Language="ja_JP"><Text>They pay a turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEND_YOU_EARN" Language="ja_JP"><Text>You earn in interest</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEND_TO_CIV" Language="ja_JP"><Text>Lend to {1_Borrower}</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LEND_YOU_SEND" Language="ja_JP"><Text>You send, next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEND_THEY_PAY_FOR" Language="ja_JP"><Text>They pay a turn, for {1_Turns} turns</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GUARD_SAID_ON" Language="ja_JP"><Text>The auto-loan guard is on.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GUARD_SAID_OFF" Language="ja_JP"><Text>The auto-loan guard is off. A negative balance meets the game's own penalties.</Text></Replace>
@@ -235,7 +238,7 @@
         <Replace Tag="LOC_ECONOMICS_OPENED_DEV_LOANS" Language="ja_JP"><Text>Economics: you can fund another civilization's builds with development loans on the Trade tab now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENED_GENERAL" Language="ja_JP"><Text>Economics: you can invest in another civilization's treasury on the Trade tab now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENED_INFLATION" Language="ja_JP"><Text>Economics: inflation now reaches your treasury. The World tab shows its rate.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_DOCK_NEW" Language="ja_JP"><Text>Economics: new on the {1_Tabs} tab</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_DOCK_NEW" Language="ja_JP"><Text>Economics: something new on {1_Tabs}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_NONE_YET" Language="ja_JP"><Text>Your first tax card unlocks with this age's early civics.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_CYCLE" Language="ja_JP"><Text>Business cycle ({1_Phase})</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW" Language="ja_JP"><Text>Borrow</Text></Replace>

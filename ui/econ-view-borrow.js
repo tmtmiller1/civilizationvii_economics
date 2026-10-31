@@ -5,8 +5,8 @@
 // offer and limit functions answer, so the form can't promise what the batch won't do. Lend: pick an AI, the
 // principal, rate and term, and see what it would pay back and how close it is to the AI repudiation rule.
 
-import { amount, button, chips, confirmCard, el, empty, facts, goldStepper, isConfirming, note, row, section,
-  setConfirming, stat } from "./econ-dom.js";
+import { amount, button, changeRow, chips, confirmCard, el, empty, facts, feedbackLine, goldStepper, isConfirming,
+  note, row, section, setConfirming, stat } from "./econ-dom.js";
 import { formatGold, formatRate } from "./econ-format.js";
 import { borrowerRisk, loanOffers, termsOpen } from "./econ-view-model.js";
 import { bondRatePpm } from "./econ-lenders.js";
@@ -21,6 +21,9 @@ import { send } from "./econ-view-common.js";
 
 const MIN_PRINCIPAL = 1000;
 const MAX_PRINCIPAL = 10000000;
+/** @typedef {{ principal: number, term: number, income: number, balance: number, debt: number, service: number }} Ask
+ * the amount asked, and the treasury, debt and payments a turn now, for the confirmation */
+
 /** Form state kept across re-renders; `principal` null until the player sets one, so it follows the limits. */
 const form = { principal: /** @type {number | null} */ (null), term: /** @type {number | null} */ (null),
   lendTo: /** @type {number | null} */ (null), lendPrincipal: 10000, lendRatePct: 100, lendTerm: 10 };
@@ -39,13 +42,17 @@ const gold = (api, cents, tone = 0) => amount(formatGold(cents), { tone,
  * @param {number} term
  */
 export function largestLoan(input, me, roomCents, term) {
-  const room = Math.max(MIN_PRINCIPAL, Math.floor(roomCents / 1000) * 1000);
-  let best = 0;
-  for (const offer of loanOffers(input, me, room, term)) {
-    const fits = offer.refusal ? offer.mostCents ?? 0 : room;
-    best = Math.max(best, fits);
+  /** Whether some lender would take this amount as it stands. @param {number} cents */
+  const takes = (cents) => loanOffers(input, me, cents, term).some((offer) => !offer.refusal);
+  let low = 0;
+  let high = Math.max(1, Math.floor(roomCents / 1000));
+  // In tens of Gold: the largest amount up to the credit room that some lender takes, by halving.
+  while (low < high) {
+    const mid = Math.ceil((low + high) / 2);
+    if (takes(mid * 1000)) low = mid;
+    else high = mid - 1;
   }
-  return best > 0 ? Math.max(MIN_PRINCIPAL, Math.floor(best / 1000) * 1000) : MIN_PRINCIPAL;
+  return Math.max(MIN_PRINCIPAL, low * 1000);
 }
 
 /**
@@ -62,12 +69,29 @@ export function renderBorrow(input, view, api) {
     max: MAX_PRINCIPAL, format: formatGold, onChange: (cents) => { form.principal = cents; api.rerender(); } })));
   block.appendChild(field(api.loc("LOC_ECONOMICS_TERM"), chips(terms.map((t) => ({ id: String(t),
     label: api.loc("LOC_ECONOMICS_TURNS", t) })), String(term), (id) => { form.term = Number(id); api.rerender(); })));
-  const offers = loanOffers(input, api.me, principal, term);
-  if (!offers.length) block.appendChild(empty(api.loc("LOC_ECONOMICS_BORROW_NO_OFFERS")));
-  const income = input.civs.find((civ) => civ.id === api.me)?.incomeCents ?? 0;
-  for (const offer of offers) block.appendChild(offerCard(offer, { principal, term, income }, api));
-  if (view.creditRoomCents < principal) block.appendChild(note(api.loc("LOC_ECONOMICS_BORROW_OVER_ROOM")));
+  for (const node of offerCards(input, view, { principal, term }, api)) block.appendChild(node);
   return block;
+}
+
+/**
+ * The line after a borrow, then each lender's offer for the amount and term, then the credit limit's note.
+ * @param {PlanInput} input
+ * @param {ReturnType<typeof import("./econ-view-model.js").loansView>} view
+ * @param {{ principal: number, term: number }} asked
+ * @param {ScreenApi} api
+ */
+function offerCards(input, view, { principal, term }, api) {
+  const me = input.civs.find((civ) => civ.id === api.me);
+  const now = { income: me?.incomeCents ?? 0, balance: me?.balanceCents ?? 0,
+    debt: view.mine.reduce((sum, loan) => sum + loan.outstanding, 0), service: view.serviceCents };
+  const offers = loanOffers(input, api.me, principal, term);
+  const said = feedbackLine("borrow");
+  /** @type {HTMLElement[]} */
+  const out = said ? [said] : [];
+  if (!offers.length) out.push(empty(api.loc("LOC_ECONOMICS_BORROW_NO_OFFERS")));
+  for (const offer of offers) out.push(offerCard(offer, { principal, term, ...now }, api));
+  if (view.creditRoomCents < principal) out.push(note(api.loc("LOC_ECONOMICS_BORROW_OVER_ROOM")));
+  return out;
 }
 
 /**
@@ -85,7 +109,7 @@ function field(label, control) {
 /**
  * One lender's offer, its costs on its face.
  * @param {ReturnType<typeof loanOffers>[number]} offer
- * @param {{ principal: number, term: number, income: number }} ask
+ * @param {Ask} ask
  * @param {ScreenApi} api
  */
 function offerCard(offer, ask, api) {
@@ -120,22 +144,27 @@ function offerCard(offer, ask, api) {
 }
 
 /**
- * Borrowing, confirmed: what arrives, what goes out each turn and for how long, the interest, and income after.
+ * Borrowing, confirmed: now against after for the treasury, the debt, the payments a turn and the share of income
+ * they take, then the interest in all; all from the model's own payment and limit functions.
  * @param {ReturnType<typeof loanOffers>[number]} offer
- * @param {{ principal: number, term: number, income: number, payment: number, interest: number }} q
+ * @param {Ask & { payment: number, interest: number }} q
  * @param {ScreenApi} api
  */
 function borrowConfirm(offer, q, api) {
+  const share = (/** @type {number} */ cents) => `${q.income > 0 ? Math.round((100 * cents) / q.income) : 100}%`;
   return confirmCard({ title: api.loc("LOC_ECONOMICS_BORROW_FROM", api.nameOf(offer.lender)),
-    lines: [row(api.loc("LOC_ECONOMICS_BORROW_YOU_GET"), gold(api, q.principal)),
-      row(api.loc("LOC_ECONOMICS_BORROW_YOU_PAY", q.term), gold(api, q.payment)),
+    lines: [changeRow(api.loc("LOC_ECONOMICS_CHANGE_TREASURY"), formatGold(q.balance), formatGold(q.balance + q.principal), 1),
+      changeRow(api.loc("LOC_ECONOMICS_CHANGE_DEBT"), formatGold(q.debt), formatGold(q.debt + q.principal), -1),
+      changeRow(api.loc("LOC_ECONOMICS_CHANGE_PAYMENTS", q.term), formatGold(q.service),
+        formatGold(q.service + q.payment), -1),
+      changeRow(api.loc("LOC_ECONOMICS_OFFER_SHARE"), share(q.service), share(q.service + q.payment)),
       row(api.loc("LOC_ECONOMICS_OFFER_INTEREST"), gold(api, q.interest)),
-      row(api.loc("LOC_ECONOMICS_OFFER_INCOME_AFTER"), gold(api, q.income - q.payment, q.income - q.payment < 0 ? -1 : 0)),
       note(api.loc("LOC_ECONOMICS_BORROW_NOTE"))],
     confirm: api.loc("LOC_ECONOMICS_BORROW"), cancel: api.loc("LOC_ECONOMICS_CANCEL"),
     onConfirm: () => {
       form.principal = q.principal;
-      send(api, { kind: "borrow", borrower: api.me, lender: offer.lender, principal: q.principal, term: q.term });
+      send(api, { kind: "borrow", borrower: api.me, lender: offer.lender, principal: q.principal, term: q.term },
+        "borrow");
     }, rerender: api.rerender });
 }
 
@@ -190,17 +219,20 @@ export function renderLend(input, api) {
 function lendOutcome(input, borrower, ratePpm, api) {
   const payment = firstPayment(form.lendPrincipal, ratePpm, form.lendTerm);
   const interest = totalInterest(form.lendPrincipal, ratePpm, form.lendTerm);
-  const out = [facts([stat(api.loc("LOC_ECONOMICS_LEND_THEY_PAY"), gold(api, payment)),
+  const balance = input.civs.find((civ) => civ.id === api.me)?.balanceCents ?? 0;
+  const said = feedbackLine("lend");
+  const out = [...(said ? [said] : []), facts([stat(api.loc("LOC_ECONOMICS_LEND_THEY_PAY"), gold(api, payment)),
     stat(api.loc("LOC_ECONOMICS_LEND_YOU_EARN"), gold(api, interest, 1))]), riskNote(input, borrower, api),
   button(api.loc("LOC_ECONOMICS_LEND"), () => { setConfirming("lend"); api.rerender(); })];
   if (isConfirming("lend")) {
     out.push(confirmCard({ title: api.loc("LOC_ECONOMICS_LEND_TO_CIV", api.nameOf(borrower)),
-      lines: [row(api.loc("LOC_ECONOMICS_LEND_YOU_SEND"), gold(api, form.lendPrincipal)),
+      lines: [changeRow(api.loc("LOC_ECONOMICS_CHANGE_TREASURY"), formatGold(balance),
+        formatGold(balance - form.lendPrincipal), -1),
         row(api.loc("LOC_ECONOMICS_LEND_THEY_PAY_FOR", form.lendTerm), gold(api, payment)),
         row(api.loc("LOC_ECONOMICS_LEND_YOU_EARN"), gold(api, interest, 1)), note(api.loc("LOC_ECONOMICS_LEND_RULE"))],
       confirm: api.loc("LOC_ECONOMICS_LEND"), cancel: api.loc("LOC_ECONOMICS_CANCEL"),
       onConfirm: () => send(api, { kind: "lend", lender: api.me, borrower, principal: form.lendPrincipal, ratePpm,
-        term: form.lendTerm }), rerender: api.rerender }));
+        term: form.lendTerm }, "lend"), rerender: api.rerender }));
   }
   return out;
 }

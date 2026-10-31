@@ -4,11 +4,12 @@
 // and why. The side column holds the debt-service gauge, your loans and the guard until the Loans tab opens, and the
 // buildings that set financial depth.
 
-import { amount, columns, empty, expander, note, pill, projectionChart, row, section, el } from "./econ-dom.js";
 import { formatFactor, formatGold } from "./econ-format.js";
 import { composeArgs, describeEvent, eventConcerns, flowBreakdown, phaseKey } from "./econ-notice-text.js";
 import { loansView, treasuryView } from "./econ-view-model.js";
 import { cycleGoldLine, inflationLines, worldView } from "./econ-view-macro.js";
+import { amount, changeRow, columns, el, empty, expander, note, pill, projectionChart, row, section }
+  from "./econ-dom.js";
 import { opensNext, rulesFor, turnLabels } from "./econ-view-common.js";
 import { cycleDial, inflationMeter, serviceMeter } from "./econ-view-instruments.js";
 import { guardSection, mineSection, pendingSection } from "./econ-view-loans.js";
@@ -41,6 +42,8 @@ export function renderTreasury(host, api) {
   /** @type {HTMLElement[]} */
   const side = [instrumentSection(input, view, api)];
   // Before the Loans tab opens, the player's loans and the guard switch are here.
+  const since = sinceSection(input, api);
+  if (since) side.push(since);
   if (rules.sections["treasury.loans"]) side.push(...earlyLoans(input, api));
   if (rules.sections["treasury.depth"]) side.push(depthSection(api));
   if (rules.sections["treasury.old"]) side.push(oldSection(api));
@@ -134,7 +137,32 @@ function modNetRow(input, api) {
     const parts = flowBreakdown(transfers, api.me);
     if (!parts.length) return [note(api.loc("LOC_ECONOMICS_TREASURY_MOD_NET_NONE"))];
     return parts.map((part) => row(api.loc(part.key), goldAmount(api, part.cents, { signed: true, tone: true })));
-  }, api.rerender);
+  }, api.rerender, { show: api.loc("LOC_ECONOMICS_SHOW_PARTS"), hide: api.loc("LOC_ECONOMICS_HIDE_PARTS") });
+}
+
+/**
+ * What changed since last turn, from what the save keeps: income a turn (the markets envelope's income marks, one a
+ * batch) and the world's index (the cycle's history). Nothing is shown that the save doesn't hold; with neither
+ * there's no section.
+ * @param {PlanInput} input
+ * @param {ScreenApi} api
+ */
+function sinceSection(input, api) {
+  /** @type {HTMLElement[]} */
+  const lines = [];
+  const incomes = input.markets?.incomes?.[String(api.me)] || [];
+  if (incomes.length >= 2) {
+    const [before, now] = incomes.slice(-2);
+    lines.push(changeRow(api.loc("LOC_ECONOMICS_TREASURY_INCOME"), formatGold(before, { signed: true }),
+      formatGold(now, { signed: true }), Math.sign(now - before)));
+  }
+  const history = worldView(input, api.me).history;
+  if (history.length >= 2) {
+    const [before, now] = history.slice(-2);
+    lines.push(changeRow(api.loc("LOC_ECONOMICS_WORLD_INDEX"), (before / 10000).toFixed(2), (now / 10000).toFixed(2),
+      Math.sign(now - before)));
+  }
+  return lines.length ? section(api.loc("LOC_ECONOMICS_SINCE_LAST_TURN"), lines, { variant: "minor" }) : null;
 }
 
 /**
@@ -246,11 +274,12 @@ function flowsSection(api) {
   const turn = ledger?.lastTurn ?? null;
   const events = (ledger?.events || []).filter((event) => eventConcerns(event, api.me)).slice(-12).reverse();
   const block = section(api.loc("LOC_ECONOMICS_TREASURY_FLOWS"));
+  let shown = 0;
   for (const event of events) {
     const item = historyLine(event, /** @type {Ledger} */ (ledger), api);
-    if (item) block.appendChild(item);
+    if (item) { block.appendChild(item); shown += 1; }
   }
-  if (!events.length) block.appendChild(empty(api.loc("LOC_ECONOMICS_TREASURY_NO_FLOWS")));
+  if (!shown) block.appendChild(empty(api.loc("LOC_ECONOMICS_TREASURY_NO_FLOWS")));
   else if (turn !== null) {
     block.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_FLOWS_NOTE", api.turnLabel(turn) ?? turn)));
   }

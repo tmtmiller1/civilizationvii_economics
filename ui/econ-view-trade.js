@@ -4,8 +4,8 @@
 // would return and the relationship it buys; then the routes the game would let you make and what each would add to
 // your bill; then your open investments.
 
-import { amount, button, columns, confirmCard, el, empty, facts, goldStepper, isConfirming, note, row, section,
-  setConfirming, stat } from "./econ-dom.js";
+import { amount, button, changeRow, columns, confirmCard, el, empty, facts, feedbackLine, goldStepper, isConfirming,
+  note, row, section, setConfirming, stat } from "./econ-dom.js";
 import { send } from "./econ-view-common.js";
 import { formatGold } from "./econ-format.js";
 import { reasonKey } from "./econ-notice-text.js";
@@ -81,6 +81,8 @@ function partnerRow(line, api) {
 function offersSection(input, api) {
   const { offers } = investmentsView(input, api.me);
   const block = section(api.loc("LOC_ECONOMICS_TRADE_OFFERS"));
+  const said = feedbackLine("offers");
+  if (said) block.appendChild(said);
   if (!offers.length) block.appendChild(empty(api.loc("LOC_ECONOMICS_TRADE_NO_OFFERS")));
   for (const offer of offers) {
     const box = el("div", "econ-card");
@@ -89,9 +91,9 @@ function offersSection(input, api) {
       offer.cityId ? api.cityName(offer.cityId) : "")));
     const actions = el("div", "econ-actions");
     actions.appendChild(button(api.loc("LOC_ECONOMICS_OFFER_ACCEPT"), () => ask(api, { kind: "accept-offer",
-      offerId: offer.id })));
+      offerId: offer.id }, "offers"), { className: "econ-button--primary" }));
     actions.appendChild(button(api.loc("LOC_ECONOMICS_OFFER_DECLINE"), () => ask(api, { kind: "decline-offer",
-      offerId: offer.id })));
+      offerId: offer.id }, "offers"), { className: "econ-button--quiet" }));
     box.appendChild(actions);
     block.appendChild(box);
   }
@@ -101,9 +103,10 @@ function offersSection(input, api) {
 /**
  * @param {ScreenApi} api
  * @param {PlanRequest} request
+ * @param {string} at where the line saying so goes
  */
-function ask(api, request) {
-  send(api, request);
+function ask(api, request, at) {
+  send(api, request, at);
 }
 
 /**
@@ -119,6 +122,8 @@ function investSection(input, api, open) {
   amountLine.appendChild(goldStepper({ value: form.cents, min: 1000, max: 10000000, format: formatGold,
     onChange: (cents) => { form.cents = cents; api.rerender(); } }));
   block.appendChild(amountLine);
+  const said = feedbackLine("invest");
+  if (said) block.appendChild(said);
   const targets = investTargets(input, api.me, form.cents);
   const chosen = open.project ? targets.find((target) => target.pid === form.projectFor) : undefined;
   if (chosen) block.appendChild(projectCard(chosen, api));
@@ -197,15 +202,27 @@ function actionRow(api, q) {
   line.appendChild(button(label, () => { setConfirming(id); api.rerender(); },
     { disabled: q.refusal !== null, reason: q.refusal ? api.loc(reasonKey(q.refusal)) : null }));
   if (!q.refusal) line.appendChild(note(forecastText(forecast, q, api)));
-  if (isConfirming(id)) {
-    line.appendChild(confirmCard({ title: label, lines: [
+  if (isConfirming(id)) line.appendChild(investConfirm(api, q, label, forecast));
+  return line;
+}
+
+/**
+ * The investment, confirmed: what goes out, the treasury now against after, and what it brings back.
+ * @param {ScreenApi} api
+ * @param {{ host: number, form: InvestKind, asAid: boolean, city?: CityRead }} q
+ * @param {string} label
+ * @param {ReturnType<typeof investForecast>} forecast
+ */
+function investConfirm(api, q, label, forecast) {
+  const balance = api.input().civs.find((civ) => civ.id === api.me)?.balanceCents ?? 0;
+  return confirmCard({ title: label, lines: [
       row(api.loc("LOC_ECONOMICS_INVEST_YOU_SEND"), goldText(forecast.spentCents, api)),
+      changeRow(api.loc("LOC_ECONOMICS_CHANGE_TREASURY"), formatGold(balance),
+        formatGold(balance - forecast.spentCents), -1),
       note(forecastText(forecast, q, api))],
     confirm: api.loc("LOC_ECONOMICS_CONFIRM"), cancel: api.loc("LOC_ECONOMICS_CANCEL"),
     onConfirm: () => ask(api, { kind: "invest", investor: api.me, host: q.host, form: q.form, cents: form.cents,
-      cityId: q.city?.id ?? null, asAid: q.asAid }), rerender: api.rerender }));
-  }
-  return line;
+      cityId: q.city?.id ?? null, asAid: q.asAid }, "invest"), rerender: api.rerender });
 }
 
 /**

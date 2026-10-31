@@ -85,35 +85,14 @@ function makeTabBar(items, onSelect, start) {
   return bar;
 }
 
-/** The looks on trial (econ-screen.css); the `skin` setting picks one. */
-export const SKINS = ["ledger", "gilt", "folio"];
-
-/**
- * Puts the chosen look's class on the screen's root.
- * @param {any} root
- */
-function applySkin(root) {
-  const node = root?.querySelector?.(".econ-screen-root");
-  if (!node) return;
-  const chosen = String(getSetting("skin"));
-  for (const skin of SKINS) node.classList.toggle(`econ-skin-${skin}`, skin === (SKINS.includes(chosen) ? chosen : "ledger"));
-}
-
-/**
- * Switches the look, for trying the options side by side: saved as the `skin` setting and drawn on the open screen.
- * @param {string} skin
- */
-export function setSkin(skin) {
-  if (!SKINS.includes(skin)) return false;
-  setSetting("skin", skin);
-  if (openScreenInstance) { applySkin(openScreenInstance.Root); openScreenInstance.render(); }
-  return true;
-}
-
 /** The open screen's tab, chosen from outside (the console, for captures). @param {string} key */
 export function showTab(key) {
-  openScreenInstance?.selectTab(/** @type {TabKey} */ (key));
-  return openScreenInstance?.tab ?? null;
+  const screen = openScreenInstance;
+  if (!screen) return null;
+  screen.selectTab(/** @type {TabKey} */ (key));
+  const bar = screen.Root?.querySelector?.("fxs-tab-bar");
+  bar?.setAttribute?.("selected-tab-index", String(Math.max(0, screen.tabs.indexOf(screen.tab))));
+  return screen.tab;
 }
 
 /** The line after an action, once, at the top of the tab. @param {HTMLElement} host */
@@ -127,6 +106,8 @@ class ScreenEconomics extends Panel {
   tab = "treasury";
   /** @type {TabKey[]} */
   tabs = [];
+  /** @type {TabKey | null} the tab last drawn, to keep its scroll across a redraw */
+  drawnTab = null;
 
   onInitialize() {
     super.onInitialize?.();
@@ -143,7 +124,6 @@ class ScreenEconomics extends Panel {
     this.Root?.addEventListener?.("engine-input", this.onEngineInput);
     try {
       this.wireClose();
-      applySkin(this.Root);
       if (screenApi) {
         this.tabs = shownTabs(screenApi);
         // A remembered tab that isn't shown now (a closed stage, or a game with the stages on) falls back to Treasury.
@@ -210,16 +190,25 @@ class ScreenEconomics extends Panel {
   render() {
     const host = /** @type {HTMLElement | null} */ (this.Root?.querySelector?.(".econ-screen-host") ?? null);
     if (!host) return;
+    // A redraw after an action keeps the player's place in a long tab; a new tab starts at its top.
+    const keep = this.drawnTab === this.tab ? host.scrollTop : 0;
+    this.drawnTab = this.tab;
     while (host.firstChild) host.removeChild(host.firstChild);
     if (!screenApi) { host.appendChild(el("div", "econ-note", "Economics: no session")); return; }
     this.syncTabs(screenApi);
     this.renderHeader(screenApi);
     showFeedback(host);
+    this.renderTab(host, screenApi);
+    host.scrollTop = keep;
+  }
+
+  /** @param {HTMLElement} host @param {ScreenApi} api */
+  renderTab(host, api) {
     try {
-      TABS[this.tab].render(host, screenApi);
+      TABS[this.tab].render(host, api);
     } catch (error) {
       logLine(`tab ${this.tab} failed: ${error instanceof Error ? error.stack || error.message : String(error)}`);
-      host.appendChild(el("div", "econ-note econ-negative", screenApi.loc("LOC_ECONOMICS_TAB_FAILED")));
+      host.appendChild(el("div", "econ-note econ-negative", api.loc("LOC_ECONOMICS_TAB_FAILED")));
     }
   }
 

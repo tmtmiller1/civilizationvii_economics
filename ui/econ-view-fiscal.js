@@ -4,13 +4,13 @@
 // through the game's own policy-change operation (econ-fiscal.js). The side column: the civ's Gold, Happiness and
 // celebration now, its economic system, and the tariff once the stage opens. The policy menu shows the same cards.
 
-import { amount, button, chips, columns, el, empty, facts, note, pill, row, say, section, stat } from "./econ-dom.js";
+import { amount, button, chips, columns, el, empty, facts, feedbackLine, note, pill, row, section, stat } from "./econ-dom.js";
 import { canChangeTariff } from "./econ-trade.js";
 import { formatGold } from "./econ-format.js";
 import { CARD_LEVELS, ageOf, atWarAmounts, cardAmounts, cardForecast } from "./econ-tax-cards.js";
 import { systemView } from "./econ-view-macro.js";
-import { requestKey, systemKey } from "./econ-notice-text.js";
-import { opensNext, rulesFor } from "./econ-view-common.js";
+import { systemKey } from "./econ-notice-text.js";
+import { opensNext, rulesFor, send } from "./econ-view-common.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 /** @typedef {import("./econ-tax-cards.js").FiscalRead} FiscalRead */
@@ -233,6 +233,8 @@ function tariffSection(api) {
   if (input.options?.markets === false || input.options?.tariffs === false) return null;
   const block = section(api.loc("LOC_ECONOMICS_TARIFF"));
   for (const node of tariffRows(input, api)) block.appendChild(node);
+  const said = feedbackLine("tariff");
+  if (said) block.appendChild(said);
   block.appendChild(note(api.loc("LOC_ECONOMICS_TARIFF_NOTE")));
   return block;
 }
@@ -262,8 +264,7 @@ function tariffRows(input, api) {
   }
   const pick = (/** @type {string} */ id) => {
     if (id === level) return;
-    if (api.request({ kind: "tariff", pid: api.me, level: id })) say(api.loc("LOC_ECONOMICS_SENT", api.loc(requestKey("tariff"))));
-    api.rerender();
+    send(api, { kind: "tariff", pid: api.me, level: id }, "tariff");
   };
   return [row(api.loc("LOC_ECONOMICS_TARIFF_NOW"), name(level)),
     chips(["none", "low", "high"].map((id) => ({ id, label: name(id) })), level, pick)];

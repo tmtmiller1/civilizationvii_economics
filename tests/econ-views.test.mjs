@@ -107,7 +107,8 @@ test("the Loans tab lists the loans overdue first, queues repay, restructure and
   by("LOC_ECONOMICS_LOANS_REPAY_ALL")[0].click();
   assert.equal(api.requests.length, 0, "a repay opens its confirmation first");
   const repay = confirmOn(api);
-  assert.ok(textOf(repay.card).includes("LOC_ECONOMICS_REPAY_PAYS"), "what goes out next turn");
+  assert.ok(textOf(repay.card).includes("LOC_ECONOMICS_CHANGE_TREASURY | 200 | → | 170"), "the treasury now and after");
+  assert.ok(textOf(repay.card).includes("LOC_ECONOMICS_LOAN_OWED | 30 | → | 0"), "the loan now and after");
   assert.deepEqual(api.requests.at(-1), { kind: "repay", loanId: "L2", cents: 3000 });
   by("LOC_ECONOMICS_LOANS_REPUDIATE_LENDER")[0].click();
   const again = confirmOn(api);
@@ -124,7 +125,11 @@ test("the Loans tab lists the loans overdue first, queues repay, restructure and
   const borrow = by("LOC_ECONOMICS_BORROW").find((b) => !b.classList.contains("econ-button--disabled"));
   borrow.click();
   const borrowed = confirmOn(api);
-  assert.ok(textOf(borrowed.card).includes("LOC_ECONOMICS_OFFER_INCOME_AFTER"), "income after the payment, before the click");
+  for (const piece of ["LOC_ECONOMICS_CHANGE_TREASURY", "LOC_ECONOMICS_CHANGE_DEBT | 60 | →",
+    "LOC_ECONOMICS_CHANGE_PAYMENTS|10", "LOC_ECONOMICS_OFFER_SHARE"]) {
+    assert.ok(textOf(borrowed.card).includes(piece), `${piece}: now and after, before the click`);
+  }
+  assert.ok(textOf(borrowed.host).length > 0);
   const sent = api.requests.at(-1);
   assert.deepEqual([sent.kind, sent.lender, sent.term], ["borrow", 6, 10], "the shortest term");
   assert.ok(sent.principal >= 1000, "filled in with the most the limits allow");
@@ -395,4 +400,38 @@ test("what Economics moved, by kind of flow, for the Treasury tab's breakdown", 
     reason: "trade" }, { from: ME, to: "x", cents: 5, reason: "mystery" }], ME);
   assert.deepEqual(rows, [{ key: "LOC_ECONOMICS_FLOW_LABEL_LOANS", cents: 380 },
     { key: "LOC_ECONOMICS_FLOW_LABEL_CYCLE", cents: 80 }, { key: "LOC_ECONOMICS_FLOW_LABEL_OTHER", cents: -5 }]);
+});
+
+test("the stepper moves its figure at once, stops at its ends, and a double press runs once", async () => {
+  const { goldStepper, button } = await import("../ui/econ-dom.js");
+  const seen = [];
+  const node = goldStepper({ value: 2000, min: 1000, max: 12000, format: (c) => String(c / 100), onChange: (c) => seen.push(c) });
+  const steps = byClass(node, "econ-step");
+  steps[1].click();
+  assert.equal(byClass(node, "econ-amount-value")[0].textContent, "10", "the shown amount follows the press");
+  steps[1].click();
+  assert.deepEqual(seen, [1000], "at the least, the minus step does nothing");
+  assert.ok(steps[0].classList.contains("econ-step--off") && steps[1].classList.contains("econ-step--off"));
+  let runs = 0;
+  const b = button("Go", () => { runs += 1; });
+  b.click();
+  b.click();
+  assert.equal(runs, 1, "a second press in the same moment is dropped");
+});
+
+test("a request says it was sent beside its control, and says so when the list is full", async () => {
+  resetConfirmForTests();
+  resetFormForTests(1000);
+  const { send } = await import("../ui/econ-view-common.js");
+  const { feedbackLine } = await import("../ui/econ-dom.js");
+  const api = makeApi();
+  send(api, { kind: "repay", loanId: "L1", cents: 100 }, "loan:L1");
+  assert.equal(feedbackLine("top"), null, "the line belongs beside the loan, not the top of the tab");
+  const host = document.createElement("div");
+  renderLoans(host, api);
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_SENT|LOC_ECONOMICS_REQUEST_REPAY"));
+  const full = makeApi({ request: () => false });
+  send(full, { kind: "repay", loanId: "L1", cents: 100 }, "x");
+  const line = feedbackLine("x");
+  assert.ok(line.textContent.startsWith("LOC_ECONOMICS_SENT_FAILED") && line.classList.contains("econ-feedback--failed"));
 });

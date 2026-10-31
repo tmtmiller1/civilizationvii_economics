@@ -4,14 +4,14 @@
 // the guard switch with its allowance, and the requests waiting for the next turn. Each action opens a confirmation in
 // place that says what it costs and what changes, and one more click sends it.
 
-import { button, columns, confirmCard, el, empty, expander, facts, isConfirming, note, pill, row, say, section,
-  setConfirming, stat, amount } from "./econ-dom.js";
+import { amount, button, changeRow, columns, confirmCard, el, empty, expander, facts, feedbackLine, isConfirming, note,
+  pill, row, say, section, setConfirming, stat } from "./econ-dom.js";
 import { formatGold, formatRate } from "./econ-format.js";
 import { loansView, repudiationPreview, restructurePreview } from "./econ-view-model.js";
 import { renderBorrow, renderLend } from "./econ-view-borrow.js";
 import { requestKey } from "./econ-notice-text.js";
 import { opensNext, rulesFor, send } from "./econ-view-common.js";
-import { paymentDue } from "./econ-loan.js";
+import { isOpen, paymentDue } from "./econ-loan.js";
 import { serviceMeter } from "./econ-view-instruments.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
@@ -76,6 +76,8 @@ function statusPill(loan, api) {
 export function mineSection(input, view, api) {
   const block = section(api.loc("LOC_ECONOMICS_LOANS_MINE"));
   if (!view.mine.length) { block.appendChild(empty(api.loc("LOC_ECONOMICS_LOANS_NONE"))); return block; }
+  const said = feedbackLine("mine");
+  if (said) block.appendChild(said);
   for (const loan of view.mine) block.appendChild(loanCard(input, loan, api));
   const lenders = [...new Set(view.mine.map((loan) => loan.lender))];
   const repudiate = el("div", "econ-actions");
@@ -102,7 +104,7 @@ function paymentRow(input, loan, api) {
   return expander(`payment:${loan.id}`, row(api.loc("LOC_ECONOMICS_LOAN_PAYMENT"), gold(api, loan.paymentCents)), () => [
     row(api.loc("LOC_ECONOMICS_LOAN_PART_INTEREST", formatRate(loan.ratePpm)), gold(api, parts.interest)),
     row(api.loc("LOC_ECONOMICS_LOAN_PART_PRINCIPAL"), gold(api, parts.amortisation)),
-  ], api.rerender);
+  ], api.rerender, { show: api.loc("LOC_ECONOMICS_SHOW_PARTS"), hide: api.loc("LOC_ECONOMICS_HIDE_PARTS") });
 }
 
 /**
@@ -127,6 +129,8 @@ function loanCard(input, loan, api) {
   ]));
   card.appendChild(paymentRow(input, loan, api));
   card.appendChild(loanActions(loan, api));
+  const said = feedbackLine(`loan:${loan.id}`);
+  if (said) card.appendChild(said);
   for (const share of ["all", "half"]) {
     if (isConfirming(`repay:${loan.id}:${share}`)) card.appendChild(repayConfirm(input, loan, share === "all", api));
   }
@@ -154,7 +158,8 @@ function loanActions(loan, api) {
 }
 
 /**
- * Repaying all or half: what goes out next turn, what's left, and the balance after.
+ * Repaying all or half: now against after for the treasury, this loan and its payment a turn (the model's own
+ * schedule on what's left).
  * @param {PlanInput} input
  * @param {LoanRow} loan
  * @param {boolean} all
@@ -163,13 +168,17 @@ function loanActions(loan, api) {
 function repayConfirm(input, loan, all, api) {
   const cents = all ? loan.outstanding : Math.ceil(loan.outstanding / 2);
   const balance = input.civs.find((civ) => civ.id === api.me)?.balanceCents ?? 0;
+  const record = (input.ledger?.loans || []).find((row) => row.id === loan.id);
+  const left = loan.outstanding - cents;
+  const after = record && left > 0 ? paymentDue({ ...record, outstanding: left }).total : 0;
   return confirmCard({ title: api.loc(all ? "LOC_ECONOMICS_LOANS_REPAY_ALL" : "LOC_ECONOMICS_LOANS_REPAY_HALF"),
-    lines: [row(api.loc("LOC_ECONOMICS_REPAY_PAYS"), gold(api, cents)),
-      row(api.loc("LOC_ECONOMICS_REPAY_LEFT"), gold(api, loan.outstanding - cents)),
-      row(api.loc("LOC_ECONOMICS_BALANCE_AFTER"), gold(api, balance - cents)),
+    lines: [changeRow(api.loc("LOC_ECONOMICS_CHANGE_TREASURY"), formatGold(balance), formatGold(balance - cents), -1),
+      changeRow(api.loc("LOC_ECONOMICS_LOAN_OWED"), formatGold(loan.outstanding), formatGold(left), 1),
+      changeRow(api.loc("LOC_ECONOMICS_LOAN_PAYMENT"), formatGold(loan.paymentCents), formatGold(after), 1),
       note(api.loc("LOC_ECONOMICS_REPAY_NOTE"))],
     confirm: api.loc("LOC_ECONOMICS_CONFIRM"), cancel: api.loc("LOC_ECONOMICS_CANCEL"),
-    onConfirm: () => send(api, { kind: "repay", loanId: loan.id, cents }), rerender: api.rerender });
+    onConfirm: () => send(api, { kind: "repay", loanId: loan.id, cents }, `loan:${loan.id}`),
+    rerender: api.rerender });
 }
 
 /**
@@ -180,11 +189,17 @@ function repayConfirm(input, loan, all, api) {
 function restructureConfirm(input, loanId, api) {
   const preview = restructurePreview(/** @type {Ledger} */ (input.ledger), loanId);
   if (!preview) return el("div", "");
+  const record = (input.ledger?.loans || []).find((row) => row.id === loanId);
+  const before = record && record.state === "active" ? paymentDue(record).total : 0;
   return confirmCard({ title: api.loc("LOC_ECONOMICS_LOANS_RESTRUCTURE"),
-    lines: [note(api.loc("LOC_ECONOMICS_RESTRUCTURE_PREVIEW", formatGold(preview.outstanding),
+    lines: [changeRow(api.loc("LOC_ECONOMICS_LOAN_PAYMENT"), formatGold(before), formatGold(preview.paymentCents),
+      preview.paymentCents < before ? 1 : 0),
+    changeRow(api.loc("LOC_ECONOMICS_LOAN_LEFT"), String(record ? record.term - record.paid : 0), String(preview.term)),
+    note(api.loc("LOC_ECONOMICS_RESTRUCTURE_PREVIEW", formatGold(preview.outstanding),
       formatRate(preview.ratePpm), formatGold(preview.paymentCents)))],
     confirm: api.loc("LOC_ECONOMICS_CONFIRM"), cancel: api.loc("LOC_ECONOMICS_CANCEL"), warning: true,
-    onConfirm: () => send(api, { kind: "restructure", loanId, pid: api.me }), rerender: api.rerender });
+    onConfirm: () => send(api, { kind: "restructure", loanId, pid: api.me }, `loan:${loanId}`),
+    rerender: api.rerender });
 }
 
 /**
@@ -196,15 +211,18 @@ function repudiateConfirm(input, lender, api) {
   const p = repudiationPreview(input, api.me, lender);
   const closes = p.closedTurns !== null ? api.loc("LOC_ECONOMICS_CLOSED_TURNS", p.closedTurns)
     : api.loc("LOC_ECONOMICS_CLOSED_AGES");
+  const owed = input.ledger ? input.ledger.loans.filter((loan) => loan.borrower === api.me && isOpen(loan))
+    .reduce((sum, loan) => sum + loan.outstanding, 0) : 0;
   const lines = [row(api.loc("LOC_ECONOMICS_REPUDIATE_KEEP"), gold(api, p.keptCents)),
-    row(api.loc("LOC_ECONOMICS_REPUDIATE_STANDING"), `${(p.standingNow / 100).toFixed(2)} → ${(p.standingAfter / 100).toFixed(2)}`,
-      "econ-negative"),
+    changeRow(api.loc("LOC_ECONOMICS_CHANGE_DEBT"), formatGold(owed), formatGold(owed - p.keptCents)),
+    changeRow(api.loc("LOC_ECONOMICS_REPUDIATE_STANDING"), (p.standingNow / 100).toFixed(2),
+      (p.standingAfter / 100).toFixed(2), -1),
     note(api.loc("LOC_ECONOMICS_REPUDIATE_PREVIEW", formatGold(p.keptCents), api.nameOf(lender), p.grudge,
       p.witnesses.length, p.witnessDelta, (p.standingAfter / 100).toFixed(2), closes, p.creditTurnsLost))];
   if (p.atWar) lines.push(note(api.loc("LOC_ECONOMICS_REPUDIATE_AT_WAR")));
   return confirmCard({ title: api.loc("LOC_ECONOMICS_LOANS_REPUDIATE_LENDER", api.nameOf(lender)), lines,
     confirm: api.loc("LOC_ECONOMICS_CONFIRM"), cancel: api.loc("LOC_ECONOMICS_CANCEL"), warning: true,
-    onConfirm: () => send(api, { kind: "repudiate", borrower: api.me, lender }), rerender: api.rerender });
+    onConfirm: () => send(api, { kind: "repudiate", borrower: api.me, lender }, "mine"), rerender: api.rerender });
 }
 
 /**
@@ -228,8 +246,10 @@ function lentSection(view, api) {
       stat(api.loc("LOC_ECONOMICS_LOAN_LEFT"), api.loc("LOC_ECONOMICS_TURNS", loan.turnsLeft))]));
     if (loan.overdue && !loan.restructured) {
       card.appendChild(button(api.loc("LOC_ECONOMICS_LOANS_ALLOW_RESTRUCTURE"),
-        () => send(api, { kind: "restructure", loanId: loan.id, pid: api.me })));
+        () => send(api, { kind: "restructure", loanId: loan.id, pid: api.me }, `lent:${loan.id}`)));
     }
+    const said = feedbackLine(`lent:${loan.id}`);
+    if (said) card.appendChild(said);
     block.appendChild(card);
   }
   return block;
@@ -251,10 +271,12 @@ export function guardSection(view, api) {
   actions.appendChild(button(api.loc(on ? "LOC_ECONOMICS_GUARD_SWITCH_OFF" : "LOC_ECONOMICS_GUARD_SWITCH_ON"),
     () => {
       api.setGuard(!on);
-      say(api.loc(on ? "LOC_ECONOMICS_GUARD_SAID_OFF" : "LOC_ECONOMICS_GUARD_SAID_ON"));
+      say(api.loc(on ? "LOC_ECONOMICS_GUARD_SAID_OFF" : "LOC_ECONOMICS_GUARD_SAID_ON"), { at: "guard" });
       api.rerender();
     }));
   block.appendChild(actions);
+  const said = feedbackLine("guard");
+  if (said) block.appendChild(said);
   block.appendChild(note(api.loc("LOC_ECONOMICS_GUARD_NOTE")));
   return block;
 }

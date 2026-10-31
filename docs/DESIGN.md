@@ -773,7 +773,13 @@ can fall in that 3 s window at all.
 ### 4.15 Economic stages
 
 Each part opens per civ, AI included, when the civ completes the node that unlocks the anchor. Until then the part is
-closed to it, and the Economics screen greys it out and names the tech or civic that opens it.
+closed to it. The Economics screen leaves a part out until it opens and ends each tab on one "Opens next" line naming
+the next part and the tech or civic that opens it; a tab appears when its first part opens (`ui/econ-view-tabs.js`):
+Treasury and Fiscal from the start, Markets and World at Coinage (Markets at Trade if that comes first), Trade at
+Trade, Loans at Moneylending or sooner for an open loan or a citizens' offer. Until the Loans tab appears, the guard
+and any loan sit on the Treasury tab, and the cycle's Gold too until the World tab appears. The turn a tab or part
+opens, the turn notification says so and the dock button carries a gold dot until that tab is looked at. With the
+Economic stages option Off every tab is there from the start.
 
 | Stage | Anchor (unlocked type) | 1.5.0 node | Opens |
 | --- | --- | --- | --- |
@@ -1121,7 +1127,12 @@ leaves the game alone.
 
 - Economics screen: `Controls.define` at load (post-startup defines never initialise on 1.5.0), `ContextManager.push`.
   Dock button via Mod Commons if shipped, else its own decorator.
-- Each tab opens on what's due, what's coming and what the player can do about it; history sits below.
+- Each tab opens on what's due, what's coming and what the player can do about it; history sits below. Above the
+  tabs, a summary strip carries the treasury, income a turn, what Economics moved last turn (opened to its parts on
+  the Treasury tab), the debt with this turn's payments, the cycle's phase and the requests waiting; the economic
+  system and phase sit under the title. The cycle reads on one dial; debt service and inflation on slim scales with
+  the model's own limit and cap. Every action that moves Gold opens a confirmation in place with the figures it
+  changes, now against after, computed by the model's own functions.
 - Tabs:
   - Treasury: balance, income, next turn's charges, a 20-turn projection with and without the current loans, the
     mod's flows by line with the cause of each, the inflation reserve (4.8), buildings by role.
