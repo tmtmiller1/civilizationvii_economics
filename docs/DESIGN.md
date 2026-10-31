@@ -713,6 +713,79 @@ keeps the yields native and the index pull in the script; and whether a narrativ
 one-off grant from the bond market at a Depression's floor) is wanted on top, which would be the game's event data
 plus a `grantYield` from the world account.
 
+### 4.11b The Great Depression as play: responses, events and the Hoover trap (proposed 2026-10-31, nothing built)
+
+4.11a gives the model a way out. This gives the player one: a Depression should be a crisis with choices, each with
+a price and a legacy, the way 1929 to 1941 was. The playbook below maps the history onto levers the mod already has
+(the index and a civ's own `L`, the ledger, the bond market and the world accounts, prices, the celebration meter
+through `sendCelebration`, Influence, relationships and grievances, the tariff, the tax cards' pattern) and onto the
+native ones (policy cards with yields the AI plays by itself). Nothing here needs a new engine door.
+
+**The crisis panel.** When a civ's phase reads Depression, the turn notice says so and the World tab opens a
+"Crisis" section above the index: what's pulling the civ down (the causes list it has now), what the civ is doing
+about it (its standing responses), and the responses open to it this age. Each is a button with its cost, its
+effect and its lasting mark; a response is a request like any other (queued, resolved at the batch, the AI choosing
+by rule), and the ledger keeps a `response` event for the chronicle. The panel closes when the phase lifts, and the
+standing responses run on until their term ends. Doing nothing is a choice too (below).
+
+**Responses.** Each lasts the Depression plus a few turns unless it says otherwise. Figures are first numbers.
+
+| Response | History | What it does | Price | Legacy |
+| --- | --- | --- | --- | --- |
+| Bank holiday | Emergency Banking Act, March 1933 | For 3 turns no loan payment is due or missed by anyone owing the civ's lenders and by the civ itself; the escrow holds; misses don't count; `+0.02` on its `L` once (confidence) | each lender's relationship -2 (the AI's are through `changeRelationshipLevel`); reputation -3 | none; once per Depression |
+| Deposit insurance and bank regulation | FDIC, Glass-Steagall | The civ's own Panic drop halves and the bond spread floors at 1.0 for it; its credit cap's depth term is cut by a quarter (banks lend less) | 2 turns of income once, to the bond market (the fund) | lasts the age; a Market-economy civ keeps it into the next |
+| Off the gold standard | April 1933 | Its prices rise 15% over 5 turns (Inflation On: `pi` up by 0.5% a turn for 5 turns); every loan it owes the bond market and the temple treasuries loses 10% of its outstanding; `+0.01` a turn on its `L` for 5 turns ("credit growing") | the civ lenders' relationship -3 and grievances; reputation -10; a Planned civ can't (no money to float) | the inflation stays; once per age |
+| Public works | WPA, CCC, TVA | The 4.11a card, taken as a response: +Production for -Gold a settlement, `+0.01` a turn on `L`, the world share while `E` is under 0.95; a civ in Depression may fund it from the bond market even during a Panic (deficit spending) | the card's Gold; the loan's interest | the card stays available; the builds stay |
+| Relief | FERA, the dole, Social Security | Gold a settlement a turn into the celebration meter (`sendCelebration`): -1 Gold, +4 Happiness a settlement; Emigration's push and Partisans' hardship read it as Happiness | the Gold; income slower, so a small drag on the index | none; a Social-Security version at Modern's Civil Service makes it permanent at half strength |
+| Price supports | AAA, NRA codes | A floor under this age's Bonus (farm) resource prices at 90% of their pre-Depression level, paid by the civ as a bill to the market account; or a cartel: its exporters' prices +10% | the bill; importers' relationship -1 each 5 turns (dearer imports) | the floor ends with the Depression |
+| Rearmament | the late-30s exit | +25% Production on units for 10 turns and an army budget bias up; `+0.005` a turn on `L` | Gold upkeep up; neighbours' agendas read it (the existing agenda rows) | the units |
+| Confidence | the fireside chats | Influence into the index: 20 Influence for `+0.01` on `L`, once per 5 turns | the Influence | none |
+
+**The Hoover trap: what doing nothing, or the wrong thing, does.** A Depression left alone follows 4.11 (reversion,
+momentum, the charge eating income). Two choices make it worse, as they did:
+
+- Tariffs up (Smoot-Hawley): the existing High tariff. In a Depression each AI it bills answers in kind two turns
+  later as now, every route that ends weighs -0.005, and a world where three or more civs hold High while under
+  0.80 takes a further -0.005 a turn ("trade war"). The Fiscal tab says so before the player sets it.
+- Austerity (the Mellon line): a response that repays debt early with half the surplus and takes the Heavy card's
+  Gold without its Happiness, +3 reputation and +0.01 standing a turn with the lenders, and `-0.01` a turn on `L`
+  while it runs. Right for a civ whose problem is debt, wrong for one whose problem is demand; the panel says which
+  the civ's figures look like (dues over income, or income falling).
+
+**Events.** Read from the state each turn, not rolled:
+
+- Bank run: a lender civ with two or more borrowers in default in the same Depression takes `-0.02` on its `L` once
+  and its civ lending closes for 5 turns (contagion). Deposit insurance stops it.
+- Bank failures: when the world's defaults in a Depression pass a fifth of its outstanding loans, the bond market
+  closes for 5 turns to everyone without deposit insurance, and credit caps world-wide lose 2 turns of income for
+  the rest of the age.
+- Dust Bowl: a disaster on a civ in Depression weighs double (the existing disaster event, doubled while under 0.80).
+- Bonus Army: a civ in Depression for 5 turns with no Relief and no Public works running gets Partisans' hardship up
+  one step (a Commons topic) and `-0.01` on its `L`; relief or works lifts it.
+- Recovery: the turn a civ leaves Depression the notice names what ended it (the response events in the causes list,
+  or "the world recovered"), and the chronicle keeps it.
+
+**The AI.** Picks by its economic system and situation, once per Depression, the way it picks cards: Planned and
+Manorial civs take Public works; Mercantile ones Price supports and, when their bills are high, Tariffs (the trap
+is theirs to fall into); Religious ones Relief; Tribute and Despotism Austerity; Market and Corporatist civs Deposit
+insurance, then Public works; any civ with dues over its income takes the Bank holiday first; a civ at war takes
+Rearmament. A civ whose leader's agenda rows run against a neighbour avoids Rearmament toward it. The native AI sees
+the card's yields on its own; the rest is the mod's rule.
+
+**Setup option.** Crisis responses: On, Off (the Depression of 4.11 as it stands). The panel and the responses are
+one stage on from Public debt, so Antiquity's Depressions have Relief, Public works and the Bank holiday only.
+
+**Balance targets.** With responses, a Depression on Volatile should last two thirds of what it does without (the
+0.5.3 run's floors of 0.51 to 0.69 should rise to 0.6 to 0.75); the Hoover trap should make it a quarter longer;
+no response should turn a Depression into a Boom within 10 turns; and the AI should take at least one response in
+four of five Depressions.
+
+**What's open for the owner.** Whether the responses are a panel on the World tab (the mod's own choices) or
+narrative events with the game's own choice dialog (prettier, but the trigger is the mod's state, so each would be
+fired by script through a Commons topic rather than the game's own narrative conditions); which responses ship
+first (the proposal: Bank holiday, Public works, Relief and the Hoover trap, since they use what exists, then
+Deposit insurance and the gold standard, then Price supports and Rearmament); and the numbers above.
+
 ### 4.12 Foreign investment
 
 | | Development loan | General | Aid (either kind) |
