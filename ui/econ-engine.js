@@ -144,16 +144,13 @@ export function readUpkeepCents(pid) {
 }
 
 /**
- * The civ's military strength as the engine scores it, or its combat units when that read gives nothing; null when
- * neither answers (the fourth run saw getMilitaryStrength answer null without arguments, AI-PLAN section 1).
+ * The civ's military strength: its combat units; null when the engine doesn't answer. `Stats.getMilitaryStrength`
+ * wants a Boolean and a number the game's own scripts never pass (its signature is open, AI-PLAN section 1); called
+ * bare it answers nothing and logs two conversion warnings per civ per turn, so it isn't called.
  * @param {number} pid
  */
 export function readStrength(pid) {
-  const stats = safe(() => Players.get(pid).Stats, null);
-  if (!stats) return null;
-  const strength = safe(() => Number(stats.getMilitaryStrength()), Number.NaN);
-  if (Number.isFinite(strength) && strength > 0) return strength;
-  const units = safe(() => Number(stats.getNumCombatUnits()), Number.NaN);
+  const units = safe(() => Number(Players.get(pid).Stats.getNumCombatUnits()), Number.NaN);
   return Number.isFinite(units) ? units : null;
 }
 

@@ -182,6 +182,8 @@ release is generated from the matching section below by `scripts/steam-changelog
   start with a capital too.
 
 ### Fixed
+- The batch reads each civilization's strength from its combat units and skips `getMilitaryStrength`, which answered
+  nothing and wrote two conversion warnings per civilization per turn into UI.log.
 - Payments under one Gold never reached anyone's treasury, because the game pays grants in whole Gold. That was most
   of the business cycle's effect in a steady economy. Each civilization is now paid in whole Gold and the rest carries
   to its next turn, so a few tenths a turn add up to a Gold every few turns. Reloading in the middle of a turn no
