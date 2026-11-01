@@ -1050,9 +1050,14 @@ own at turn 24. Every seat request went through the queue this time (`-> true` a
   turn 35. The World tab's "What moved it" read "rearmament (Heian Japan) +0.005" each turn, and from turn 18 "the
   Bonus Army marching" for every civ.
 - The crisis panel's turns pill read "2 turns in" at turn 4, "5 turns in" at turn 7 and "3 turns in" at turn 16;
-  on a crisis's first turn it still reads "1 turns in" (`LOC_ECONOMICS_CRISIS_TURNS` has one form).
+  on a crisis's first turn it still read "1 turns in". Fixed after the run: `LOC_ECONOMICS_CRISIS_TURNS` and
+  `LOC_ECONOMICS_CRISIS_TURNS_LEFT` carry the game's plural construct, so the first turn reads "1 turn in" (not
+  watched; X.14).
 - Noted again: invariant econ-3 fired once at turn 5 (`4:327684`, two development-loan progress grants on one
-  Goryeo city), the same line as the fifteenth run, outside the crises code. No other error line in `UI.log`.
+  Goryeo city), the same line as the fifteenth run, outside the crises code. No other error line in `UI.log`. Fixed
+  after the run: `openInvestment` joins a second investment in the same city on the same turn to the first progress
+  row, as the AI build loan and public works already did (tested; the invariant line should stay out of `UI.log` on
+  the next run, X.15).
 - Not reached: Antiquity's and Exploration's menus (X.2, X.3); the bank holiday on a seat loan (X.8); the bank run
   (X.10); the Civilopedia pages (X.11); the option Off (X.12); tribute's doubled bills (X.13).
 
@@ -1067,6 +1072,8 @@ own at turn 24. Every seat request went through the queue this time (`-> true` a
 | X.11 | The Civilopedia's "Crises and responses" group under Game Concepts draws its five pages with every chapter's text, and the search finds "New Deal" | any game, the Civilopedia | `data/econ-civilopedia.xml`, `text/en_us/EconomicsPedia.xml` |
 | X.12 | With the Crises and responses option Off at setup, no crisis starts, the World tab has no Crisis section and the boot line's options read `crises: false` | a game started with the option Off | `ui/econ-session.js` `readOptions`, `ui/econ-crisis.js` `crisesOn` |
 | X.13 | Tribute's doubled bills: the civs that paid the levy pay twice their trade bill to the levier for ten turns, read on the Trade tab against another importer's bill (ddb9cc7, tested, not watched) | Antiquity 4242, a Tribute-system seat in a debt crisis, trade routes in | `ui/econ-crisis-respond.js` `LEGACY_ROWS`, `ui/econ-trade.js` `owedByPair` |
+| X.14 | The crisis panel's turns pill reads "1 turn in" on a crisis's first turn and "1 turn left" on a legacy's last; the other counts still plural | Modern 4242, the World tab on the turn a crisis opens | `text/en_us/ModText.xml` `LOC_ECONOMICS_CRISIS_TURNS`, `ui/econ-view-crisis.js` |
+| X.15 | Two investments in one city on one turn land as one progress row: no `econ-3` line in `UI.log` across a Modern run where the AIs back each other's builds | Modern 4242, the usual set, 20 turns | `ui/econ-invest-open.js` `openInvestment` |
 
 ## Owed: the build loan as a want (2026-10-31, unreleased)
 

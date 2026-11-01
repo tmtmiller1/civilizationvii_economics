@@ -697,13 +697,13 @@
         <Replace Tag="LOC_ECONOMICS_CRISIS_CAN_DO" Language="ko_KR"><Text>What you can do</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_SINCE" Language="ko_KR"><Text>Since turn {1_Turn}, after {2_Causes}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_SINCE_QUIET" Language="ko_KR"><Text>Since turn {1_Turn}.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CRISIS_TURNS" Language="ko_KR"><Text>{1_Turns} turns in</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CRISIS_TURNS" Language="ko_KR"><Text>{1_Turns} {1_Turns : plural 1?turn; other?turns;} in</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_END_BUTTON" Language="ko_KR"><Text>End it</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_END_TITLE" Language="ko_KR"><Text>End {1_Response}?</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_END_NOTE" Language="ko_KR"><Text>It stops next turn. What it paid for stays; what it was doing each turn stops with it.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_END_RELIEF" Language="ko_KR"><Text>Ending relief while the crisis still runs is remembered: -2 Happiness a settlement for 10 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_UNTIL_END" Language="ko_KR"><Text>until the crisis ends</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CRISIS_TURNS_LEFT" Language="ko_KR"><Text>{1_Turns} turns left</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CRISIS_TURNS_LEFT" Language="ko_KR"><Text>{1_Turns} {1_Turns : plural 1?turn; other?turns;} left</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_NOTHING_NOTE" Language="ko_KR"><Text>Doing nothing is a choice too. The index drifts back toward Steady by a tenth of the gap a turn, while the slump charge, dearer credit and a Panic pull the other way. Tariffs and austerity have made a Depression longer before: the cards that follow say which.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_CREDIT_PANIC_ALONE" Language="ko_KR"><Text>Left alone, it ends when the Panic passes or your last loan is paid off. Nobody lends to you until then.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_PRICE_SHOCK_ALONE" Language="ko_KR"><Text>Left alone, it ends when the price settles back within 40% of where it stood ten turns before.</Text></Replace>

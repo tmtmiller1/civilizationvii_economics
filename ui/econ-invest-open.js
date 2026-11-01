@@ -180,7 +180,11 @@ export function openInvestment(ctx, spec, source) {
       reason: "invest", parts: { refund: spend.refund } });
   }
   if (spend.city) {
-    ctx.out.progress.push({ host: spec.host, cityId: spend.city.id, amount: spend.progress, investmentId: id });
+    // One progress row per city per turn (econ-3): a second investment in the same city this turn joins the first.
+    const cityId = spend.city.id;
+    const same = ctx.out.progress.find((row) => row.cityId === cityId);
+    if (same) same.amount += spend.progress;
+    else ctx.out.progress.push({ host: spec.host, cityId, amount: spend.progress, investmentId: id });
   }
   if (!spec.asAid) bookRecord(ctx, spec, { id, spent: spend.cents, city: spend.city });
   else repChange(ctx, spec.investor, REPUTATION.lent, "aid", id);

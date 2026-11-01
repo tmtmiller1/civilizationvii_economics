@@ -200,6 +200,14 @@ test("general investment: a Gold pair, a dividend that moves with the host, refu
   assert.deepEqual([withBuild.transfers, withBuild.progress], [[], []], "the player still chooses");
 });
 
+test("two development loans on one city in a turn land as one progress row (econ-3)", () => {
+  const civs = [me(), ai(AI, { incomeCents: 2000, cities: [city("6:1")] })];
+  const out = plan({ civs, requests: [{ kind: "invest", investor: ME, host: AI, form: "project", cents: 3000,
+    cityId: "6:1" }, { kind: "invest", investor: ME, host: AI, form: "project", cents: 3000, cityId: "6:1" }] });
+  assert.equal(out.ledger.investments.length, 2, "both records open");
+  assert.deepEqual(out.progress.map((p) => [p.cityId, p.amount]), [["6:1", 20]], "one row, both grants");
+});
+
 test("aid: no record, no return, the relationship at +1 per 2.5 turns of the host's income", () => {
   const civs = [me(), ai(AI, { incomeCents: 2000, cities: [city("6:1")] })];
   const gold = plan({ civs, requests: [{ kind: "invest", investor: ME, host: AI, form: "general", cents: 10000,

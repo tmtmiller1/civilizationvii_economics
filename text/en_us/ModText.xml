@@ -733,13 +733,13 @@
         <Row Tag="LOC_ECONOMICS_CRISIS_CAN_DO"><Text>What you can do</Text></Row>
         <Row Tag="LOC_ECONOMICS_CRISIS_SINCE"><Text>Since turn {1_Turn}, after {2_Causes}.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CRISIS_SINCE_QUIET"><Text>Since turn {1_Turn}.</Text></Row>
-        <Row Tag="LOC_ECONOMICS_CRISIS_TURNS"><Text>{1_Turns} turns in</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CRISIS_TURNS"><Text>{1_Turns} {1_Turns : plural 1?turn; other?turns;} in</Text></Row>
         <Row Tag="LOC_ECONOMICS_CRISIS_END_BUTTON"><Text>End it</Text></Row>
         <Row Tag="LOC_ECONOMICS_CRISIS_END_TITLE"><Text>End {1_Response}?</Text></Row>
         <Row Tag="LOC_ECONOMICS_CRISIS_END_NOTE"><Text>It stops next turn. What it paid for stays; what it was doing each turn stops with it.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CRISIS_END_RELIEF"><Text>Ending relief while the crisis still runs is remembered: -2 Happiness a settlement for 10 turns.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CRISIS_UNTIL_END"><Text>until the crisis ends</Text></Row>
-        <Row Tag="LOC_ECONOMICS_CRISIS_TURNS_LEFT"><Text>{1_Turns} turns left</Text></Row>
+        <Row Tag="LOC_ECONOMICS_CRISIS_TURNS_LEFT"><Text>{1_Turns} {1_Turns : plural 1?turn; other?turns;} left</Text></Row>
         <Row Tag="LOC_ECONOMICS_CRISIS_NOTHING_NOTE"><Text>Doing nothing is a choice too. The index drifts back toward Steady by a tenth of the gap a turn, while the slump charge, dearer credit and a Panic pull the other way. Tariffs and austerity have made a Depression longer before: the cards that follow say which.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CRISIS_CREDIT_PANIC_ALONE"><Text>Left alone, it ends when the Panic passes or your last loan is paid off. Nobody lends to you until then.</Text></Row>
         <Row Tag="LOC_ECONOMICS_CRISIS_PRICE_SHOCK_ALONE"><Text>Left alone, it ends when the price settles back within 40% of where it stood ten turns before.</Text></Row>
