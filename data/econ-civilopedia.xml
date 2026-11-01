@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Economics: the Civilopedia for the crises and the responses to them (DESIGN 4.11b, 4.11c), a "Crises and responses"
+  group in the base game's Game Concepts section. Chapter text resolves by key convention (base-standard
+  model-civilopedia.js): LOC_PEDIA_CONCEPTS_PAGE_<page>_CHAPTER_<chapter>_TITLE and ..._PARA_1, _PARA_2, ... until
+  the first gap; the text is in text/en_us/EconomicsPedia.xml. Layouts come first: pages and layout chapters have a
+  foreign key onto them. tests/econ-pedia.test.mjs walks these rows the way the engine does.
+-->
+<Database>
+    <CivilopediaPageGroups>
+        <Row SectionID="CONCEPTS" PageGroupID="ECONOMICS_CRISES" Name="LOC_PEDIA_ECONOMICS_CRISES_TITLE" SortIndex="930"/>
+    </CivilopediaPageGroups>
+
+    <CivilopediaPageLayouts>
+        <Row PageLayoutID="ECON_CRISES_OVERVIEW" UseSidebar="false"/>
+        <Row PageLayoutID="ECON_CRISES_ANTIQUITY" UseSidebar="false"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" UseSidebar="false"/>
+        <Row PageLayoutID="ECON_CRISES_MODERN" UseSidebar="false"/>
+        <Row PageLayoutID="ECON_CRISES_EVENTS" UseSidebar="false"/>
+    </CivilopediaPageLayouts>
+
+    <CivilopediaPageLayoutChapters>
+        <Row PageLayoutID="ECON_CRISES_OVERVIEW" ChapterID="CONTENT" SortIndex="10"/>
+        <Row PageLayoutID="ECON_CRISES_OVERVIEW" ChapterID="KINDS" SortIndex="20"/>
+        <Row PageLayoutID="ECON_CRISES_OVERVIEW" ChapterID="PANEL" SortIndex="30"/>
+        <Row PageLayoutID="ECON_CRISES_OVERVIEW" ChapterID="NOTHING" SortIndex="40"/>
+        <Row PageLayoutID="ECON_CRISES_OVERVIEW" ChapterID="LEGACIES" SortIndex="50"/>
+        <Row PageLayoutID="ECON_CRISES_OVERVIEW" ChapterID="AI" SortIndex="60"/>
+        <Row PageLayoutID="ECON_CRISES_OVERVIEW" ChapterID="OPTION" SortIndex="70"/>
+
+        <Row PageLayoutID="ECON_CRISES_ANTIQUITY" ChapterID="CONTENT" SortIndex="10"/>
+        <Row PageLayoutID="ECON_CRISES_ANTIQUITY" ChapterID="CANCEL_DEBTS" SortIndex="20"/>
+        <Row PageLayoutID="ECON_CRISES_ANTIQUITY" ChapterID="GRAIN_DOLE" SortIndex="30"/>
+        <Row PageLayoutID="ECON_CRISES_ANTIQUITY" ChapterID="DEBASE" SortIndex="40"/>
+        <Row PageLayoutID="ECON_CRISES_ANTIQUITY" ChapterID="PUBLIC_WORKS" SortIndex="50"/>
+        <Row PageLayoutID="ECON_CRISES_ANTIQUITY" ChapterID="TRIBUTE" SortIndex="60"/>
+        <Row PageLayoutID="ECON_CRISES_ANTIQUITY" ChapterID="TEMPLE_LENDS" SortIndex="70"/>
+        <Row PageLayoutID="ECON_CRISES_ANTIQUITY" ChapterID="BANK_HOLIDAY" SortIndex="80"/>
+        <Row PageLayoutID="ECON_CRISES_ANTIQUITY" ChapterID="CONFIDENCE" SortIndex="90"/>
+        <Row PageLayoutID="ECON_CRISES_ANTIQUITY" ChapterID="AUSTERITY" SortIndex="100"/>
+
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="CONTENT" SortIndex="10"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="SUSPEND" SortIndex="20"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="RECOINAGE" SortIndex="30"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="CHARTER" SortIndex="40"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="NAVIGATION_ACTS" SortIndex="50"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="BULLION" SortIndex="60"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="LEND_CROWN" SortIndex="70"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="PUBLIC_WORKS" SortIndex="80"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="RELIEF" SortIndex="90"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="BANK_HOLIDAY" SortIndex="100"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="CONFIDENCE" SortIndex="110"/>
+        <Row PageLayoutID="ECON_CRISES_EXPLORATION" ChapterID="AUSTERITY" SortIndex="120"/>
+
+        <Row PageLayoutID="ECON_CRISES_MODERN" ChapterID="CONTENT" SortIndex="10"/>
+        <Row PageLayoutID="ECON_CRISES_MODERN" ChapterID="BANK_HOLIDAY" SortIndex="20"/>
+        <Row PageLayoutID="ECON_CRISES_MODERN" ChapterID="DEPOSIT_INSURANCE" SortIndex="30"/>
+        <Row PageLayoutID="ECON_CRISES_MODERN" ChapterID="GOLD_STANDARD" SortIndex="40"/>
+        <Row PageLayoutID="ECON_CRISES_MODERN" ChapterID="PUBLIC_WORKS" SortIndex="50"/>
+        <Row PageLayoutID="ECON_CRISES_MODERN" ChapterID="RELIEF" SortIndex="60"/>
+        <Row PageLayoutID="ECON_CRISES_MODERN" ChapterID="PRICE_SUPPORTS" SortIndex="70"/>
+        <Row PageLayoutID="ECON_CRISES_MODERN" ChapterID="REARMAMENT" SortIndex="80"/>
+        <Row PageLayoutID="ECON_CRISES_MODERN" ChapterID="CONFIDENCE" SortIndex="90"/>
+        <Row PageLayoutID="ECON_CRISES_MODERN" ChapterID="HOOVER" SortIndex="100"/>
+
+        <Row PageLayoutID="ECON_CRISES_EVENTS" ChapterID="CONTENT" SortIndex="10"/>
+        <Row PageLayoutID="ECON_CRISES_EVENTS" ChapterID="BANK_RUN" SortIndex="20"/>
+        <Row PageLayoutID="ECON_CRISES_EVENTS" ChapterID="BANK_FAILURES" SortIndex="30"/>
+        <Row PageLayoutID="ECON_CRISES_EVENTS" ChapterID="DUST_BOWL" SortIndex="40"/>
+        <Row PageLayoutID="ECON_CRISES_EVENTS" ChapterID="BONUS_ARMY" SortIndex="50"/>
+        <Row PageLayoutID="ECON_CRISES_EVENTS" ChapterID="BUBBLE" SortIndex="60"/>
+        <Row PageLayoutID="ECON_CRISES_EVENTS" ChapterID="CASCADE" SortIndex="70"/>
+        <Row PageLayoutID="ECON_CRISES_EVENTS" ChapterID="RECOVERY" SortIndex="80"/>
+    </CivilopediaPageLayoutChapters>
+
+    <CivilopediaPages>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_OVERVIEW" PageGroupID="ECONOMICS_CRISES" PageLayoutID="ECON_CRISES_OVERVIEW" Name="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_TITLE" SortIndex="10"/>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_ANTIQUITY" PageGroupID="ECONOMICS_CRISES" PageLayoutID="ECON_CRISES_ANTIQUITY" Name="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_TITLE" SortIndex="20"/>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_EXPLORATION" PageGroupID="ECONOMICS_CRISES" PageLayoutID="ECON_CRISES_EXPLORATION" Name="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_TITLE" SortIndex="30"/>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_MODERN" PageGroupID="ECONOMICS_CRISES" PageLayoutID="ECON_CRISES_MODERN" Name="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_TITLE" SortIndex="40"/>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_EVENTS" PageGroupID="ECONOMICS_CRISES" PageLayoutID="ECON_CRISES_EVENTS" Name="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_TITLE" SortIndex="50"/>
+    </CivilopediaPages>
+
+    <CivilopediaPageSearchTerms>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_OVERVIEW" Term="LOC_PEDIA_ECONOMICS_CRISES_TERM_CRISIS"/>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_OVERVIEW" Term="LOC_PEDIA_ECONOMICS_CRISES_TERM_DEPRESSION"/>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_ANTIQUITY" Term="LOC_PEDIA_ECONOMICS_CRISES_TERM_SEISACHTHEIA"/>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_MODERN" Term="LOC_PEDIA_ECONOMICS_CRISES_TERM_NEW_DEAL"/>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_MODERN" Term="LOC_PEDIA_ECONOMICS_CRISES_TERM_GOLD_STANDARD"/>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_EVENTS" Term="LOC_PEDIA_ECONOMICS_CRISES_TERM_BANK_RUN"/>
+    </CivilopediaPageSearchTerms>
+</Database>

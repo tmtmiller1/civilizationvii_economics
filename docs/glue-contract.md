@@ -60,6 +60,7 @@ should have no row. Both directions are one row.
 | `restructure` | `loanId`, `pid` (the asker: the borrower, or the human lender answering a `restructure-ask`) |
 | `repudiate` | `borrower` (the human), `lender` |
 | `tax` | `pid`, `level` (`light`, `standard`, `heavy`, `warlevy`), fallback only |
+| `respond` | `pid`, `response` (a response id from `econ-crisis-catalog.js`); with `cancel: true` ends a standing one (DESIGN 4.11c) |
 
 Each refused request comes back as an event `{ kind: "refused", request, reason }`; the glue shows the reason.
 
@@ -128,6 +129,32 @@ What comes back adds `macro` (write it with the ledger, before the grants) and p
 `addProgress` a turn (econ-3). The world accounts `citizens`, `inflation`, `cycle` and `plan` never reach `grantYield`.
 The setup keys `ECONOMICS_INFLATION` (only `_ON` turns it on), `ECONOMICS_CYCLE` (`_OFF`, `_MILD`, `_STANDARD`,
 `_STRONG`) and `ECONOMICS_SYSTEMS` join the options.
+
+## The crisis fields (DESIGN 4.11c)
+
+The setup key `ECONOMICS_CRISES` (`_ON` by default, `_OFF` switches the crises off) joins the options as
+`crises`; the plan's own default is off, so a caller that wants them says so. Nothing new is read from the engine:
+the conditions use the phases, the prices, the routes and the ledger the plan already has.
+
+The ledger carries six more rows, written and read by `ui/econ-crisis.js` and dropped by `load` when they don't
+parse: `crises` (`{ pid, kind, since }`, the open ones), `responses` (`{ pid, id, crisis, since, until }`, the
+standing ones; `until` null means until the crisis ends plus a few turns), `legacies` (`{ pid, id, since, until,
+nextAge }`; `pid` null is the world's, `until` null lasts the age), `crisisTurns` (`{ pid, id, turn, age? }`, when a
+response was taken, `take:<id>`, or a crisis ended, `end:<kind>`), `crisisCounters` (`{ pid, dues, hot, routes }`)
+and `bubble` (`{ since, burst }` or null).
+
+What comes back adds transfers with the reasons `response` (a response's cost, to the bond market or the inflation
+account), `relief` (to the citizens' account), `works` (to the progress account, with progress rows `PW<pid>`),
+`company` (a chartered company's dividends, to the citizens' account), `price-supports` (to the cycle account),
+`tribute` (civ to civ), `debase` (from the temple account) and `bullion` (from the cycle account); Influence rows
+with reason `confidence`; celebration rows with reasons `relief`, `cancel-debts` and `relief-ended`; grievance and
+relationship rows for the lenders a holiday, a suspension or the gold standard costs; and progress rows for the
+works, merged with any other row for the same city.
+
+Notices (the human's): `crisis-start` (`crisis`, `causes`), `crisis-end` (`crisis`, `turns`, `by`), `response`
+(`response`, `crisis`, `cents`), `response-ended`, `legacy-ended`, `bank-run`, `bank-failures`, `bubble`, `cascade`.
+Events (the chronicle): `crisis-start`, `crisis-end`, `response`, `response-ended`, `debts-cancelled`, `debts-cut`,
+`bank-run`, `bank-failures`, `bubble`, `bubble-burst`, `cascade`.
 
 ## Persistence
 

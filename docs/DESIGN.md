@@ -860,6 +860,69 @@ suspend, Religious ones dole; Modern as 4.11b.
 4. Trade collapse with Charter a company, Navigation acts, Rearmament, Tribute; the AI's full menu; the balance run
    against 4.11b's targets.
 
+Built 2026-10-31, in one pass rather than the four stages above (`ui/econ-crisis-catalog.js`, `ui/econ-crisis.js`,
+NOTES choice 143). What the code has, and where it differs from the proposal:
+
+- The conditions, read each turn after the market step: a Depression is the civ's phase; a credit panic is a Panic
+  while the civ holds loans, or a bubble's burst; a price shock is a resource class up or down 40% on 10 turns ago
+  that the civ imports or exports; a debt crisis is dues over income three turns running, or a default on a loan from
+  a civilization; runaway inflation is the rate at its cap five turns running (Inflation On), or a civ ten turns off
+  the gold standard; a trade collapse is the civ's routes down a third on their peak of the last five turns, from a
+  peak of three or more. A credit panic needs Banking or Modern, inflation needs Public debt. One crisis of a kind
+  per civ in 30 turns, two kinds at once at most. A crisis ends the turn its condition stops holding; the end notice
+  names the responses taken while it ran.
+- Public works isn't a policy card: it's Gold a settlement a turn (2 in Antiquity, 4 in Exploration, 8 in Modern)
+  spent into the civ's own builds through the progress account, as a Planned economy's take is (4.17), with +0.01 a
+  turn on the holder's own index and +0.0025 a holder on the world's while the world is under 0.95, the world share
+  capped at +0.01 a turn. The card variant stays open.
+- Relief is 1 Gold a settlement a turn to the citizens' account for +4 Happiness a settlement; ending it early while
+  its crisis runs leaves -2 Happiness a settlement for 10 turns. The grain dole is relief in Antiquity: the same, plus
+  a floor under Bonus-class prices at 90% of their level 10 turns ago.
+- The bank holiday and Suspend payments: three turns with the civ's own payments and the returns it owes suspended,
+  and the payments owed to it as well; +0.02 on its index the turn after. The holiday costs each civ lender 2
+  relationship and the civ 3 reputation. Suspension blocks the civ lenders for the age with -3 relationship and 10
+  grievances each, and puts the civ's bond rate at 150% for 20 turns.
+- Cancel the debts writes off the citizens' and temple loans, blocks the citizens for the age, costs 20 reputation,
+  gives +4 Happiness a settlement for five turns and +0.02 on the index once, and puts the temple rate at 150% for
+  the civ for 20 turns. Debase the coin grants three turns of income from the temple account, lifts prices 2% a
+  turn for five turns and prices the civ's loans at 125% for the age; the late bond market wasn't built. Tribute
+  levies two turns of income from each weaker civ Unfriendly or worse with the levier, within what it holds, with
+  10 grievances each; the doubled bills weren't built. The temple lends three turns of income over 20 turns at the
+  base rate, outside the cap, and the temple rate goes to 125% for everyone for the age.
+- Recoinage costs two turns of income to the inflation account, clears the civ's own inflation legacies (fleets,
+  the gold standard, debasement) and halves what erosion can take for the age. A chartered company adds two turns
+  to the cap and cuts the civ's bills a fifth for 20 turns, then takes a fifth of its Trade Income into the citizens'
+  account for the age. Navigation acts set the High tariff for 10 turns with no relationship cost and no answer in
+  kind, then the civ counts double in a trade war for the age. Bullion fleets grant three turns of income from the
+  cycle account, lift prices 3% a turn for five turns, add 0.25% a turn to the civ's own inflation for 10 turns and
+  halve the trade-collapse threshold for 20. Lend to the crown adds four turns of income to the cap for the age and
+  needs a Friendly civ holding Gold; the lenders' stakes and the doubled default weight weren't built.
+- Deposit insurance costs two turns of income to the bond market and, for the age and one more age for a Market
+  economy, floors the civ's spread at 1.0, lifts the Panic freeze for it, halves its own Panic hit and cuts the
+  cap's depth term to 75%. Off the gold standard cuts the civ's bond and temple debts by a tenth, lifts prices 3% a
+  turn and its inflation 0.5% a turn for five turns with +0.01 a turn on its index, costs the civ lenders' 3
+  relationship and 10 grievances each and 10 reputation, and leaves +0.25% a turn of inflation for the age; a
+  Planned civ can't. Price supports floor Bonus-class prices while they run, at half a turn's income a turn to the
+  cycle account; the importers' relationship cost wasn't built. Rearmament is +0.005 a turn on the index and the
+  AI's army budget at 1.5 for 10 turns. Austerity is +3 reputation once, half the civ's surplus into its dearest
+  loan each turn (the human seat too, through the AI's early-repayment rule) and -0.01 a turn while it runs.
+  Confidence is 20 Influence for +0.01 once per five turns.
+- The events, from the state each turn: a bank run (a lender civ in Depression with two borrowers in default to
+  it: -0.02 once and its lending closed five turns; deposit insurance stops it); bank failures (defaults past a fifth
+  of the world's open loans in a world Depression: the bond market closed five turns to everyone uninsured, and two
+  turns off every cap for the age); the Dust Bowl (a disaster on a civ in Depression weighs twice); the Bonus Army
+  (five turns into a Depression with neither relief nor works running: -0.01 a turn); a bubble (credit growing fast
+  five turns running with the world above 1.05, bursting into a credit panic when it falls under 0.95); a cascade
+  (two suspensions within five turns close the bond market five turns to the uninsured).
+- The AI takes one response per crisis: a civ whose dues pass its income takes the holiday or suspension first, one
+  at war takes rearmament, otherwise the first of its system's preferred responses it can afford, falling back to
+  public works, relief or confidence; the Hoover line is open only to a Mercantile civ raising navigation acts.
+- Legacies are rows with an end turn or none (the age); a row marked to carry survives one age change, the rest and
+  the open crises clear at it. They read through `crisisTerms` into the lenders' rates, the credit cap, the spread,
+  the Panic, erosion, the bills, the tariff answer and the trade war.
+- The Crisis section on the World tab and "What your choices left" on the Fiscal tab, the Civilopedia group and the
+  Crises and responses setup option (On by default) ship with it.
+
 Open: the panel's home (the World tab, or the game's narrative dialog fired by script), the first numbers above, and
 whether a crisis should also be able to come from nothing but a long calm (a bubble that builds while nothing goes
 wrong is in stage 3; a crisis with no cause at all isn't proposed, since the model has no randomness).

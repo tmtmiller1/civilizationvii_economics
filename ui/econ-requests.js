@@ -14,6 +14,7 @@ import { aiAccepts } from "./econ-ai.js";
 import { funds, lenderBalance } from "./econ-batch.js";
 import { distressOf } from "./econ-distress.js";
 import { repudiate } from "./econ-repudiation.js";
+import { respondRequest } from "./econ-crisis-respond.js";
 import { canChangeTax, isTaxLevel } from "./econ-tax.js";
 import { canChangeTariff, isTariffLevel, withTariff } from "./econ-trade.js";
 import { hasStage } from "./econ-stages.js";
@@ -39,9 +40,13 @@ export function isAtLoanLimit(ctx, pid) {
 export function creditRoom(ctx, pid) {
   const civ = /** @type {Civ} */ (ctx.civ.get(pid));
   const terms = termsFor(ctx, pid);
+  // A chartered company and lending to the crown add turns; deposit insurance and bank failures take them
+  // (DESIGN 4.11c).
+  const crisis = ctx.crisis ? ctx.crisis.terms(pid) : null;
   return creditCap({ incomeCents: civ.incomeCents, outstandingCents: outstandingOf(ctx.ledger, pid),
-    depthTurns: civ.depthTurns, lostTurns: repTurnsLost(standing(ctx, pid)),
-    systemTurns: terms.creditTurns, systemPct: terms.creditPct });
+    depthTurns: Math.floor(((civ.depthTurns ?? 0) * (crisis?.capDepthPct ?? 100)) / 100),
+    lostTurns: repTurnsLost(standing(ctx, pid)), systemTurns: terms.creditTurns + (crisis?.capTurns ?? 0),
+    systemPct: terms.creditPct });
 }
 
 /**
@@ -323,6 +328,8 @@ const HANDLERS = {
     offerAnswerRefusal(ctx, request, true)),
   "decline-offer": (ctx, request) => refuse(ctx, "decline-offer", { offerId: request.offerId },
     offerAnswerRefusal(ctx, request, false)),
+  respond: (ctx, request) => refuse(ctx, "respond", { pid: request.pid },
+    respondRequest(ctx, /** @type {PlanRequest} */ (request))),
 };
 
 /**

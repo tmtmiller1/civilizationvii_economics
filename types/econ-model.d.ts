@@ -10,7 +10,7 @@ declare global {
   /** `project` and `general` are 1.1's investment records; 1.0 only writes `loan`. */
   type LoanKind = "loan" | "project" | "general";
   /** Who opened the record: a player's borrow or lend request, the guard, or an AI rule. */
-  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens" | "ai-build" | "refinance";
+  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens" | "ai-build" | "refinance" | "crisis";
   type RelationLevel = "war" | "unfriendly" | "neutral" | "friendly" | "unmet";
   type BlockReason = "default" | "repudiation";
 
@@ -101,6 +101,32 @@ declare global {
     investments: Investment[];
     offers: InvestOffer[];
     nextInvestId: number;
+    /** The crises open per civ (DESIGN 4.11c). */
+    crises: CrisisRow[];
+    /** The responses standing, with the turn each ends (null: when its crisis ends, plus a few turns). */
+    responses: ResponseRow[];
+    /** What the responses left; a world legacy has pid null; until null lasts the age. */
+    legacies: LegacyRow[];
+    /** The turn a response was taken (take:<id>) or a crisis ended (end:<kind>), for once-per and spacing. */
+    crisisTurns: CrisisTurnRow[];
+    /** The counters the conditions keep: turns of dues over income, of inflation at its cap, routes lately. */
+    crisisCounters: CrisisCounterRow[];
+    bubble: { since: number, burst: number | null } | null;
+  }
+
+  type CrisisKind = "depression" | "credit-panic" | "price-shock" | "debt" | "inflation" | "trade-collapse";
+  interface CrisisRow { pid: number; kind: CrisisKind; since: number }
+  interface ResponseRow { pid: number; id: string; crisis: CrisisKind; since: number; until: number | null }
+  interface LegacyRow { pid: number | null; id: string; since: number; until: number | null; nextAge: boolean }
+  interface CrisisTurnRow { pid: number; id: string; turn: number; age?: string }
+  interface CrisisCounterRow { pid: number; dues: number; hot: number; routes: number[] }
+
+  /** The crisis rules other steps read through the turn context, so no module has to import econ-crisis.js. */
+  interface CrisisHooks {
+    terms: (pid: number) => import("../ui/econ-crisis.js").CrisisTerms;
+    weights: (events: import("../ui/econ-cycle.js").Weighted[]) => import("../ui/econ-cycle.js").Weighted[];
+    adjustPrices: (prices: Record<string, number>) => Record<string, number>;
+    holiday: (pid: unknown) => boolean;
   }
 
   /** The turn a civ reached each stage (DESIGN 4.15); null or missing while it hasn't. */
@@ -279,6 +305,8 @@ declare global {
     /** The Swings option: gentle, volatile or extreme; absent reads volatile. */
     swings?: string;
     systems: boolean;
+    /** Crises and responses (DESIGN 4.11c); absent reads off, the glue sends the setup option. */
+    crises?: boolean;
   }
 
   /** The engine's negative-balance lines, in cents; null when the GlobalParameters row couldn't be read. */
@@ -433,6 +461,11 @@ declare global {
     distressed: Set<number>;
     /** Each AI's stake in each host this turn, by "ai:host", read once (AI-PLAN 4.5). */
     stakes: Map<string, number>;
+    /** This turn's market read, for the price-shock condition and the price floors (DESIGN 4.11c). */
+    market: MarketRead | null;
+    /** Each civ's crisis terms this turn, read once (econ-crisis.js crisisTerms). */
+    crisisTerms?: Map<number, import("../ui/econ-crisis.js").CrisisTerms>;
+    crisis: CrisisHooks | null;
   }
 
   interface TradeRow { payer: number; payee: number; owed: number; cents: number; waived: number; paid: number }

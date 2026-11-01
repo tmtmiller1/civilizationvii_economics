@@ -16,7 +16,7 @@ export const STAGE_ORDER = ["trade", "coinage", "moneylending", "guildPatronage"
 /**
  * @typedef {{ stagesOn: boolean, reached: Record<string, boolean>, openLoan: boolean, citizenOffer: boolean,
  *   firstAge: boolean, marketsOn: boolean, tariffsOn: boolean, investmentOn: boolean, inflationOn: boolean,
- *   cycleOn: boolean }} TabFacts
+ *   cycleOn: boolean, crisis: boolean }} TabFacts
  */
 
 /**
@@ -38,7 +38,20 @@ export function tabFacts(input, me, stageTurns, extra = {}) {
   const ledger = input.ledger || emptyLedger();
   const openLoan = ledger.loans.some((loan) => isOpen(loan) && (loan.borrower === me || loan.lender === me));
   return { stagesOn, reached, openLoan, citizenOffer: extra.citizenOffer === true,
-    firstAge: /ANTIQUITY/.test(String(input.age || "")), ...optionFlags(options) };
+    firstAge: /ANTIQUITY/.test(String(input.age || "")), crisis: crisisFacts(ledger, me, options), ...optionFlags(options) };
+}
+
+/**
+ * Whether a crisis, a standing response or a legacy of the player's stands, which opens the World tab's Crisis
+ * section (DESIGN 4.11c); never with the option off.
+ * @param {Ledger} ledger
+ * @param {number} me
+ * @param {Record<string, unknown>} options
+ */
+function crisisFacts(ledger, me, options) {
+  if (options.crises === false) return false;
+  const mine = (/** @type {{ pid: number | null }[] | undefined} */ rows) => (rows || []).some((row) => row.pid === me);
+  return mine(ledger.crises) || mine(ledger.responses) || mine(ledger.legacies);
 }
 
 /**
@@ -111,7 +124,7 @@ export function tabRules(f) {
     // Markets opens with Coinage (the Market building's tech) or Trade, whichever comes first.
     markets: r.trade || r.coinage,
     trade: r.trade,
-    world: r.coinage,
+    world: r.coinage || f.crisis,
   };
   const tabs = TAB_KEYS.filter((key) => shown[key]);
   return { tabs, shown, sections: sectionsFor(f, shown), next: nextParts(f, shown) };
@@ -145,6 +158,7 @@ function sectionsFor(f, shown) {
     "trade.general": f.investmentOn && r.charteredCompanies,
     "world.inflation": !f.inflationOn || r.publicDebt,
     "world.legacy": !f.firstAge,
+    "world.crisis": f.crisis,
   };
 }
 

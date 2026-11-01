@@ -39,7 +39,8 @@ export function marketStep(ctx, market) {
   const civs = ctx.civs.filter((civ) => civ.alive === true).length;
   const next = nextPrices({ market, previous: markets, civs, war: anyWar(ctx.relations), eBp: ctx.readings.e,
     capitalism: capitalismPrices(ctx) });
-  markets.prices = next.prices;
+  // Debasement, bullion and the gold standard lift prices while they run; price supports floor the farm ones.
+  markets.prices = ctx.crisis ? ctx.crisis.adjustPrices(next.prices) : next.prices;
   markets.history = next.history;
   markets.lastTurn = ctx.turn;
 }
@@ -68,7 +69,12 @@ export function hasEquity(ctx, pid) {
  * @param {TurnContext} ctx
  */
 export function tradeTermsOf(ctx) {
-  return (/** @type {number} */ pid) => termsFor(ctx, pid);
+  return (/** @type {number} */ pid) => {
+    const terms = termsFor(ctx, pid);
+    const billPct = ctx.crisis ? ctx.crisis.terms(pid).billPct : 100;
+    // A chartered company (DESIGN 4.11c) cuts what the civ pays on its routes while it runs.
+    return billPct === 100 ? terms : { ...terms, billPaidPct: Math.round((terms.billPaidPct * billPct) / 100) };
+  };
 }
 
 /**
@@ -95,8 +101,10 @@ export function tradeStep(ctx) {
   ctx.owed = owed;
   ctx.trade = capPayments(netPairs(owed), (pid) => incomeOf(ctx, pid)).map((row) => ({ ...row, paid: 0 }));
   if (!tariffsOn) return;
+  // Navigation acts (DESIGN 4.11c): the High tariff is law for ten turns and costs no relationship.
   const costs = highTariffCosts({ tariffs: ctx.markets.tariffs, owed, turn: ctx.turn,
-    everyTurns: (pid) => termsFor(ctx, pid).highTariffEveryTurns });
+    everyTurns: (pid) => termsFor(ctx, pid).highTariffEveryTurns })
+    .filter((row) => !(ctx.crisis && ctx.crisis.terms(row.a).navigationActs));
   ctx.out.relationships.push(...costs);
   /** @type {Map<number, number>} */
   const partners = new Map();
@@ -247,8 +255,12 @@ export function aiTariff(ctx, civ) {
   if (!hasStage(civ, "tariffs", ctx.turn, ctx.options)) return;
   // A system whose High tariff costs relationship less often (Mercantile) is readier to set it.
   const cheapHigh = termsFor(ctx, civ.id).highTariffEveryTurns > TRADE.tariffEveryTurns;
+  const trade = tariffTrade(ctx, civ.id);
+  // An importer under navigation acts (DESIGN 4.11c) can't be answered in kind: the acts are law.
+  const acts = (/** @type {number} */ other) => (ctx.crisis ? ctx.crisis.terms(other).navigationActs : false);
+  trade.importers = trade.importers.filter((other) => !acts(other));
   const step = aiTariffStep({ pid: civ.id, tariffs: ctx.markets.tariffs, turn: ctx.turn, cheapHigh,
-    ...tariffTrade(ctx, civ.id), easing: { peace: ctx.markets.tariffPeace, eased: ctx.markets.tariffEased },
+    ...trade, easing: { peace: ctx.markets.tariffPeace, eased: ctx.markets.tariffEased },
     relationOf: (other) => relationLevel(ctx.relations, civ.id, other), alive: (other) => isAlive(ctx, other) });
   if (step.easing) {
     ctx.markets.tariffPeace = step.easing.peace;

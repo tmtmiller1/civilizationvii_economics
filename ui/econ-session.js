@@ -180,7 +180,8 @@ export function readOptions(glue) {
     // Inflation ships Off (DESIGN 8), so only an explicit On turns it on.
     inflation: readConfig("ECONOMICS_INFLATION") === "ECONOMICS_INFLATION_ON",
     cycle: ["off", "mild", "standard", "strong"].includes(cycle) ? cycle : "standard",
-    swings: ["gentle", "volatile", "extreme"].includes(swings) ? swings : "volatile", systems: on("ECONOMICS_SYSTEMS") };
+    swings: ["gentle", "volatile", "extreme"].includes(swings) ? swings : "volatile", systems: on("ECONOMICS_SYSTEMS"),
+    crises: on("ECONOMICS_CRISES") };
 }
 
 /**

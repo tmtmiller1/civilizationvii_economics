@@ -64,6 +64,30 @@ export function systemKey(id) {
 }
 
 /**
+ * A crisis kind's name key (DESIGN 4.11c): `credit-panic` is LOC_ECONOMICS_CRISIS_CREDIT_PANIC_NAME.
+ * @param {unknown} kind
+ */
+export function crisisKey(kind) {
+  return `${PREFIX}CRISIS_${upper(String(kind || "depression"))}_NAME`;
+}
+
+/**
+ * A response's name key (DESIGN 4.11c): `public-works` is LOC_ECONOMICS_RESPONSE_PUBLIC_WORKS_NAME.
+ * @param {unknown} id
+ */
+export function responseKey(id) {
+  return `${PREFIX}RESPONSE_${upper(String(id || "unknown"))}_NAME`;
+}
+
+/**
+ * A legacy's name key (DESIGN 4.11c): `bullion-pirates` is LOC_ECONOMICS_LEGACY_BULLION_PIRATES_NAME.
+ * @param {unknown} id
+ */
+export function legacyKey(id) {
+  return `${PREFIX}LEGACY_${upper(String(id || "unknown"))}_NAME`;
+}
+
+/**
  * A cycle phase's name key (DESIGN 4.11).
  * @param {unknown} phase
  */
@@ -182,6 +206,25 @@ const NOTICES = {
   panic: () => ({ key: `${PREFIX}NOTICE_PANIC`, args: [] }),
   "age-gold": (notice) => ({ key: `${PREFIX}NOTICE_AGE_GOLD`, args: [gold(notice.after), gold(notice.before)] }),
   plan: (notice) => ({ key: `${PREFIX}NOTICE_PLAN`, args: [gold(notice.cents), Number(notice.cities) || 0] }),
+  // Crises and responses (DESIGN 4.11c).
+  "crisis-start": (notice) => {
+    const causes = causeItems(String(notice.causes || "").split(",").filter(Boolean));
+    return { key: `${PREFIX}NOTICE_CRISIS_START${causes.length ? "" : "_QUIET"}`, args: [crisisKey(notice.crisis), causes] };
+  },
+  "crisis-end": (notice) => {
+    const by = String(notice.by || "").split(",").filter(Boolean).map(responseKey);
+    return { key: `${PREFIX}NOTICE_CRISIS_END${by.length ? "" : "_QUIET"}`,
+      args: [crisisKey(notice.crisis), Number(notice.turns) || 0, by] };
+  },
+  response: (notice) => (Number(notice.cents) > 0
+    ? { key: `${PREFIX}NOTICE_RESPONSE_COST`, args: [responseKey(notice.response), gold(notice.cents)] }
+    : { key: `${PREFIX}NOTICE_RESPONSE`, args: [responseKey(notice.response)] }),
+  "response-ended": (notice) => ({ key: `${PREFIX}NOTICE_RESPONSE_ENDED`, args: [responseKey(notice.response)] }),
+  "legacy-ended": (notice) => ({ key: `${PREFIX}NOTICE_LEGACY_ENDED`, args: [legacyKey(notice.legacy)] }),
+  "bank-run": (notice) => ({ key: `${PREFIX}NOTICE_BANK_RUN`, args: [Number(notice.borrowers) || 0] }),
+  "bank-failures": () => ({ key: `${PREFIX}NOTICE_BANK_FAILURES`, args: [] }),
+  bubble: () => ({ key: `${PREFIX}NOTICE_BUBBLE`, args: [] }),
+  cascade: () => ({ key: `${PREFIX}NOTICE_CASCADE`, args: [] }),
 };
 
 /**
@@ -242,7 +285,9 @@ export function describeRefusalProject(event, ctx) {
 
 /** What a transfer's reason moved, for the net line. @type {Record<string, string>} */
 const FLOW_OF = { principal: "LOANS", payment: "LOANS", garnish: "LOANS", trade: "TRADE", invest: "INVESTMENT",
-  dividend: "INVESTMENT", cycle: "CYCLE", erosion: "INFLATION", plan: "PLAN", tax: "TAX", escrow: "ESCROW" };
+  dividend: "INVESTMENT", cycle: "CYCLE", erosion: "INFLATION", plan: "PLAN", tax: "TAX", escrow: "ESCROW",
+  response: "CRISIS", relief: "CRISIS", works: "CRISIS", company: "CRISIS", "price-supports": "CRISIS",
+  tribute: "CRISIS", debase: "CRISIS", bullion: "CRISIS" };
 
 /**
  * The kinds of flow that moved a civ's Gold this turn, as name keys in a fixed order (loans, trade, ...).
@@ -361,6 +406,20 @@ const EVENTS = {
   tariff: (event, who) => ({ key: `${PREFIX}EVENT_TARIFF_${String(event.level).toUpperCase()}`, args: [who(event.pid)] }),
   system: (event, who) => ({ key: `${PREFIX}EVENT_SYSTEM`, args: [who(event.pid), systemKey(event.to)] }),
   panic: () => ({ key: `${PREFIX}EVENT_PANIC`, args: [] }),
+  // Crises and responses (DESIGN 4.11c), for the chronicle.
+  "crisis-start": (event, who) => ({ key: `${PREFIX}EVENT_CRISIS_START`, args: [who(event.pid), crisisKey(event.crisis)] }),
+  "crisis-end": (event, who) => ({ key: `${PREFIX}EVENT_CRISIS_END`, args: [who(event.pid), crisisKey(event.crisis),
+    Number(event.turns) || 0] }),
+  response: (event, who) => ({ key: `${PREFIX}EVENT_RESPONSE`, args: [who(event.pid), responseKey(event.response)] }),
+  "response-ended": (event, who) => ({ key: `${PREFIX}EVENT_RESPONSE_ENDED`, args: [who(event.pid),
+    responseKey(event.response)] }),
+  "debts-cancelled": (event, who) => ({ key: `${PREFIX}EVENT_DEBTS_CANCELLED`, args: [who(event.pid), gold(event.cents)] }),
+  "debts-cut": (event, who) => ({ key: `${PREFIX}EVENT_DEBTS_CUT`, args: [who(event.pid), gold(event.cents)] }),
+  "bank-run": (event, who) => ({ key: `${PREFIX}EVENT_BANK_RUN`, args: [who(event.pid)] }),
+  "bank-failures": () => ({ key: `${PREFIX}EVENT_BANK_FAILURES`, args: [] }),
+  bubble: () => ({ key: `${PREFIX}EVENT_BUBBLE`, args: [] }),
+  "bubble-burst": () => ({ key: `${PREFIX}EVENT_BUBBLE_BURST`, args: [] }),
+  cascade: () => ({ key: `${PREFIX}EVENT_CASCADE`, args: [] }),
 };
 
 /**

@@ -44,8 +44,11 @@ export function turnContext(input, options, out) {
     batch: createBatch(civs), routes: Array.isArray(input.routes) ? input.routes : [],
     markets: input.markets ? cloneMarkets(input.markets) : emptyMarkets(), trade: [], owed: [], macro,
     readings: macroReadings(macro, { civs, turn, options }), basePrices: {}, unmet, distressed: new Set(),
-    stakes: new Map() };
+    stakes: new Map(), market: marketOf(input), crisisTerms: new Map(), crisis: null };
 }
+
+/** This turn's market read, or null without one. @param {PlanInput} input */
+const marketOf = (input) => input.market ?? null;
 
 /**
  * Whether two civs haven't met (the glue's unmet rows).
@@ -216,19 +219,35 @@ export function aiLendersFor(ctx, borrower) {
 export function offerQuery(ctx, borrower, extra = {}) {
   const civ = ctx.civ.get(borrower);
   const own = termsFor(ctx, borrower);
-  const spread = ctx.readings.civ.get(borrower)?.spreadPct ?? 100;
-  const bondPct = Math.round((own.bondPct * own.borrowPct * spread * (100 + premiumPct(ctx.readings.piPpm)))
-    / 1000000);
+  const crisis = crisisPcts(ctx, borrower);
+  const bondPct = Math.round((own.bondPct * own.borrowPct * crisis.spread * (100 + premiumPct(ctx.readings.piPpm))
+    * crisis.bondPct) / 100000000);
   return { ledger: ctx.ledger, borrower, borrowerCiv: civ, age: ctx.age, turn: ctx.turn, rates: ctx.rates,
     standing: standing(ctx, borrower), relations: ctx.relations, options: ctx.options,
     depthFactorPct: civ?.depthFactorPct ?? 100, bondPct,
-    civPct: (lender) => Math.round((own.borrowPct * termsFor(ctx, lender).lendPct) / 100),
-    civLendersClosed: ctx.readings.panic, noBond: own.civLendersOnly, citizens: citizensFor(ctx, borrower),
-    unmet: (lender) => haveNotMet(ctx, lender, borrower),
-    // AI-PLAN 4.5: an AI lender wants a reputation of 50 and a stake of 0 or more; the human lends as it likes.
-    refuses: (lender) => ctx.options.ai !== false && ctx.civ.get(lender)?.human !== true
-      && !lenderGate(ctx, lender, borrower),
+    civPct: (lender) => Math.round((own.borrowPct * termsFor(ctx, lender).lendPct * crisis.ownRatePct) / 10000),
+    civLendersClosed: ctx.readings.panic && !crisis.noFreeze, noBond: own.civLendersOnly,
+    citizens: citizensFor(ctx, borrower), unmet: (lender) => haveNotMet(ctx, lender, borrower),
+    // AI-PLAN 4.5: an AI lender wants a reputation of 50 and a stake of 0 or more; the human lends as it likes. A
+    // lender in a bank run (DESIGN 4.11b) lends to nobody for five turns.
+    refuses: (lender) => (ctx.crisis ? ctx.crisis.terms(lender).lendingClosed : false)
+      || (ctx.options.ai !== false && ctx.civ.get(lender)?.human !== true && !lenderGate(ctx, lender, borrower)),
     ...extra };
+}
+
+/**
+ * The crisis terms an offer query folds in (DESIGN 4.11b, 4.11c): deposit insurance floors the civ's spread at 1.0
+ * and lifts the Panic freeze; a debased coin, a suspension and the temple's legacy move its rates.
+ * @param {TurnContext} ctx
+ * @param {number} borrower
+ */
+function crisisPcts(ctx, borrower) {
+  const terms = ctx.crisis ? ctx.crisis.terms(borrower) : null;
+  const spreadRead = ctx.readings.civ.get(borrower)?.spreadPct ?? 100;
+  if (!terms) return { spread: spreadRead, bondPct: 100, ownRatePct: 100, noFreeze: false };
+  return { spread: terms.spreadFloor ? Math.min(100, spreadRead) : spreadRead,
+    bondPct: Math.round((terms.ownRatePct * terms.bondPct) / 100), ownRatePct: terms.ownRatePct,
+    noFreeze: terms.noFreeze };
 }
 
 /**

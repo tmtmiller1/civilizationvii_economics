@@ -56,6 +56,9 @@ function aiRules(games) {
       else if (e.kind === "aid-cleared") add("aid-cleared");
       else if (e.kind === "offer") add("offer");
       else if (e.kind === "credit-rep") add(`credit-rep:${e.why}`);
+      else if (e.kind === "crisis-start") add(`crisis:${e.crisis}`);
+      else if (e.kind === "crisis-end") add("crisis-end");
+      else if (e.kind === "response") add(`response:${e.response}`);
     }
     add("build-loan", on.buildLoans);
   }

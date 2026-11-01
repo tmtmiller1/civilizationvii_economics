@@ -53,8 +53,9 @@ test("every LOC_ key the code, data, setup SQL and modinfo use has English text"
 
 test("every tag is LOC_ECONOMICS_ (the names table) and every English text is non-empty", () => {
   for (const [tag, text] of english.texts) {
-    // The Options screen names a mod's group by the game's own pattern, LOC_OPTIONS_GROUP_<group>.
-    if (tag !== "LOC_OPTIONS_GROUP_ECONOMICS") assert.match(tag, /^LOC_ECONOMICS_[A-Z0-9_]+$/, tag);
+    // The Options screen names a mod's group by the game's own pattern, LOC_OPTIONS_GROUP_<group>; the Civilopedia
+    // resolves its chapter text by its own convention, LOC_PEDIA_<section>_PAGE_<page>_CHAPTER_... (econ-pedia.test).
+    if (tag !== "LOC_OPTIONS_GROUP_ECONOMICS") assert.match(tag, /^LOC_(ECONOMICS|PEDIA)_[A-Z0-9_]+$/, tag);
     assert.ok(text.trim().length > 0, `${tag} is empty`);
   }
 });

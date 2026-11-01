@@ -27,6 +27,9 @@ import { citizenInterest, citizenMiss } from "./econ-citizens.js";
 import { cycleKPct, emptyMacro } from "./econ-macro-state.js";
 import { distressOf, loanGrowth } from "./econ-distress.js";
 import { aiPreferenceRows, holdEscrow, releaseEscrow } from "./econ-escrow.js";
+import { crisisAgeChange, crisisStep, crisisWeights } from "./econ-crisis.js";
+import { adjustPrices, aiRespond, austerityCivs, crisisPayerSteps } from "./econ-crisis-respond.js";
+import { crisisTerms, onHoliday } from "./econ-crisis-rows.js";
 
 /** The smallest drop across an age change that's recorded as the game's cap, not the turn's own spending. */
 const AGE_GOLD_MIN_CENTS = 10000;
@@ -34,7 +37,7 @@ const AGE_GOLD_MIN_CENTS = 10000;
 /** @type {PlanOptions} */
 export const DEFAULT_OPTIONS = { loans: true, guard: true, ai: true, rates: "standard", stages: true,
   taxFallback: false, markets: true, tariffs: true, investment: true, inflation: false, cycle: "standard",
-  swings: "volatile", systems: true };
+  swings: "volatile", systems: true, crises: false };
 
 /**
  * @param {Loan} a
@@ -58,6 +61,9 @@ export function planTurn(input) {
   const skipped = skipReason(input, options, ledger);
   if (skipped) return { ...out, skipped };
   const ctx = turnContext(input, options, out);
+  // The crisis rules the other steps read (DESIGN 4.11c), as hooks so no step has to import them.
+  ctx.crisis = { terms: (pid) => crisisTerms(ctx, pid), weights: (events) => crisisWeights(ctx, events),
+    adjustPrices: (prices) => adjustPrices(ctx, prices), holiday: (pid) => onHoliday(ctx, pid) };
   snapshotStep(ctx, input);
   proposeStep(ctx);
   finishTurn(ctx);
@@ -76,6 +82,7 @@ function snapshotStep(ctx, input) {
   if (ledger.age !== null && ledger.age !== ctx.age) {
     ledger.blocks = blocksAfterAge(ledger.blocks);
     ageGoldCuts(ctx);
+    crisisAgeChange(ctx);
   }
   ledger.age = ctx.age;
   trackIncome(ctx);
@@ -83,6 +90,7 @@ function snapshotStep(ctx, input) {
   investWriteOffs(ctx);
   macroSnapshot(ctx, input);
   marketStep(ctx, market);
+  crisisStep(ctx);
 }
 
 /**
@@ -97,8 +105,11 @@ function proposeStep(ctx) {
   for (const civ of borrowers) aiRepudiate(ctx, civ);
   tradeStep(ctx);
   for (const civ of borrowers) aiDecide(ctx, civ);
+  for (const civ of ai) aiRespond(ctx, civ);
   const extras = runRequests(ctx);
   for (const civ of borrowers) aiRepayEarly(ctx, civ, extras);
+  // Austerity (DESIGN 4.11b): the civ repays early with half its surplus, the human seat too.
+  for (const civ of austerityCivs(ctx)) if (!borrowers.includes(civ)) aiRepayEarly(ctx, civ, extras);
   aiCommerce(ctx, ai);
   aiMacro(ctx, ai);
   for (const civ of borrowers) aiBuildBorrow(ctx, civ);
@@ -178,9 +189,11 @@ function aiCommerce(ctx, ai) {
  */
 function payerSteps(ctx, pid, extras) {
   macroPayerSteps(ctx, pid);
+  crisisPayerSteps(ctx, pid);
   settleTradeFor(ctx, pid);
   if (ctx.options.loans) payerPass(ctx, pid, extras);
-  payDividendsFor(ctx, pid);
+  // A bank holiday (DESIGN 4.11b) suspends the civ's returns as well as its payments.
+  if (!ctx.crisis?.holiday(pid)) payDividendsFor(ctx, pid);
 }
 
 /**
@@ -313,7 +326,8 @@ function taxOne(ctx, civ) {
  * @param {Map<string, number>} extras
  */
 function payerPass(ctx, pid, extras) {
-  const mine = ctx.ledger.loans.filter((loan) => loan.borrower === pid);
+  const holiday = (/** @type {Loan} */ loan) => ctx.crisis?.holiday(loan.borrower) || ctx.crisis?.holiday(loan.lender);
+  const mine = ctx.ledger.loans.filter((loan) => loan.borrower === pid && !holiday(loan));
   for (const loan of mine.filter((x) => x.state === "default").sort(byAge)) garnishOne(ctx, loan, extras);
   for (const loan of mine.filter((x) => x.state === "active" && x.opened < ctx.turn).sort(byAge)) {
     payOne(ctx, loan, extras);

@@ -25,8 +25,9 @@ import path from "node:path";
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const SECTION_PREFIX = "LOC_PEDIA_";
-// Base-game sections and page groups the mod adds a page to without defining them. Economics will define its own (prompt 5).
-const BASE_SECTIONS = [];
+// Base-game sections and page groups the mod adds a page to without defining them: the crises group sits in Game
+// Concepts (DESIGN 4.11c).
+const BASE_SECTIONS = ["CONCEPTS"];
 const BASE_GROUPS = [];
 // Base-game layouts the mod could reuse rather than define. "Concept" is a single CONTENT chapter
 // (base-standard/data/civilopedia.xml), so a page on it needs an explicit paragraph row.

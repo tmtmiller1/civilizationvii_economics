@@ -50,7 +50,7 @@ test("options map from the setup keys, the guard switch overrides, and a dead ci
     ECONOMICS_AI: "ECONOMICS_AI_OFF" } });
   const glue = emptyGlue();
   assert.deepEqual(readOptions(glue), { loans: true, guard: false, ai: false, rates: "high", stages: true, taxFallback: false,
-    markets: true, tariffs: true, investment: true, inflation: false, cycle: "standard", swings: "volatile", systems: true });
+    markets: true, tariffs: true, investment: true, inflation: false, cycle: "standard", swings: "volatile", systems: true, crises: true });
   const session = loadSession();
   assert.equal(setGuard(session, true), true);
   assert.equal(setGuard(session, null), false, "null follows the setup option again");

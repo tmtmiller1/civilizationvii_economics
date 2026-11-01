@@ -8,6 +8,7 @@ scripts don't carry display text of their own, so a translation is a text change
 | File | Contents |
 | --- | --- |
 | `en_us/ModText.xml` | The source of truth for the game text: the mod's name and description, the setup options, the tax cards, the screen, the notification lines and the refusal reasons. |
+| `en_us/EconomicsPedia.xml` | The Civilopedia pages for the crises and their responses (`data/econ-civilopedia.xml`), kept apart because they're long. Synced to every language the same way, with `scripts/locale-baseline-pedia.json` as their baseline. |
 
 All eleven other languages ship as translations that use the game's own words for its terms. Until the translation
 pass (prompt 5 of the plan) they hold the English text as placeholders. To correct one, edit its `<Text>`; to change

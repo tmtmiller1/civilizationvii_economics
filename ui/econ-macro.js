@@ -104,10 +104,12 @@ function turnEvents(ctx, input) {
   const incomeSeries = series(state.income, income);
   const creditSeries = series(state.credit, outstanding);
   const last = ctx.ledger.lastTurn;
-  const events = [...warEvents(state.wars, now.wars), ...routeEvents(state.routes, now.routes),
+  const base = [...warEvents(state.wars, now.wars), ...routeEvents(state.routes, now.routes),
     ...engineEvents(input.cycleEvents || []), ...crisisEvents(state.crisis, crisis),
     ...ledgerEvents(ctx.ledger.events.filter((row) => row.turn === last)),
     ...trendEvents(incomeSeries, creditSeries, state.trend), ...overheatEvents(state.boomTurns)];
+  // The responses to a crisis and the crisis events weigh too (DESIGN 4.11b), through the plan's hook.
+  const events = [...base, ...(ctx.crisis ? ctx.crisis.weights(base) : [])];
   Object.assign(state, { wars: now.wars, routes: ctx.options.markets ? now.routes : state.routes, crisis,
     income: incomeSeries, credit: creditSeries, trend: nextTrendBp(state.trend, growthBp(incomeSeries)) });
   return { events, outstanding, income };
@@ -172,7 +174,10 @@ function civCycle(ctx, civ, { events, kPct, reform, panicked }) {
   const wasAtWar = state.atWar[key] === true;
   state.atWar[key] = civ.atWar === true;
   if (terms.outOfCycle) { delete state.l[key]; return; }
-  const sum = civSum(events, civ.id) + (reform ? W.reform : 0) + (panicked ? terms.panicL : 0)
+  // Deposit insurance (DESIGN 4.11b) halves the civ's own Panic hit.
+  const panicPct = ctx.crisis ? ctx.crisis.terms(civ.id).panicPct : 100;
+  const panicHit = panicked ? Math.round((terms.panicL * panicPct) / 100) : 0;
+  const sum = civSum(events, civ.id) + (reform ? W.reform : 0) + panicHit
     + warBoom(terms.warBoom, wasAtWar, civ.atWar === true);
   const l = nextL(state.l[key] ?? 0, sum, { kPct, decayPct: terms.lDecayPct, multPct: terms.lMultPct });
   if (l === 0) delete state.l[key]; else state.l[key] = l;
@@ -289,10 +294,14 @@ export function macroPayerSteps(ctx, pid) {
  * @param {Civ} civ
  */
 function erodeFor(ctx, civ) {
-  const pi = ctx.readings.piPpm;
+  // A civ off the gold standard, with bullion fleets or a debased coin carries inflation of its own; a recoinage
+  // halves what erosion can take (DESIGN 4.11c).
+  const crisis = ctx.crisis ? ctx.crisis.terms(civ.id) : null;
+  const pi = ctx.readings.piPpm + (crisis?.piExtraPpm ?? 0);
   if (!pi || !hasStage(civ, "publicDebt", ctx.turn, ctx.options) || termsFor(ctx, civ.id).outOfCycle) return;
+  const erosionPct = Math.round((termsFor(ctx, civ.id).erosionPct * (crisis?.erosionCapPct ?? 100)) / 100);
   const cents = Math.min(erosionCents({ piPpm: pi, balanceCents: civ.balanceCents, incomeCents: civ.incomeCents,
-    erosionPct: termsFor(ctx, civ.id).erosionPct }), Math.max(0, funds(ctx.batch, civ.id)));
+    erosionPct }), Math.max(0, funds(ctx.batch, civ.id)));
   if (cents > 0) emit(ctx, { id: `IN${civ.id}` }, { from: civ.id, to: INFLATION, cents, reason: "erosion" });
 }
 

@@ -9,7 +9,8 @@ import { canChangeTariff } from "./econ-trade.js";
 import { formatGold } from "./econ-format.js";
 import { CARD_LEVELS, ageOf, atWarAmounts, cardAmounts, cardForecast } from "./econ-tax-cards.js";
 import { systemView } from "./econ-view-macro.js";
-import { systemKey } from "./econ-notice-text.js";
+import { crisisPanel } from "./econ-view-model.js";
+import { systemKey, legacyKey } from "./econ-notice-text.js";
 import { opensNext, rulesFor, send } from "./econ-view-common.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
@@ -39,6 +40,8 @@ export function renderFiscal(host, api) {
   const side = [];
   if (cards.length) side.push(nowSection(read, cards, api));
   side.push(systemSection(api));
+  const legacies = legaciesSection(api);
+  if (legacies) side.push(legacies);
   if (rules.sections["fiscal.tariff"]) {
     const tariff = tariffSection(api);
     if (tariff) side.push(tariff);
@@ -49,6 +52,32 @@ export function renderFiscal(host, api) {
     nodeKey: locked.opener || null } : null;
   const next = opensNext(api, rules.next.fiscal, first);
   if (next) host.appendChild(next);
+}
+
+/**
+ * What the player's crisis responses left (DESIGN 4.11c): each legacy with what it does and how long it lasts;
+ * null while there's none.
+ * @param {ScreenApi} api
+ */
+function legaciesSection(api) {
+  const view = crisisPanel(api.input(), api.me);
+  if (!view.on || !view.legacies.length) return null;
+  const block = section(api.loc("LOC_ECONOMICS_FISCAL_LEGACIES"), [],
+    { subtitle: api.loc("LOC_ECONOMICS_FISCAL_LEGACIES_SUB") });
+  for (const legacy of view.legacies) {
+    const base = legacyKey(legacy.id).replace(/_NAME$/, "");
+    const box = el("div", "econ-card econ-card--muted");
+    const head = el("div", "econ-card-head");
+    head.appendChild(el("div", "econ-card-title", api.loc(legacyKey(legacy.id))));
+    const left = legacy.left !== null ? api.loc("LOC_ECONOMICS_CRISIS_TURNS_LEFT", legacy.left)
+      : legacy.nextAge ? api.loc("LOC_ECONOMICS_LEGACY_NEXT_AGE") : api.loc("LOC_ECONOMICS_LEGACY_FOR_AGE");
+    head.appendChild(pill(left, false));
+    box.appendChild(head);
+    box.appendChild(el("div", "econ-card-sub", api.loc(`${base}_LINE`)));
+    if (legacy.world) box.appendChild(note(api.loc("LOC_ECONOMICS_LEGACY_EVERYONE")));
+    block.appendChild(box);
+  }
+  return block;
 }
 
 /**

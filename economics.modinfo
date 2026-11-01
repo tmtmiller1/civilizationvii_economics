@@ -167,6 +167,8 @@
                 <UpdateDatabase>
                     <!-- The turn notification's type (ui/econ-notify.js). -->
                     <Item>data/econ-notifications.xml</Item>
+                    <!-- The Civilopedia pages for the crises and their responses (DESIGN 4.11c). -->
+                    <Item>data/econ-civilopedia.xml</Item>
                 </UpdateDatabase>
                 <UpdateText>
                     <Item>text/en_us/ModText.xml</Item>
@@ -181,6 +183,18 @@
                     <Item locale="ru_RU">text/ru_ru/ModText.xml</Item>
                     <Item locale="zh_Hans_CN">text/zh_cn/ModText.xml</Item>
                     <Item locale="zh_Hant_HK">text/zh_hk/ModText.xml</Item>
+                    <Item>text/en_us/EconomicsPedia.xml</Item>
+                    <Item locale="de_DE">text/de_de/EconomicsPedia.xml</Item>
+                    <Item locale="es_ES">text/es_es/EconomicsPedia.xml</Item>
+                    <Item locale="fr_FR">text/fr_fr/EconomicsPedia.xml</Item>
+                    <Item locale="it_IT">text/it_it/EconomicsPedia.xml</Item>
+                    <Item locale="ja_JP">text/ja_jp/EconomicsPedia.xml</Item>
+                    <Item locale="ko_KR">text/ko_kr/EconomicsPedia.xml</Item>
+                    <Item locale="pl_PL">text/pl_pl/EconomicsPedia.xml</Item>
+                    <Item locale="pt_BR">text/pt_br/EconomicsPedia.xml</Item>
+                    <Item locale="ru_RU">text/ru_ru/EconomicsPedia.xml</Item>
+                    <Item locale="zh_Hans_CN">text/zh_cn/EconomicsPedia.xml</Item>
+                    <Item locale="zh_Hant_HK">text/zh_hk/EconomicsPedia.xml</Item>
                 </UpdateText>
                 <UIScripts>
                     <!-- Tower Settings Keeper: listed first, imports nothing, so it runs before anything reads storage. -->
@@ -199,6 +213,10 @@
                     <Item>ui/econ-commerce.js</Item>
                     <Item>ui/econ-conservation.js</Item>
                     <Item>ui/econ-credit.js</Item>
+                    <Item>ui/econ-crisis-catalog.js</Item>
+                    <Item>ui/econ-crisis-respond.js</Item>
+                    <Item>ui/econ-crisis-rows.js</Item>
+                    <Item>ui/econ-crisis.js</Item>
                     <Item>ui/econ-cycle.js</Item>
                     <Item>ui/econ-depth.js</Item>
                     <Item>ui/econ-dock.js</Item>

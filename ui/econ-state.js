@@ -16,7 +16,8 @@ export const VERSION = 3;
 export function emptyLedger() {
   return { age: null, nextId: 1, lastTurn: null, batchSeq: 0, loans: [], blocks: [], misses: [], repudiations: [],
     guardTurns: [], buildTurns: [], capHits: [], lowIncome: [], escrow: [], distress: [], creditRep: [], taxes: [],
-    events: [], lastBatch: null, investments: [], offers: [], nextInvestId: 1 };
+    events: [], lastBatch: null, investments: [], offers: [], nextInvestId: 1,
+    crises: [], responses: [], legacies: [], crisisTurns: [], crisisCounters: [], bubble: null };
 }
 
 /**
@@ -25,6 +26,14 @@ export function emptyLedger() {
  * @returns {T[]}
  */
 const copyRows = (rows) => rows.map((row) => ({ ...row }));
+
+/** The crisis rows' copy (DESIGN 4.11c). @param {Ledger} ledger */
+function cloneCrisis(ledger) {
+  return { crises: copyRows(ledger.crises || []), responses: copyRows(ledger.responses || []),
+    legacies: copyRows(ledger.legacies || []), crisisTurns: copyRows(ledger.crisisTurns || []),
+    crisisCounters: (ledger.crisisCounters || []).map((row) => ({ ...row, routes: [...row.routes] })),
+    bubble: ledger.bubble ? { ...ledger.bubble } : null };
+}
 
 /**
  * @param {Ledger} ledger
@@ -43,6 +52,7 @@ export function cloneLedger(ledger) {
     lastBatch: ledger.lastBatch ? { ...ledger.lastBatch, civs: copyRows(ledger.lastBatch.civs) } : null,
     investments: copyRows(ledger.investments || []), offers: copyRows(ledger.offers || []),
     nextInvestId: ledger.nextInvestId || 1,
+    ...cloneCrisis(ledger),
   };
 }
 
@@ -390,8 +400,48 @@ export function sanitizeLedger(input) {
   ledger.taxes = cleanTaxes(raw.taxes);
   ledger.events = /** @type {LedgerEvent[]} */ (list(raw.events).map(cleanEvent).filter(Boolean));
   ledger.lastBatch = cleanBatch(raw.lastBatch);
-  cleanCommerce(ledger, raw);
+  cleanExtras(ledger, raw);
   return prune(ledger);
+}
+
+/** The 1.1 commerce rows and the crisis rows. @param {Ledger} ledger @param {Raw} raw */
+function cleanExtras(ledger, raw) {
+  cleanCommerce(ledger, raw);
+  cleanCrisis(ledger, raw);
+}
+
+/** A crisis kind, response or legacy id as the ledger holds it. @param {unknown} x */
+const isId = (x) => typeof x === "string" && /^[a-z][a-z-]{0,31}$/.test(x);
+/** A crisis kind as the catalog names it. @param {unknown} x */
+const isKind = (x) => ["depression", "credit-panic", "price-shock", "debt", "inflation", "trade-collapse"].includes(String(x));
+
+/**
+ * The crisis rows (DESIGN 4.11c): open crises, standing responses, legacies (the world's with pid null), the turns
+ * a response was taken or a crisis ended, the counters the conditions keep, and a bubble. A save from before them
+ * loads with none.
+ * @param {Ledger} ledger
+ * @param {Raw} raw
+ */
+function cleanCrisis(ledger, raw) {
+  ledger.crises = list(raw.crises).filter((row) => row && isPid(row.pid) && isKind(row.kind) && isTurn(row.since))
+    .map((row) => ({ pid: row.pid, kind: row.kind, since: row.since }));
+  ledger.responses = list(raw.responses).filter((row) => row && isPid(row.pid) && isId(row.id) && isTurn(row.since))
+    .map((row) => ({ pid: row.pid, id: row.id, crisis: isKind(row.crisis) ? row.crisis : "depression", since: row.since,
+      until: isTurn(row.until) ? row.until : null }));
+  ledger.legacies = list(raw.legacies).filter((row) => row && (row.pid === null || isPid(row.pid)) && isId(row.id)
+    && isTurn(row.since)).map((row) => ({ pid: row.pid, id: row.id, since: row.since,
+      until: isTurn(row.until) ? row.until : null, nextAge: row.nextAge === true }));
+  ledger.crisisTurns = list(raw.crisisTurns).filter((row) => row && isPid(row.pid) && typeof row.id === "string"
+    && /^(take|end):[a-z-]{1,32}$/.test(row.id) && isTurn(row.turn))
+    .map((row) => ({ pid: row.pid, id: row.id, turn: row.turn, ...(typeof row.age === "string" ? { age: row.age } : {}) }));
+  ledger.crisisCounters = list(raw.crisisCounters).filter((row) => row && isPid(row.pid))
+    .map((row) => ({ pid: /** @type {number} */ (row.pid),
+      dues: atLeast(row.dues, 0) ? /** @type {number} */ (row.dues) : 0,
+      hot: atLeast(row.hot, 0) ? /** @type {number} */ (row.hot) : 0,
+      routes: list(row.routes).filter((x) => atLeast(x, 0)).map((x) => Number(x)).slice(-6) }));
+  const bubble = /** @type {Raw | null} */ (raw.bubble && typeof raw.bubble === "object" ? raw.bubble : null);
+  ledger.bubble = bubble && isTurn(bubble.since)
+    ? { since: bubble.since, burst: isTurn(bubble.burst) ? bubble.burst : null } : null;
 }
 
 /** @param {Loan} loan */

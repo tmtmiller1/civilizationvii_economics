@@ -114,7 +114,12 @@ export function aiPreferenceRows(ctx, ai) {
     const gold = bites ? Math.min(P.goldMax, 1 + (P.goldPerShare * service) / income) : 1;
     const budget = inDistress(ctx, civ.id) ? Math.max(P.budgetMin, 1 / gold) : 1;
     rows.push({ pid: civ.id, system: P.goldSystem, item: P.goldItem, factor: round2(gold) });
-    for (const item of P.budgetItems) rows.push({ pid: civ.id, system: P.budgetSystem, item, factor: round2(budget) });
+    // Rearmament (DESIGN 4.11b) lifts the army budget while it runs.
+    const army = ctx.crisis ? ctx.crisis.terms(civ.id).armyFactor : 1;
+    for (const item of P.budgetItems) {
+      const factor = item === "AI_BUDGET_STANDING_ARMY" ? budget * army : budget;
+      rows.push({ pid: civ.id, system: P.budgetSystem, item, factor: round2(factor) });
+    }
   }
   return rows;
 }

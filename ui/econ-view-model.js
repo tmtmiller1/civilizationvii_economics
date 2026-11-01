@@ -21,6 +21,9 @@ import { emptyMarkets } from "./econ-markets.js";
 import { emptyMacro } from "./econ-macro-state.js";
 import { escrowOf } from "./econ-escrow.js";
 import { reserveOf } from "./econ-distress.js";
+import { crisisView, crisisWeights } from "./econ-crisis.js";
+import { adjustPrices } from "./econ-crisis-respond.js";
+import { crisisTerms, onHoliday } from "./econ-crisis-rows.js";
 
 /**
  * A turn context for reading offers and limits without planning anything.
@@ -32,7 +35,21 @@ export function viewContext(input) {
   const out = { ledger: input.ledger || emptyLedger(), transfers: [], influence: [], celebration: [], grievances: [],
     relationships: [], events: [], notices: [], batch: null, skipped: null, markets: emptyMarkets(), progress: [],
     trade: [], macro: input.macro || emptyMacro(), aiPreferences: [], favors: [], stakes: {} };
-  return turnContext(input, options, out);
+  const ctx = turnContext(input, options, out);
+  // The crisis rules the model reads through the context (econ-plan.js planTurn does the same).
+  ctx.crisis = { terms: (pid) => crisisTerms(ctx, pid), weights: (events) => crisisWeights(ctx, events),
+    adjustPrices: (prices) => adjustPrices(ctx, prices), holiday: (pid) => onHoliday(ctx, pid) };
+  return ctx;
+}
+
+/**
+ * The Crisis section's and the legacy list's model for the player (DESIGN 4.11c): econ-crisis.js crisisView on a
+ * view context.
+ * @param {PlanInput} input
+ * @param {number} me
+ */
+export function crisisPanel(input, me) {
+  return crisisView(viewContext(input), me);
 }
 
 /**

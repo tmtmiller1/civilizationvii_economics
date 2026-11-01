@@ -146,7 +146,8 @@ export function runGame(game, { on = true, lend = true, roundTrip = true } = {})
     const relations = relationsAt(game, turn);
     const requests = on ? humanRequests(game, turn, civs, ledger, age, lend) : [];
     const t0 = process.hrtime.bigint();
-    const plan = planTurn({ turn, age, civs, relations, requests, params: PARAMS, options: { loans: on, cycle: "off", systems: false }, ledger, markets });
+    const plan = planTurn({ turn, age, civs, relations, requests, params: PARAMS,
+      options: { loans: on, cycle: "off", systems: false, crises: on }, ledger, markets });
     markets = plan.markets;
     facts.planMs.push(Number(process.hrtime.bigint() - t0) / 1e6);
     const incomes = new Map(civs.map((c) => [c.id, c.incomeCents]));
