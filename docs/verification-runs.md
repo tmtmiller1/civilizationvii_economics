@@ -1002,18 +1002,71 @@ acts req {"kind":"respond","pid":0,"response":"deposit-insurance"} -> false
 
 The panel's Choose it and End it buttons go through the same queue, so they fail the same way for a player.
 
+## Watched 2026-10-31, sixteenth run (crises and responses after the queue fix)
+
+One lab game, seed 4242, Modern, the usual mod set, stages Off, crises On, 27 turns (`2026-11-01T00-43-17`; the
+sample script, the drive log and `UI.log` under `mod_ideas_tested/economics/devtools/probe-runs/2026-10-31-watch-r7/`,
+the captures `working_screenshots/econ-watch-2026-10-31/r7-*.png`). The tree at `ff68140` was copied into the game's
+`Mods/economics` for the run and the 0.5.4 copy put back after. The world index was set to 0.70 by script at turn
+1 and to 0.60 at turn 12 with the 30-turn spacing rows cleared, for two Depressions; a Credit panic came on its
+own at turn 24. Every seat request went through the queue this time (`-> true` at turns 5, 8, 9, 11, 14 and 17).
+
+- X.5: at turn 4 the drive pressed the panel's first Choose it (Public works) through the DOM, the confirmation
+  drew ("Choose Public works? Price: the Gold, every turn it runs ... It leaves: the builds themselves. Confirm
+  Cancel"), its Confirm sent the request and the line read "Sent: crisis response. It goes through at the start of
+  next turn; until then you can take it back under Queued for next turn.", with the request listed under Queued for
+  next turn. Turn 5: `response:0/depression/public-works/0/request`, the seat's `response` notice, 48 Gold a turn
+  into its builds (`0>progress:4800:works`, progress rows on two cities) and `public-works@0=100` in the cycle's
+  events; the panel then listed it under "What you're doing" as "until the crisis ends" with an End it button
+  (`r7-crisis-world-t7.png`). Relief by queue at turn 5 paid `0>citizens:600:relief` and 24 celebration points a
+  turn from turn 6. Deposit insurance by queue at turn 17 cost two turns of income (`0>bond:14600:response`,
+  `response:0/depression/deposit-insurance/14600/request`, the notice carrying the 146 Gold) and wrote the
+  `deposit-insurance` legacy for the age (the seat is Corporatist, so no carry-over).
+- X.5, the End it path: at turn 16 the drive pressed End it on the standing Relief card; the confirmation read
+  "End Relief? Ending relief while the crisis still runs is remembered: -2 Happiness a settlement for 10 turns."
+  and its Confirm sent the request. Turn 17: `response-ended:0/relief`, the `relief-ended` legacy to turn 27 and
+  `-1200:relief-ended` on the celebration meter each turn (2 Happiness a settlement, six settlements); turn 27 the
+  `legacy-ended:relief-ended` notice. The first crisis's cancel at turn 9 landed after Relief had run out on its own
+  (`response-ended` and `refused:0/not-running` on the same turn, no mark), which is the rule.
+- X.4: the whole Modern menu drew in a three-column grid: Public works, Bank holiday, Deposit insurance (158 Gold
+  now), Off the gold standard, Price supports, Confidence, each with its history line, its Now, Price and It leaves
+  facts aligned under their labels, and Austerity below with its caution pill (`r7-crisis-world-t15.png`). The
+  Hoover-line marks are the caution colour on Austerity's pill and the price lines in the loss colour.
+- X.6: the Fiscal tab's "What your choices left" with its subtitle on the heading line, then "Rearmed, Your
+  neighbours noticed the army you raised in the slump, 16 turns left", "Relief ended early, -2 Happiness a settlement
+  while it lasts, 8 turns left" and "Deposit insurance ... for the age" (`r7-legacies-fiscal-t19.png`); the section
+  stays away while the seat has no legacy (`r7-fiscal-t12.png`).
+- X.7, the AIs' picks with the war rule off: `atWar` read false for all six civs at turns 1 to 4 (the fifteenth run
+  read true). All five AIs still took Rearmament at turn 2, this time by preference: every AI reads Corporatist at a
+  Modern start and Rearmament is that system's first preference in the catalog. In the second crisis, with
+  Rearmament used for the age, Persia, the Ottomans, Hawai'i and Dai Viet took Deposit insurance (202 to 328 Gold,
+  `response:1/depression/deposit-insurance/32808/ai`) and Goryeo, whose dues passed its income, the Bank holiday
+  (`bank-holiday@4=200`, the legacy to turn 33). In the Credit panic at turn 24 four went off the gold standard
+  (`debts-cut:1/1440` and the rest, `gold-standard@1=100` each turn) and Goryeo took Deposit insurance.
+- Rearmament (ddb9cc7): each rearming civ paid a Gold a settlement a turn to the cycle (`1>cycle:600` to
+  `5>cycle:600` every turn from turn 3 to 11, six settlements each; `0>cycle:600:rearmament` for the seat from turn
+  15 to 25). The turn the seat took it, the three civs whose capitals lie within 20 plots lost a level with it
+  (`rel 2~0:-1 4~0:-1 5~0:-1`; Persia and Hawai'i farther off, untouched) and the seat's `rearmament` legacy ran to
+  turn 35. The World tab's "What moved it" read "rearmament (Heian Japan) +0.005" each turn, and from turn 18 "the
+  Bonus Army marching" for every civ.
+- The crisis panel's turns pill read "2 turns in" at turn 4, "5 turns in" at turn 7 and "3 turns in" at turn 16;
+  on a crisis's first turn it still reads "1 turns in" (`LOC_ECONOMICS_CRISIS_TURNS` has one form).
+- Noted again: invariant econ-3 fired once at turn 5 (`4:327684`, two development-loan progress grants on one
+  Goryeo city), the same line as the fifteenth run, outside the crises code. No other error line in `UI.log`.
+- Not reached: Antiquity's and Exploration's menus (X.2, X.3); the bank holiday on a seat loan (X.8); the bank run
+  (X.10); the Civilopedia pages (X.11); the option Off (X.12); tribute's doubled bills (X.13).
+
 ## Owed: crises and responses (2026-10-31, unreleased)
 
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
 | X.2 | Antiquity's menu: Cancel the debts, the Grain dole, Debase the coin, Public works, Tribute (a Tribute civ only), The temple lends, the Bank holiday, Confidence and Austerity, each with its history line, what it does now, its price and what it leaves | Antiquity 4242, a debt crisis on the seat (dues over income three turns) | `ui/econ-crisis-catalog.js` `RESPONSES` |
 | X.3 | Exploration's menu: Suspend payments, Recoinage (Public debt), Charter a company (Chartered companies), Navigation acts (Tariffs), Bullion fleets, Lend to the crown (a Friendly civ with Gold), Public works, Relief, the Bank holiday, Confidence, Austerity | Exploration 9001, a trade collapse or a Depression on the seat | same |
-| X.4 | Modern's menu: Deposit insurance (Banking), Off the gold standard (Public debt, not Planned), Public works, Relief, Price supports, Rearmament, Confidence, the Bank holiday, Austerity, the two Hoover-line ones marked (2026-10-31, fifteenth run: the first six cards drew with their history, Now, Price and It leaves lines; Rearmament, Confidence, Austerity and the Hoover marks sat below the read) | Modern 4242, a Depression on the seat | same |
-| X.5 | Taking a response from the panel: the confirmation, the "sent" line, next turn the `response` event, the Treasury flows showing its cost (`response`) and its first turn's effect (`relief`, `works`, the holiday's skipped payment), and the standing response listed under "What you're doing" with its turns left (2026-10-31, fifteenth run: a row written by script paid its works and drew under "What you're doing"; choosing from the panel is blocked by `respond` missing from `REQUEST_KINDS`) | any of the above | `ui/econ-crisis.js` `takeResponse`, `respondRequest` |
 | X.8 | A bank holiday: for three turns the seat's loan payment isn't made and isn't missed (no `miss` event, the balance unchanged by it), the escrow still holds, and the payment resumes on the fourth | a seat with a bond loan, the holiday taken | `ui/econ-plan.js` `payerPass` |
 | X.10 | A bank run: a lender civ in Depression with two borrowers in default to it gets the `bank-run` event, -0.02 on its index the next turn and no offer from it on the Loans tab for five turns | Modern 4242, two defaulted loans from one AI written into the ledger, its index under 0.80 | `ui/econ-crisis.js` `bankRuns`, `ui/econ-turn.js` `offerQuery` |
 | X.11 | The Civilopedia's "Crises and responses" group under Game Concepts draws its five pages with every chapter's text, and the search finds "New Deal" | any game, the Civilopedia | `data/econ-civilopedia.xml`, `text/en_us/EconomicsPedia.xml` |
 | X.12 | With the Crises and responses option Off at setup, no crisis starts, the World tab has no Crisis section and the boot line's options read `crises: false` | a game started with the option Off | `ui/econ-session.js` `readOptions`, `ui/econ-crisis.js` `crisesOn` |
+| X.13 | Tribute's doubled bills: the civs that paid the levy pay twice their trade bill to the levier for ten turns, read on the Trade tab against another importer's bill (ddb9cc7, tested, not watched) | Antiquity 4242, a Tribute-system seat in a debt crisis, trade routes in | `ui/econ-crisis-respond.js` `LEGACY_ROWS`, `ui/econ-trade.js` `owedByPair` |
 
 ## Owed: the build loan as a want (2026-10-31, unreleased)
 
