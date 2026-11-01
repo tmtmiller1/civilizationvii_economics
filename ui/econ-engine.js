@@ -158,14 +158,17 @@ export function readStrength(pid) {
 }
 
 /**
- * Whether the civ is at war with any living major (minors read as at war with everyone, so they're left out).
+ * Whether the civ is in a formal war with a living major it has met. Minors read as at war with everyone, so they're
+ * left out; so does an unmet major, because `isAtWarWith` answers true for a pair that hasn't met (the game's own
+ * diplomacy-manager filters the same call by `hasMet`), which read every civ as at war at turn 2 of a Modern start.
  * @param {number} pid
  * @param {number[]} majors
  */
 export function readAtWar(pid, majors) {
   const diplomacy = safe(() => Players.get(pid).Diplomacy, null);
   if (!diplomacy) return false;
-  return majors.some((other) => other !== pid && safe(() => diplomacy.isAtWarWith(other) === true, false));
+  return majors.some((other) => other !== pid && haveMet(pid, other)
+    && safe(() => diplomacy.isAtWarWith(other) === true, false));
 }
 
 /**

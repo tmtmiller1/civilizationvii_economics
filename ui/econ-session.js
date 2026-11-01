@@ -33,7 +33,7 @@ import { aliveMajorIds, ageType, bankGoldYield, bookFavor, bookGrievance, bookRe
 export const GLUE_KEY = "tower-economics-glue";
 export const GLUE_VERSION = 2;
 const REQUEST_KINDS = ["borrow", "lend", "repay", "restructure", "repudiate", "tax", "tariff", "invest",
-  "accept-offer", "decline-offer"];
+  "accept-offer", "decline-offer", "respond"];
 const MAX_REQUESTS = 16;
 
 /**

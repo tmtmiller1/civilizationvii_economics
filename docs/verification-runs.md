@@ -994,6 +994,12 @@ acts req {"kind":"respond","pid":0,"response":"relief","cancel":true} -> false
 acts req {"kind":"respond","pid":0,"response":"deposit-insurance"} -> false
 ```
 
+- Fixed after the run: `respond` added to `REQUEST_KINDS` (a test queues a response and its cancel); and `readAtWar`
+  now counts only majors the civ has met, because the game's `isAtWarWith` answers true for a pair that hasn't met
+  (its own diplomacy-manager filters the same call by `hasMet`), which is what read every AI as at war at turn 2 and
+  sent all five to Rearmament (X.7). Taking a response from the panel and an AI's pick at a Modern start are still
+  owed a watch.
+
 The panel's Choose it and End it buttons go through the same queue, so they fail the same way for a player.
 
 ## Owed: crises and responses (2026-10-31, unreleased)

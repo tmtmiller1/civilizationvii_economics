@@ -70,7 +70,7 @@ export function installFakeEngine(spec = {}) {
           hasAllied: (other) => (c.allies || []).includes(other),
           getPlayerRelationshipHistory: (other) => c.history?.[other] || [],
           getFavorGrievanceEventTypeName: (eventType) => String(eventType),
-          hasMet: () => spec.met !== false,
+          hasMet: (other) => spec.met !== false && !(c.unmet || []).includes(other),
           changeNumGrievances: (other, amount) => record(`grievance ${pid}>${other} ${amount}`),
           changeNumFavors: (other, amount) => record(`favor ${pid}>${other} ${amount}`),
           changeRelationshipLevel: (other, delta) => record(`relationship ${pid}~${other} ${delta}`),

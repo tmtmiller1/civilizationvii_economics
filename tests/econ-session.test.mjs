@@ -152,8 +152,12 @@ test("the glue envelope keeps requests, stage turns, seen civs and the guard swi
   const session = loadSession();
   assert.equal(queueRequest(session, { kind: "repay", loanId: "L1", cents: 100 }), true);
   assert.equal(queueRequest(session, { kind: "bogus" }), false);
+  assert.equal(queueRequest(session, { kind: "respond", pid: 0, response: "relief" }), true, "a crisis response");
+  assert.equal(queueRequest(session, { kind: "respond", pid: 0, response: "relief", cancel: true }), true, "ending one");
+  assert.equal(queueRequest(session, { kind: "rearm", pid: 0 }), false, "a kind the model has no handler for");
   const again = loadSession();
-  assert.deepEqual(again.glue.requests, [{ kind: "repay", loanId: "L1", cents: 100 }]);
+  assert.deepEqual(again.glue.requests, [{ kind: "repay", loanId: "L1", cents: 100 },
+    { kind: "respond", pid: 0, response: "relief" }, { kind: "respond", pid: 0, response: "relief", cancel: true }]);
   assert.ok(world.config[GLUE_KEY].includes("repay"));
   const clean = sanitizeGlue({ v: 1, stages: { 4: { moneylending: 3, publicDebt: "x" }, bad: {} }, seen: [1, -2, "3"],
     requests: [{ kind: "borrow" }, 5], guardOn: "yes" });
@@ -184,5 +188,15 @@ test("every option off, the 1.2 ones too: the batch is skipped and says so in th
   }
   fresh({ config: { ...off, ECONOMICS_CYCLE: "ECONOMICS_CYCLE_STANDARD" } });
   assert.ok(runTurn(loadSession(), "TurnBegin 10"), "with the cycle on there's still a batch to run");
+  removeFakeEngine();
+});
+
+test("atWar means a formal war with a living major the civ has met: an unmet pair's war answer is ignored", () => {
+  // Civ VII's isAtWarWith answers true for two majors that haven't met, which read every civ as at war at turn 2 of
+  // a Modern start (fifteenth run) and sent all five AIs to Rearmament.
+  fresh({ civs: [{ id: 0, human: true, war: [3], unmet: [3] }, { id: 3, war: [0, 5], unmet: [0] }, { id: 5, war: [3] },
+    { id: 7, war: [0, 3, 5], unmet: [0, 3, 5] }] });
+  const input = buildInput(loadSession());
+  assert.deepEqual(input.civs.map((c) => [c.id, c.atWar]), [[0, false], [3, true], [5, true], [7, false]]);
   removeFakeEngine();
 });
