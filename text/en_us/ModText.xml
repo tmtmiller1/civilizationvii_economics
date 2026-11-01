@@ -111,6 +111,11 @@
         <Row Tag="LOC_ECONOMICS_PILL"><Text>Debt {1_Amount}</Text></Row>
         <Row Tag="LOC_ECONOMICS_PILL_DEFAULT"><Text>In default</Text></Row>
         <Row Tag="LOC_ECONOMICS_PILL_NONE"><Text>No debt</Text></Row>
+        <Row Tag="LOC_ECONOMICS_PILL_TIP_DEBT"><Text>What you owe, loan by loan. Opens the Loans tab.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_PILL_TIP_DEFAULT"><Text>A loan of yours is in default. Opens the Loans tab on it, with what you can still do.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_PILL_TIP_PHASE"><Text>The world economy's phase and what moved it. Opens the World tab.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_PILL_TIP_CRISIS"><Text>You're in a crisis. Opens the World tab on its causes and the responses open to you.</Text></Row>
+        <Row Tag="LOC_ECONOMICS_PILL_TIP_INFLATION"><Text>Inflation, its cause and what it costs you. Opens the World tab on it.</Text></Row>
 
         <!-- Treasury tab -->
         <Row Tag="LOC_ECONOMICS_TREASURY_NOW"><Text>Your treasury</Text></Row>

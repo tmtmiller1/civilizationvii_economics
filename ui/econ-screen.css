@@ -696,6 +696,17 @@
     pointer-events: none;
 }
 
+/* A top-bar pill that opens the screen on its tab: pressable, and lit a little under the pointer. */
+.econ-pill--press {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.econ-pill--press:hover,
+.econ-pill--press:focus {
+    filter: brightness(1.18);
+}
+
 /* The Gold stepper. */
 .econ-stepper {
     display: flex;

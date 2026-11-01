@@ -44,6 +44,7 @@ function pillSource() {
     inDefault: session.ledger.loans.some((loan) => loan.borrower === me && loan.state === "default"),
     owedCents: outstandingOf(session.ledger, me), phase: session.macro.cycle.phases[String(me)] ?? null,
     cycleOn: options.cycle !== "off", inflationOn: options.inflation, piPpm: session.macro.inflation.piPpm,
+    inCrisis: (session.ledger.crises || []).some((row) => row.pid === me),
   }, { loc, gold: formatGold, rate: formatRate, phaseKey });
   return { pills, text: pills.map((p) => p.text).join(" · "), warning: pills.some((p) => p.tone === "warning") };
 }

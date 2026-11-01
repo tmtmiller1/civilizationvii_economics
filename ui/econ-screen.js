@@ -85,7 +85,14 @@ function makeTabBar(items, onSelect, start) {
   return bar;
 }
 
-/** The open screen's tab, chosen from outside (the console, for captures). @param {string} key */
+/**
+ * Where the screen opens next: a tab and, within it, the section to land on (a selector), from a top-bar pill.
+ * @typedef {{ tab: TabKey, focus?: string | null }} OpenAt
+ */
+/** @type {OpenAt | null} */
+let pendingOpen = null;
+
+/** The open screen's tab, chosen from outside (a pill, the console). @param {string} key */
 export function showTab(key) {
   const screen = openScreenInstance;
   if (!screen) return null;
@@ -93,6 +100,20 @@ export function showTab(key) {
   const bar = screen.Root?.querySelector?.("fxs-tab-bar");
   bar?.setAttribute?.("selected-tab-index", String(Math.max(0, screen.tabs.indexOf(screen.tab))));
   return screen.tab;
+}
+
+/**
+ * Scrolls the tab to the section a pill named, so it's at the top of the view; nothing when the section isn't
+ * drawn (the loan was repaid before the press landed, say).
+ * @param {HTMLElement} host
+ * @param {string | null | undefined} focus
+ */
+export function focusSection(host, focus) {
+  if (!focus) return false;
+  const node = /** @type {HTMLElement | null} */ (host.querySelector?.(focus) ?? null);
+  if (!node) return false;
+  host.scrollTop = Math.max(0, node.offsetTop - host.offsetTop);
+  return true;
 }
 
 /** The line after an action, once, at the top of the tab. @param {HTMLElement} host */
@@ -128,10 +149,12 @@ class ScreenEconomics extends Panel {
       if (screenApi) {
         this.tabs = shownTabs(screenApi);
         // A remembered tab that isn't shown now (a closed stage, or a game with the stages on) falls back to Treasury.
-        this.tab = startTab({ tabs: this.tabs }, getSetting("lastTab"));
+        this.tab = startTab({ tabs: this.tabs }, pendingOpen?.tab ?? getSetting("lastTab"));
       }
       this.buildTabs();
       this.render();
+      this.landOn(pendingOpen);
+      pendingOpen = null;
     } catch (error) {
       logLine(`screen render failed: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -178,6 +201,12 @@ class ScreenEconomics extends Panel {
     this.tabs = tabs;
     if (!tabs.includes(this.tab)) this.tab = "treasury";
     this.buildTabs();
+  }
+
+  /** Lands the drawn tab on the section a pill named. @param {OpenAt | null} at */
+  landOn(at) {
+    const host = /** @type {HTMLElement | null} */ (this.Root?.querySelector?.(".econ-screen-host") ?? null);
+    if (host && at && at.tab === this.tab) focusSection(host, at.focus);
   }
 
   /** @param {TabKey} key */
@@ -257,8 +286,18 @@ export function newTurnOnScreen() {
   openScreenInstance?.render();
 }
 
-/** Opens the screen (pushes it onto the context stack); nothing happens without a context manager. */
-export function openScreen() {
+/**
+ * Opens the screen (pushes it onto the context stack); nothing happens without a context manager. With `at` it
+ * opens on that tab, landed on the section; a screen already open just moves there.
+ * @param {OpenAt} [at]
+ */
+export function openScreen(at) {
+  if (at && openScreenInstance) {
+    showTab(at.tab);
+    openScreenInstance.landOn(at);
+    return;
+  }
+  pendingOpen = at ?? null;
   import("/core/ui/context-manager/context-manager.js").then((/** @type {any} */ mod) => {
     const manager = mod.default || mod.ContextManager || mod;
     if (manager && typeof manager.push === "function") manager.push(SCREEN_ID, { singleton: true, createMouseGuard: true });

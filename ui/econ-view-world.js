@@ -64,7 +64,7 @@ export function renderWorld(host, api) {
  * @param {ScreenApi} api
  */
 function nowSection(view, inflationShown, api) {
-  const block = section(api.loc("LOC_ECONOMICS_WORLD_NOW"));
+  const block = section(api.loc("LOC_ECONOMICS_WORLD_NOW"), [], { className: "econ-world-now" });
   if (!view.cycleOn) { block.appendChild(empty(api.loc("LOC_ECONOMICS_WORLD_CYCLE_OFF"))); return block; }
   block.appendChild(cycleDial(view, api));
   if (inflationShown && view.inflation.on) block.appendChild(inflationMeter(view.inflation.piPpm, api));
@@ -112,7 +112,7 @@ function eventsSection(view, api) {
  * @param {ScreenApi} api
  */
 function inflationSection(view, api) {
-  const block = section(api.loc("LOC_ECONOMICS_WORLD_INFLATION"));
+  const block = section(api.loc("LOC_ECONOMICS_WORLD_INFLATION"), [], { className: "econ-world-inflation" });
   const { inflation } = view;
   if (!inflation.on) { block.appendChild(empty(api.loc("LOC_ECONOMICS_WORLD_INFLATION_OFF"))); return block; }
   if (!(inflation.bondCents > 0)) { block.appendChild(empty(api.loc("LOC_ECONOMICS_WORLD_INFLATION_NONE"))); return block; }

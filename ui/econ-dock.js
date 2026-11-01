@@ -4,7 +4,9 @@
 // class painted through a CSS mask). The pill
 // sits in the resource bar, in the yield banner's own mod slot after the settlement limit
 // (panel-yield-banner.js, #yield-banner-mod-slot). Several views carry their own banner, so each banner gets its own
-// pill and a redraw updates them all.
+// pill and a redraw updates them all. A press on a pill opens the screen on the tab that explains it, landed on the
+// section (DESIGN 9): the Loans tab for a debt, the loan in trouble when in default; the World tab's cycle for the
+// phase, or the Crisis section in a crisis; the World tab's inflation for the rate.
 // The icon is a shipped SVG file: Coherent's CSS parser drops data: URIs in a background image.
 
 import { openScreen } from "./econ-screen.js";
@@ -20,7 +22,7 @@ const STYLE_ID = "econ-dock-icon-style";
 
 /** Each attached banner's slot and the pill in it. @type {Map<HTMLElement, HTMLElement>} */
 const pillNodes = new Map();
-/** @typedef {{ text: string, tone: "plain" | "caution" | "warning" }} PillItem */
+/** @typedef {import("./econ-pills.js").Pill} PillItem */
 /** @typedef {{ pills: PillItem[], text: string, warning: boolean }} PillState */
 /** @type {(() => PillState) | null} */
 let pillSource = null;
@@ -63,16 +65,19 @@ export function refreshDock() {
 }
 
 /**
- * One row of pills, each coloured on its own (DESIGN 9); an empty row when there's nothing to say.
- * @param {{ text: string, tone: "plain" | "caution" | "warning" }[]} pills
+ * One row of pills, each coloured on its own and each a press away from its tab (DESIGN 9); an empty row when
+ * there's nothing to say.
+ * @param {PillItem[]} pills
  */
 function pillRow(pills) {
   const row = document.createElement("div");
   row.className = "econ-bar-pill econ-bar-pills";
   row.style.display = "flex";
   row.style.alignItems = "center";
+  row.style.pointerEvents = "auto";
   for (const item of pills) {
-    const node = pill(item.text, item.tone);
+    const node = pill(item.text, item.tone, { onActivate: () => openScreen({ tab: item.tab, focus: item.focus }),
+      tooltip: item.tip });
     node.style.marginLeft = "0.35rem";
     row.appendChild(node);
   }

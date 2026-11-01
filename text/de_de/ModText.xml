@@ -92,6 +92,11 @@
         <Replace Tag="LOC_ECONOMICS_PILL" Language="de_DE"><Text>Debt {1_Amount}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PILL_DEFAULT" Language="de_DE"><Text>In default</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PILL_NONE" Language="de_DE"><Text>No debt</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL_TIP_DEBT" Language="de_DE"><Text>What you owe, loan by loan. Opens the Loans tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL_TIP_DEFAULT" Language="de_DE"><Text>A loan of yours is in default. Opens the Loans tab on it, with what you can still do.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL_TIP_PHASE" Language="de_DE"><Text>The world economy's phase and what moved it. Opens the World tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL_TIP_CRISIS" Language="de_DE"><Text>You're in a crisis. Opens the World tab on its causes and the responses open to you.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL_TIP_INFLATION" Language="de_DE"><Text>Inflation, its cause and what it costs you. Opens the World tab on it.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_NOW" Language="de_DE"><Text>Your treasury</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_BALANCE" Language="de_DE"><Text>Balance</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_INCOME" Language="de_DE"><Text>Income per turn</Text></Replace>
