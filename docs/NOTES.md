@@ -398,6 +398,14 @@ AB. **A world Depression now has responses and no aid.** Choice 139 took the AI'
   the first run, before the edge tests in `../tests/econ-macro-edges.test.mjs` and `econ-macro-cycle-edges.test.mjs`),
   `econ-view-macro.js` 85.8, `econ-citizens.js` 83.5, `econ-planned.js` 77.6, `econ-macro-state.js` 76.1. The
   survivors are mostly event and notice fields, the envelope's size fallbacks and sort tie-breaks no rule reads.
+- The crises rows ran 2026-10-31 in `../tests/econ-balance.test.mjs` (the cycle is off there, so the debt crisis is
+  the only kind that fires; `runGame` in `_balance.mjs` takes a `crises` switch for a run without them). The first
+  build showed repudiations 51 against 36 with crises off and defaults 184 against 223. A diagnostic over the 20 games
+  found each repudiator had taken a response (temple loans 21, crown loans 7, holidays 6, works 3) and 14 of the
+  repudiated loans were the temple loans themselves. An insolvent AI now takes only confidence, relief or Solon's
+  cancellation, and its holiday needs income above 0 (`econ-crisis-respond.js`, the player's choices unchanged):
+  repudiations 36, defaults 222, responses confidence 73, works 4, crown loans 3; the row is in DESIGN 10's dated
+  note.
 
 - The AI plan's run (2026-10-31, stages A to E) is DESIGN 10's dated note of that day: the ledger's events counted
   (`report.aiRules`), the investment stages open in the harness, the engine's level numbers behind the relations.

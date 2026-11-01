@@ -132,7 +132,7 @@ function humanRequests(game, turn, civs, ledger, age, lend) {
 /**
  * Runs one game. options.loans false is the Off run. Returns per-turn facts the ladder reads.
  */
-export function runGame(game, { on = true, lend = true, roundTrip = true } = {}) {
+export function runGame(game, { on = true, lend = true, roundTrip = true, crises = on } = {}) {
   let balances = new Map(game.civs.map((c) => [c.id, c.startCents]));
   let ledger;
   // The markets envelope carries the AI's aid-once-an-age and investment turns, as the glue's save does.
@@ -147,7 +147,7 @@ export function runGame(game, { on = true, lend = true, roundTrip = true } = {})
     const requests = on ? humanRequests(game, turn, civs, ledger, age, lend) : [];
     const t0 = process.hrtime.bigint();
     const plan = planTurn({ turn, age, civs, relations, requests, params: PARAMS,
-      options: { loans: on, cycle: "off", systems: false, crises: on }, ledger, markets });
+      options: { loans: on, cycle: "off", systems: false, crises }, ledger, markets });
     markets = plan.markets;
     facts.planMs.push(Number(process.hrtime.bigint() - t0) / 1e6);
     const incomes = new Map(civs.map((c) => [c.id, c.incomeCents]));

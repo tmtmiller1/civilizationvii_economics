@@ -348,16 +348,28 @@ export function respondRequest(ctx, request) {
 // --- The AI's choice ------------------------------------------------------------------------------------------------
 
 /**
- * A holiday buys time for a civ whose dues pass its income and that can pay once it has the time; an insolvent one
- * (income at or below 0 for five turns) can't, and the balance run showed its suspended loans ending in
- * repudiations instead of defaults.
+ * A holiday buys time for a civ whose dues pass its income and that can pay once it has the time: income above 0
+ * and not insolvent (income at or below 0 for five turns). The balance run of 2026-10-31 showed a holiday taken in
+ * a deficit spell keeping the loan alive for the repudiation rule instead of the default.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
 function wantsHoliday(ctx, civ) {
-  const insolvent = isInsolvent(ctx.ledger.lowIncome.find((row) => row.pid === civ.id)?.turns ?? 0);
-  return duesOf(ctx, civ.id).total > Math.max(0, civ.incomeCents) && !insolvent;
+  return civ.incomeCents > 0 && duesOf(ctx, civ.id).total > civ.incomeCents && !insolventCiv(ctx, civ);
 }
+
+/** Income at or below 0 for five turns (DESIGN 4.6). @param {TurnContext} ctx @param {Civ} civ */
+function insolventCiv(ctx, civ) {
+  return isInsolvent(ctx.ledger.lowIncome.find((row) => row.pid === civ.id)?.turns ?? 0);
+}
+
+/**
+ * What an insolvent AI may still take: the responses that cost it nothing it hasn't got. Works, a crown loan, a
+ * temple loan, a company or a fleet put Gold or credit into a civ whose income is at or below 0, and the balance run
+ * of 2026-10-31 showed those loans ending in repudiations (51 against 36 without crises); a holiday only hands the
+ * loan to the repudiation rule. The player's seat keeps every choice.
+ */
+const INSOLVENT_OK = new Set(["confidence", "relief", "cancel-debts"]);
 
 /**
  * @param {TurnContext} ctx
@@ -369,6 +381,7 @@ function wantsHoliday(ctx, civ) {
 function aiPick(ctx, civ, open, system, kind) {
   const holiday = open.find((spec) => spec.id === "bank-holiday" || spec.id === "suspend");
   if (holiday && wantsHoliday(ctx, civ)) return holiday;
+  if (insolventCiv(ctx, civ)) open = open.filter((spec) => INSOLVENT_OK.has(spec.id));
   const arms = open.find((spec) => spec.id === "rearmament");
   if (arms && civ.atWar === true) return arms;
   const rank = (/** @type {Response} */ spec) => {

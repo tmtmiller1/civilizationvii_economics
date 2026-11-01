@@ -543,6 +543,11 @@ test("an AI whose dues pass its income takes the bank holiday first; one at war 
   const broke = plan({ civs: [ai(AI, { balanceCents: 0, incomeCents: -100 })],
     ledger: ledgerWith([owed], { lowIncome: [{ pid: AI, turns: 9 }] }), macro: DEPRESSION() });
   assert.equal(kinds(broke, "response").some((e) => e.response === "bank-holiday"), false, "no holiday while insolvent");
+  // Nor works, a temple loan or a crown loan: an insolvent AI takes only what costs it nothing (confidence, relief,
+  // Solon's cancellation); here, in Exploration with a debt crisis, that leaves confidence.
+  const taken = kinds(broke, "response").map((e) => e.response);
+  assert.deepEqual(taken.filter((id) => ["public-works", "temple-lends", "lend-crown", "charter", "bullion"].includes(id)), [],
+    `an insolvent AI took ${taken.join(",")}`);
 });
 
 test("the AI picks by its economic system: Theocracy relief, Plutocracy a company, Despotism tribute", () => {
