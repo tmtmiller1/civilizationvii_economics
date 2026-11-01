@@ -272,6 +272,7 @@
                     <Item>ui/econ-view-borrow.js</Item>
                     <Item>ui/econ-view-commerce.js</Item>
                     <Item>ui/econ-view-common.js</Item>
+                    <Item>ui/econ-view-crisis.js</Item>
                     <Item>ui/econ-view-fiscal.js</Item>
                     <Item>ui/econ-view-instruments.js</Item>
                     <Item>ui/econ-view-loans.js</Item>

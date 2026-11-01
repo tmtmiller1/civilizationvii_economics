@@ -21,12 +21,12 @@
 
         <!-- Crises: the rules -->
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_CONTENT_TITLE"><Text>What a crisis is</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_CONTENT_PARA_1"><Text>Economics gives every
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_CONTENT_PARA_1"><Text>Economics gives each
             civilization an economy that can go wrong: the world's business cycle, the loans it carries, the prices it
-            trades at, the inflation idle Gold suffers. A crisis is the moment one of those readings crosses a line.
-            It isn't rolled and it isn't saved for the end of the age; the mod reads the state of your economy every
-            turn, and a crisis can start on any turn of any age. While it lasts, the World tab shows what's pulling
-            you down and what you can do about it.</Text></Row>
+            trades at, the inflation idle Gold suffers. A crisis is the moment one of those readings crosses a line. It
+            isn't rolled and it isn't saved for the end of the age; the mod reads the state of your economy every turn,
+            and a crisis can start on any turn of any age. While it lasts, the World tab shows what's pulling you down
+            and what you can do about it.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_CONTENT_PARA_2"><Text>Each response you take
             changes something at once, costs you something, and leaves a legacy you carry for a while or for the rest
             of the age. The history is the guide: the choices Solon, Philip II, Isaac Newton and Franklin Roosevelt
@@ -35,12 +35,11 @@
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_KINDS_PARA_1"><Text>A Depression comes when your
             own index on the World tab falls under 0.80. A credit panic comes in Exploration (from the Banking stage)
             and Modern when a Panic freezes the lenders while you hold loans, or when a bubble bursts. A price shock
-            comes when the price of a resource class you import or export has moved 40 percent, up or down, on ten
-            turns ago. A debt crisis comes after three turns with your payments due above your income, or when you
-            default on a loan from another civilization. Runaway inflation (Exploration from Public debt, and
-            Modern, with the Inflation option on) comes after five turns with the rate at its cap, or ten turns after
-            you leave the gold standard. A trade collapse comes in Exploration and Modern when a third of your trade
-            routes end within five turns.</Text></Row>
+            comes when the price of a resource class you import or export has moved 40 percent, up or down, on ten turns
+            ago. A debt crisis comes after three turns with your payments due above your income, or when you default on
+            a loan from another civilization. Runaway inflation, once you have Public debt, comes after five turns with
+            the rate at its cap (with the Inflation option on), or ten turns after you leave the gold standard. A trade
+            collapse comes in Exploration and Modern when a third of your trade routes end within five turns.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_KINDS_PARA_2"><Text>A civilization has at most
             one crisis of a kind every 30 turns and two crises at once. A crisis ends the turn its condition stops
             holding, and the notice names what ended it: the responses you took, or the world recovering on its
@@ -73,18 +72,18 @@
             economy. A bank failure leaves a legacy on everyone at once.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_AI_TITLE"><Text>The computer players</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_AI_PARA_1"><Text>A computer player in a crisis
-            takes one response per crisis, chosen by its economic system (Economic systems in the Fiscal tab). A
-            Planned or Manorial economy builds public works; a Mercantile one supports prices, charters a company or
-            passes navigation acts, and is the one that will raise tariffs; a Religious one gives relief; a Tribute
-            economy or a Palace economy levies tribute or turns to austerity; a Market or Corporatist economy insures
-            its deposits and then builds. A civilization whose payments pass its income declares a bank holiday
-            first, and one at war in Modern rearms. They pay the same prices and carry the same legacies you
-            do.</Text></Row>
+            takes one response per crisis, chosen by its economic system (Economic systems in the Fiscal tab). A Planned
+            or Manorial economy builds public works; a Mercantile one supports prices, charters a company or recoins,
+            and is the one that raises tariffs by navigation acts, in a trade collapse or when it pays trade bills; a
+            Religious one gives relief; a Tribute economy levies tribute or debases the coin; a Palace economy debases
+            the coin or borrows from the temple; a Market or Corporatist economy insures its deposits, or builds. A
+            civilization whose payments pass its income declares a bank holiday first, and one at war in Modern rearms.
+            Austerity is the player's alone. They pay the same prices and carry the same legacies you do.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_OPTION_TITLE"><Text>The setup option</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_OPTION_PARA_1"><Text>"Crises and responses" is a
             setup option, on by default. Off, the business cycle runs as it does without the panel: a Depression is a
             phase you ride out, with the legacy cushion of your old buildings and the auto-loan guard for company, and
-            nothing on this page applies.</Text></Row>
+            the rest of this page stays out of the game.</Text></Row>
 
         <!-- Crises in Antiquity -->
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_CONTENT_TITLE"><Text>The temple, the grain and the debt bondage</Text></Row>
@@ -101,9 +100,9 @@
             enslaved for debt and forbade the practice for good. Whether he also cancelled the debts on land, and
             whether he cut the coinage's weight as later writers claimed, is disputed; the freeing is not.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_CANCEL_DEBTS_PARA_2"><Text>In the game it writes
-            off every loan your citizens and the temple treasuries hold on you, lifts your own index by 0.02 and gives
-            every settlement 4 Happiness a turn for five turns. The price: your credit reputation falls by 20, your
-            citizens lend you nothing more this age, and the temple treasuries charge you half as much again for 20
+            off the loans your citizens and the temple treasuries hold on you, lifts your own index by 0.02 and gives
+            each settlement 4 Happiness a turn for five turns. The price: your credit reputation falls by 20, your
+            citizens won't lend to you again this age, and the temple treasuries charge you half as much again for 20
             turns. Once per age, in a debt crisis or a Depression.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_GRAIN_DOLE_TITLE"><Text>The grain dole</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_GRAIN_DOLE_PARA_1"><Text>Rome's cura annonae
@@ -122,13 +121,13 @@
             same bullion stretched further; the price of everything priced in denarii followed it up.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_DEBASE_PARA_2"><Text>In the game you take three
             turns of your income out of the temple treasuries at once, and prices rise 2 percent a turn for five turns.
-            The legacy is the Debased mark: every loan you take for the rest of the age costs a quarter more. Once
-            per age, in a debt crisis, a Depression or a price shock.</Text></Row>
+            The legacy is the Debased mark: each loan you take for the rest of the age costs a quarter more. Once per
+            age, in a debt crisis, a Depression or a price shock.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_PUBLIC_WORKS_TITLE"><Text>Public works</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_PUBLIC_WORKS_PARA_1"><Text>Pericles put Athens to
-            work on the Acropolis from 447 BC, the Parthenon first, paid largely from the treasury of the Delian League
-            that Athens had moved to the city. Plutarch has his critics calling it dressing the city like a vain
-            woman, and Pericles answering that the work fed every trade in Athens.</Text></Row>
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_PUBLIC_WORKS_PARA_1"><Text>Pericles put Athens
+            to work on the Acropolis from 447 BC, the Parthenon first, paid largely from the treasury of the Delian
+            League that Athens had moved to the city. Plutarch has his critics calling it dressing the city like a vain
+            woman, and Pericles answering that the work fed the trades of Athens.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_PUBLIC_WORKS_PARA_2"><Text>In the game public works
             spends 2 Gold a settlement a turn in Antiquity (4 in Exploration, 8 in Modern) straight into your
             settlements' current builds, at the game's own purchase rate, through the same account a development loan
@@ -150,33 +149,33 @@
             third and second millennia BC; the Parthenon's treasury lent Athens the money for the Peloponnesian War
             and kept the account on stone. A temple loan was a loan from the city's own reserve, taken when nobody else
             would lend.</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_TEMPLE_LENDS_PARA_2"><Text>In the game the temple
-            treasuries open you a loan of three turns of your income over 20 turns at the age's base rate, outside
-            your credit cap. The legacy falls on everyone: the temple treasuries charge a quarter more, for every
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_TEMPLE_LENDS_PARA_2"><Text>In the game the
+            temple treasuries open you a loan of three turns of your income over 20 turns at the age's base rate,
+            outside your credit cap. The legacy falls on everyone: the temple treasuries charge a quarter more, for each
             civilization, for the rest of the age. Once per age, in a debt crisis or a Depression.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_BANK_HOLIDAY_TITLE"><Text>Bank holiday</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_BANK_HOLIDAY_PARA_1"><Text>The ancient form was a
-            moratorium: a ruler's decree that debts stood still for a season. In the game it's the same response in
-            every age. For three turns no payment on your loans falls due or counts as missed, nobody who owes you
-            pays either, and your escrow holds; your own index gains 0.02 once for the breathing space. Each lender's
-            relationship with you slips by 2 and your reputation by 3. Once per crisis.</Text></Row>
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_BANK_HOLIDAY_PARA_1"><Text>The ancient form was
+            a moratorium: a ruler's decree that debts stood still for a season. In the game it's the same response in
+            each age. For three turns no payment on your loans falls due or counts as missed, nobody who owes you pays
+            either, and your escrow holds; your own index gains 0.02 once for the breathing space. Each lender's
+            relationship with you slips by 2 and your reputation by 3. Once per age.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_CONFIDENCE_TITLE"><Text>Confidence</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_CONFIDENCE_PARA_1"><Text>A ruler who speaks to the
             city steadies it. In the game, 20 Influence buys 0.01 on your own index, once every five turns, in any
             crisis of any age. It's the cheapest response and the smallest.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_AUSTERITY_TITLE"><Text>Austerity</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_AUSTERITY_PARA_1"><Text>Austerity is open in every
-            age and is the same in each: while it runs you put half of whatever you hold above your reserve into your
-            dearest loan each turn, your reputation gains 3 once, and your own index loses 0.01 a turn. It's the right
-            answer when your trouble is debt and the wrong one when it's demand; the panel says which your figures
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_AUSTERITY_PARA_1"><Text>Austerity is open in
+            each age and the same in all three: while it runs you put half of whatever you hold above your reserve into
+            your dearest loan each turn, your reputation gains 3 once, and your own index loses 0.01 a turn. It's the
+            right answer when your trouble is debt and the wrong one when it's demand; the panel says which your figures
             look like. It runs until the crisis ends.</Text></Row>
 
         <!-- Crises in Exploration -->
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_CONTENT_TITLE"><Text>The bankers, the bullion and the companies</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_CONTENT_PARA_1"><Text>Between the Medici and the
-            Bank of England the instruments multiplied: bankers who lent to kings, kings who defaulted on them, mints
-            that recoined, chartered companies that traded with an army, navigation acts that kept the trade at home,
-            and fleets of silver that raised every price in Europe. The Exploration responses are those, and the
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_CONTENT_PARA_1"><Text>Between the Medici and
+            the Bank of England the instruments multiplied: bankers who lent to kings, kings who defaulted on them,
+            mints that recoined, chartered companies that traded with an army, navigation acts that kept the trade at
+            home, and fleets of silver that raised prices across Europe. The Exploration responses are those, and the
             crises they answer come more often: a Panic can freeze the lenders from the Banking stage, inflation runs
             from Public debt, and a trade collapse can follow a war or a tariff.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_SUSPEND_TITLE"><Text>Suspend payments</Text></Row>
@@ -186,11 +185,11 @@
             emperor, were never fully repaid; Genoese bankers took their place and were caught by the next
             suspension in turn.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_SUSPEND_PARA_2"><Text>In the game it's a bank
-            holiday on every loan you owe, three turns long, and the lenders remember it. Each civilization you owe
-            loses 3 relationship and books 10 grievances, every one of them refuses to lend to you again this age,
-            and the bond market charges you half as much again for 20 turns. Once per age, in a debt crisis, a credit
-            panic or a Depression. Two suspensions in the world within five turns start a bankruptcy cascade (see
-            the events page).</Text></Row>
+            holiday on the loans you owe, three turns long, with a lift of 0.02 on your own index, and the lenders
+            remember it. Each civilization you owe loses 3 relationship and books 10 grievances, each of them refuses to
+            lend to you again this age, and the bond market charges you half as much again for 20 turns. Once per age,
+            in a debt crisis, a credit panic or a Depression. Two suspensions in the world within five turns start a
+            bankruptcy cascade (see the events page).</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_RECOINAGE_TITLE"><Text>Recoinage</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_RECOINAGE_PARA_1"><Text>By 1695 England's silver
             coin had been clipped to about half its lawful weight and the exchange was in disorder. The Great
@@ -244,12 +243,12 @@
             the age, as its lenders extend themselves on your account. Once per age, in a debt crisis, a credit panic
             or a Depression.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_PUBLIC_WORKS_TITLE"><Text>Public works</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_PUBLIC_WORKS_PARA_1"><Text>Thomas Gresham built the
-            Royal Exchange in 1565 at his own expense and the Crown took it over; the canal age that began with the
-            Bridgewater in 1761 was dug on borrowed money and paid for itself in coal. In the game public works in
-            Exploration spends 4 Gold a settlement a turn into your builds, with the same 0.01 a turn on your own
-            index and the same world share under 0.95 as in Antiquity. It runs until the crisis ends and three turns
-            beyond.</Text></Row>
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_PUBLIC_WORKS_PARA_1"><Text>Thomas Gresham
+            built London's Exchange in 1565 at his own expense and Elizabeth I named it Royal in 1571; the canal age
+            that began with the Bridgewater in 1761 was dug on borrowed money and paid for itself in coal. In the game
+            public works in Exploration spends 4 Gold a settlement a turn into your builds, with the same 0.01 a turn on
+            your own index and the same world share under 0.95 as in Antiquity. It runs until the crisis ends and three
+            turns beyond.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_RELIEF_TITLE"><Text>Relief</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_RELIEF_PARA_1"><Text>The English Poor Laws of 1601
             made each parish responsible for its own poor and taxed it to pay for them. In the game relief is 1 Gold a
@@ -259,7 +258,7 @@
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_BANK_HOLIDAY_TITLE"><Text>Bank holiday</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_BANK_HOLIDAY_PARA_1"><Text>Three turns with no
             payment due or missed on your loans and none owed to you; 0.02 on your own index once; 2 relationship with
-            each lender and 3 reputation. Once per crisis, as in every age. Suspending payments is the harder version,
+            each lender and 3 reputation. Once per age, in each of the three. Suspending payments is the harder version,
             above.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_CONFIDENCE_TITLE"><Text>Confidence</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_CONFIDENCE_PARA_1"><Text>20 Influence for 0.01 on
@@ -278,19 +277,19 @@
             days, from March 1933, tried most of what is on this page at once. The Modern responses are the New Deal,
             with the Hoover line kept on the panel so you can see what it cost.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_BANK_HOLIDAY_TITLE"><Text>Bank holiday</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_BANK_HOLIDAY_PARA_1"><Text>Roosevelt closed every bank
-            in the country on 6 March 1933, two days after his inauguration, and the Emergency Banking Act of 9 March
-            let the sound ones reopen under licence. Deposits flowed back in the week after, which is the whole point
-            of a holiday: it stops the run long enough for confidence to return.</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_BANK_HOLIDAY_PARA_2"><Text>In the game, for three turns
-            no payment on your loans falls due or counts as missed and nobody who owes you pays; your escrow holds and
-            your own index gains 0.02 once. Each lender's relationship with you slips by 2 and your reputation by 3.
-            Once per crisis.</Text></Row>
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_BANK_HOLIDAY_PARA_1"><Text>Roosevelt closed the
+            country's banks on 6 March 1933, two days after his inauguration, and the Emergency Banking Act of 9 March
+            let the sound ones reopen under licence. Deposits flowed back in the week after, which is the whole point of
+            a holiday: it stops the run long enough for confidence to return.</Text></Row>
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_BANK_HOLIDAY_PARA_2"><Text>In the game, for three
+            turns no payment on your loans falls due or counts as missed and nobody who owes you pays; your escrow holds
+            and your own index gains 0.02 once. Each lender's relationship with you slips by 2 and your reputation by 3.
+            Once per age.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_DEPOSIT_INSURANCE_TITLE"><Text>Deposit insurance</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_DEPOSIT_INSURANCE_PARA_1"><Text>The Banking Act of 1933,
-            Glass-Steagall, created the Federal Deposit Insurance Corporation and parted commercial banking from
-            securities. Insured deposits ended the bank run as an American institution: with the government standing
-            behind the account there was no longer a reason to be first in the queue.</Text></Row>
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_DEPOSIT_INSURANCE_PARA_1"><Text>The Banking Act of
+            June 1933, Glass-Steagall, created the Federal Deposit Insurance Corporation and parted commercial banking
+            from securities. Insured deposits ended the bank run as an American institution: with the government
+            standing behind the account there was no longer a reason to be first in the queue.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_DEPOSIT_INSURANCE_PARA_2"><Text>In the game it costs
             two turns of your income, paid into the bond market as the fund, and lasts the age (a Market economy
             carries it into the next). While it stands a Panic hits your own index half as hard and the freeze on
@@ -303,25 +302,24 @@
             at 35 dollars an ounce, down from 20.67: a devaluation of 41 percent. Britain had left gold in September
             1931. The countries that left first recovered first; the ones that stayed on it, France among them,
             stayed down longest.</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_GOLD_STANDARD_PARA_2"><Text>In the game every loan
-            you owe the bond market and the temple treasuries loses a tenth of what's outstanding, prices rise 3
-            percent a turn for five turns, your inflation runs 0.5 percent a turn faster for those five turns and then
-            0.25 percent faster for the rest of the age, and your own index gains 0.01 a turn for five turns. Each
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_GOLD_STANDARD_PARA_2"><Text>In the game the loans
+            you owe the bond market, the temple treasuries and your citizens lose a tenth of what's outstanding, prices
+            rise 3 percent a turn for five turns, your inflation runs 0.5 percent a turn faster for those five turns and
+            then 0.25 percent faster for the rest of the age, and your own index gains 0.01 a turn for five turns. Each
             civilization you owe loses 3 relationship and books 10 grievances, and your reputation falls by 10. A
-            Planned economy has no money to float. Needs Public debt; once per age, in a Depression, a debt crisis or
-            a credit panic. Ten turns off gold opens a runaway-inflation crisis; a recoinage answers it.</Text></Row>
+            Planned economy has no money to float. Needs Public debt; once per age, in a Depression, a debt crisis or a
+            credit panic. Ten turns off gold opens a runaway-inflation crisis; a recoinage answers it.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_PUBLIC_WORKS_TITLE"><Text>Public works</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_PUBLIC_WORKS_PARA_1"><Text>The Civilian Conservation
             Corps put young men to work in the forests from 1933; the Tennessee Valley Authority dammed a river
             system; the Works Progress Administration of 1935 employed more than eight million people over its life
             building roads, schools, airports and bridges, and paid writers and painters too. Deficit spending as a
             cure for a slump had its theory in Keynes's General Theory of 1936, but the works came first.</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_PUBLIC_WORKS_PARA_2"><Text>In the game public works in
-            Modern spends 8 Gold a settlement a turn into your settlements' current builds through the progress
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_PUBLIC_WORKS_PARA_2"><Text>In the game public works
+            in Modern spends 8 Gold a settlement a turn into your settlements' current builds through the progress
             account, with 0.01 a turn on your own index and, while the world is under 0.95, 0.0025 on the world's for
-            each civilization building, up to 0.01 a turn in all. A civilization in a Depression may borrow for it
-            from the bond market even during a Panic: deficit spending, in the open. It runs until the crisis ends and
-            three turns beyond; the builds stay.</Text></Row>
+            each civilization building, up to 0.01 a turn in all. It runs until the crisis ends and three turns beyond;
+            the builds stay.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_RELIEF_TITLE"><Text>Relief</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_RELIEF_PARA_1"><Text>The Federal Emergency Relief
             Administration of 1933 sent money to the states for direct relief, Britain's dole had carried its
@@ -337,42 +335,41 @@
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_PRICE_SUPPORTS_PARA_2"><Text>In the game it puts a
             floor under this age's farm (Bonus) resource prices at nine tenths of what they were ten turns ago, for
             everyone, and you pay for it: half your income a turn into the cycle account while it runs. It runs until
-            the crisis ends. The legacy, for ten turns, is dearer imports for your partners: each civilization that
-            imports from you loses 1 relationship every five turns. Once per crisis, in a price shock, a Depression or
-            a trade collapse.</Text></Row>
+            the crisis ends. The price abroad is dearer imports: while it runs, each civilization that imports from you
+            loses 1 relationship every five turns, and the Fiscal tab keeps the mark for ten turns after. Once per
+            crisis, in a price shock, a Depression or a trade collapse.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_REARMAMENT_TITLE"><Text>Rearmament</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_REARMAMENT_PARA_1"><Text>What ended the Depression in
             the end was the war. American unemployment was still 14 percent in 1940 and under 2 percent by 1944;
             Germany's rearmament from 1935 had done the same for its figures sooner, at the price everyone knows.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_REARMAMENT_PARA_2"><Text>In the game, for ten turns
-            your own index gains 0.005 a turn and a computer player's army budget runs at one and a half times its
-            usual weight. The legacy is the army itself and what your neighbours' agendas make of it, on the list for
-            20 turns. Once per age, in a Depression, a trade collapse or a credit panic.</Text></Row>
+            your own index gains 0.005 a turn and a computer player's army budget runs at one and a half times its usual
+            weight. The legacy is the army itself, on the list for 20 turns. Once per age, in a Depression, a trade
+            collapse or a credit panic.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_CONFIDENCE_TITLE"><Text>Confidence</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_CONFIDENCE_PARA_1"><Text>Roosevelt's first fireside
             chat, on 12 March 1933, explained the bank holiday to the country in plain words, and the banks reopened
             the next morning to queues of depositors putting money back. In the game, 20 Influence buys 0.01 on your
             own index, once every five turns, in any crisis.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_HOOVER_TITLE"><Text>The Hoover trap</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_HOOVER_PARA_1"><Text>The Smoot-Hawley Tariff of June
-            1930 raised duties on some twenty thousand goods over the objection of a thousand economists; America's
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_HOOVER_PARA_1"><Text>The Smoot-Hawley Tariff of
+            June 1930 raised duties on some twenty thousand goods over the objection of a thousand economists; America's
             partners answered in kind, and world trade fell by about two thirds between 1929 and 1934. Andrew Mellon,
-            Hoover's Treasury Secretary, is remembered for the advice to "liquidate labor, liquidate stocks,
-            liquidate the farmers"; whether he said it is Hoover's word, but the policy of balanced budgets in a
-            slump was real, and when Roosevelt tried it himself in 1937 the recovery stalled for a year.</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_HOOVER_PARA_2"><Text>In the game both are on the panel,
-            marked. A High tariff in a Depression is answered in kind two turns later by every computer player you
-            bill, each route that ends weighs 0.005 on the index, and once three civilizations hold High while the
-            world is under 0.80 the trade war takes 0.005 more a turn from everyone. Austerity repays debt with half
-            your surplus each turn and gains you 3 reputation, and takes 0.01 a turn from your own index while it
-            runs. The panel tells you whether your figures look like a debt problem or a demand problem before you
-            choose.</Text></Row>
+            Hoover's Treasury Secretary, is remembered for the advice to "liquidate labor, liquidate stocks, liquidate
+            the farmers"; the words come from Hoover's memoirs, but the policy of balanced budgets in a slump was
+            Hoover's own, and when Roosevelt tried it himself in 1937 the recovery stalled for a year.</Text></Row>
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_HOOVER_PARA_2"><Text>In the game both are on the
+            panel, marked. A High tariff in a Depression is answered in kind by the computer players you bill, each
+            route that ends weighs 0.005 on the index, and once three civilizations hold High while the world is under
+            0.80 the trade war takes 0.005 more a turn from everyone. Austerity repays debt with half your surplus each
+            turn and gains you 3 reputation, and takes 0.01 a turn from your own index while it runs. The panel tells
+            you whether your figures look like a debt problem or a demand problem before you choose.</Text></Row>
 
         <!-- Crises: events -->
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_CONTENT_TITLE"><Text>Read from the state, not rolled</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_CONTENT_PARA_1"><Text>Nothing on this page comes from a
-            dice roll. Each event is a reading the mod takes every turn from the ledger, the cycle and the map, and each
-            one has a history behind it. They make a crisis worse, or mark its end.</Text></Row>
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_CONTENT_PARA_1"><Text>The events on this page are
+            read, not rolled: each one is a reading the mod takes each turn from the ledger, the cycle and the map, and
+            each has a history behind it. They make a crisis worse, or mark its end.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_BANK_RUN_TITLE"><Text>A bank run</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_BANK_RUN_PARA_1"><Text>The Bank of United States in
             New York failed in December 1930 with four hundred thousand depositors, the largest bank failure in the
@@ -382,37 +379,37 @@
             Depression with two or more borrowers in default to it takes a run: its own index loses 0.02 once and it
             lends to nobody for five turns. Once per Depression. Deposit insurance stops it.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_BANK_FAILURES_TITLE"><Text>Bank failures</Text></Row>
-        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_BANK_FAILURES_PARA_1"><Text>Some nine thousand American
-            banks failed between 1930 and 1933, and with them the deposits of their customers and the lending of the
-            rest, which is how a run becomes a depression. In the game, when the loans in default pass a fifth of all
-            the world's loans while the world is in a Depression, the bond market closes for five turns to every
-            civilization without deposit insurance, and every credit cap in the world loses two turns of income for
-            the rest of the age. Once per age.</Text></Row>
+        <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_BANK_FAILURES_PARA_1"><Text>Some nine thousand
+            American banks failed between 1930 and 1933, and with them the deposits of their customers and the lending
+            of the rest, which is how a run becomes a depression. In the game, when the loans in default pass a fifth of
+            all the world's loans while the world is in a Depression, the bond market closes for five turns to each
+            civilization without deposit insurance, and each credit cap in the world loses two turns of income for the
+            rest of the age. Once per age.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_DUST_BOWL_TITLE"><Text>The Dust Bowl</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_DUST_BOWL_PARA_1"><Text>Drought on the ploughed-up
             plains from 1930 lifted the topsoil into storms that reached the Atlantic, and a farm economy already in a
-            depression lost its land and its people to the roads. In the game a flood, eruption or storm on the land
-            of a civilization in Depression weighs twice on the index: the disaster's usual weight, and the Dust Bowl's
-            again.</Text></Row>
+            depression lost its land and its people to the roads. In the game a disaster on the land of a civilization
+            in Depression (a flood, a storm, an eruption) weighs twice on its index: the disaster's usual weight, and
+            the Dust Bowl's again.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_BONUS_ARMY_TITLE"><Text>The Bonus Army</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_BONUS_ARMY_PARA_1"><Text>In the summer of 1932 some
-            forty thousand veterans of the Great War and their families camped in Washington to ask for the bonus
-            they'd been promised for 1945, and in July the army cleared them out with cavalry, tanks and tear gas. A
-            government that gives its people nothing in a depression hears from them. In the game a civilization five
-            turns into a Depression with neither relief nor public works running loses 0.01 a turn on its own index
-            until it starts one.</Text></Row>
+            forty thousand people, veterans of the Great War and their families, camped in Washington to ask for the
+            bonus they'd been promised for 1945, and in July the army cleared them out with cavalry, tanks and tear gas.
+            A government that leaves its people to a depression hears from them. In the game a civilization five turns
+            into a Depression with neither relief nor public works running loses 0.01 a turn on its own index until it
+            starts one.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_BUBBLE_TITLE"><Text>A bubble, and its burst</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_BUBBLE_PARA_1"><Text>Tulips in 1637, the South Sea
             Company in 1720, stocks bought on margin in 1929: a boom in which credit grows faster than the thing it's
             buying, until the turn. In the game, when the world has read "credit growing fast" five turns running with
-            the index above 1.05, the notice says a bubble is on. If the index then falls under 0.95 within ten turns,
-            it bursts: a credit panic opens for every civilization holding loans, in the ages that have one. A bubble
-            that deflates slowly instead is forgotten.</Text></Row>
+            the index above 1.05, the notice says a bubble is on. If the index then falls under 0.95 within fifteen
+            turns, it bursts: a credit panic opens for each civilization holding loans, in the ages that have one. A
+            bubble that deflates slowly instead is forgotten.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_CASCADE_TITLE"><Text>A bankruptcy cascade</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_CASCADE_PARA_1"><Text>When Philip II suspended
             payment, the bankers who had lent to him couldn't pay the ones who had lent to them, and the stoppage ran
             through Antwerp and Augsburg. In the game two suspensions of payments in the world within five turns close
-            the bond market to every civilization without deposit insurance for five turns.</Text></Row>
+            the bond market to each civilization without deposit insurance for five turns.</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_RECOVERY_TITLE"><Text>Recovery</Text></Row>
         <Row Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_CHAPTER_RECOVERY_PARA_1"><Text>A crisis ends the turn its
             condition stops holding. The notice names what ended it, the responses you took during it or the world

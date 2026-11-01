@@ -1087,3 +1087,102 @@
     color: #b8ae98;
     font-size: 0.91rem;
 }
+
+/* The Crisis section: the choices and their fact strips (econ-view-crisis.js). */
+.econ-choices {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0 -0.25rem;
+}
+
+.econ-choices .econ-card {
+    flex: 1 1 24rem;
+    margin: 0.3rem 0.25rem;
+}
+
+.econ-choice--trap .econ-card-title {
+    color: #c9c0ae;
+}
+
+.econ-strip {
+    display: flex;
+    flex-direction: column;
+    margin: 0.4rem 0 0.2rem 0;
+}
+
+.econ-fact {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 0.25rem 0;
+    border-top: 1px solid rgba(234, 224, 205, 0.07);
+}
+
+.econ-fact-label {
+    flex: 0 0 5.2rem;
+    color: #b8ae98;
+    font-size: 0.94rem;
+    padding-top: 0.1rem;
+}
+
+.econ-fact-text {
+    flex: 1 1 auto;
+    color: #EAE0CD;
+    font-size: 1.02rem;
+    line-height: 1.35;
+}
+
+.econ-fact-text .econ-amount {
+    justify-content: flex-start;
+    margin-bottom: 0.1rem;
+}
+
+.econ-caution {
+    color: #E0A24A;
+}
+
+.econ-confirm .econ-strip {
+    margin: 0.1rem 0 0.4rem 0;
+}
+
+/* The Fiscal tab's legacy list. */
+.econ-legacies {
+    display: flex;
+    flex-direction: column;
+}
+
+.econ-legacy {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.4rem 0.3rem;
+    border-bottom: 1px solid rgba(234, 224, 205, 0.07);
+}
+
+.econ-legacy-text {
+    flex: 1 1 auto;
+    margin-right: 0.8rem;
+}
+
+.econ-legacy-name {
+    color: #EAE0CD;
+    font-size: 1.1rem;
+}
+
+.econ-legacy-line {
+    color: #a39b8b;
+    font-size: 0.96rem;
+    line-height: 1.35;
+}
+
+.econ-legacy-world {
+    color: #D0B270;
+    font-size: 0.91rem;
+    margin-top: 0.1rem;
+}
+
+.econ-legacy .econ-pill {
+    margin-top: 0.15rem;
+}
