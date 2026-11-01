@@ -34,6 +34,8 @@ export function worldView(input, me) {
   const { bondCents, moneyCents, top } = macro.inflation;
   return { cycleOn: readings.kPct > 0, e: readings.e, worldPhase: readings.panic ? "panic" : phaseOf(readings.e),
     mine: readings.civ.get(me) || null, panic: readings.panic, panicUntil: macro.cycle.panicUntil,
+    goldCents: cycleGoldLine(input, me).cents,
+    outOfCycle: termsOf(/** @type {import("./econ-systems.js").SystemId} */ (systemView(input, me).system)).outOfCycle,
     events: [...macro.cycle.events].reverse().slice(0, 12), history: [...macro.cycle.history],
     inflation: { on: options.inflation === true, piPpm: readings.piPpm, bondCents, moneyCents, top,
       ratioPct: moneyCents > 0 ? Math.round((bondCents * 100) / moneyCents) : 0 },

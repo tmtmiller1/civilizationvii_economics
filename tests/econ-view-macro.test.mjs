@@ -9,6 +9,7 @@ import { emptyLedger } from "../ui/econ-state.js";
 import { emptyMacro } from "../ui/econ-macro-state.js";
 import { makeLoan } from "../ui/econ-loan.js";
 import { inflationLines, systemView, worldView } from "../ui/econ-view-macro.js";
+import { cycleTip } from "../ui/econ-view-instruments.js";
 
 installFakeDom();
 const { renderWorld, formatIndex, formatWeight } = await import("../ui/econ-view-world.js");
@@ -54,6 +55,13 @@ test("the World tab: index, phases, events newest first, history, inflation's ca
   assert.equal(view.inflation.ratioPct, 400);
   assert.equal(view.debt.leverPct, 20000, "400000 owed against 2000 of world income: 200 turns");
   assert.equal(view.banking, true);
+  assert.equal(view.outOfCycle, false);
+  assert.ok(view.goldCents < 0, "a reading under 1.00 charges the player");
+  const tipLoc = (key, ...args) => [key.replace("LOC_ECONOMICS_GAUGE_CYCLE_", ""), ...args].join("|");
+  assert.equal(cycleTip(view, { loc: tipLoc }), `TIP|0.89|LOC_ECONOMICS_PHASE_PANIC|0.93|LOC_ECONOMICS_PHASE_PANIC|TIP_CHARGES|${Math.round(-view.goldCents / 100)}`);
+  assert.equal(cycleTip({ ...view, goldCents: 1250 }, { loc: tipLoc }).split("|").slice(-2).join("|"), "TIP_PAYS|13");
+  assert.equal(cycleTip({ ...view, goldCents: 0 }, { loc: tipLoc }).split("|").pop(), "TIP_EVEN");
+  assert.equal(cycleTip({ ...view, outOfCycle: true }, { loc: tipLoc }).split("|").pop(), "TIP_OUTSIDE");
   const host = document.createElement("div");
   renderWorld(host, makeApi(planInput, { legacyBp: 25000, cushionBp: 250 }));
   const text = textOf(host);

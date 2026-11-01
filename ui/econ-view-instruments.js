@@ -20,7 +20,25 @@ export function cycleDial(world, api) {
   return gauge("cycle-mine", (index / 10000 - 0.5), { title: api.loc("LOC_ECONOMICS_WORLD_YOURS"),
     reading: `${(index / 10000).toFixed(2)} · ${api.loc(phaseKey(phase))}`, tone: bad ? -1 : phase === "boom" ? 1 : 0,
     sub: api.loc("LOC_ECONOMICS_GAUGE_WORLD_SUB", (world.e / 10000).toFixed(2), api.loc(phaseKey(world.worldPhase))),
-    scale: ["0.50", "1.50"], tooltip: api.loc("LOC_ECONOMICS_GAUGE_CYCLE_TIP") });
+    scale: ["0.50", "1.50"], tooltip: cycleTip(world, api) });
+}
+
+/**
+ * The dial's tooltip: what the index is and what moves it, the bands, what the needle reads for the player against
+ * the world, and what the reading does to the player's Gold this turn, in their own numbers.
+ * @param {ReturnType<typeof import("./econ-view-macro.js").worldView>} world
+ * @param {ScreenApi} api
+ */
+export function cycleTip(world, api) {
+  const phase = world.mine?.phase ?? world.worldPhase;
+  const index = world.mine?.index ?? world.e;
+  const gold = Math.round(Math.abs(world.goldCents || 0) / 100);
+  const effect = world.outOfCycle ? api.loc("LOC_ECONOMICS_GAUGE_CYCLE_TIP_OUTSIDE")
+    : world.goldCents > 0 ? api.loc("LOC_ECONOMICS_GAUGE_CYCLE_TIP_PAYS", gold)
+      : world.goldCents < 0 ? api.loc("LOC_ECONOMICS_GAUGE_CYCLE_TIP_CHARGES", gold)
+        : api.loc("LOC_ECONOMICS_GAUGE_CYCLE_TIP_EVEN");
+  return api.loc("LOC_ECONOMICS_GAUGE_CYCLE_TIP", (index / 10000).toFixed(2), api.loc(phaseKey(phase)),
+    (world.e / 10000).toFixed(2), api.loc(phaseKey(world.worldPhase)), effect);
 }
 
 /**

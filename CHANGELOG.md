@@ -10,6 +10,8 @@ release is generated from the matching section below by `scripts/steam-changelog
 - The top-bar pills open the screen where the matter is: the debt pill on the Loans tab, in default on the loan in
   trouble; the phase pill on the World tab's cycle, or on the Crisis section while you're in one; the inflation pill
   on the World tab's inflation. Each pill's tooltip says where it goes.
+- The cycle dial's tooltip tells the whole story: what the index is and what moves it, the phase bands, what the
+  needle reads for you against the world, and what the reading pays or charges you this turn, in your own Gold.
 - The turn batch: every living civilization's balance, income, upkeep, buildings, stages and relationships are read
   once at the start of each turn, the loan model plans the turn, the ledger is written to the save, and each
   civilization gets one Gold, Influence and celebration grant. A save that falls before the grants land is caught on
