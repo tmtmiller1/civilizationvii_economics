@@ -166,11 +166,15 @@ function worldGrant(ctx, account, pid, cents, reason) {
 }
 
 /**
- * Tribute: two turns of income from each civ Unfriendly or worse with the levier that it's stronger than.
+ * Tribute: two turns of income from each civ Unfriendly or worse with the levier that it's stronger than. The civs
+ * that paid go on the legacy row: their bills to the levier count double while it lasts (econ-crisis-rows.js).
  * @param {TurnContext} ctx
  * @param {Civ} civ
+ * @returns {LegacyExtra}
  */
 function levyTribute(ctx, civ) {
+  /** @type {number[]} */
+  const civs = [];
   for (const other of ctx.civs) {
     if (other.id === civ.id || other.alive !== true) continue;
     const level = relationLevel(ctx.relations, civ.id, other.id);
@@ -181,6 +185,25 @@ function levyTribute(ctx, civ) {
     if (cents <= 0) continue;
     emit(ctx, { id: `TR${other.id}-${civ.id}` }, { from: other.id, to: civ.id, cents, reason: "tribute" });
     ctx.out.grievances.push({ from: other.id, against: civ.id, amount: RR.tribute.grievance });
+    civs.push(other.id);
+  }
+  return { civs };
+}
+
+/**
+ * Rearmament: the neighbours notice the army. Each living civ whose capital is within 20 plots of the civ's loses a
+ * relationship level with it, once, the turn it's taken.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ */
+function neighboursNotice(ctx, civ) {
+  for (const row of ctx.relations || []) {
+    if (row.a !== civ.id && row.b !== civ.id) continue;
+    const other = row.a === civ.id ? row.b : row.a;
+    const distance = row.distance;
+    if (typeof distance !== "number" || distance > RR.rearmament.neighbourPlots) continue;
+    if (ctx.civ.get(other)?.alive !== true) continue;
+    ctx.out.relationships.push({ a: other, b: civ.id, delta: RR.rearmament.neighbourLevel });
   }
 }
 
@@ -195,9 +218,11 @@ function recoin(ctx, civ) {
   ctx.ledger.responses = ctx.ledger.responses.filter((row) => !(row.pid === civ.id && own.includes(row.id)));
 }
 
+/** What an immediate change hands the legacy row, when it does. @typedef {{ civs?: number[] } | void} LegacyExtra */
+
 /**
  * The immediate change of each response, the turn it's taken.
- * @type {Record<string, (ctx: TurnContext, civ: Civ) => void>}
+ * @type {Record<string, (ctx: TurnContext, civ: Civ) => LegacyExtra>}
  */
 const IMMEDIATE = {
   "bank-holiday": (ctx, civ) => {
@@ -233,6 +258,7 @@ const IMMEDIATE = {
     repChange(ctx, civ.id, RR.goldStandard.repPoints, "response");
     event(ctx, { kind: "debts-cut", pid: civ.id, cents });
   },
+  rearmament: neighboursNotice,
   austerity: (ctx, civ) => repChange(ctx, civ.id, RR.austerity.repPoints, "response"),
 };
 
@@ -247,15 +273,19 @@ const LEGACY_ROWS = /** @type {Record<string, (spec: Response) => LegacySpec[]>}
   "temple-lends": () => [{ id: "temple-lends", turns: null, world: true }],
 });
 
-/** @param {TurnContext} ctx @param {Civ} civ @param {Response} spec */
-function leaveLegacies(ctx, civ, spec) {
+/** The civs an immediate change named for the legacy row, if any. @param {LegacyExtra} extra */
+const namedCivs = (extra) => (extra && extra.civs ? { civs: extra.civs } : {});
+
+/** @param {TurnContext} ctx @param {Civ} civ @param {Response} spec @param {LegacyExtra} extra */
+function leaveLegacies(ctx, civ, spec, extra) {
   const legacy = spec.legacy;
   if (!legacy) return;
   const rows = LEGACY_ROWS[spec.id] ? LEGACY_ROWS[spec.id](spec) : [{ id: spec.id, turns: legacy.turns ?? null }];
   const nextAge = legacy.nextAge === true && (!legacy.system || systemOf(ctx, civ.id) === legacy.system);
+  const named = namedCivs(extra);
   for (const row of rows) {
     ctx.ledger.legacies.push({ pid: row.world ? null : civ.id, id: row.id, since: ctx.turn,
-      until: row.turns === null ? null : ctx.turn + row.turns, nextAge });
+      until: row.turns === null ? null : ctx.turn + row.turns, nextAge, ...named });
   }
 }
 
@@ -293,12 +323,12 @@ export function takeResponse(ctx, civ, spec, source) {
     emit(ctx, { id: `CR${civ.id}` }, { from: civ.id, to: spec.id === "recoinage" ? INFLATION : BOND, cents: cost,
       reason: "response" });
   }
-  IMMEDIATE[spec.id]?.(ctx, civ);
+  const extra = IMMEDIATE[spec.id]?.(ctx, civ);
   if (spec.runs !== 0) {
     ctx.ledger.responses.push({ pid: civ.id, id: spec.id, crisis: kind, since: ctx.turn,
       until: spec.runs === "crisis" ? null : ctx.turn + spec.runs });
   }
-  leaveLegacies(ctx, civ, spec);
+  leaveLegacies(ctx, civ, spec, extra);
   ctx.ledger.crisisTurns.push({ pid: civ.id, id: `take:${spec.id}`, turn: ctx.turn,
     ...(ctx.ledger.age ? { age: ctx.ledger.age } : {}) });
   if (spec.id === "suspend") noteSuspension(ctx);
@@ -468,6 +498,18 @@ function worksFor(ctx, civ) {
 }
 
 /**
+ * Rearmament's upkeep: a Gold a settlement a turn to the cycle account while it runs, the human seat and the AI
+ * alike.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ */
+function armsFor(ctx, civ) {
+  if (!isRunning(ctx.ledger, civ.id, "rearmament")) return;
+  const cents = within(ctx, civ.id, RR.rearmament.goldPerSettlement * settlementsOf(civ));
+  if (cents > 0) emit(ctx, { id: `RA${civ.id}` }, { from: civ.id, to: CYCLE, cents, reason: "rearmament" });
+}
+
+/**
  * A chartered company's dividends, price supports' bill and the importers' grudge every five turns.
  * @param {TurnContext} ctx
  * @param {Civ} civ
@@ -501,7 +543,8 @@ function importersResent(ctx, civ) {
 }
 
 /**
- * Relief, public works, a company's dividends and price supports: what a civ pays each turn while they run.
+ * Relief, public works, a company's dividends, price supports and rearmament: what a civ pays each turn while they
+ * run.
  * @param {TurnContext} ctx
  * @param {number} pid
  */
@@ -511,6 +554,7 @@ export function crisisPayerSteps(ctx, pid) {
   reliefFor(ctx, civ);
   if (isRunning(ctx.ledger, pid, "public-works")) worksFor(ctx, civ);
   billsFor(ctx, civ);
+  armsFor(ctx, civ);
 }
 
 /**

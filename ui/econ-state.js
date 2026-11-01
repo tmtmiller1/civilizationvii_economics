@@ -430,7 +430,8 @@ function cleanCrisis(ledger, raw) {
       until: isTurn(row.until) ? row.until : null }));
   ledger.legacies = list(raw.legacies).filter((row) => row && (row.pid === null || isPid(row.pid)) && isId(row.id)
     && isTurn(row.since)).map((row) => ({ pid: row.pid, id: row.id, since: row.since,
-      until: isTurn(row.until) ? row.until : null, nextAge: row.nextAge === true }));
+      until: isTurn(row.until) ? row.until : null, nextAge: row.nextAge === true,
+      ...(Array.isArray(row.civs) ? { civs: row.civs.filter(isPid) } : {}) }));
   ledger.crisisTurns = list(raw.crisisTurns).filter((row) => row && isPid(row.pid) && typeof row.id === "string"
     && /^(take|end):[a-z-]{1,32}$/.test(row.id) && isTurn(row.turn))
     .map((row) => ({ pid: row.pid, id: row.id, turn: row.turn, ...(typeof row.age === "string" ? { age: row.age } : {}) }));

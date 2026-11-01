@@ -135,7 +135,8 @@
         <Replace Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_TRIBUTE_PARA_2" Language="ko_KR"><Text>In the game only a Tribute
             economy (Despotism) can levy. Each civilization Unfriendly or worse with you that you're stronger than
             pays you two turns of its income at once, from what it holds, and books 10 grievances against you. Once
-            per crisis; the grudge is the legacy, and it lasts ten turns on the Fiscal tab's list.</Text></Replace>
+            per crisis. The legacy is the grudge: for ten turns the civilizations that paid count their trade bills
+            to you at double, and the Fiscal tab's list shows it.</Text></Replace>
         <Replace Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_TEMPLE_LENDS_TITLE" Language="ko_KR"><Text>The temple lends</Text></Replace>
         <Replace Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_ANTIQUITY_CHAPTER_TEMPLE_LENDS_PARA_1" Language="ko_KR"><Text>Temples were the first
             banks. The Eanna at Uruk and the temple of Shamash at Sippar lent grain and silver at interest in the
@@ -332,9 +333,11 @@
             the end was the war. American unemployment was still 14 percent in 1940 and under 2 percent by 1944;
             Germany's rearmament from 1935 had done the same for its figures sooner, at the price everyone knows.</Text></Replace>
         <Replace Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_REARMAMENT_PARA_2" Language="ko_KR"><Text>In the game, for ten turns
-            your own index gains 0.005 a turn and a computer player's army budget runs at one and a half times its usual
-            weight. The legacy is the army itself, on the list for 20 turns. Once per age, in a Depression, a trade
-            collapse or a credit panic.</Text></Replace>
+            your own index gains 0.005 a turn, the army costs you 1 Gold a settlement a turn, and a computer player's
+            army budget runs at one and a half times its usual weight. The neighbours notice: the turn you take it,
+            every civilization whose capital is within 20 plots of yours loses 1 relationship with you. That notice is
+            the legacy, on the list for 20 turns. Once per age, in a Depression, a trade collapse or a credit
+            panic.</Text></Replace>
         <Replace Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_CONFIDENCE_TITLE" Language="ko_KR"><Text>Confidence</Text></Replace>
         <Replace Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_CHAPTER_CONFIDENCE_PARA_1" Language="ko_KR"><Text>Roosevelt's first fireside
             chat, on 12 March 1933, explained the bank holiday to the country in plain words, and the banks reopened

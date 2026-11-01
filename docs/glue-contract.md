@@ -39,7 +39,7 @@ input = {
 | `stages` | `{ moneylending, publicDebt }`, each the turn the stage was reached or `null` | DESIGN 4.15 anchors through `ProgressionTreeNodeUnlocks`, `Culture.isNodeUnlocked` / `Techs.isNodeUnlocked` per civ (P13), the turn recorded in the glue's own envelope | both closed: no civ loans, no bond market |
 | `depthTurns` | 0 to 12 | Commerce and Banking roles from the civ's buildings (DESIGN 4.13; `city.Constructibles.getIds()` per settlement) | 0: no Bank, no 20/30-turn terms |
 | `depthFactorPct` | integer percent | same | 100 |
-| `atWar` | boolean | `Diplomacy.isAtWarWith` any living major | false: War Levy reads as Standard in the fallback |
+| `atWar` | boolean | `Diplomacy.isAtWarWith` any living major the civ has met (the call answers true for an unmet pair) | false: War Levy reads as Standard in the fallback |
 | `happinessCents` | integer cents | the celebration meter read (P6), fallback only | 0 |
 
 Integer cents everywhere; the model never sees a float. Round once, at the read.
@@ -145,11 +145,12 @@ and `bubble` (`{ since, burst }` or null).
 
 What comes back adds transfers with the reasons `response` (a response's cost, to the bond market or the inflation
 account), `relief` (to the citizens' account), `works` (to the progress account, with progress rows `PW<pid>`),
-`company` (a chartered company's dividends, to the citizens' account), `price-supports` (to the cycle account),
-`tribute` (civ to civ), `debase` (from the temple account) and `bullion` (from the cycle account); Influence rows
-with reason `confidence`; celebration rows with reasons `relief`, `cancel-debts` and `relief-ended`; grievance and
-relationship rows for the lenders a holiday, a suspension or the gold standard costs; and progress rows for the
-works, merged with any other row for the same city.
+`company` (a chartered company's dividends, to the citizens' account), `price-supports` and `rearmament` (to the
+cycle account), `tribute` (civ to civ), `debase` (from the temple account) and `bullion` (from the cycle account);
+Influence rows with reason `confidence`; celebration rows with reasons `relief`, `cancel-debts` and `relief-ended`;
+grievance and relationship rows for the lenders a holiday, a suspension or the gold standard costs, and for the
+neighbours a rearmament puts on notice; and progress rows for the works, merged with any other row for the same
+city.
 
 Notices (the human's): `crisis-start` (`crisis`, `causes`), `crisis-end` (`crisis`, `turns`, `by`), `response`
 (`response`, `crisis`, `cents`), `response-ended`, `legacy-ended`, `bank-run`, `bank-failures`, `bubble`, `cascade`.

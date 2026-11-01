@@ -117,7 +117,9 @@ declare global {
   type CrisisKind = "depression" | "credit-panic" | "price-shock" | "debt" | "inflation" | "trade-collapse";
   interface CrisisRow { pid: number; kind: CrisisKind; since: number }
   interface ResponseRow { pid: number; id: string; crisis: CrisisKind; since: number; until: number | null }
-  interface LegacyRow { pid: number | null; id: string; since: number; until: number | null; nextAge: boolean }
+  /** `civs` is the tribute legacy's list of the civs that paid, whose bills to the levier count double. */
+  interface LegacyRow { pid: number | null; id: string; since: number; until: number | null; nextAge: boolean;
+    civs?: number[] }
   interface CrisisTurnRow { pid: number; id: string; turn: number; age?: string }
   interface CrisisCounterRow { pid: number; dues: number; hot: number; routes: number[] }
 

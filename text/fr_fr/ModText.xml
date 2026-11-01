@@ -757,7 +757,7 @@
         <Replace Tag="LOC_ECONOMICS_RESPONSE_TRIBUTE_HISTORY" Language="fr_FR"><Text>The satrapies of Persia</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_TRIBUTE_NOW" Language="fr_FR"><Text>2 turns of income taken now from each civilization Unfriendly or worse with you that you're stronger than.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_TRIBUTE_PRICE" Language="fr_FR"><Text>10 grievances with each of them.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_TRIBUTE_LEGACY" Language="fr_FR"><Text>civilizations that remember the levy, on the list for 10 turns. Once per crisis; Tribute economies only.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_TRIBUTE_LEGACY" Language="fr_FR"><Text>the civilizations that paid count their trade bills to you at double for 10 turns. Once per crisis; Tribute economies only.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_TEMPLE_LENDS_NAME" Language="fr_FR"><Text>The temple lends</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_TEMPLE_LENDS_HISTORY" Language="fr_FR"><Text>The temple treasuries of Mesopotamia, the first banks</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_TEMPLE_LENDS_NOW" Language="fr_FR"><Text>The temple treasuries open a 20-turn loan of 3 turns of income at the base rate, outside your credit cap.</Text></Replace>
@@ -811,8 +811,8 @@
         <Replace Tag="LOC_ECONOMICS_RESPONSE_REARMAMENT_NAME" Language="fr_FR"><Text>Rearmament</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_REARMAMENT_HISTORY" Language="fr_FR"><Text>The late 1930s, the exit nobody wanted</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_REARMAMENT_NOW" Language="fr_FR"><Text>Your index climbs 0.005 a turn for 10 turns; a computer player's army budget rises with it.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_REARMAMENT_PRICE" Language="fr_FR"><Text>none in Gold. A computer player spends more of its budget on the army while it runs.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_REARMAMENT_LEGACY" Language="fr_FR"><Text>the army you raised, on the list for 20 turns. Once per age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_REARMAMENT_PRICE" Language="fr_FR"><Text>1 Gold a settlement a turn while it runs, and every civilization whose capital is within 20 plots of yours loses 1 relationship with you. A computer player spends more of its budget on the army while it runs.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_REARMAMENT_LEGACY" Language="fr_FR"><Text>your neighbours noticed, on the list for 20 turns. Once per age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_AUSTERITY_NAME" Language="fr_FR"><Text>Austerity</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_AUSTERITY_HISTORY" Language="fr_FR"><Text>Andrew Mellon's advice, as Hoover remembered it: liquidate</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_AUSTERITY_NOW" Language="fr_FR"><Text>Half your surplus above the reserve repays your dearest loan each turn, and your credit reputation gains 3.</Text></Replace>
@@ -842,16 +842,14 @@
         <Replace Tag="LOC_ECONOMICS_LEGACY_GOLD_STANDARD_LINE" Language="fr_FR"><Text>Your own inflation runs +0.25% a turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_BANK_FAILURES_NAME" Language="fr_FR"><Text>Bank failures</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_BANK_FAILURES_LINE" Language="fr_FR"><Text>Credit caps carry 2 turns of income less.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LEGACY_RELIEF_NAME" Language="fr_FR"><Text>Relief remembered</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LEGACY_RELIEF_LINE" Language="fr_FR"><Text>The people remember the dole.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_RELIEF_ENDED_NAME" Language="fr_FR"><Text>Relief ended early</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_RELIEF_ENDED_LINE" Language="fr_FR"><Text>-2 Happiness a settlement while it lasts.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_CHARTER_NAME" Language="fr_FR"><Text>A chartered company</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_CHARTER_LINE" Language="fr_FR"><Text>A fifth of your route income goes to its shareholders.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_TRIBUTE_NAME" Language="fr_FR"><Text>Tribute levied</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LEGACY_TRIBUTE_LINE" Language="fr_FR"><Text>The civilizations you levied remember it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_TRIBUTE_LINE" Language="fr_FR"><Text>The civilizations that paid count their trade bills to you at double.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_REARMAMENT_NAME" Language="fr_FR"><Text>Rearmed</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LEGACY_REARMAMENT_LINE" Language="fr_FR"><Text>The army you raised in the slump stands.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_REARMAMENT_LINE" Language="fr_FR"><Text>Your neighbours noticed the army you raised in the slump.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_PRICE_SUPPORTS_NAME" Language="fr_FR"><Text>Price supports</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_PRICE_SUPPORTS_LINE" Language="fr_FR"><Text>Your importers remember paying more for your farm goods.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_BANK_HOLIDAY_NAME" Language="fr_FR"><Text>A bank holiday</Text></Replace>

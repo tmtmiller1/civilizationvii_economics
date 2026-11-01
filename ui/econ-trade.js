@@ -67,7 +67,7 @@ export function tariffOf(tariffs, pid) {
  * 4.17) the bill uses the importer's prices (a Planned importer's are the class prices, `basePrices`), each side's
  * Trade buildings count at its own share, a Manorial importer pays 20% less and a Mercantile exporter is owed 10% more.
  * @param {{ routes: RouteRead[], prices: Record<string, number>, tariffs: TariffRow[], civIds: Set<number>,
- *   tariffsOn: boolean, termsOf?: (pid: number) => TradeTerms, basePrices?: Record<string, number> }} q
+ *   tariffsOn: boolean, termsOf?: (pid: number, payee?: number) => TradeTerms, basePrices?: Record<string, number> }} q
  * @returns {{ importer: number, exporter: number, gross: number, owed: number }[]}
  */
 export function owedByPair({ routes, prices, tariffs, civIds, tariffsOn, termsOf = () => PLAIN, basePrices = {} }) {
@@ -85,7 +85,7 @@ export function owedByPair({ routes, prices, tariffs, civIds, tariffsOn, termsOf
   }
   for (const row of rows.values()) {
     const held = tariffsOn ? TARIFF_PCT[tariffOf(tariffs, row.importer)] : 0;
-    const system = termsOf(row.importer).billPaidPct * termsOf(row.exporter).exportPct;
+    const system = termsOf(row.importer, row.exporter).billPaidPct * termsOf(row.exporter).exportPct;
     row.owed = Math.floor((row.gross * (100 - held) * system) / 1000000);
   }
   return [...rows.values()].sort((a, b) => a.importer - b.importer || a.exporter - b.exporter);

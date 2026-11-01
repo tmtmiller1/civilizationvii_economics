@@ -887,7 +887,8 @@ NOTES choice 143). What the code has, and where it differs from the proposal:
   the civ for 20 turns. Debase the coin grants three turns of income from the temple account, lifts prices 2% a
   turn for five turns and prices the civ's loans at 125% for the age; the late bond market wasn't built. Tribute
   levies two turns of income from each weaker civ Unfriendly or worse with the levier, within what it holds, with
-  10 grievances each; the doubled bills weren't built. The temple lends three turns of income over 20 turns at the
+  10 grievances each, and for 10 turns the civs that paid count their trade bills to the levier at double (the
+  legacy row names them). The temple lends three turns of income over 20 turns at the
   base rate, outside the cap, and the temple rate goes to 125% for everyone for the age.
 - Recoinage costs two turns of income to the inflation account, clears the civ's own inflation legacies (fleets,
   the gold standard, debasement) and halves what erosion can take for the age. A chartered company adds two turns
@@ -904,7 +905,10 @@ NOTES choice 143). What the code has, and where it differs from the proposal:
   relationship and 10 grievances each and 10 reputation, and leaves +0.25% a turn of inflation for the age; a
   Planned civ can't. Price supports floor Bonus-class prices while they run, at half a turn's income a turn to the
   cycle account; the importers' relationship cost wasn't built. Rearmament is +0.005 a turn on the index and the
-  AI's army budget at 1.5 for 10 turns. Austerity is +3 reputation once, half the civ's surplus into its dearest
+  AI's army budget at 1.5 for 10 turns, at a Gold a settlement a turn to the cycle account for the human seat and
+  the AI alike; the turn it's taken each civ whose capital is within 20 plots loses a relationship level with the
+  civ, and that notice is the 20-turn legacy. Relief leaves a mark only when it's ended early. Austerity is +3
+  reputation once, half the civ's surplus into its dearest
   loan each turn (the human seat too, through the AI's early-repayment rule) and -0.01 a turn while it runs.
   Confidence is 20 Influence for +0.01 once per five turns.
 - The events, from the state each turn: a bank run (a lender civ in Depression with two borrowers in default to

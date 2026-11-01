@@ -13,6 +13,8 @@ import { viewContext } from "../ui/econ-view-model.js";
 import { crisisView, crisisWeights } from "../ui/econ-crisis.js";
 import { adjustPrices, responseRefusal } from "../ui/econ-crisis-respond.js";
 import { crisisTerms, onHoliday } from "../ui/econ-crisis-rows.js";
+import { tradeTermsOf } from "../ui/econ-commerce.js";
+import { owedByPair } from "../ui/econ-trade.js";
 import { responseById } from "../ui/econ-crisis-catalog.js";
 import { BASE_RATE_PPM, INFLATION_RULES } from "../ui/econ-params.js";
 import { OPEN, OPEN_ALL, OPEN_MACRO, civ, input } from "./_fixtures.mjs";
@@ -213,6 +215,24 @@ test("tribute: two turns of income from each weaker civ Unfriendly or worse with
   const paid = transfer(out, "tribute");
   assert.deepEqual([paid.from, paid.to, paid.cents], [AI, ME, 10000], "the weaker one pays, the stronger doesn't");
   assert.deepEqual(out.grievances, [{ from: AI, against: ME, amount: 10 }]);
+  assert.deepEqual(out.ledger.legacies, [{ pid: ME, id: "tribute", since: 50, until: 60, nextAge: false, civs: [AI] }],
+    "the row names the civs that paid");
+});
+
+test("tribute's legacy: the civs that paid count their trade bills to the levier at double, nobody else's", () => {
+  const legacies = [{ pid: ME, id: "tribute", since: 50, until: 60, nextAge: false, civs: [AI] }];
+  const ctx = ctxFor({ civs: [me(), ai(AI), ai(OTHER)], ledger: ledgerWith([], { legacies }) });
+  const terms = tradeTermsOf(ctx);
+  assert.equal(crisisTerms(ctx, AI).billsToPct[String(ME)], 200);
+  assert.deepEqual([terms(AI, ME).billPaidPct, terms(AI, OTHER).billPaidPct, terms(OTHER, ME).billPaidPct, terms(AI).billPaidPct],
+    [200, 100, 100, 100], "only the levied civ's bills to the levier");
+  const routes = [{ importer: AI, exporter: ME, resources: ["RESOURCE_SILK"] }, { importer: OTHER, exporter: ME, resources: ["RESOURCE_SILK"] }];
+  const owed = owedByPair({ routes, prices: { RESOURCE_SILK: 1000 }, tariffs: [], civIds: new Set([ME, AI, OTHER]),
+    tariffsOn: false, termsOf: terms });
+  const [levied, other] = [owed.find((r) => r.importer === AI), owed.find((r) => r.importer === OTHER)];
+  assert.ok(other.owed > 0, "a bill to double");
+  assert.equal(levied.owed, 2 * other.owed, "the levied civ pays twice the other's bill");
+  assert.deepEqual(load(save(ledgerWith([], { legacies }))).ledger.legacies, legacies, "the list goes through a save");
 });
 
 test("suspend payments: a three-turn holiday, the civ lenders closed for the age and resentful, the bond dearer 20 turns", () => {
@@ -354,12 +374,12 @@ test("a response runs its turns, or its crisis plus a few, then ends with an eve
   assert.deepEqual(lifted.ledger.responses.map((r) => [r.id, r.until]), [["relief", 57]]);
   const gone = plan({ civs: [me()], turn: 57, ledger: lifted.ledger, macro: macroWith({ e: 10000 }) });
   assert.deepEqual(gone.ledger.responses, []);
-  assert.deepEqual(gone.ledger.legacies.map((r) => [r.id, r.until]), [["relief", 60]], "the relief given is remembered ten turns");
+  assert.deepEqual(gone.ledger.legacies, [], "relief run to its end leaves no mark");
   // Ending relief with the crisis still on: the mob remembers for ten turns.
   const cut = plan({ civs: [me({ cities: [city("3:1")] })], turn: 52, ledger: relief.ledger, macro: DEPRESSION(),
     requests: [respond("relief", { cancel: true })] });
   assert.deepEqual(kinds(cut, "response-ended").map((e) => [e.response, e.early]), [["relief", 1]]);
-  assert.deepEqual(cut.ledger.legacies.map((r) => [r.id, r.until]), [["relief", 60], ["relief-ended", 62]]);
+  assert.deepEqual(cut.ledger.legacies.map((r) => [r.id, r.until]), [["relief-ended", 62]]);
   const sour = plan({ civs: [me({ cities: [city("3:1")] })], turn: 53, ledger: cut.ledger, macro: DEPRESSION() });
   assert.deepEqual(sour.celebration.filter((r) => r.reason === "relief-ended"), [{ pid: ME, amount: -200, reason: "relief-ended" }]);
 });
@@ -548,6 +568,22 @@ test("an AI whose dues pass its income takes the bank holiday first; one at war 
   const taken = kinds(broke, "response").map((e) => e.response);
   assert.deepEqual(taken.filter((id) => ["public-works", "temple-lends", "lend-crown", "charter", "bullion"].includes(id)), [],
     `an insolvent AI took ${taken.join(",")}`);
+});
+
+test("rearmament: a Gold a settlement a turn to the cycle account while it runs; the neighbours within 20 plots lose a level once", () => {
+  const civs = [me({ cities: [city("3:1"), city("3:2")] }), ai(AI), ai(OTHER)];
+  const relations = [{ a: ME, b: AI, level: "neutral", distance: 12 }, { a: OTHER, b: ME, level: "neutral", distance: 30 }];
+  const taken = plan({ age: "AGE_MODERN", civs, relations, macro: DEPRESSION(), requests: [respond("rearmament")] });
+  assert.deepEqual(kinds(taken, "refused"), []);
+  assert.deepEqual(taken.relationships, [{ a: AI, b: ME, delta: -1 }], "the near neighbour noticed, the far one didn't");
+  assert.deepEqual(taken.ledger.legacies.map((r) => [r.id, r.until]), [["rearmament", 70]]);
+  const upkeep = taken.transfers.filter((t) => t.reason === "rearmament");
+  assert.deepEqual(upkeep.map((t) => [t.from, t.to, t.cents]), [[ME, "cycle", 200]], "two settlements, a Gold each");
+  const next = plan({ age: "AGE_MODERN", civs, relations, turn: 51, ledger: taken.ledger, macro: DEPRESSION() });
+  assert.deepEqual(next.relationships, [], "the notice is a one-off");
+  assert.equal(transfer(next, "rearmament").cents, 200, "the upkeep runs each turn");
+  const over = plan({ age: "AGE_MODERN", civs, relations, turn: 60, ledger: next.ledger, macro: DEPRESSION() });
+  assert.equal(transfer(over, "rearmament"), undefined, "and stops with the response");
 });
 
 test("the AI picks by its economic system: Theocracy relief, Plutocracy a company, Despotism tribute", () => {

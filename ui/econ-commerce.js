@@ -69,10 +69,14 @@ export function hasEquity(ctx, pid) {
  * @param {TurnContext} ctx
  */
 export function tradeTermsOf(ctx) {
-  return (/** @type {number} */ pid) => {
+  return (/** @type {number} */ pid, /** @type {number | undefined} */ payee) => {
     const terms = termsFor(ctx, pid);
-    const billPct = ctx.crisis ? ctx.crisis.terms(pid).billPct : 100;
-    // A chartered company (DESIGN 4.11c) cuts what the civ pays on its routes while it runs.
+    if (!ctx.crisis) return terms;
+    const crisis = ctx.crisis.terms(pid);
+    // A chartered company (DESIGN 4.11c) cuts what the civ pays on its routes while it runs; a tribute it paid
+    // doubles its bills to the levier for the legacy's turns.
+    const toPayee = payee === undefined ? 100 : crisis.billsToPct[String(payee)] ?? 100;
+    const billPct = Math.round((crisis.billPct * toPayee) / 100);
     return billPct === 100 ? terms : { ...terms, billPaidPct: Math.round((terms.billPaidPct * billPct) / 100) };
   };
 }

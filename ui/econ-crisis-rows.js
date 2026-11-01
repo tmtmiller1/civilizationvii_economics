@@ -39,7 +39,8 @@ export const crisesOn = (ctx) => ctx.options.crises === true;
  * @typedef {{ spreadFloor: boolean, noFreeze: boolean, panicPct: number, capTurns: number, capDepthPct: number,
  *   ownRatePct: number, bondPct: number, templePct: number, holiday: boolean, lendingClosed: boolean,
  *   piExtraPpm: number, erosionCapPct: number, billPct: number, tradeWarDouble: boolean, navigationActs: boolean,
- *   collapseHalf: boolean, pricePct: number, armyFactor: number, austerity: boolean, dole: boolean }} CrisisTerms
+ *   collapseHalf: boolean, pricePct: number, armyFactor: number, austerity: boolean, dole: boolean,
+ *   billsToPct: Record<string, number> }} CrisisTerms
  */
 
 /** @returns {CrisisTerms} */
@@ -47,7 +48,7 @@ function plainTerms() {
   return { spreadFloor: false, noFreeze: false, panicPct: 100, capTurns: 0, capDepthPct: 100, ownRatePct: 100,
     bondPct: 100, templePct: 100, holiday: false, lendingClosed: false, piExtraPpm: 0, erosionCapPct: 100,
     billPct: 100, tradeWarDouble: false, navigationActs: false, collapseHalf: false, pricePct: 0, armyFactor: 1,
-    austerity: false, dole: false };
+    austerity: false, dole: false, billsToPct: {} };
 }
 
 /** @param {number} a @param {number} b */
@@ -93,6 +94,21 @@ const LEGACY_TERMS = {
 };
 
 /**
+ * A tribute levied is remembered by the civs that paid it: for the legacy's turns their trade bills to the levier
+ * count at 200% (DESIGN 4.11c). The levier's row names them; the term is the payer's, keyed by the payee.
+ * @param {Ledger} ledger
+ * @param {number} pid
+ * @param {CrisisTerms} terms
+ */
+function leviedTerms(ledger, pid, terms) {
+  for (const row of ledger.legacies || []) {
+    if (row.id === "tribute" && row.pid !== null && (row.civs || []).includes(pid)) {
+      terms.billsToPct[String(row.pid)] = RR.tribute.billPct;
+    }
+  }
+}
+
+/**
  * The terms a civ's standing responses and legacies set this turn, read once per civ per turn.
  * @param {TurnContext} ctx
  * @param {number} pid
@@ -106,6 +122,7 @@ export function crisisTerms(ctx, pid) {
   if (crisesOn(ctx)) {
     for (const row of standingResponses(ctx.ledger, pid)) RUNNING_TERMS[row.id]?.(terms);
     for (const row of legaciesOf(ctx.ledger, pid)) LEGACY_TERMS[row.id]?.(terms);
+    leviedTerms(ctx.ledger, pid, terms);
   }
   cache.set(pid, terms);
   return terms;
