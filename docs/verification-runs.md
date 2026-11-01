@@ -936,19 +936,75 @@ Economic systems and Economic stages Off, 8 turns; 5b: Loans, Taxes and the Busi
 | E.1 | An AI that's Unfriendly with the player (a stake under 0) makes no loan offer on the Loans tab's borrow form, and comes back once Neutral (2026-10-31, tenth run: Persia at -40 made no offer while Hawai'i, Goryeo and Dai Viet did; at 0 its agenda rows kept its stake under 0, so "comes back once Neutral" reads "comes back once its stake is 0 or more") | a game where an AI dislikes the player | `ui/econ-stake.js` `lenderGate`, `ui/econ-lenders.js` `declines` |
 | E.2 | An AI allied with another, or sharing an enemy at war with it, invests in it ahead of a richer neutral neighbour (2026-10-31, tenth run: a shared enemy raised the Ottomans' stake in Dai Viet from 6.3 to 13.7 and the Ottomans invested there first; an alliance is owed) | Modern, an alliance or a shared war | `ui/econ-stake.js` `stakeFacts` |
 
+## Watched 2026-10-31, fifteenth run (crises and responses)
+
+One lab game, seed 4242, Modern, the usual mod set, stages Off, crises On, 22 turns (`2026-11-01T00-17-53`; logs,
+the sample script and the captures under `mod_ideas_tested/economics/devtools/probe-runs/2026-10-31-watch-r6/` and
+`working_screenshots/econ-watch-2026-10-31/r6-*.png`). The world index was set to 0.70 by script at turn 1 and
+again at turn 19, with the 30-turn spacing cleared, for a second crisis; the seat's own responses had to be
+written into the ledger by script (see the defect below).
+
+- X.1: at turn 2 every civ's index read a Depression and the `crisis-start` event fired for all six; the seat's
+  notice read `crisis-start:depression`. The World tab's Crisis section drew "Depression", the turns in, the
+  index note and the causes line ("Since turn 20, after the world's income growing slower than usual, a disaster, a
+  trade war and the Dust Bowl" in the second crisis), with "What you're doing" and "What you can do" under it
+  (`r6-crisis-world-t21.png`, `-b.png`). The crisis ended at turn 8 once the index passed 0.80 (`crisis-end`, 6
+  turns, `by: rearmament` for the AIs). A second crisis opened at turn 20 for all six.
+- X.4 (part): the Modern menu drew Public works, Relief, the Bank holiday, Deposit insurance, Off the gold standard
+  and Price supports, each with its history line (the WPA and the TVA, the Emergency Banking Act, the FDIC and
+  Glass-Steagall), its Now, Price and It leaves lines and a Choose it button; the "Doing nothing" note drew while
+  the seat had no response. Rearmament, Confidence, Austerity and the Hoover-line marks sat below the part of the
+  panel the reads and captures reached.
+- X.5 (part): a Public works row written into the seat's ledger paid 48 Gold a turn (8 a settlement, six
+  settlements) into its builds each turn (`0>progress:4800:works`, progress rows on two cities), put
+  `public-works@0=100` and `public-works=25` into the cycle's events, and the panel listed it under "What you're
+  doing" as "until the crisis ends" with an End it button and the menu's own card reading "it's already running".
+  Choosing it from the panel wasn't reached: see the defect below.
+- X.6: two legacies written into the seat's ledger drew on the Fiscal tab under "What your choices left":
+  "Deposit insurance, carries into the next age" with its four effects, and "Relief ended early, 8 turns left, -2
+  Happiness a settlement while it lasts" (`r6-legacies-fiscal-t21.png`). The `legacy-ended` notice and a world
+  legacy weren't reached.
+- X.7: at turn 2 all five AIs took Rearmament (`response`, `source: ai`), each adding `rearmament@<pid>=50` to the
+  cycle's events every turn and a `rearmament` legacy to turn 22; the responses ended at turn 12 and the Bonus Army
+  marched on every civ from turn 7 (`bonus-army=-100` for five turns). In the second crisis, with Rearmament used
+  up for the age, four AIs took Deposit insurance (240 to 394 Gold, two turns of income) and Dai Viet went off the
+  gold standard (`gold-standard@5=100`). Worth a look: every AI read `atWar` true at turn 2 of a Modern start, so
+  the war rule chose Rearmament for all five ahead of their systems (`ui/econ-crisis-respond.js` `aiPick`,
+  `ui/econ-engine.js` `readAtWar`).
+- X.9: three High tariffs set at turn 14 did nothing while the world stayed above 0.80; once it fell at turn 20
+  `trade-war=-50` joined the cycle's events each turn and the panel's causes line read "a trade war". The Dust Bowl
+  (`dust-bowl@0=-25`) and a disaster showed in the same line.
+- Noted: the AI-plan invariant econ-3 fired once, at turn 5 (`4:327684`): two development-loan progress grants of
+  90 landed on one Goryeo city in one turn (log lines `progress 90 on 4:327684 (I2)` and `(I5)`), outside the
+  crises code. The panel reads "1 turns in" on a crisis's first turn. In the response cards the Now, Price and It
+  leaves text is right-aligned and wraps back under its label, and the Fiscal tab's "What your choices left"
+  heading runs into its own subtitle.
+- Not reached: the seat choosing a response from the panel or the request queue, and its cost and "sent" line
+  (X.5); Antiquity's and Exploration's menus (X.2, X.3); the bank holiday on a seat loan (X.8); the bank run
+  (X.10); the Civilopedia pages (X.11); the option Off (X.12).
+
+Build defect found: `REQUEST_KINDS` in `ui/econ-session.js` lists borrow, lend, repay, restructure, repudiate, tax,
+tariff and invest but not `respond`, so `queueRequest` refuses every crisis response from the seat. The drive log
+shows it at turns 4, 5, 9 and 11:
+
+```
+acts req {"kind":"respond","pid":0,"response":"public-works"} -> false
+acts req {"kind":"respond","pid":0,"response":"relief"} -> false
+acts req {"kind":"respond","pid":0,"response":"relief","cancel":true} -> false
+acts req {"kind":"respond","pid":0,"response":"deposit-insurance"} -> false
+```
+
+The panel's Choose it and End it buttons go through the same queue, so they fail the same way for a player.
+
 ## Owed: crises and responses (2026-10-31, unreleased)
 
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
-| X.1 | A Depression on the seat's index opens the Crisis section on the World tab, with its name, the turn it began and the causes behind it (the cycle's events), and the turn notice says so | Modern 4242, the seat's index pushed under 0.80 (loans written into the ledger and defaulted, or `macro.cycle.l` set by script) | `ui/econ-crisis.js` `detect`, `ui/econ-view-crisis.js` |
 | X.2 | Antiquity's menu: Cancel the debts, the Grain dole, Debase the coin, Public works, Tribute (a Tribute civ only), The temple lends, the Bank holiday, Confidence and Austerity, each with its history line, what it does now, its price and what it leaves | Antiquity 4242, a debt crisis on the seat (dues over income three turns) | `ui/econ-crisis-catalog.js` `RESPONSES` |
 | X.3 | Exploration's menu: Suspend payments, Recoinage (Public debt), Charter a company (Chartered companies), Navigation acts (Tariffs), Bullion fleets, Lend to the crown (a Friendly civ with Gold), Public works, Relief, the Bank holiday, Confidence, Austerity | Exploration 9001, a trade collapse or a Depression on the seat | same |
-| X.4 | Modern's menu: Deposit insurance (Banking), Off the gold standard (Public debt, not Planned), Public works, Relief, Price supports, Rearmament, Confidence, the Bank holiday, Austerity, the two Hoover-line ones marked | Modern 4242, a Depression on the seat | same |
-| X.5 | Taking a response from the panel: the confirmation, the "sent" line, next turn the `response` event, the Treasury flows showing its cost (`response`) and its first turn's effect (`relief`, `works`, the holiday's skipped payment), and the standing response listed under "What you're doing" with its turns left | any of the above | `ui/econ-crisis.js` `takeResponse`, `respondRequest` |
-| X.6 | A legacy on the Fiscal tab under "What your choices left", with its turns left or "for the age", gone when it ends with the `legacy-ended` notice; a world legacy (bank failures) says everyone | a response with a legacy taken (Deposit insurance, Debase the coin) | `ui/econ-crisis.js` `leaveLegacies`, `ui/econ-view-crisis.js` |
-| X.7 | An AI in a crisis takes a response by its system within a turn or two: the drive log's `response` event with `source: "ai"`, a Planned civ on Public works, a Religious one on Relief, one whose dues pass its income on the Bank holiday | Modern 4242, an AI's index pushed under 0.80 | `ui/econ-crisis.js` `aiRespond`, `aiPick` |
+| X.4 | Modern's menu: Deposit insurance (Banking), Off the gold standard (Public debt, not Planned), Public works, Relief, Price supports, Rearmament, Confidence, the Bank holiday, Austerity, the two Hoover-line ones marked (2026-10-31, fifteenth run: the first six cards drew with their history, Now, Price and It leaves lines; Rearmament, Confidence, Austerity and the Hoover marks sat below the read) | Modern 4242, a Depression on the seat | same |
+| X.5 | Taking a response from the panel: the confirmation, the "sent" line, next turn the `response` event, the Treasury flows showing its cost (`response`) and its first turn's effect (`relief`, `works`, the holiday's skipped payment), and the standing response listed under "What you're doing" with its turns left (2026-10-31, fifteenth run: a row written by script paid its works and drew under "What you're doing"; choosing from the panel is blocked by `respond` missing from `REQUEST_KINDS`) | any of the above | `ui/econ-crisis.js` `takeResponse`, `respondRequest` |
 | X.8 | A bank holiday: for three turns the seat's loan payment isn't made and isn't missed (no `miss` event, the balance unchanged by it), the escrow still holds, and the payment resumes on the fourth | a seat with a bond loan, the holiday taken | `ui/econ-plan.js` `payerPass` |
-| X.9 | The trade war: three civs holding High tariffs while the world is under 0.80 put "a trade war" (-0.005) in the World tab's causes each turn | Modern 4242, tariffs set High on three AIs by script, the world index pushed down | `ui/econ-crisis.js` `crisisWeights` |
 | X.10 | A bank run: a lender civ in Depression with two borrowers in default to it gets the `bank-run` event, -0.02 on its index the next turn and no offer from it on the Loans tab for five turns | Modern 4242, two defaulted loans from one AI written into the ledger, its index under 0.80 | `ui/econ-crisis.js` `bankRuns`, `ui/econ-turn.js` `offerQuery` |
 | X.11 | The Civilopedia's "Crises and responses" group under Game Concepts draws its five pages with every chapter's text, and the search finds "New Deal" | any game, the Civilopedia | `data/econ-civilopedia.xml`, `text/en_us/EconomicsPedia.xml` |
 | X.12 | With the Crises and responses option Off at setup, no crisis starts, the World tab has no Crisis section and the boot line's options read `crises: false` | a game started with the option Off | `ui/econ-session.js` `readOptions`, `ui/econ-crisis.js` `crisesOn` |
