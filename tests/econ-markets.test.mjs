@@ -55,7 +55,7 @@ test("sanitize keeps only well-formed rows; save(load(x)) is a fixed point", () 
   assert.deepEqual(clean, { lastTurn: 9, prices: { RESOURCE_A: 300 }, history: { RESOURCE_A: [1, 2] },
     tariffs: [{ pid: 1, level: "high", changedTurn: 3 }], incomes: { 3: [1, 2] }, aidAge: { 3: "AGE_EXPLORATION" },
     investTurn: { 3: 40 }, tariffPeace: { "3-5": 12 }, tariffEased: { "3-5": "low" }, aidTurns: { "3-5": 7 },
-    offerTurns: {} });
+    offerTurns: {}, targets: {}, basis: null, marks: [] });
   const text = saveMarkets(clean);
   assert.equal(saveMarkets(loadMarkets(text).markets), text);
   assert.deepEqual(cloneMarkets(clean), clean);

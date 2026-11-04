@@ -17,7 +17,8 @@ export function emptyLedger() {
   return { age: null, nextId: 1, lastTurn: null, batchSeq: 0, loans: [], blocks: [], misses: [], repudiations: [],
     guardTurns: [], buildTurns: [], capHits: [], lowIncome: [], escrow: [], distress: [], creditRep: [], taxes: [],
     events: [], lastBatch: null, investments: [], offers: [], nextInvestId: 1,
-    crises: [], responses: [], legacies: [], crisisTurns: [], crisisCounters: [], bubble: null };
+    crises: [], responses: [], legacies: [], crisisTurns: [], crisisCounters: [], bubble: null,
+    policies: [], pathResults: [], affinity: [], policySeq: 0, hardTimes: [], influenceLog: [] };
 }
 
 /**
@@ -32,7 +33,20 @@ function cloneCrisis(ledger) {
   return { crises: copyRows(ledger.crises || []), responses: copyRows(ledger.responses || []),
     legacies: copyRows(ledger.legacies || []), crisisTurns: copyRows(ledger.crisisTurns || []),
     crisisCounters: (ledger.crisisCounters || []).map((row) => ({ ...row, routes: [...row.routes] })),
-    bubble: ledger.bubble ? { ...ledger.bubble } : null };
+    bubble: ledger.bubble ? { ...ledger.bubble } : null, ...clonePolicies(ledger) };
+}
+
+/**
+ * The crisis paths' copy (econ-policy.js): running cards with their records, outcomes, drift.
+ * @param {Ledger} ledger
+ */
+function clonePolicies(ledger) {
+  return { policies: (ledger.policies || []).map((row) => ({ ...row, c: { ...row.c, locs: [...(row.c?.locs || [])],
+    ...(row.c?.paid ? { paid: [...row.c.paid] } : {}) } })),
+  pathResults: copyRows(ledger.pathResults || []),
+  affinity: (ledger.affinity || []).map((row) => ({ pid: row.pid, steps: { ...row.steps } })),
+  policySeq: ledger.policySeq || 0, hardTimes: copyRows(ledger.hardTimes || []),
+  influenceLog: (ledger.influenceLog || []).map((row) => ({ ...row, stocks: [...row.stocks] })) };
 }
 
 /**
@@ -228,7 +242,7 @@ function cleanBatchRow(row) {
 function paidFields(row) {
   /** @type {Record<string, number>} */
   const out = {};
-  for (const key of ["paid", "celebrationPaid"]) if (isInt(row[key])) out[key] = row[key];
+  for (const key of ["paid", "celebrationPaid", "engine"]) if (isInt(row[key])) out[key] = row[key];
   for (const key of ["carry", "celebrationCarry"]) if (isInt(row[key]) && Math.abs(row[key]) < 100) out[key] = row[key];
   return out;
 }
@@ -415,6 +429,70 @@ const isId = (x) => typeof x === "string" && /^[a-z][a-z-]{0,31}$/.test(x);
 /** A crisis kind as the catalog names it. @param {unknown} x */
 const isKind = (x) => ["depression", "credit-panic", "price-shock", "debt", "inflation", "trade-collapse"].includes(String(x));
 
+/** @param {unknown} v */
+const finite = (v) => typeof v === "number" && Number.isFinite(v);
+
+/**
+ * The crisis paths' rows (econ-policy.js): each running card with its contribution record, the outcomes kept for
+ * the panel and the once-per-crisis rule, and each civ's drift. A row that doesn't read is dropped whole.
+ * @param {Ledger} ledger
+ * @param {Raw} raw
+ */
+function cleanPolicies(ledger, raw) {
+  ledger.policySeq = atLeast(raw.policySeq, 0) ? Number(raw.policySeq) : 0;
+  ledger.policies = list(raw.policies).filter((row) => row && typeof row.rid === "string" && isId(row.card)
+    && isPid(row.pid) && isKind(row.crisis) && isTurn(row.crisisSince) && isTurn(row.since) && isTurn(row.settled))
+    .map((row) => cleanPolicyRow(row));
+  ledger.pathResults = list(raw.pathResults).filter((row) => row && isPid(row.pid) && typeof row.path === "string"
+    && ["earned", "compromised", "abandoned"].includes(row.outcome) && isTurn(row.turn))
+    .map((row) => ({ pid: row.pid, path: row.path, card: String(row.card), outcome: row.outcome, turn: row.turn,
+      crisis: isKind(row.crisis) ? row.crisis : "depression",
+      crisisSince: isTurn(row.crisisSince) ? row.crisisSince : 0 }))
+    .slice(-24);
+  ledger.affinity = list(raw.affinity)
+    .filter((row) => row && isPid(row.pid) && row.steps && typeof row.steps === "object")
+    .map((row) => ({ pid: row.pid, steps: Object.fromEntries(Object.entries(row.steps)
+      .filter(([k, v]) => /^[a-z-]{1,32}$/.test(k) && finite(v))
+      .map(([k, v]) => [k, Math.max(-3, Math.min(3, Math.round(v)))])) }));
+  // Hard times for Partisans: one row a civ, its strain and the turn its Depression began.
+  ledger.hardTimes = list(raw.hardTimes).filter((row, i, rows) => row && isPid(row.pid) && atLeast(row.strain, 0)
+    && isTurn(row.turn) && rows.findIndex((x) => x && x.pid === row.pid) === i)
+    .map((row) => ({ pid: row.pid, strain: Math.round(Number(row.strain)), depSince: isTurn(row.depSince)
+      ? row.depSince : null, turn: row.turn }));
+  // The AI's Influence forecast: one row a civ, its last six stocks and the turn of the newest.
+  ledger.influenceLog = list(raw.influenceLog).filter((row, i, rows) => row && isPid(row.pid) && isTurn(row.turn)
+    && Array.isArray(row.stocks) && rows.findIndex((x) => x && x.pid === row.pid) === i)
+    .map((row) => ({ pid: row.pid, turn: row.turn,
+      stocks: row.stocks.filter(finite).map((/** @type {number} */ v) => Math.round(v)).slice(-6) }));
+}
+
+/** A card's contribution record: plain values and lists of strings only. @param {unknown} raw */
+function cleanRecord(raw) {
+  const c = /** @type {Raw} */ (raw && typeof raw === "object" ? raw : {});
+  /** @type {Record<string, any>} */
+  const out = {};
+  for (const [k, v] of Object.entries(c)) {
+    if (finite(v) || typeof v === "boolean" || v === null || typeof v === "string") out[k] = v;
+    else if (Array.isArray(v)) out[k] = v.filter((x) => typeof x === "string").slice(0, 64);
+  }
+  out.locs = Array.isArray(out.locs) ? out.locs : [];
+  return out;
+}
+
+/** @param {Raw} row */
+function cleanPolicyRow(row) {
+  return { rid: row.rid, card: row.card, pid: row.pid, crisis: row.crisis, crisisSince: row.crisisSince,
+    since: row.since, until: isTurn(row.until) ? row.until : null,
+    state: row.state === "sustained" ? "sustained" : "active", settled: row.settled,
+    loanId: typeof row.loanId === "string" ? row.loanId : null, debt: atLeast(row.debt, 0) ? Number(row.debt) : 0,
+    warBy: isTurn(row.warBy) ? row.warBy : null, unmet: row.unmet === true, turned: row.turned === true,
+    converted: row.converted === true, c: cleanRecord(row.c),
+    arrearsRun: atLeast(row.arrearsRun, 0) ? Math.round(Number(row.arrearsRun)) : 0,
+    arrearsPoints: atLeast(row.arrearsPoints, 0) ? Math.round(Number(row.arrearsPoints)) : 0,
+    paidRun: atLeast(row.paidRun, 0) ? Math.round(Number(row.paidRun)) : 0,
+    ...(isTurn(row.arrearsTurn) ? { arrearsTurn: row.arrearsTurn } : {}) };
+}
+
 /**
  * The crisis rows (DESIGN 4.11c): open crises, standing responses, legacies (the world's with pid null), the turns
  * a response was taken or a crisis ended, the counters the conditions keep, and a bubble. A save from before them
@@ -427,22 +505,26 @@ function cleanCrisis(ledger, raw) {
     .map((row) => ({ pid: row.pid, kind: row.kind, since: row.since }));
   ledger.responses = list(raw.responses).filter((row) => row && isPid(row.pid) && isId(row.id) && isTurn(row.since))
     .map((row) => ({ pid: row.pid, id: row.id, crisis: isKind(row.crisis) ? row.crisis : "depression", since: row.since,
-      until: isTurn(row.until) ? row.until : null }));
+      until: isTurn(row.until) ? row.until : null,
+      ...(atLeast(row.costPct, 0) ? { costPct: Number(row.costPct) } : {}),
+      ...(typeof row.policy === "string" ? { policy: row.policy } : {}) }));
   ledger.legacies = list(raw.legacies).filter((row) => row && (row.pid === null || isPid(row.pid)) && isId(row.id)
     && isTurn(row.since)).map((row) => ({ pid: row.pid, id: row.id, since: row.since,
       until: isTurn(row.until) ? row.until : null, nextAge: row.nextAge === true,
       ...(Array.isArray(row.civs) ? { civs: row.civs.filter(isPid) } : {}) }));
   ledger.crisisTurns = list(raw.crisisTurns).filter((row) => row && isPid(row.pid) && typeof row.id === "string"
-    && /^(take|end):[a-z-]{1,32}$/.test(row.id) && isTurn(row.turn))
+    && /^(take|end|policy):[a-z-]{1,32}$/.test(row.id) && isTurn(row.turn))
     .map((row) => ({ pid: row.pid, id: row.id, turn: row.turn, ...(typeof row.age === "string" ? { age: row.age } : {}) }));
   ledger.crisisCounters = list(raw.crisisCounters).filter((row) => row && isPid(row.pid))
     .map((row) => ({ pid: /** @type {number} */ (row.pid),
       dues: atLeast(row.dues, 0) ? /** @type {number} */ (row.dues) : 0,
       hot: atLeast(row.hot, 0) ? /** @type {number} */ (row.hot) : 0,
+      ...(atLeast(row.peace, 0) ? { peace: Number(row.peace) } : {}),
       routes: list(row.routes).filter((x) => atLeast(x, 0)).map((x) => Number(x)).slice(-6) }));
   const bubble = /** @type {Raw | null} */ (raw.bubble && typeof raw.bubble === "object" ? raw.bubble : null);
   ledger.bubble = bubble && isTurn(bubble.since)
     ? { since: bubble.since, burst: isTurn(bubble.burst) ? bubble.burst : null } : null;
+  cleanPolicies(ledger, raw);
 }
 
 /** @param {Loan} loan */

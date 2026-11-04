@@ -169,6 +169,8 @@
                     <Item>data/econ-notifications.xml</Item>
                     <!-- The Civilopedia pages for the crises and their responses (DESIGN 4.11c). -->
                     <Item>data/econ-civilopedia.xml</Item>
+                    <!-- The standing Gold lines' marker buildings (docs/AI-NATIVE-LEVERS.md "Marker rules"). -->
+                    <Item>data/econ-standing-lines.sql</Item>
                 </UpdateDatabase>
                 <UpdateText>
                     <Item>text/en_us/ModText.xml</Item>
@@ -222,6 +224,10 @@
                     <Item>ui/econ-dock.js</Item>
                     <Item>ui/econ-dom.js</Item>
                     <Item>ui/econ-pills.js</Item>
+                    <Item>ui/econ-policy-catalog.js</Item>
+                    <Item>ui/econ-policy.js</Item>
+                    <Item>ui/econ-policy-read.js</Item>
+                    <Item>ui/econ-arrears.js</Item>
                     <Item>ui/econ-engine.js</Item>
                     <Item>ui/econ-fiscal.js</Item>
                     <Item>ui/econ-format.js</Item>
@@ -257,6 +263,8 @@
                     <Item>ui/econ-shortfall.js</Item>
                     <Item>ui/econ-distress.js</Item>
                     <Item>ui/econ-escrow.js</Item>
+                    <Item>ui/econ-standing.js</Item>
+                    <Item>ui/econ-standing-read.js</Item>
                     <Item>ui/econ-stake.js</Item>
                     <Item>ui/econ-spoil.js</Item>
                     <Item>ui/econ-stage-read.js</Item>

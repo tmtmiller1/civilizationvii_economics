@@ -5,13 +5,13 @@
 // bill, a tariff between two civs or a return on an investment the AI can see (DESIGN section 1, "Native first").
 // Nothing here reads the engine.
 
-import { INVEST, MISS, REPUTATION, STAKE, STANDING, TRADE } from "./econ-params.js";
+import { INVEST, MISS, PRICES, REPUTATION, STAKE, STANDING, TRADE } from "./econ-params.js";
 import { anyWar, nextPrices } from "./econ-prices.js";
 import { aiTariffStep, canChangeTariff, capPayments, highTariffCosts, netPairs, owedByPair, withTariff }
   from "./econ-trade.js";
 import { investId, isOpenInvestment, lostCityWriteOff, relationshipGain, settleDividend, settleInvestmentDefault,
   tenthsFor } from "./econ-invest.js";
-import { isIncomeGrowing, withIncomes } from "./econ-markets.js";
+import { isIncomeGrowing, recordBasis, withIncomes } from "./econ-markets.js";
 import { addMiss, activeDefaults } from "./econ-credit.js";
 import { blockFor, relationLevel } from "./econ-lenders.js";
 import { withBlock } from "./econ-payments.js";
@@ -37,12 +37,27 @@ export function marketStep(ctx, market) {
   if (!ctx.options.markets || !market) return;
   for (const row of market.resources || []) ctx.basePrices[row.type] = basePriceCents(row.class);
   const civs = ctx.civs.filter((civ) => civ.alive === true).length;
-  const next = nextPrices({ market, previous: markets, civs, war: anyWar(ctx.relations), eBp: ctx.readings.e,
-    capitalism: capitalismPrices(ctx) });
+  const war = anyWar(ctx.relations);
+  const capitalism = capitalismPrices(ctx);
+  const next = nextPrices({ market, previous: markets, civs, war, eBp: ctx.readings.e, capitalism });
   // Debasement, bullion and the gold standard lift prices while they run; price supports floor the farm ones.
   markets.prices = ctx.crisis ? ctx.crisis.adjustPrices(next.prices) : next.prices;
   markets.history = next.history;
   markets.lastTurn = ctx.turn;
+  // What the targets were read from, for the Markets tab's breakdown (Part 6).
+  recordBasis(markets, { turn: ctx.turn, market, civs, war, eBp: ctx.readings.e, raw: next.prices,
+    smoothingPct: capitalism ? PRICES.capitalismSmoothingPct : PRICES.smoothingPct, pricePct: crisisPricePct(ctx),
+    targets: next.targets });
+}
+
+/**
+ * How much the running crisis responses lift every price this turn, in percent (econ-crisis-respond.js adjustPrices).
+ * @param {TurnContext} ctx
+ */
+function crisisPricePct(ctx) {
+  if (!ctx.crisis || ctx.options.crises !== true) return 0;
+  return ctx.civs.filter((civ) => civ.alive === true)
+    .reduce((sum, civ) => sum + (ctx.crisis?.terms(civ.id).pricePct ?? 0), 0);
 }
 
 /**
@@ -77,7 +92,10 @@ export function tradeTermsOf(ctx) {
     // doubles its bills to the levier for the legacy's turns.
     const toPayee = payee === undefined ? 100 : crisis.billsToPct[String(payee)] ?? 100;
     const billPct = Math.round((crisis.billPct * toPayee) / 100);
-    return billPct === 100 ? terms : { ...terms, billPaidPct: Math.round((terms.billPaidPct * billPct) / 100) };
+    // Self-sufficiency's legacy (econ-policy.js): the civ's Trade buildings count a quarter less for the age.
+    const built = crisis.tradeBuildingPctOf === 100 ? terms
+      : { ...terms, tradeBuildingPct: Math.round((terms.tradeBuildingPct * crisis.tradeBuildingPctOf) / 100) };
+    return billPct === 100 ? built : { ...built, billPaidPct: Math.round((built.billPaidPct * billPct) / 100) };
   };
 }
 
@@ -271,10 +289,22 @@ export function aiTariff(ctx, civ) {
     ctx.markets.tariffEased = step.easing.eased;
   }
   for (const other of step.eased) event(ctx, { kind: "tariff-eased", pid: civ.id, other });
+  setAiTariff(ctx, civ, step.wanted);
+}
+
+/**
+ * Sets the tariff an AI wants, at most once per 5 turns; Debt into shares' claim (econ-policy.js) holds it at Low.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @param {TariffLevel | null | undefined} want
+ */
+function setAiTariff(ctx, civ, want) {
   const row = ctx.markets.tariffs.find((tariff) => tariff.pid === civ.id);
-  if (!step.wanted || !canChangeTariff(row?.changedTurn, ctx.turn)) return;
-  ctx.markets.tariffs = withTariff(ctx.markets.tariffs, civ.id, step.wanted, ctx.turn);
-  event(ctx, { kind: "tariff", pid: civ.id, level: step.wanted });
+  if (!want || !canChangeTariff(row?.changedTurn, ctx.turn)) return;
+  const wanted = want === "high" && ctx.crisis?.terms(civ.id).tariffCeilingLow ? "low" : want;
+  if (wanted === row?.level) return;
+  ctx.markets.tariffs = withTariff(ctx.markets.tariffs, civ.id, wanted, ctx.turn);
+  event(ctx, { kind: "tariff", pid: civ.id, level: wanted });
 }
 
 /**
@@ -448,8 +478,9 @@ function fightsBeside(ctx, civ, host) {
 /**
  * AI-PLAN 4.5 aid: income above 0; to a host with a stake of 10 or more that's in default, in its own Depression
  * (4.11), or at war with the AI's enemy and short; sized to buy it back to Friendly (the aid's +1 relationship per
- * 2.5 turns of the host's income, up to the 10 one gift can give), within 5 turns of the AI's income and what it
- * has; at most once per 15 turns per host. A debt the host has defaulted on to the giver is cleared first.
+ * half a turn of the host's income, up to the 20 one gift can give), within 5 turns of the AI's income and what it
+ * has; at most once per 15 turns per host. A debt the host has defaulted on to the giver is cleared first. A gift
+ * its funds cut under one point is refused as too-small and nothing goes.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
@@ -494,7 +525,7 @@ function needsAid(ctx, civ, host, key) {
 }
 
 /**
- * What buys the host back to Friendly: the points that take it past the game's Friendly line (1 at the least, the 10
+ * What buys the host back to Friendly: the points that take it past the game's Friendly line (1 at the least, the 20
  * one gift can give at most) at the aid's rate, within 5 turns of the giver's income and its funds, in whole Gold.
  * @param {TurnContext} ctx
  * @param {Civ} civ

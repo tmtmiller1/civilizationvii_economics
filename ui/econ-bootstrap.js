@@ -6,9 +6,10 @@
 import { logLine } from "./econ-log.js";
 import { aliveMajorIds, gameTurn, isMultiplayer, listen, loc, localId, readAtWar, safe } from "./econ-engine.js";
 import { buildInput, displayTurn, dropRequest, economyOf, loadSession, markSeen, noteCycleEvent, noteLanded,
-  noteOpened, queueRequest, readOptions, resendLostBatch, runTurn, setGuard, stageTurnsOf, turnNow } from "./econ-session.js";
+  noteOpened, placeLinesNow, queueRequest, readOptions, resendLostBatch, runTurn, setGuard, stageTurnsOf, turnNow }
+  from "./econ-session.js";
 import { captureEvent, disasterEvent, razeEvent, readPopulations } from "./econ-macro-read.js";
-import { phaseKey } from "./econ-notice-text.js";
+import { phaseKey, policyKey, responseKey } from "./econ-notice-text.js";
 import { pillsFor } from "./econ-pills.js";
 import { formatRate } from "./econ-format.js";
 import { flushNotice, holdNotice, installClickHandler, nameOf } from "./econ-notify.js";
@@ -35,6 +36,18 @@ const state = { session: null, activeTurn: -1, multiplayer: false };
  * The pill: the player's outstanding debt, red while any loan of theirs is in default, with the cycle's phase and
  * inflation beside it when those options are on (DESIGN 9), as separate pills, each coloured on its own.
  */
+/**
+ * The name keys of what the player is doing about a crisis: its crisis-paths card first, then its standing
+ * responses, for the pill and the header.
+ * @param {Session} session
+ * @param {number} me
+ */
+function runningKeys(session, me) {
+  return [...(session.ledger.policies || []).filter((row) => row.pid === me).map((row) => policyKey(row.card)),
+    ...(session.ledger.responses || []).filter((row) => row.pid === me && !row.policy && row.id !== "bank-run")
+      .map((row) => responseKey(row.id))];
+}
+
 function pillSource() {
   const session = state.session;
   const me = localId();
@@ -45,6 +58,8 @@ function pillSource() {
     owedCents: outstandingOf(session.ledger, me), phase: session.macro.cycle.phases[String(me)] ?? null,
     cycleOn: options.cycle !== "off", inflationOn: options.inflation, piPpm: session.macro.inflation.piPpm,
     inCrisis: (session.ledger.crises || []).some((row) => row.pid === me),
+    running: runningKeys(session, me),
+    arrears: (session.ledger.policies || []).some((row) => row.pid === me && (row.arrearsRun || 0) > 0),
   }, { loc, gold: formatGold, rate: formatRate, phaseKey });
   return { pills, text: pills.map((p) => p.text).join(" · "), warning: pills.some((p) => p.tone === "warning") };
 }
@@ -61,6 +76,9 @@ function screenApi(session) {
     nameOf: (party) => (typeof party === "number" && civHidden(party, localId()) ? loc("LOC_ECONOMICS_UNMET_CIV")
       : nameOf(party)),
     hidden: (pid) => civHidden(pid, localId()),
+    hardship: () => Number(session.lastPlan?.hardship?.[String(localId())] ?? 0) || 0,
+    hardTimes: () => hardTimesOf(session.lastPlan?.hardTimes?.[String(localId())]),
+    partisans: () => !!G.__towerPartisans,
     request: (request) => queueRequest(session, request),
     dropRequest: (index) => dropRequest(session, index),
     pending: () => session.glue.requests,
@@ -151,10 +169,20 @@ function onTurnBegin() {
   newTurnOnScreen();
 }
 
+// The standing lines' markers go up a moment into the local player's turn, as Partisans' muster does.
+const LINES_SETTLE_MS = 800;
+
+/** @param {Session} session */
+function placeLinesSoon(session) {
+  const place = () => safe(() => placeLinesNow(session), 0);
+  if (typeof setTimeout === "function") setTimeout(place, LINES_SETTLE_MS); else place();
+}
+
 /** @param {any} data */
 function onPlayerTurnActivated(data) {
   const pid = data && (data.player ?? data.Player);
   if (pid !== localId()) return;
+  if (state.session) placeLinesSoon(state.session);
   state.activeTurn = state.session ? turnNow(state.session) : gameTurn();
   flushNotice();
 }
@@ -174,6 +202,15 @@ function installConsole() {
     open: () => openScreen(),
     tab: (/** @type {string} */ key) => showTab(key),
     pill: pillSource,
+    // Partisans reads this (its pt-economics.js): the Happiness points a civ's settlements count against misery in a
+    // deep Depression, 0 to 6; 0 in multiplayer, with crises off, or before the first batch.
+    hardship: (/** @type {number} */ pid) => (state.multiplayer ? 0
+      : Number(state.session?.lastPlan?.hardship?.[String(pid)] ?? 0) || 0),
+    // Partisans 1.2 reads this instead (hard-times plan v2): the Depression's points and age, Austerity's strain and
+    // the running Programme's arrears points; all 0 or false in multiplayer, with crises off, or before the first
+    // batch.
+    hardTimes: (/** @type {number} */ pid) => hardTimesOf(state.multiplayer ? null
+      : state.session?.lastPlan?.hardTimes?.[String(pid)]),
   };
 }
 
@@ -189,6 +226,17 @@ function listenCycle(session) {
     disasterEvent(data, session.pops)), false));
 }
 
+/**
+ * The batch a reload missed, and the standing lines' markers on a game that loads on the local player's own turn.
+ * @param {Session} session
+ */
+function startOnLoad(session) {
+  const active = safe(() => Players.get(localId()).isTurnActive === true, false);
+  if (active) state.activeTurn = turnNow(session);
+  catchUp(session);
+  if (active) placeLinesSoon(session);
+}
+
 function boot() {
   state.multiplayer = isMultiplayer();
   installConsole();
@@ -197,8 +245,7 @@ function boot() {
   state.session = session;
   const lost = resend(session);
   // A loaded game opens on the local player's own turn, and no PlayerTurnActivated follows for it.
-  if (safe(() => Players.get(localId()).isTurnActive === true, false)) state.activeTurn = turnNow(session);
-  catchUp(session);
+  startOnLoad(session);
   setScreenApi(screenApi(session));
   installDock(pillSource, () => markerSource(session));
   // The first look in a game notes what's open without telling, so only later openings make a notification line.
@@ -218,4 +265,16 @@ try {
   }
 } catch (error) {
   logLine(`boot failed: ${error instanceof Error ? error.message : String(error)}`);
+}
+
+/**
+ * A copy of one civ's hard times, zero when there's none.
+ * @param {HardTimes | null | undefined} row
+ * @returns {HardTimes}
+ */
+function hardTimesOf(row) {
+  const n = (/** @type {unknown} */ v) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+  return { depression: n(row?.depression), depressionTurns: n(row?.depressionTurns),
+    austerityStrain: n(row?.austerityStrain), austerityRunning: row?.austerityRunning === true,
+    arrearsPoints: n(row?.arrearsPoints) };
 }

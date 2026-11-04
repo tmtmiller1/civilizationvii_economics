@@ -149,7 +149,9 @@ function modNetRow(input, api) {
     if (transfers === null) return [note(api.loc("LOC_ECONOMICS_TREASURY_MOD_NET_LATER"))];
     const parts = flowBreakdown(transfers, api.me);
     if (!parts.length) return [note(api.loc("LOC_ECONOMICS_TREASURY_MOD_NET_NONE"))];
-    return parts.map((part) => row(api.loc(part.key), goldAmount(api, part.cents, { signed: true, tone: true })));
+    const name = (/** @type {{ key: string, args: string[] }} */ part) => api.loc(part.key,
+      ...part.args.map((arg) => api.loc(arg)));
+    return parts.map((part) => row(name(part), goldAmount(api, part.cents, { signed: true, tone: true })));
   }, api.rerender, { show: api.loc("LOC_ECONOMICS_SHOW_PARTS"), hide: api.loc("LOC_ECONOMICS_HIDE_PARTS") });
 }
 

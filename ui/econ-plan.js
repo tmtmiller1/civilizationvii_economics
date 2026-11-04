@@ -30,6 +30,10 @@ import { aiPreferenceRows, holdEscrow, releaseEscrow } from "./econ-escrow.js";
 import { crisisAgeChange, crisisStep, crisisWeights } from "./econ-crisis.js";
 import { adjustPrices, aiRespond, austerityCivs, crisisPayerSteps } from "./econ-crisis-respond.js";
 import { crisisTerms, onHoliday } from "./econ-crisis-rows.js";
+import { aiPolicy, hardshipRows, policyPayerSteps, policyTerms } from "./econ-policy.js";
+import { hardTimesRows } from "./econ-arrears.js";
+import { LIMITS } from "./econ-params.js";
+import { standingRows } from "./econ-standing.js";
 
 /** The smallest drop across an age change that's recorded as the game's cap, not the turn's own spending. */
 const AGE_GOLD_MIN_CENTS = 10000;
@@ -57,15 +61,22 @@ export function planTurn(input) {
   /** @type {PlanOutput} */
   const out = { ledger, transfers: [], influence: [], celebration: [], grievances: [], relationships: [], events: [],
     notices: [], batch: null, skipped: null, markets: input.markets || emptyMarkets(), progress: [], trade: [],
-    macro: input.macro || emptyMacro(), aiPreferences: [], favors: [], stakes: {} };
+    macro: input.macro || emptyMacro(), aiPreferences: [], favors: [], stakes: {}, wars: [] };
   const skipped = skipReason(input, options, ledger);
   if (skipped) return { ...out, skipped };
   const ctx = turnContext(input, options, out);
+  ctx.projection = input.projection === true;
   // The crisis rules the other steps read (DESIGN 4.11c), as hooks so no step has to import them.
   ctx.crisis = { terms: (pid) => crisisTerms(ctx, pid), weights: (events) => crisisWeights(ctx, events),
     adjustPrices: (prices) => adjustPrices(ctx, prices), holiday: (pid) => onHoliday(ctx, pid) };
+  // The crisis paths refuse new cards when the save's ledger is near its 64 KB envelope (v6 section 5): running
+  // cards and legacies are never trimmed, so new ones wait rather than push them out.
+  ctx.ledgerNearlyFull = JSON.stringify(ledger).length > LIMITS.envelopeBytes * 0.9;
+  ctx.policyTerms = policyTerms;
   snapshotStep(ctx, input);
   proposeStep(ctx);
+  out.hardship = hardshipRows(ctx);
+  out.hardTimes = hardTimesRows(ctx);
   finishTurn(ctx);
   return out;
 }
@@ -105,7 +116,7 @@ function proposeStep(ctx) {
   for (const civ of borrowers) aiRepudiate(ctx, civ);
   tradeStep(ctx);
   for (const civ of borrowers) aiDecide(ctx, civ);
-  for (const civ of ai) aiRespond(ctx, civ);
+  aiCrisisSteps(ctx, ai);
   const extras = runRequests(ctx);
   for (const civ of borrowers) aiRepayEarly(ctx, civ, extras);
   // Austerity (DESIGN 4.11b): the civ repays early with half its surplus, the human seat too.
@@ -114,6 +125,16 @@ function proposeStep(ctx) {
   aiMacro(ctx, ai);
   for (const civ of borrowers) aiBuildBorrow(ctx, civ);
   resolveStep(ctx, live, ai, extras);
+}
+
+/**
+ * The AI's crisis choices: its own card (econ-policy.js), then a shared response.
+ * @param {TurnContext} ctx
+ * @param {Civ[]} ai
+ */
+function aiCrisisSteps(ctx, ai) {
+  for (const civ of ai) aiPolicy(ctx, civ);
+  for (const civ of ai) aiRespond(ctx, civ);
 }
 
 /**
@@ -190,6 +211,7 @@ function aiCommerce(ctx, ai) {
 function payerSteps(ctx, pid, extras) {
   macroPayerSteps(ctx, pid);
   crisisPayerSteps(ctx, pid);
+  policyPayerSteps(ctx, pid);
   settleTradeFor(ctx, pid);
   if (ctx.options.loans) payerPass(ctx, pid, extras);
   // A bank holiday (DESIGN 4.11b) suspends the civ's returns as well as its payments.
@@ -420,6 +442,8 @@ function finishTurn(ctx) {
   ctx.out.trade = ctx.trade;
   ctx.out.macro = ctx.macro;
   ctx.out.stakes = Object.fromEntries(ctx.stakes);
+  // The Treasury tab's projection has no use for the next roll's lines.
+  if (!ctx.projection) ctx.out.standing = standingRows(ctx, ctx.civs.filter((civ) => civ.alive === true));
   prune(ledger);
 }
 
@@ -439,7 +463,7 @@ export function projectBalances(input, turns = 20) {
   for (let k = 0; k < turns; k += 1) {
     const civs = input.civs.map((civ) => ({ ...civ, balanceCents: balances.get(civ.id) || 0 }));
     const plan = planTurn({ ...input, turn: input.turn + k, civs, requests: k === 0 ? input.requests : [], ledger,
-      markets });
+      markets, projection: true });
     const income = new Map(civs.map((civ) => [civ.id, civ.alive === true ? civ.incomeCents : 0]));
     const earned = new Map([...balances].map(([id, balance]) => [id, balance + (income.get(/** @type {number} */ (id))
       || 0)]));

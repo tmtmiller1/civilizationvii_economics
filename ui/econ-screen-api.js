@@ -9,6 +9,9 @@
  * @property {(key: string, ...args: (string | number)[]) => string} loc
  * @property {(party: Party) => string} nameOf a civ the Spoil Guard hides reads "an unmet civilization"
  * @property {(pid: number) => boolean} [hidden] whether the Spoil Guard keeps this civ off the screen (econ-spoil.js)
+ * @property {() => number} [hardship] the player's hardship for Partisans this turn (econ-policy.js), 0 to 6
+ * @property {() => HardTimes} [hardTimes] the player's hard times for Partisans this turn (econ-arrears.js)
+ * @property {() => boolean} [partisans] whether Partisans is running in this game
  * @property {(request: PlanRequest) => boolean} request queue one of the player's requests for the next batch
  * @property {(index: number) => boolean} dropRequest
  * @property {() => PlanRequest[]} pending

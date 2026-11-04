@@ -17,6 +17,7 @@
         <Row PageLayoutID="ECON_CRISES_EXPLORATION" UseSidebar="false"/>
         <Row PageLayoutID="ECON_CRISES_MODERN" UseSidebar="false"/>
         <Row PageLayoutID="ECON_CRISES_EVENTS" UseSidebar="false"/>
+        <Row PageLayoutID="ECON_CRISES_PATHS" UseSidebar="false"/>
     </CivilopediaPageLayouts>
 
     <CivilopediaPageLayoutChapters>
@@ -71,6 +72,15 @@
         <Row PageLayoutID="ECON_CRISES_EVENTS" ChapterID="BUBBLE" SortIndex="60"/>
         <Row PageLayoutID="ECON_CRISES_EVENTS" ChapterID="CASCADE" SortIndex="70"/>
         <Row PageLayoutID="ECON_CRISES_EVENTS" ChapterID="RECOVERY" SortIndex="80"/>
+        <Row PageLayoutID="ECON_CRISES_PATHS" ChapterID="CONTENT" SortIndex="10"/>
+        <Row PageLayoutID="ECON_CRISES_PATHS" ChapterID="TIERS" SortIndex="20"/>
+        <Row PageLayoutID="ECON_CRISES_PATHS" ChapterID="LIFECYCLE" SortIndex="30"/>
+        <Row PageLayoutID="ECON_CRISES_PATHS" ChapterID="DRIFT" SortIndex="40"/>
+        <Row PageLayoutID="ECON_CRISES_PATHS" ChapterID="CLASSICAL_REPUBLIC" SortIndex="50"/>
+        <Row PageLayoutID="ECON_CRISES_PATHS" ChapterID="PLUTOCRACY" SortIndex="60"/>
+        <Row PageLayoutID="ECON_CRISES_PATHS" ChapterID="DEMOCRACY" SortIndex="70"/>
+        <Row PageLayoutID="ECON_CRISES_PATHS" ChapterID="FASCISM" SortIndex="80"/>
+        <Row PageLayoutID="ECON_CRISES_PATHS" ChapterID="HARDSHIP" SortIndex="90"/>
     </CivilopediaPageLayoutChapters>
 
     <CivilopediaPages>
@@ -79,6 +89,7 @@
         <Row SectionID="CONCEPTS" PageID="ECON_CRISES_EXPLORATION" PageGroupID="ECONOMICS_CRISES" PageLayoutID="ECON_CRISES_EXPLORATION" Name="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_TITLE" SortIndex="30"/>
         <Row SectionID="CONCEPTS" PageID="ECON_CRISES_MODERN" PageGroupID="ECONOMICS_CRISES" PageLayoutID="ECON_CRISES_MODERN" Name="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_MODERN_TITLE" SortIndex="40"/>
         <Row SectionID="CONCEPTS" PageID="ECON_CRISES_EVENTS" PageGroupID="ECONOMICS_CRISES" PageLayoutID="ECON_CRISES_EVENTS" Name="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EVENTS_TITLE" SortIndex="50"/>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_PATHS" PageGroupID="ECONOMICS_CRISES" PageLayoutID="ECON_CRISES_PATHS" Name="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_PATHS_TITLE" SortIndex="60"/>
     </CivilopediaPages>
 
     <CivilopediaPageSearchTerms>
@@ -88,5 +99,6 @@
         <Row SectionID="CONCEPTS" PageID="ECON_CRISES_MODERN" Term="LOC_PEDIA_ECONOMICS_CRISES_TERM_NEW_DEAL"/>
         <Row SectionID="CONCEPTS" PageID="ECON_CRISES_MODERN" Term="LOC_PEDIA_ECONOMICS_CRISES_TERM_GOLD_STANDARD"/>
         <Row SectionID="CONCEPTS" PageID="ECON_CRISES_EVENTS" Term="LOC_PEDIA_ECONOMICS_CRISES_TERM_BANK_RUN"/>
+        <Row SectionID="CONCEPTS" PageID="ECON_CRISES_PATHS" Term="LOC_PEDIA_ECONOMICS_CRISES_TERM_PROGRAMME"/>
     </CivilopediaPageSearchTerms>
 </Database>

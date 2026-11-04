@@ -142,3 +142,13 @@ test("the Treasury tab's loan figures wait for the rule that opens the Loans tab
   assert.equal(off.sections["treasury.loanFigures"], true, "stages Off: everything open");
   assert.equal(off.sections["treasury.aid"], false, "and aid lives on the Trade tab");
 });
+
+test("the Loans option off: no Loans tab, no borrow or lend form, no guard rows on the Treasury, no loans part to come", () => {
+  const { rules } = rulesOf(antiquity({}, { options: { loans: false } }), { moneylending: 12, publicDebt: 14 });
+  assert.equal(rules.tabs.includes("loans"), false);
+  assert.equal(rules.sections["loans.borrow"], false);
+  assert.equal(rules.sections["loans.lend"], false);
+  assert.equal(rules.sections["treasury.loans"], false);
+  assert.equal(rules.next.loans, null);
+  assert.notEqual(rules.next.treasury?.part, "LOC_ECONOMICS_PART_CIV_LOANS");
+});

@@ -34,12 +34,12 @@ export function composeLines(plan, pid) {
   /** @type {string[]} */
   const lines = [];
   for (const line of describeBatchRow(plan.batch?.civs.find((row) => row.pid === pid), flowKeys(plan.transfers, pid))) {
-    lines.push(loc(line.key, ...composeArgs(line.args, (key) => loc(key))));
+    lines.push(loc(line.key, ...composeArgs(line.args, (key, ...a) => loc(key, ...a))));
   }
   for (const notice of plan.notices) {
     if (notice.pid !== pid) continue;
     const line = describeNotice(notice, ctx);
-    if (line) lines.push(loc(line.key, ...composeArgs(line.args, (key) => loc(key))));
+    if (line) lines.push(loc(line.key, ...composeArgs(line.args, (key, ...a) => loc(key, ...a))));
   }
   for (const event of plan.events) {
     if (event.kind === "refused" && [event.pid, event.borrower, event.lender].includes(pid)) {
@@ -59,7 +59,7 @@ function refusalLines(event, ctx) {
   const line = describeRefusal(event);
   const out = [loc(line.key, loc(line.requestKey), loc(line.reasonKey))];
   const next = describeRefusalMost(event, ctx) || describeRefusalProject(event, ctx);
-  if (next) out.push(loc(next.key, ...composeArgs(next.args, (key) => loc(key))));
+  if (next) out.push(loc(next.key, ...composeArgs(next.args, (key, ...a) => loc(key, ...a))));
   return out;
 }
 

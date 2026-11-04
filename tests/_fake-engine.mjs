@@ -26,7 +26,7 @@ function table(rows) {
  * A settlement with its own id, build queue and Trade Income, for the 1.1 reads; `addProgress` is recorded.
  * @param {number} pid
  * @param {{ id: number, buildings?: number[], build?: string | null, progress?: number, percent?: number,
- *   trade?: number, purchase?: number }} spec
+ *   trade?: number, purchase?: number, cost?: number }} spec
  */
 function fakeCity(pid, spec, world) {
   return {
@@ -35,6 +35,7 @@ function fakeCity(pid, spec, world) {
     Yields: { getYield: () => 0, getTradeYields: () => [null, { value: spec.trade ?? 0 }] },
     Gold: { getSpecificBuildingMaintenance: () => ({ value: 0 }),
       getBuildingPurchaseCost: () => spec.purchase ?? Number.NaN },
+    Production: { getConstructibleProductionCost: () => spec.cost ?? Number.NaN },
     population: spec.population ?? 3,
     BuildQueue: { isEmpty: !spec.build, currentProductionTypeHash: spec.build ? `#${spec.build}` : null,
       currentBuildProgress: spec.progress ?? 0, getPercentComplete: () => spec.percent ?? 0,
@@ -142,7 +143,7 @@ export function installFakeEngine(spec = {}) {
       Constructibles: table([{ ConstructibleType: "BUILDING_MARKET", Age: "AGE_ANTIQUITY", ConstructibleClass: "BUILDING", $index: 0, $hash: "#0" },
         { ConstructibleType: "BUILDING_BANK", Age: "AGE_EXPLORATION", ConstructibleClass: "BUILDING", $index: 1, $hash: "#1" },
         ...(spec.constructibles || [])]),
-      TypeTags: table([{ Type: "BUILDING_MARKET", Tag: "GOLD" }, { Type: "BUILDING_BANK", Tag: "GOLD" }, ...(spec.tags || [])]),
+      TypeTags: table(spec.typeTags ?? [{ Type: "BUILDING_MARKET", Tag: "GOLD" }, { Type: "BUILDING_BANK", Tag: "GOLD" }, ...(spec.tags || [])]),
       Constructible_YieldChanges: table([{ ConstructibleType: "BUILDING_MARKET", YieldType: "YIELD_GOLD", YieldChange: 3 },
         { ConstructibleType: "BUILDING_BANK", YieldType: "YIELD_GOLD", YieldChange: 8 }]),
       Constructible_Advisories: table(spec.advisories || []),

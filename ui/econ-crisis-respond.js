@@ -3,7 +3,7 @@
 // request and the AI's choice. The rows and the terms are in econ-crisis-rows.js; the conditions and events in
 // econ-crisis.js. Nothing here reads the engine.
 
-import { RESPONSE_RULES as RR, ageKeyOf, responseById, responsesFor } from "./econ-crisis-catalog.js";
+import { AFFINITY, RESPONSE_RULES as RR, affinityOf, ageKeyOf, responseById, responsesFor } from "./econ-crisis-catalog.js";
 import { crisesOn, forgetTerms, hasLegacy, isRunning, openCrises, settlementsOf, standingResponses }
   from "./econ-crisis-rows.js";
 import { BASE_RATE_PPM, BOND, CITIZENS, CYCLE, INFLATION, PROGRESS, TEMPLE, isWorldAccount } from "./econ-params.js";
@@ -16,6 +16,7 @@ import { planSplit } from "./econ-planned.js";
 import { withTariff } from "./econ-trade.js";
 import { relationLevel } from "./econ-lenders.js";
 import { isInsolvent } from "./econ-guard.js";
+import { notePolicyResponse, responseCostPct } from "./econ-policy.js";
 
 /** @typedef {import("./econ-crisis-catalog.js").Response} Response */
 /** @typedef {import("./econ-crisis-catalog.js").CrisisKind} CrisisKind */
@@ -32,7 +33,43 @@ const systemOf = (ctx, pid) => ctx.macro.systems?.[String(pid)]?.system ?? "mixe
  * @param {Response} spec
  */
 export function costOf(ctx, civ, spec) {
-  return spec.costTurns ? spec.costTurns * Math.max(0, civ.incomeCents) : 0;
+  const full = spec.costTurns ? spec.costTurns * Math.max(0, civ.incomeCents) : 0;
+  return Math.round((full * goldPct(ctx, civ.id, spec.id)) / 100);
+}
+
+/**
+ * The Gold factor a civ's system puts on a shared response (crisis paths phase 2): a quarter off where its system is
+ * built for it (the "Institutional advantage" tag), the full price otherwise.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ * @param {string} id
+ */
+export function goldPct(ctx, pid, id) {
+  if (ctx.options.systems === false) return 100;
+  const spec = responseById(id);
+  return spec && affinityOf(spec, systemOf(ctx, pid)) === "advantage" ? AFFINITY.advantageCostPct : 100;
+}
+
+/**
+ * Charges a political opposition's Influence when a response is taken against the civ's system.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @param {Response} spec
+ */
+function chargeOpposition(ctx, civ, spec) {
+  const opposed = oppositionInfluence(ctx, civ.id, spec);
+  if (opposed > 0) ctx.out.influence.push({ pid: civ.id, amount: -opposed, reason: "opposition" });
+}
+
+/**
+ * The Influence a civ's system adds to a shared response: 10 where its system resists it ("Political opposition").
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ * @param {Response} spec
+ */
+export function oppositionInfluence(ctx, pid, spec) {
+  if (ctx.options.systems === false) return 0;
+  return affinityOf(spec, systemOf(ctx, pid)) === "opposition" ? AFFINITY.oppositionInfluence : 0;
 }
 
 /**
@@ -76,6 +113,8 @@ const CHECKS = [
   ["once", (ctx, civ, spec) => takenAlready(ctx, civ, spec,
     openCrises(ctx.ledger, civ.id).find((row) => spec.kinds.includes(row.kind))?.since ?? ctx.turn)],
   ["funds", (ctx, civ, spec) => costOf(ctx, civ, spec) > Math.max(0, funds(ctx.batch, civ.id))],
+  ["influence", (ctx, civ, spec) => oppositionInfluence(ctx, civ.id, spec) > 0 && typeof civ.influence === "number"
+    && civ.influence < oppositionInfluence(ctx, civ.id, spec)],
   ["no-lender", (ctx, civ, spec) => spec.id === "lend-crown" && !crownLenders(ctx, civ).length],
   ["no-trade", (ctx, civ, spec) => spec.id === "charter" && !trades(ctx, civ)],
 ];
@@ -271,6 +310,9 @@ const LEGACY_ROWS = /** @type {Record<string, (spec: Response) => LegacySpec[]>}
   suspend: () => [{ id: "suspend", turns: RR.suspend.bondTurns }],
   // The temple's dearer rate is everyone's (DESIGN 4.11c): a world legacy.
   "temple-lends": () => [{ id: "temple-lends", turns: null, world: true }],
+  // The levy turn's bills settle before the response is taken (proposeStep), so the doubled bills run from the next
+  // turn, for the legacy's full ten.
+  tribute: (spec) => [{ id: "tribute", turns: (spec.legacy?.turns ?? 10) + 1 }],
 });
 
 /** The civs an immediate change named for the legacy row, if any. @param {LegacyExtra} extra */
@@ -316,13 +358,17 @@ function noteSuspension(ctx) {
  * @param {"request" | "ai"} source
  */
 export function takeResponse(ctx, civ, spec, source) {
-  const crisis = openCrises(ctx.ledger, civ.id).find((row) => spec.kinds.includes(row.kind));
+  // The oldest open crisis it answers: one that opened this same turn doesn't take over a response asked for against
+  // the crisis the civ was already in.
+  const crisis = openCrises(ctx.ledger, civ.id).filter((row) => spec.kinds.includes(row.kind))
+    .sort((x, y) => x.since - y.since)[0];
   const kind = crisis?.kind ?? "depression";
   const cost = costOf(ctx, civ, spec);
   if (cost > 0) {
     emit(ctx, { id: `CR${civ.id}` }, { from: civ.id, to: spec.id === "recoinage" ? INFLATION : BOND, cents: cost,
       reason: "response" });
   }
+  chargeOpposition(ctx, civ, spec);
   const extra = IMMEDIATE[spec.id]?.(ctx, civ);
   if (spec.runs !== 0) {
     ctx.ledger.responses.push({ pid: civ.id, id: spec.id, crisis: kind, since: ctx.turn,
@@ -351,6 +397,7 @@ export function cancelResponse(ctx, civ, id) {
   if (id === "relief" && crisisOpen) {
     ctx.ledger.legacies.push({ pid: civ.id, id: "relief-ended", since: ctx.turn,
       until: ctx.turn + RR.relief.earlyEndTurns, nextAge: false });
+    notePolicyResponse(ctx, civ.id, "relief-ended");
   }
   event(ctx, { kind: "response-ended", pid: civ.id, response: id, early: crisisOpen ? 1 : 0 });
   forgetTerms(ctx);
@@ -465,7 +512,9 @@ const within = (ctx, pid, wanted) => Math.min(wanted, Math.max(0, funds(ctx.batc
 function reliefFor(ctx, civ) {
   const n = settlementsOf(civ);
   if (isRunning(ctx.ledger, civ.id, "relief")) {
-    const cents = within(ctx, civ.id, RR.relief.goldPerSettlement * n);
+    // New Deal programmes (econ-policy.js) run relief at half its Gold.
+    const pct = (responseCostPct(ctx.ledger, civ.id, "relief") * goldPct(ctx, civ.id, "relief")) / 100;
+    const cents = within(ctx, civ.id, Math.round((RR.relief.goldPerSettlement * n * pct) / 100));
     if (cents > 0) {
       emit(ctx, { id: `RL${civ.id}` }, { from: civ.id, to: CITIZENS, cents, reason: "relief" });
       ctx.out.celebration.push({ pid: civ.id, amount: RR.relief.celebrationPerSettlement * n, reason: "relief" });
@@ -485,14 +534,30 @@ function reliefFor(ctx, civ) {
  * @param {Civ} civ
  */
 function worksFor(ctx, civ) {
-  const cents = within(ctx, civ.id, RR.publicWorks.goldPerSettlement[ageKeyOf(ctx.age)] * settlementsOf(civ));
-  const split = planSplit(cents, civ.cities || [], ctx.params.goldPerPointCents);
+  // New Deal programmes (econ-policy.js) pay half the Gold for the same works: the progress is the full grant's.
+  const full = RR.publicWorks.goldPerSettlement[ageKeyOf(ctx.age)] * settlementsOf(civ);
+  // An institutional advantage (crisis paths phase 2) takes a quarter more off, paid the same way.
+  const costPct = Math.round((responseCostPct(ctx.ledger, civ.id, "public-works") * goldPct(ctx, civ.id, "public-works")) / 100);
+  const cents = within(ctx, civ.id, Math.round((full * costPct) / 100));
+  if (cents < Math.round((full * costPct) / 100)) notePolicyResponse(ctx, civ.id, "cut");
+  const gross = Math.round((cents * 100) / Math.max(1, costPct));
+  const split = planSplit(gross, civ.cities || [], ctx.params.goldPerPointCents);
   let spent = 0;
+  let points = 0;
   for (const row of split) {
     spent += row.cents;
+    points += row.progress;
     const same = ctx.out.progress.find((progress) => progress.cityId === row.cityId);
     if (same) same.amount += row.progress;
     else ctx.out.progress.push({ host: civ.id, cityId: row.cityId, amount: row.progress, investmentId: `PW${civ.id}` });
+  }
+  if (costPct !== 100) {
+    // The cheap half is the bond market's (the programme's deficit spending, priced in its rate surcharge): it pays
+    // the civ that share, and the civ pays the works in full. The share has its own id: one transfer per id a turn
+    // (invariant debt-3).
+    const subsidy = spent - Math.round((spent * costPct) / 100);
+    if (subsidy > 0) emit(ctx, { id: `PWB${civ.id}` }, { from: BOND, to: civ.id, cents: subsidy, reason: "works" });
+    notePolicyResponse(ctx, civ.id, `added:${points}`);
   }
   if (spent > 0) emit(ctx, { id: `PW${civ.id}` }, { from: civ.id, to: PROGRESS, cents: spent, reason: "works" });
 }
@@ -505,7 +570,8 @@ function worksFor(ctx, civ) {
  */
 function armsFor(ctx, civ) {
   if (!isRunning(ctx.ledger, civ.id, "rearmament")) return;
-  const cents = within(ctx, civ.id, RR.rearmament.goldPerSettlement * settlementsOf(civ));
+  const full = RR.rearmament.goldPerSettlement * settlementsOf(civ);
+  const cents = within(ctx, civ.id, Math.round((full * goldPct(ctx, civ.id, "rearmament")) / 100));
   if (cents > 0) emit(ctx, { id: `RA${civ.id}` }, { from: civ.id, to: CYCLE, cents, reason: "rearmament" });
 }
 
@@ -521,7 +587,8 @@ function billsFor(ctx, civ) {
     if (cents > 0) emit(ctx, { id: `CO${civ.id}` }, { from: civ.id, to: CITIZENS, cents, reason: "company" });
   }
   if (isRunning(ctx.ledger, civ.id, "price-supports")) {
-    const bill = Math.floor((Math.max(0, civ.incomeCents) * RR.priceSupports.costIncomePct) / 100);
+    const bill = Math.floor((Math.max(0, civ.incomeCents) * RR.priceSupports.costIncomePct
+      * goldPct(ctx, civ.id, "price-supports")) / 10000);
     const cents = within(ctx, civ.id, bill);
     if (cents > 0) emit(ctx, { id: `PS${civ.id}` }, { from: civ.id, to: CYCLE, cents, reason: "price-supports" });
     importersResent(ctx, civ);

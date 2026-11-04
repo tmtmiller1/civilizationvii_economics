@@ -2,6 +2,8 @@
 // the turn batch gets, so what the player sees is what the next batch will do. Plain data in, plain data out; the
 // screen draws it and the glue supplies names and the engine's reads. Nothing here reads the engine.
 
+import { policyTerms } from "./econ-policy.js";
+import { policyView } from "./econ-policy-read.js";
 import { MID_TERM, SHORT_TERM, TERMS } from "./econ-params.js";
 import { firstPayment, isOpen, paymentDue, restructure, totalInterest } from "./econ-loan.js";
 import { emergencyOutstandingOf, outstandingOf, repTurnsLost, serviceCap, serviceOf, standingPct }
@@ -39,6 +41,7 @@ export function viewContext(input) {
   // The crisis rules the model reads through the context (econ-plan.js planTurn does the same).
   ctx.crisis = { terms: (pid) => crisisTerms(ctx, pid), weights: (events) => crisisWeights(ctx, events),
     adjustPrices: (prices) => adjustPrices(ctx, prices), holiday: (pid) => onHoliday(ctx, pid) };
+  ctx.policyTerms = policyTerms;
   return ctx;
 }
 
@@ -49,7 +52,8 @@ export function viewContext(input) {
  * @param {number} me
  */
 export function crisisPanel(input, me) {
-  return crisisView(viewContext(input), me);
+  const ctx = viewContext(input);
+  return { ...crisisView(ctx, me), paths: policyView(ctx, me) };
 }
 
 /**

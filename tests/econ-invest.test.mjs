@@ -3,7 +3,7 @@
 // gains in turns of the host's income, misses and default by the loan rules, the lost-city write-off and repudiation.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { baseDividend, dividendDue, growthMille, hostOwes, investId, investSeq, isInvestKind, isOpenInvestment,
+import { baseDividend, dividendDue, giftMinimumCents, growthMille, hostOwes, investId, investSeq, isInvestKind, isOpenInvestment,
   lostCityWriteOff, makeInvestment, progressFor, relationAllows, relationshipGain, repudiateInvestments, returnMille,
   settleDividend, settleInvestmentDefault, tenthsFor } from "../ui/econ-invest.js";
 
@@ -31,6 +31,8 @@ test("G / 3 Gold a point of progress, capped at what the build needs; only what'
   assert.deepEqual(progressFor(30000, 0), { progress: 0, usedCents: 0, refundCents: 30000 });
   assert.deepEqual(progressFor(-5, 10), { progress: 0, usedCents: 0, refundCents: 0 });
   assert.deepEqual(progressFor(3000, 4.7), { progress: 4, usedCents: 1200, refundCents: 1800 });
+  assert.deepEqual(progressFor(1000, 500, 347), { progress: 2, usedCents: 694, refundCents: 306 },
+    "at the build's own 3.47 a point");
   assert.deepEqual(progressFor(3000, Number.NaN), { progress: 0, usedCents: 0, refundCents: 3000 });
 });
 
@@ -72,18 +74,24 @@ test("this turn's dividend: fixed for a development loan, moving with the host f
   assert.equal(dividendDue(general({ principal: 20001 }), 2000), 901, "rounded up");
 });
 
-test("relationship: +1 per 5, 7.5 and 2.5 turns of the host's income, at least 10 Gold a turn, at most 10", () => {
-  assert.equal(tenthsFor("project", false), 50);
-  assert.equal(tenthsFor("general", false), 75);
-  assert.equal(tenthsFor("general", true), 25);
-  assert.equal(tenthsFor("project", true), 25);
-  assert.equal(relationshipGain(10000, 2000, 50), 1);
-  assert.equal(relationshipGain(9999, 2000, 50), 0);
-  assert.equal(relationshipGain(30000, 2000, 75), 2);
-  assert.equal(relationshipGain(10000, 2000, 25), 2);
-  assert.equal(relationshipGain(10000, 100, 25), 4, "a poor host counts as 10 Gold a turn");
-  assert.equal(relationshipGain(1e7, 2000, 25), 10, "capped");
-  assert.equal(relationshipGain(-5, 2000, 25), 0);
+test("relationship: +1 per 1, 1.5 and 0.5 turns of the host's income, at least 10 Gold a turn, at most 20", () => {
+  assert.equal(tenthsFor("project", false), 10);
+  assert.equal(tenthsFor("general", false), 15);
+  assert.equal(tenthsFor("general", true), 5);
+  assert.equal(tenthsFor("project", true), 5);
+  assert.equal(relationshipGain(2000, 2000, 10), 1);
+  assert.equal(relationshipGain(1999, 2000, 10), 0);
+  assert.equal(relationshipGain(30000, 2000, 15), 10);
+  assert.equal(relationshipGain(30000, 15000, 5), 4, "300 Gold of aid to a 150 Gold host");
+  assert.equal(relationshipGain(5000, 100, 5), 10, "a poor host counts as 10 Gold a turn");
+  assert.equal(relationshipGain(1e7, 2000, 5), 20, "capped");
+  assert.equal(relationshipGain(-5, 2000, 5), 0);
+  assert.equal(giftMinimumCents(2000, 10), 2000, "the first whole Gold that buys a point");
+  assert.equal(giftMinimumCents(15000, 5), 7500);
+  assert.equal(giftMinimumCents(5310, 5), 2700, "26.55 rounds up to 27 Gold");
+  assert.equal(giftMinimumCents(100, 5), 500, "the 10 Gold floor");
+  assert.equal(relationshipGain(giftMinimumCents(15000, 5) - 100, 15000, 5), 0);
+  assert.equal(relationshipGain(giftMinimumCents(15000, 5), 15000, 5), 1);
 });
 
 test("a dividend paid in full or missed; three misses in a row is default; the term ends the record", () => {

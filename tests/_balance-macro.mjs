@@ -109,8 +109,10 @@ function civAt(game, c, turn, balance) {
   const inAge = turn - ageStart(turn) + 1;
   const atWar = warsAt(game, turn).some((w) => w.a === c.id || w.b === c.id);
   const incomeCents = Math.round((800 + 25 * turn) * c.factor * c.noise[turn] * (atWar ? 0.7 : 1));
+  // The role building is slow on its own production (12 turns), the others quick, as in _balance.mjs, so the AI's build
+  // loan has its reason; without turnsLeft no city qualifies and no AI ever borrows to build.
   const cities = Array.from({ length: 5 }, (_, k) => ({ id: `${c.id}:${k}`, build: "BUILDING_LIBRARY",
-    neededProgress: 150, population: 3 + k, roleBuilding: k === 0 }));
+    neededProgress: 150, population: 3 + k, roleBuilding: k === 0, turnsLeft: k === 0 ? 12 : 4, buildGoldYield: 0 }));
   return { id: c.id, alive: true, human: c.human, balanceCents: balance, incomeCents, upkeepCents: 500, stages: c.stages,
     atWar, happinessCents: 600, depthTurns: turn >= c.stages.banking ? 2 : 0, depthFactorPct: 100,
     government: inAge >= c.pickTurn ? c.governments[age] : null,

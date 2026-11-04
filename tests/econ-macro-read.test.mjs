@@ -5,7 +5,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { installFakeEngine, removeFakeEngine } from "./_fake-engine.mjs";
 import { captureEvent, disasterEvent, razeEvent, readCrisisStage, readEconomy, readGovernment, readIdeology,
-  readPopulations, rememberRoles, resolveCycleEvents, roleLetters, sanitizePending, withPending, withRemembered }
+  readPopulations, rememberRoles, resolveCycleEvents, roleLetters, sanitizePending, withInferredCommerce, withPending,
+  withRemembered }
   from "../ui/econ-macro-read.js";
 import { buildInput, loadSession, noteCycleEvent, runTurn } from "../ui/econ-session.js";
 import { resetBuildingDataForTests } from "../ui/econ-engine.js";
@@ -60,6 +61,41 @@ test("the roles a building had in its own age are remembered for the next one", 
     commercePct: 125, bankingOpen: true });
   assert.equal(economy.buildings[0].old, false);
   assert.equal(economy.depthTurns, 2, "one Bank");
+  removeFakeEngine();
+});
+
+test("a later-age start (C.30): an old Market with no tags and nothing remembered counts as Commerce", () => {
+  const eco = [{ AdvisoryClassType: "ADVISORY_CLASS_ECONOMIC", ConstructibleType: "BUILDING_MARKET" },
+    { AdvisoryClassType: "ADVISORY_CLASS_TRADE", ConstructibleType: "BUILDING_MARKET" }];
+  const q = { turn: 3, ageStartTurn: 1, age: "AGE_EXPLORATION", stageTurns: {}, memory: {}, commercePct: 100,
+    bankingOpen: false };
+  fresh({ civs: [{ id: 0, buildings: [0] }], typeTags: [], advisories: eco });
+  const market = readEconomy(0, q).buildings[0];
+  assert.equal(market.old, true);
+  assert.equal(market.roles.commerce, true, "3 Gold, filed as economic");
+  assert.equal(market.roles.banking, false, "3 Gold is below the Bank's 8");
+  assert.equal(market.roles.trade, true, "the trade advisory still reads");
+  assert.equal(readEconomy(0, { ...q, memory: { BUILDING_MARKET: "t" } }).buildings[0].roles.commerce, false,
+    "what the memory holds wins, so another mod's change in the old age carries over");
+  removeFakeEngine();
+  const bridge = { tags: [], goldYield: 4, isWonder: false,
+    advisories: ["ADVISORY_CLASS_ECONOMIC", "ADVISORY_CLASS_INFRASTRUCTURE"] };
+  const none = { commerce: false, banking: false, economicWonder: false, trade: false, warehouse: false,
+    industry: false };
+  assert.equal(withInferredCommerce(none, bridge).commerce, false, "a bridge isn't Commerce");
+  assert.equal(withInferredCommerce(none, { ...bridge, tags: ["WATER"] }).commerce, false, "tags still read");
+  assert.equal(withInferredCommerce(none, { ...bridge, advisories: ["ADVISORY_CLASS_ECONOMIC"] }).commerce, true);
+});
+
+test("a marker building (TOWER_MARKER) isn't one of the city's buildings", () => {
+  const q = { turn: 3, ageStartTurn: 1, age: "AGE_EXPLORATION", stageTurns: {}, memory: {}, commercePct: 100,
+    bankingOpen: true };
+  fresh({ civs: [{ id: 0, buildings: [0, 1] }] });
+  assert.deepEqual(readEconomy(0, q).buildings.map((b) => b.type), ["BUILDING_MARKET", "BUILDING_BANK"]);
+  removeFakeEngine();
+  fresh({ civs: [{ id: 0, buildings: [0, 1] }], typeTags: [{ Type: "BUILDING_MARKET", Tag: "GOLD" },
+    { Type: "BUILDING_BANK", Tag: "GOLD" }, { Type: "BUILDING_BANK", Tag: "TOWER_MARKER" }] });
+  assert.deepEqual(readEconomy(0, q).buildings.map((b) => b.type), ["BUILDING_MARKET"]);
   removeFakeEngine();
 });
 

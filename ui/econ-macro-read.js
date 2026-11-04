@@ -7,12 +7,14 @@
 // age's buildings carry no tags in the next age's database (NOTES finding J), so the roles each building had in its
 // own age are remembered as the glue sees them. Nothing here decides anything.
 
-import { ageIndex, ageIndexOf, buildingData, readCityBuildings, safe } from "./econ-engine.js";
+import { ageIndex, ageIndexOf, bankGoldYield, buildingData, readCityBuildings, safe } from "./econ-engine.js";
 import { cityKey } from "./econ-commerce-read.js";
-import { DEPTH, computeDepth, countRoles, roleWeightOf } from "./econ-depth.js";
+import { COMMERCE_TAG, DEPTH, ECONOMIC_ADVISORY, computeDepth, countRoles, roleWeightOf, rolesOf }
+  from "./econ-depth.js";
 import { FADING_ROLES, LEGACY, SUCCESSOR_STAGES, buildingWeights, cushionBp, isOld, legacyOf }
   from "./econ-legacy.js";
 
+const INFRASTRUCTURE_ADVISORY = "ADVISORY_CLASS_INFRASTRUCTURE";
 const ROLE_LETTERS = { commerce: "c", banking: "b", trade: "t", warehouse: "w", industry: "i", economicWonder: "e" };
 const MAX_PENDING = 32;
 
@@ -81,6 +83,25 @@ export function withRemembered(roles, remembered) {
 }
 
 /**
+ * The Commerce (and Banking) a building from an earlier age had, when nothing remembers it: a game started in a later
+ * age (C.30, the owner's call 2026-11-04). The current age's data drops an old building's tags, so one with a base Gold
+ * yield that the game files as economic, and not as infrastructure, counts as Commerce, and Banking follows from its
+ * Gold as it would have. Against the game's data (2026-11-04) that's Antiquity's Market, Lighthouse and Mortuary
+ * Temple and Exploration's Bank, Bazaar and Guildhall, and neither bridge. A building that still has tags, or one
+ * the memory holds, keeps what it reads.
+ * @param {import("./econ-depth.js").BuildingRoles} roles
+ * @param {import("./econ-depth.js").BuildingData | undefined} data
+ * @returns {import("./econ-depth.js").BuildingRoles}
+ */
+export function withInferredCommerce(roles, data) {
+  if (!data || data.tags.length || roles.commerce || !(data.goldYield > 0)) return roles;
+  const advisories = data.advisories || [];
+  if (!advisories.includes(ECONOMIC_ADVISORY) || advisories.includes(INFRASTRUCTURE_ADVISORY)) return roles;
+  const inferred = rolesOf({ ...data, tags: [COMMERCE_TAG] }, bankGoldYield());
+  return { ...roles, commerce: true, banking: roles.banking || inferred.banking };
+}
+
+/**
  * Remembers the roles of the buildings that belong to this age, read with this age's data and every mod applied.
  * @param {Record<string, string>} memory
  * @param {CityBuilding[]} buildings
@@ -118,6 +139,21 @@ function currentRoles(list, currentAgeIndex) {
 }
 
 /**
+ * A building's roles: the ones it had in its own age when they're remembered, else the Commerce inferred for a
+ * building from an earlier age.
+ * @param {CityBuilding} building
+ * @param {string | undefined} remembered
+ * @param {Map<string, import("./econ-depth.js").BuildingData>} data
+ * @param {number} currentAgeIndex
+ */
+function rolesFor(building, remembered, data, currentAgeIndex) {
+  const roles = withRemembered(/** @type {any} */ (building.roles), remembered);
+  const index = building.age ? ageIndexOf(building.age) : null;
+  if (remembered !== undefined || index === null || index >= currentAgeIndex) return roles;
+  return withInferredCommerce(roles, data.get(building.type));
+}
+
+/**
  * One city's buildings with their remembered roles, ages and, for old ones, their weights and legacy.
  * @param {any} city
  * @param {EconomyQuery} q
@@ -126,8 +162,9 @@ function currentRoles(list, currentAgeIndex) {
  */
 function cityEconomy(city, q, currentAgeIndex) {
   const key = cityKey(safe(() => city.id, null)) || "";
+  const data = buildingData();
   const list = readCityBuildings(city).map((building) => ({ ...building,
-    roles: withRemembered(/** @type {any} */ (building.roles), q.memory[building.type]),
+    roles: rolesFor(building, q.memory[building.type], data, currentAgeIndex),
     ageIndex: building.age ? ageIndexOf(building.age) : null }));
   const here = currentRoles(list, currentAgeIndex);
   const civ = { currentAgeIndex, stageTurns: q.stageTurns, ageStartTurn: q.ageStartTurn, turn: q.turn };

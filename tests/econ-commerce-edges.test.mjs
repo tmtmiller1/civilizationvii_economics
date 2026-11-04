@@ -211,7 +211,9 @@ test("AI aid: never when insolvent or with no income, sized by funds, the source
     relations, ledger }).events.find((e) => e.kind === "invest" && e.aid === 1);
   assert.equal(aid({ incomeCents: 0 }), undefined);
   assert.equal(aid({ incomeCents: -100 }), undefined);
-  assert.equal(aid({ balanceCents: 2000, incomeCents: 1000 }).cents, 3000, "what it holds this turn, under 5 turns");
+  assert.equal(aid({ balanceCents: 5000, incomeCents: 1000 }).cents, 5000,
+    "what it holds this turn, under 5 turns: half a turn of the host's 100 Gold");
+  assert.equal(aid({ balanceCents: 2000, incomeCents: 1000 }), undefined, "30 Gold would buy no goodwill, so none goes");
   assert.equal(aid({}).source, "ai");
   assert.equal(aid({ balanceCents: -5000, incomeCents: 1000 }), undefined, "nothing to give");
 });

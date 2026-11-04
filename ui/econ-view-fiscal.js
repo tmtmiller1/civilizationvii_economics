@@ -86,7 +86,7 @@ function systemLines(view, api) {
     block.appendChild(note(api.loc(blendKey, api.loc(systemKey(view.from)), view.blendLeft)));
   }
   if (view.planTakeCents > 0) {
-    block.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_PLAN"), amount(formatGold(view.planTakeCents))));
+    block.appendChild(row(api.loc("LOC_ECONOMICS_FISCAL_PLAN"), amount(formatGold(view.planSpentCents))));
     block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_PLAN_NOTE")));
   }
   block.appendChild(note(api.loc("LOC_ECONOMICS_FISCAL_SYSTEM_TAX_NOTE")));

@@ -45,3 +45,11 @@ test("held at TurnBegin, sent once at the local turn, or at once when the turn i
   assert.equal(pendingNotice(), null, "a turn with nothing to say sends nothing");
   removeFakeEngine();
 });
+
+test("a counted cause keeps its count in the notice: '2 wars declared', not the phase's name", () => {
+  installFakeEngine({ civs: [{ id: 0, human: true }, { id: 3 }] });
+  const notice = { pid: 0, kind: "crisis-start", crisis: "depression", causes: "war-declared,war-declared" };
+  const lines = composeLines({ ledger: emptyLedger(), batch: null, transfers: [], notices: [notice], events: [] }, 0);
+  assert.ok(lines.some((l) => l.includes("LOC_ECONOMICS_CYCLE_EVENT_WAR_DECLARED_MANY|2")), JSON.stringify(lines));
+  removeFakeEngine();
+});

@@ -87,6 +87,16 @@ export function legacyKey(id) {
   return `${PREFIX}LEGACY_${upper(String(id || "unknown"))}_NAME`;
 }
 
+/** A crisis-paths card's name key (econ-policy-catalog.js). @param {unknown} id */
+export function policyKey(id) {
+  return `${PREFIX}POLICY_${upper(String(id || "unknown"))}_NAME`;
+}
+
+/** A crisis path's name key. @param {unknown} id */
+export function pathKey(id) {
+  return `${PREFIX}PATH_${upper(String(id || "unknown"))}_NAME`;
+}
+
 /**
  * A cycle phase's name key (DESIGN 4.11).
  * @param {unknown} phase
@@ -212,7 +222,8 @@ const NOTICES = {
     return { key: `${PREFIX}NOTICE_CRISIS_START${causes.length ? "" : "_QUIET"}`, args: [crisisKey(notice.crisis), causes] };
   },
   "crisis-end": (notice) => {
-    const by = String(notice.by || "").split(",").filter(Boolean).map(responseKey);
+    // Confidence can be taken more than once in a crisis; each response is named once.
+    const by = [...new Set(String(notice.by || "").split(",").filter(Boolean))].map(responseKey);
     return { key: `${PREFIX}NOTICE_CRISIS_END${by.length ? "" : "_QUIET"}`,
       args: [crisisKey(notice.crisis), Number(notice.turns) || 0, by] };
   },
@@ -225,6 +236,18 @@ const NOTICES = {
   "bank-failures": () => ({ key: `${PREFIX}NOTICE_BANK_FAILURES`, args: [] }),
   bubble: () => ({ key: `${PREFIX}NOTICE_BUBBLE`, args: [] }),
   cascade: () => ({ key: `${PREFIX}NOTICE_CASCADE`, args: [] }),
+  // The crisis paths (econ-policy.js): one line on a milestone turn, none between.
+  policy: (notice) => (Number(notice.cents) > 0
+    ? { key: `${PREFIX}NOTICE_POLICY_COST`, args: [policyKey(notice.policy), Number(notice.cents)] }
+    : { key: `${PREFIX}NOTICE_POLICY`, args: [policyKey(notice.policy)] }),
+  "policy-sustained": (notice) => ({ key: `${PREFIX}NOTICE_POLICY_SUSTAINED`, args: [policyKey(notice.policy)] }),
+  "policy-outcome": (notice) => ({ key: `${PREFIX}NOTICE_POLICY_${upper(String(notice.outcome))}${
+    notice.outcome === "abandoned" && /^arrears/.test(String(notice.detail || "")) ? "_ARREARS" : ""}`,
+    args: [policyKey(notice.policy)] }),
+  "policy-turned": (notice) => ({ key: `${PREFIX}NOTICE_POLICY_TURNED`, args: [policyKey(notice.policy)] }),
+  "policy-arrears": (notice) => ({ key: `${PREFIX}NOTICE_POLICY_ARREARS_${notice.influence ? "INFLUENCE" : "GOLD"}${
+    Number(notice.turnsLeft) > 0 ? "" : "_LAST"}`,
+    args: [policyKey(notice.policy), Number(notice.turnsLeft) || 0] }),
 };
 
 /**
@@ -287,7 +310,8 @@ export function describeRefusalProject(event, ctx) {
 const FLOW_OF = { principal: "LOANS", payment: "LOANS", garnish: "LOANS", trade: "TRADE", invest: "INVESTMENT",
   dividend: "INVESTMENT", cycle: "CYCLE", erosion: "INFLATION", plan: "PLAN", tax: "TAX", escrow: "ESCROW",
   response: "CRISIS", relief: "CRISIS", works: "CRISIS", company: "CRISIS", "price-supports": "CRISIS",
-  tribute: "CRISIS", debase: "CRISIS", bullion: "CRISIS" };
+  tribute: "CRISIS", debase: "CRISIS", bullion: "CRISIS", policy: "CRISIS", administration: "CRISIS", arrears: "CRISIS",
+  mobilisation: "CRISIS", claim: "CRISIS", "policy-legacy": "CRISIS" };
 
 /**
  * The kinds of flow that moved a civ's Gold this turn, as name keys in a fixed order (loans, trade, ...).
@@ -304,24 +328,54 @@ export function flowKeys(transfers, pid) {
 }
 
 /**
+ * A transfer's cents for a civ, positive when it received; null when the civ isn't a side or it moved to itself.
+ * @param {Transfer} transfer
+ * @param {number} pid
+ */
+function signedFor(transfer, pid) {
+  const sign = transfer.to === pid ? 1 : transfer.from === pid ? -1 : 0;
+  return !sign || transfer.from === transfer.to ? null : sign * (Number(transfer.cents) || 0);
+}
+
+/**
+ * Adds a named transfer to its row, one row per label and arguments.
+ * @param {Map<string, { key: string, args: string[], cents: number }>} named
+ * @param {Transfer} transfer
+ * @param {number} cents signed for the civ
+ */
+function addNamed(named, transfer, cents) {
+  const args = transfer.labelArgs || [];
+  const id = [transfer.label, ...args].join("|");
+  const part = named.get(id) || { key: /** @type {string} */ (transfer.label), args, cents: 0 };
+  part.cents += cents;
+  named.set(id, part);
+}
+
+/**
  * What each kind of flow moved for a civ in a batch, in the fixed order, for the screen's breakdown of the mod's net:
  * `cents` positive when the civ received. Kinds that moved nothing are left out.
  * @param {Transfer[]} transfers
  * @param {number} pid
- * @returns {{ key: string, cents: number }[]}
+ * @returns {{ key: string, args: string[], cents: number }[]}
  */
 export function flowBreakdown(transfers, pid) {
   /** @type {Map<string, number>} */
   const sums = new Map();
+  /** @type {Map<string, { key: string, args: string[], cents: number }>} */
+  const named = new Map();
   for (const transfer of transfers || []) {
-    const sign = transfer.to === pid ? 1 : transfer.from === pid ? -1 : 0;
-    if (!sign || transfer.from === transfer.to) continue;
+    const cents = signedFor(transfer, pid);
+    if (cents === null) continue;
+    // A line with its own name (a card's arrears or administration) is its own row: "Arrears: Liturgies".
+    if (transfer.label) { addNamed(named, transfer, cents); continue; }
     const flow = Object.hasOwn(FLOW_OF, transfer.reason) ? FLOW_OF[transfer.reason] : "OTHER";
-    sums.set(flow, (sums.get(flow) || 0) + sign * (Number(transfer.cents) || 0));
+    sums.set(flow, (sums.get(flow) || 0) + cents);
   }
   const order = [...new Set(Object.values(FLOW_OF)), "OTHER"];
-  return order.filter((flow) => (sums.get(flow) || 0) !== 0)
-    .map((flow) => ({ key: `${PREFIX}FLOW_LABEL_${flow}`, cents: /** @type {number} */ (sums.get(flow)) }));
+  return [...order.filter((flow) => (sums.get(flow) || 0) !== 0)
+    .map((flow) => ({ key: `${PREFIX}FLOW_LABEL_${flow}`, args: /** @type {string[]} */ ([]),
+      cents: /** @type {number} */ (sums.get(flow)) })),
+  ...[...named.values()].filter((part) => part.cents !== 0)];
 }
 
 /** The least Gold the mod has to move in a turn for the net line to show, in cents. */
@@ -420,6 +474,18 @@ const EVENTS = {
   bubble: () => ({ key: `${PREFIX}EVENT_BUBBLE`, args: [] }),
   "bubble-burst": () => ({ key: `${PREFIX}EVENT_BUBBLE_BURST`, args: [] }),
   cascade: () => ({ key: `${PREFIX}EVENT_CASCADE`, args: [] }),
+  // The crisis paths (econ-policy.js), for the chronicle.
+  policy: (event, who) => ({ key: `${PREFIX}EVENT_POLICY`, args: [who(event.pid), policyKey(event.policy)] }),
+  "policy-sustained": (event, who) => ({ key: `${PREFIX}EVENT_POLICY_SUSTAINED`, args: [who(event.pid),
+    policyKey(event.policy)] }),
+  "policy-outcome": (event, who) => ({ key: `${PREFIX}EVENT_POLICY_${upper(String(event.outcome))}${
+    event.outcome === "abandoned" && /^arrears/.test(String(event.detail || "")) ? `_${upper(String(event.detail))}` : ""}`,
+  args: [who(event.pid), policyKey(event.policy)] }),
+  "policy-arrears": (event, who) => ({ key: `${PREFIX}EVENT_POLICY_ARREARS`,
+    args: [who(event.pid), policyKey(event.policy), Number(event.run) || 0] }),
+  "policy-turned": (event, who) => ({ key: `${PREFIX}EVENT_POLICY_TURNED`, args: [who(event.pid), policyKey(event.policy)] }),
+  "policy-ended": (event, who) => ({ key: `${PREFIX}EVENT_POLICY_ENDED`, args: [who(event.pid), policyKey(event.policy)] }),
+  "policy-capture": (event, who) => ({ key: `${PREFIX}EVENT_POLICY_CAPTURE`, args: [who(event.pid), gold(event.cents)] }),
 };
 
 /**

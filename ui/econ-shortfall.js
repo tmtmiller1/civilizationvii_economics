@@ -365,7 +365,8 @@ function buildTarget(ctx, civ) {
 export function aiBuildBorrow(ctx, civ) {
   const target = buildTarget(ctx, civ);
   if (!target) return;
-  const price = pointPriceCents(ctx.params.goldPerPointCents, target.city.progressScalePct);
+  const price = pointPriceCents(ctx.params.goldPerPointCents, target.city.progressScalePct,
+    target.city.pointCents);
   const want = Math.min(AI.buildSizeTurns * civ.incomeCents, target.need * price);
   const offer = buildOffer(ctx, civ.id, want);
   if (!offer) return;

@@ -7,6 +7,34 @@ release is generated from the matching section below by `scripts/steam-changelog
 ## [Unreleased]
 
 ### Added
+- Each government and ideology has its own answers to a crisis, beside the shared ones: Liturgies, Land reform and
+  The assembly speaks for a Classical Republic; Merchant charter, Debt into shares and Lottery loan for a Plutocracy;
+  New Deal programmes, Bank regulation and Lend-lease for a Democracy; Diversionary war, Self-sufficiency and Off-book
+  bills for a Fascist state. They cost Influence. A Programme runs at least five turns and is judged on its own goal
+  when the crisis is over: it leaves a lasting institution if it met it, and a mark of a different kind if it didn't
+  or you ended it early. Each institution makes that path cheaper next time and the others dearer, up to 15%. The
+  computer players weigh the same cards by what they can afford and what their crisis needs.
+- The shared crisis responses show whether your economic system favours them ("Institutional advantage", a quarter
+  less Gold) or resists them ("Political opposition", 10 more Influence).
+- The top-bar pill and the screen's header name the response you're running, and the turn notice says when a
+  Programme is taken, sustained and settled.
+- With Partisans, hard times count toward partisan risings: up to 6 Happiness a settlement for the rising check in a
+  deep Depression, halved under Relief or New Deal programmes, and 3 more while you run Austerity in any crisis. Your
+  settlements' own Happiness doesn't change.
+- Loan payments and trade bills stand in your capital as named lines the game counts in your Gold per turn: "Debt
+  service: -16 Gold", "Loan repayments: +8 Gold", "Trade bills" and "Trade bills paid to you". They show in City
+  Details and in the capital's Gold breakdown, and the computer players see them in their income and plan around
+  them. Your treasury ends each turn where it did before; Economics settles whatever a line doesn't carry. A line
+  stops at nine tenths of your income, so it can't push your Gold per turn below zero.
+- Each resource on the Markets tab opens on press to show where its price comes from ("Target 8.7 Gold = 5 base ×
+  1.73 scarce (6 civilizations, 2 copies)"), what it adds to your bills or earns you with each partner, and what moves
+  it. The chart draws the price the market is heading for beside the price, with a mark on each turn something moved
+  it. The tab says the prices are Economics' own, since the game doesn't price resources.
+- A Programme you can't pay for in a turn keeps running for up to three turns short. Gold covers the shortfall at a
+  premium that rises with each lapse and costs Public support; the fourth turn short in a row, or the sixth lapse,
+  ends it. The Treasury tab shows it as "Arrears: <card>".
+- A Civilopedia page, "Crises: own answers", tells the history behind each government's cards and what the game
+  leaves out.
 - The top-bar pills open the screen where the matter is: the debt pill on the Loans tab, in default on the loan in
   trouble; the phase pill on the World tab's cycle, or on the Crisis section while you're in one; the inflation pill
   on the World tab's inflation. Each pill's tooltip says where it goes.
@@ -80,6 +108,16 @@ release is generated from the matching section below by `scripts/steam-changelog
   civilization". With Demographics installed, the stricter of the two guards wins.
 
 ### Changed
+- Plainer words across the screen: "credit rating" for the 0 to 100 figure lenders read (its full rules in a
+  tooltip), "set aside for payments" for escrow, "forgiven" for bills over the cap, "Public support" for what Relief
+  and Cancel the debts put on your celebration meter, and the buildings block says what your economic buildings do
+  for your credit limit and rates. The Trade tab drops the Offers and Investments sections while they're empty.
+- Aid buys goodwill you can see. A gift now raises the relationship by 1 for each half a turn of the receiver's
+  income, up to 20 from one gift, where before it took two and a half turns' worth for a single point and the Trade
+  tab's 300 Gold showed "+0" against most civilizations. A gift too small to be noticed is greyed, with the least Gold
+  that would be noticed beside it. Development loans and general investment are investments and their lines now say
+  only what comes back; the relationship they also raise, more slowly, no longer shows as a stray "+0".
+- A section's subtitle wraps under its heading instead of running off the panel's edge.
 - Booms and slumps can be big. A new setup option, Economic swings, sets how far they run: on Volatile, the default, a
   downturn feeds on itself and a boom overshoots when it turns, so a depression can take a third to half of your
   income for a few turns, about what an age's crisis takes, and a boom can add a quarter. Each game finds its own highs
@@ -143,8 +181,11 @@ release is generated from the matching section below by `scripts/steam-changelog
   and the bond market still wait for Public debt.
 - A loan refused for your limits tells you the most that lender will lend over that term, and the Loans tab has a
   "Borrow that instead" button.
-- The plan buys its production at the game's own Gold price, read from the game's data (4 Gold a point unless
-  another mod changes it), instead of 3. What's left after whole points goes into the biggest cities.
+- The plan buys its production at what buying that build would cost you in Gold, read for each build (about 3.5 Gold
+  a point for a Modern building), instead of 3. What's left after whole points stays in your treasury.
+- An old building with no age tags counts as a Commerce building in later ages when it earns Gold and the game files
+  it as economic, so Markets and Banks keep counting toward your credit limit after the age changes.
+- Misery from a crisis holds while Partisans' cooling-off runs, instead of building up for the next rising.
 - The mod's description in Additional Content covers the whole mod: loans, taxes and the guard, markets, trade bills,
   tariffs and investment, and the business cycle, inflation, old buildings and economic systems. The Fiscal tab's
   line for a mixed economy says what it gets, and the Economic systems option says the computer players lean toward a
@@ -184,6 +225,14 @@ release is generated from the matching section below by `scripts/steam-changelog
   start with a capital too.
 
 ### Fixed
+- A tribute's doubled bills now show on the Trade tab, and the legacy row for Tribute lasts one turn longer so the
+  levy turn's bills settle first.
+- Economics' own marker buildings are left out of every count of your buildings it makes.
+- The repudiation preview's note showed its raw text key; it reads again, naming the lender's own relationship
+  hit.
+- "Payments left 1 turn", "in 1 turn" and "1 turn" on the loan cards and the Fiscal tab, where "1 turns" showed.
+- With the Loans option off, the Loans tab stays away and the Treasury tab doesn't offer the guard switch or promise
+  loans to come; before, the tab drew a borrow form that led nowhere.
 - The batch reads each civilization's strength from its combat units and skips `getMilitaryStrength`, which answered
   nothing and wrote two conversion warnings per civilization per turn into UI.log.
 - Payments under one Gold never reached anyone's treasury, because the game pays grants in whole Gold. That was most

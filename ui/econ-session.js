@@ -7,7 +7,9 @@
 
 import { planTurn } from "./econ-plan.js";
 import { MOD_ID, emptyLedger, load, save } from "./econ-state.js";
-import { batchStatus, celebrationPaidOf, paidOf } from "./econ-batch.js";
+import { batchStatus, celebrationPaidOf, grantOf } from "./econ-batch.js";
+import { placeLines, readCharged, readHeldMarkers } from "./econ-standing-read.js";
+import { STANDING_LINES } from "./econ-standing.js";
 import { engineLines, purchasePointCents, relationshipBands } from "./econ-params.js";
 import { checkPlan } from "./econ-invariants.js";
 import { viewRules } from "./econ-view-model.js";
@@ -25,24 +27,28 @@ import { MACRO_KEY, loadMacro, saveMacro } from "./econ-macro-state.js";
 import { blendedTerms, termsOf } from "./econ-systems.js";
 import { readCrisisStage, readEconomy, readGovernment, readIdeology, readPopulations, resolveCycleEvents,
   sanitizePending, withPending } from "./econ-macro-read.js";
-import { aliveMajorIds, ageType, bankGoldYield, bookFavor, bookGrievance, bookRelationship, buildingData, gameTurn,
-  isAliveMajor, player, readAtWar, readBalanceCents, readConfig, readEnvelope, readGlobalParameters,
-  readHappinessCents, readIncomeCents, readRelations, readRelationshipRows, readStrength, readUpkeepCents, safe,
+import { aliveMajorIds, ageType, bankGoldYield, bookFavor, bookGrievance, bookRelationship, buildingData, declareWar,
+  gameTurn, isAliveMajor, player, readAtWar, readBalanceCents, readConfig, readEnvelope, readGlobalParameters,
+  readHappinessCents, readIncomeCents, readInfluence, readProduction, readRelations, readRelationshipRows, readStrength,
+  readUpkeepCents, safe,
   scaleAiPreference, sendCelebration, sendGold, sendInfluence, writeEnvelope } from "./econ-engine.js";
 
 export const GLUE_KEY = "tower-economics-glue";
 export const GLUE_VERSION = 2;
 const REQUEST_KINDS = ["borrow", "lend", "repay", "restructure", "repudiate", "tax", "tariff", "invest",
-  "accept-offer", "decline-offer", "respond"];
+  "accept-offer", "decline-offer", "respond", "policy"];
 const MAX_REQUESTS = 16;
 
 /**
  * `roles` remembers the roles each building type had in its own age (econ-macro-read.js); `cycleEvents` holds the
- * engine's events since the last batch; `landed` names the civs whose payment from the last batch was seen to land.
+ * engine's events since the last batch; `landed` names the civs whose payment from the last batch was seen to land;
+ * `lines` is the turn and age the standing lines were last set and what each civ's lines should read
+ * (econ-standing.js), by pid and line in whole Gold.
  * @typedef {{ v: number, stages: Record<string, StageTurns>, seen: number[], requests: PlanRequest[],
  *   guardOn: boolean | null, turns: import("./econ-turn-count.js").TurnCount, roles: Record<string, string>,
  *   cycleEvents: import("./econ-macro-read.js").PendingCycleEvent[], told: string[] | null,
- *   fresh: string[], landed: { batch: string, pids: number[] } | null }} GlueState
+ *   fresh: string[], landed: { batch: string, pids: number[] } | null,
+ *   lines: { turn: number, age: string, want: Record<string, Record<string, number>> } | null }} GlueState
  * @typedef {{ ledger: Ledger, glue: GlueState, lastPlan: PlanOutput | null, params: EngineParams | null,
  *   markets: MarketsState, macro: import("./econ-macro-state.js").MacroState, pops: Map<string, number>,
  *   skipsLogged: Set<string> }} Session
@@ -51,7 +57,7 @@ const MAX_REQUESTS = 16;
 /** @returns {GlueState} */
 export function emptyGlue() {
   return { v: GLUE_VERSION, stages: {}, seen: [], requests: [], guardOn: null, turns: emptyTurnCount(), roles: {},
-    cycleEvents: [], told: null, fresh: [], landed: null };
+    cycleEvents: [], told: null, fresh: [], landed: null, lines: null };
 }
 
 /** @param {unknown} raw */
@@ -59,6 +65,36 @@ function cleanLanded(raw) {
   const value = /** @type {Record<string, any> | null} */ (raw && typeof raw === "object" ? raw : null);
   if (!value || typeof value.batch !== "string" || value.batch.length > 16 || !Array.isArray(value.pids)) return null;
   return { batch: value.batch, pids: value.pids.filter((pid) => Number.isInteger(pid) && pid >= 0).slice(0, 64) };
+}
+
+/** @param {unknown} raw */
+function cleanLines(raw) {
+  const value = /** @type {Record<string, any> | null} */ (raw && typeof raw === "object" ? raw : null);
+  if (!value || !Number.isInteger(value.turn) || typeof value.age !== "string" || value.age.length > 32) return null;
+  return { turn: value.turn, age: value.age, want: cleanWant(value.want) };
+}
+
+/** @param {unknown} raw */
+function cleanWant(raw) {
+  /** @type {Record<string, Record<string, number>>} */
+  const out = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [pid, row] of Object.entries(raw).slice(0, 64)) {
+    if (/^\d+$/.test(pid) && row && typeof row === "object") out[pid] = cleanWantRow(row);
+  }
+  return out;
+}
+
+/** @param {Record<string, unknown>} row */
+function cleanWantRow(row) {
+  /** @type {Record<string, number>} */
+  const lines = {};
+  for (const [line, gold] of Object.entries(row)) {
+    if (line in STANDING_LINES && Number.isInteger(gold) && /** @type {number} */ (gold) > 0) {
+      lines[line] = /** @type {number} */ (gold);
+    }
+  }
+  return lines;
 }
 
 /** @param {unknown} raw @param {(id: string) => boolean} keep */
@@ -116,6 +152,7 @@ export function sanitizeGlue(raw) {
   out.told = Array.isArray(value.told) ? cleanIds(value.told, (id) => /^[a-z]+[:.][A-Za-z]+$/.test(id)) : null;
   out.fresh = cleanIds(value.fresh, (id) => /** @type {readonly string[]} */ (TAB_KEYS).includes(id));
   out.landed = cleanLanded(value.landed);
+  out.lines = cleanLines(value.lines);
   return out;
 }
 
@@ -207,6 +244,7 @@ export function readCiv(pid, majors, stages, extra = {}) {
   const civ = { id: pid, alive: true, human, balanceCents: readBalanceCents(pid), incomeCents: readIncomeCents(pid),
     upkeepCents: readUpkeepCents(pid), stages, atWar: readAtWar(pid, majors), happinessCents: readHappinessCents(pid),
     government: readGovernment(pid), ideology: readIdeology(pid), strength: readStrength(pid),
+    influence: readInfluence(pid), production: readProduction(pid),
     ...economyFields(extra.economy) };
   if (extra.cities) Object.assign(civ, { cities: extra.cities, tradeIncomeCents: readTradeIncomeCents(pid) });
   return civ;
@@ -311,12 +349,28 @@ function readParams() {
 }
 
 /**
- * The plan input for this turn: every major ever seen, stages carried forward, the engine's lines read once.
- * Updates the glue's seen list and stage turns.
+ * How many turn rolls the standing lines stood through since they were set: none on an age change (what the
+ * transition charged isn't known, so nothing is counted back), else the turns since, at least one.
  * @param {Session} session
+ * @param {number} turn
+ */
+export function rollsSince(session, turn) {
+  const lines = session.glue.lines;
+  if (!lines) return 1;
+  if (lines.age !== ageType()) return 0;
+  return Math.max(1, turn - lines.turn);
+}
+
+/**
+ * The plan input for this turn: every major ever seen, stages carried forward, the engine's lines read once.
+ * Updates the glue's seen list and stage turns. Each civ's income leaves out its standing lines (econ-standing.js),
+ * so the model reads the income it always has; the batch (`rolls` above 0) also counts back into the balance what
+ * the lines took or paid at the roll, and the batch row takes it off the grant.
+ * @param {Session} session
+ * @param {{ rolls?: number, charged?: ReturnType<typeof readCharged> }} [standing]
  * @returns {PlanInput}
  */
-export function buildInput(session) {
+export function buildInput(session, standing = {}) {
   const turn = turnNow(session);
   const majors = aliveMajorIds();
   const seen = [...new Set([...session.glue.seen, ...majors])].sort((a, b) => a - b);
@@ -327,14 +381,37 @@ export function buildInput(session) {
   const economies = new Map(majors.map((pid) => [pid, economyOf(session, pid, turn, options)]));
   const commerce = options.markets || options.investment
     ? readCommerce(majors, economies, (pid) => glueTerms(session, pid, turn, options).industryPct) : null;
-  const civs = seen.map((pid) => readCiv(pid, majors, modelStages(session.glue.stages[String(pid)]),
-    { cities: commerce?.cities.get(pid), economy: economies.get(pid) }));
+  const charged = chargedOf(standing, majors);
+  const civs = seen.map((pid) => withCharged(readCiv(pid, majors, modelStages(session.glue.stages[String(pid)]),
+    { cities: commerce?.cities.get(pid), economy: economies.get(pid) }), charged.get(pid)));
   return { turn, age: ageType(), ledger: session.ledger, civs, relations: readRelations(majors),
     requests: session.glue.requests, params: session.params, options, markets: session.markets,
     routes: options.markets && commerce ? commerce.routes : [],
     market: options.markets ? commerce?.market : undefined, macro: session.macro,
     cycleEvents: resolveCycleEvents(session.glue.cycleEvents, readPopulations(majors)),
     crisisStage: readCrisisStage() };
+}
+
+/**
+ * The batch's read of the standing lines, or a fresh one counting `rolls` rolls (none for the screens).
+ * @param {{ rolls?: number, charged?: ReturnType<typeof readCharged> }} standing
+ * @param {number[]} majors
+ */
+function chargedOf(standing, majors) {
+  return standing.charged ?? readCharged(majors, standing.rolls ?? 0);
+}
+
+/**
+ * A civ's row with its standing lines taken out of its income and, for the batch, their charge counted back.
+ * @param {Civ} civ
+ * @param {{ cents: number, perTurn: number } | undefined} charged
+ * @returns {Civ}
+ */
+function withCharged(civ, charged) {
+  if (!charged || civ.alive !== true || (!charged.cents && !charged.perTurn)) return civ;
+  const out = { ...civ, incomeCents: civ.incomeCents - charged.perTurn };
+  if (charged.cents) Object.assign(out, { balanceCents: civ.balanceCents - charged.cents, engineCents: charged.cents });
+  return out;
 }
 
 /**
@@ -346,7 +423,7 @@ export function sendPlan(plan) {
   let sent = 0;
   // Gold and celebration go out as the batch rows' whole amounts (econ-batch.js wholeGold); the rest carries.
   for (const row of plan.batch?.civs || []) {
-    if (sendGold(row.pid, paidOf(row))) sent += 1;
+    if (sendGold(row.pid, grantOf(row))) sent += 1;
     if (sendCelebration(row.pid, celebrationPaidOf(row))) sent += 1;
   }
   for (const [pid, amount] of sumBy(plan.influence)) if (sendInfluence(pid, amount)) sent += 1;
@@ -363,6 +440,8 @@ function bookDiplomacy(plan) {
   for (const row of plan.grievances) bookGrievance(row);
   for (const row of plan.relationships) bookRelationship(row);
   for (const row of plan.favors || []) bookFavor(row);
+  // An AI that commits to Foreign adventure declares its war (a surprise war, as its own are: phase 0, 2026-11-02).
+  for (const row of plan.wars || []) declareWar(row.a, row.b);
 }
 
 /**
@@ -434,9 +513,20 @@ function logSkip(session, turn, why, reason) {
  */
 export function runTurn(session, why) {
   const started = Date.now();
-  const input = buildInput(session);
+  const turn = turnNow(session);
+  const charged = readCharged(aliveMajorIds(), rollsSince(session, turn));
+  const input = buildInput(session, { charged });
   const plan = planTurn(input);
-  if (plan.skipped) { logSkip(session, input.turn, why, plan.skipped); writeGlue(session); return null; }
+  if (plan.skipped) {
+    logSkip(session, input.turn, why, plan.skipped);
+    if (plan.skipped === "all-off") clearLines(session, charged);
+    writeGlue(session);
+    return null;
+  }
+  // Set with the ledger, so a save before the markers land still counts one roll for the ones that stood. The
+  // markers themselves go up on the local player's turn (placeLinesNow): a CREATE_ELEMENT sent at TurnBegin, before
+  // that turn is active, is dropped (lab run 2026-11-04T18-23-11).
+  session.glue.lines = { turn: input.turn, age: ageType(), want: wantOf(plan) };
   commitSession(session, plan);
   const sent = sendPlan(plan);
   const marketsText = saveMarkets(plan.markets);
@@ -446,6 +536,47 @@ export function runTurn(session, why) {
   logLine(`turn ${input.turn} (${why}): ${plan.transfers.length} transfer(s), ${sent} grant(s), `
     + `${plan.events.length} event(s), ${Date.now() - started} ms`);
   return plan;
+}
+
+/**
+ * The plan's lines for the next roll, by pid and line.
+ * @param {PlanOutput} plan
+ */
+function wantOf(plan) {
+  /** @type {Record<string, Record<string, number>>} */
+  const out = {};
+  for (const row of plan.standing || []) (out[String(row.pid)] ||= {})[row.line] = row.gold;
+  return out;
+}
+
+/**
+ * Brings every living civ's markers to the lines the last batch wants, from a fresh read of what stands. Sent on the
+ * local player's turn; running it again changes nothing once they've landed. Returns how many requests went out.
+ * @param {Session} session
+ */
+export function placeLinesNow(session) {
+  const want = session.glue.lines?.want || {};
+  let sent = 0;
+  for (const pid of aliveMajorIds()) {
+    const row = want[String(pid)] || {};
+    const wanted = new Map(/** @type {[import("./econ-standing.js").StandingLine, number][]} */ (Object.entries(row)));
+    sent += placeLines(pid, wanted, readHeldMarkers(pid));
+  }
+  return sent;
+}
+
+/**
+ * With every option off the batch doesn't run, so what the lines took or paid at the roll goes back as a grant and
+ * the markers come down.
+ * @param {Session} session
+ * @param {ReturnType<typeof readCharged>} charged
+ */
+function clearLines(session, charged) {
+  for (const [pid, read] of charged) {
+    if (read.cents) sendGold(pid, -read.cents);
+    if (read.held.length) placeLines(pid, new Map(), read.held);
+  }
+  session.glue.lines = null;
 }
 
 /**
@@ -481,7 +612,7 @@ export function noteLanded(session) {
   const balances = new Map(batch.civs.map((row) => [row.pid, readBalanceCents(row.pid)]));
   const seen = session.glue.landed?.batch === batch.id ? session.glue.landed.pids : [];
   const added = batchStatus(batch, balances).filter((row) => row.status === "landed" && !seen.includes(row.pid)
-    && paidOf(/** @type {BatchRow} */ (batch.civs.find((civ) => civ.pid === row.pid))) !== 0).map((row) => row.pid);
+    && grantOf(/** @type {BatchRow} */ (batch.civs.find((civ) => civ.pid === row.pid))) !== 0).map((row) => row.pid);
   if (!added.length && session.glue.landed?.batch === batch.id) return 0;
   session.glue.landed = { batch: batch.id, pids: [...seen, ...added] };
   writeGlue(session);

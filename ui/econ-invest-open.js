@@ -3,15 +3,15 @@
 // runs through the same checks. A development loan's Gold goes to the progress account and lands as addProgress on
 // the city's current build; general and aid as Gold go to the host. Nothing here reads the engine.
 
-import { PROGRESS } from "./econ-params.js";
+import { BOND, PROGRESS } from "./econ-params.js";
 import { investId, isInvestKind, makeInvestment, progressFor, relationAllows, relationshipGain, tenthsFor }
   from "./econ-invest.js";
 import { activeDefaults } from "./econ-credit.js";
-import { isBlocked, relationLevel } from "./econ-lenders.js";
+import { bondRatePpm, isBlocked, relationLevel } from "./econ-lenders.js";
 import { hasStage } from "./econ-stages.js";
 import { funds } from "./econ-batch.js";
-import { closeLoan, emit, event, haveNotMet, incomeOf, isAlive, isHuman, notice, repChange, replaceLoan, termsFor }
-  from "./econ-turn.js";
+import { closeLoan, emit, event, haveNotMet, incomeOf, isAlive, isHuman, notice, offerQuery, openLoan, repChange,
+  replaceLoan, termsFor } from "./econ-turn.js";
 import { REPUTATION } from "./econ-params.js";
 
 /**
@@ -59,12 +59,23 @@ function termsRefusal(ctx, spec) {
   const gate = spec.asAid ? null : gateRefusal(ctx, spec);
   if (gate) return gate;
   if (funds(ctx.batch, spec.investor) < spec.cents - aidClearing(ctx, spec).cleared) return "balance";
+  if (unnoticedAid(ctx, spec)) return "too-small";
   if (spec.form === "project") {
     const city = cityFor(ctx, spec);
     if (!city || !city.build || !(city.neededProgress > 0)) return "build";
   }
   const key = giftKey(spec);
   return ctx.out.transfers.some((transfer) => transfer.loanId === key) ? "same-turn" : null;
+}
+
+/**
+ * Aid buys goodwill and nothing else, so a gift too small to move the relationship isn't offered.
+ * @param {TurnContext} ctx
+ * @param {InvestSpec} spec
+ */
+function unnoticedAid(ctx, spec) {
+  if (spec.asAid !== true) return false;
+  return relationshipGain(spec.cents, incomeOf(ctx, spec.host), tenthsFor(spec.form, true)) === 0;
 }
 
 /**
@@ -131,7 +142,8 @@ function clearDebt(ctx, spec, rows) {
 /**
  * Why this investment can't open, or null. Both parties alive, at peace and Neutral or better (aid only at peace),
  * both past the kind's stage, the investor not blocked by a default or repudiation, the Gold in this turn's funds,
- * and for a development loan a city of the host's with a build at the head of its queue.
+ * aid large enough to buy a point of relationship, and for a development loan a city of the host's with a build at
+ * the head of its queue.
  * @param {TurnContext} ctx
  * @param {InvestSpec} spec
  */
@@ -175,21 +187,58 @@ export function openInvestment(ctx, spec, source) {
   if (spend.cents <= 0 && clearing.cleared <= 0) return null;
   const id = spec.asAid ? giftKey(spec) : investId(ctx.ledger.nextInvestId);
   if (clearing.cleared > 0) clearDebt(ctx, spec, clearing.rows);
+  sendSpend(ctx, spec, spend, id);
+  if (!spec.asAid) bookRecord(ctx, spec, { id, spent: spend.cents, city: spend.city });
+  else repChange(ctx, spec.investor, REPUTATION.lent, "aid", id);
+  bookGoodwill(ctx, spec, { id, spend, cleared: clearing.cleared, source });
+  if (spec.asAid) lendLease(ctx, spec, spend.cents);
+  return id;
+}
+
+/**
+ * The Gold the investment sends, and its progress row when it backs a build.
+ * @param {TurnContext} ctx
+ * @param {InvestSpec} spec
+ * @param {ReturnType<typeof spendFor>} spend
+ * @param {string} id
+ */
+function sendSpend(ctx, spec, spend, id) {
   if (spend.cents > 0) {
     emit(ctx, { id }, { from: spec.investor, to: spend.city ? PROGRESS : spec.host, cents: spend.cents,
       reason: "invest", parts: { refund: spend.refund } });
   }
-  if (spend.city) {
-    // One progress row per city per turn (econ-3): a second investment in the same city this turn joins the first.
-    const cityId = spend.city.id;
-    const same = ctx.out.progress.find((row) => row.cityId === cityId);
-    if (same) same.amount += spend.progress;
-    else ctx.out.progress.push({ host: spec.host, cityId, amount: spend.progress, investmentId: id });
-  }
-  if (!spec.asAid) bookRecord(ctx, spec, { id, spent: spend.cents, city: spend.city });
-  else repChange(ctx, spec.investor, REPUTATION.lent, "aid", id);
-  bookGoodwill(ctx, spec, { id, spend, cleared: clearing.cleared, source });
-  return id;
+  if (!spend.city) return;
+  // One progress row per city per turn (econ-3): a second investment in the same city this turn joins the first.
+  const cityId = spend.city.id;
+  const same = ctx.out.progress.find((row) => row.cityId === cityId);
+  if (same) same.amount += spend.progress;
+  else ctx.out.progress.push({ host: spec.host, cityId, amount: spend.progress, investmentId: id });
+}
+
+/**
+ * Lend-lease (econ-policy.js): aid to a civ at war with someone else has the bond market lend the giver half the
+ * gift, at its rate, over 20 turns.
+ * @param {TurnContext} ctx
+ * @param {InvestSpec} spec
+ * @param {number} cents
+ */
+function lendLease(ctx, spec, cents) {
+  if (!ctx.crisis?.terms(spec.investor).aidBondHalf || !hostAtWar(ctx, spec) || !(cents > 1)) return;
+  const q = offerQuery(ctx, spec.investor);
+  const ratePpm = bondRatePpm({ age: ctx.age, standing: q.standing, rates: q.rates, depthFactorPct: q.depthFactorPct,
+    systemPct: q.bondPct }) ?? 20000;
+  openLoan(ctx, { lender: BOND, borrower: spec.investor, principal: Math.floor(cents / 2), ratePpm, term: 20,
+    source: "policy" });
+}
+
+/**
+ * Whether the host is at war with someone other than the giver (Lend-lease's rule).
+ * @param {TurnContext} ctx
+ * @param {InvestSpec} spec
+ */
+function hostAtWar(ctx, spec) {
+  return (ctx.relations || []).some((r) => r.level === "war" && (r.a === spec.host || r.b === spec.host)
+    && r.a !== spec.investor && r.b !== spec.investor);
 }
 
 /**
@@ -200,7 +249,9 @@ export function openInvestment(ctx, spec, source) {
  * @param {{ id: string, spend: ReturnType<typeof spendFor>, cleared: number, source: string }} q
  */
 function bookGoodwill(ctx, spec, { id, spend, cleared, source }) {
-  const share = spec.asAid ? termsFor(ctx, spec.investor).aidRelationPct : 100;
+  const lease = spec.asAid ? ctx.crisis?.terms(spec.investor) : null;
+  const share = spec.asAid ? Math.round((termsFor(ctx, spec.investor).aidRelationPct
+    * (lease && hostAtWar(ctx, spec) ? lease.aidGoodwillPct : 100)) / 100) : 100;
   const given = spend.cents + cleared;
   const gain = Math.floor((relationshipGain(given, incomeOf(ctx, spec.host), tenthsFor(spec.form, spec.asAid))
     * share) / 100);
@@ -222,7 +273,7 @@ function bookGoodwill(ctx, spec, { id, spend, cleared, source }) {
 function spendFor(ctx, spec) {
   const city = spec.form === "project" ? cityFor(ctx, spec) : null;
   if (!city) return { city: null, cents: spec.form === "project" ? 0 : spec.cents, refund: 0, progress: 0 };
-  const plan = progressFor(spec.cents, city.neededProgress);
+  const plan = progressFor(spec.cents, city.neededProgress, city.pointCents);
   return { city, cents: plan.usedCents, refund: plan.refundCents, progress: plan.progress };
 }
 

@@ -15,8 +15,8 @@ export const STAGE_ORDER = ["trade", "coinage", "moneylending", "guildPatronage"
 
 /**
  * @typedef {{ stagesOn: boolean, reached: Record<string, boolean>, openLoan: boolean, citizenOffer: boolean,
- *   firstAge: boolean, marketsOn: boolean, tariffsOn: boolean, investmentOn: boolean, inflationOn: boolean,
- *   cycleOn: boolean, crisis: boolean }} TabFacts
+ *   firstAge: boolean, loansOn: boolean, marketsOn: boolean, tariffsOn: boolean, investmentOn: boolean,
+ *   inflationOn: boolean, cycleOn: boolean, crisis: boolean }} TabFacts
  */
 
 /**
@@ -76,8 +76,8 @@ function reachedStages(turns, turn, stagesOn) {
  */
 function optionFlags(options) {
   const marketsOn = options.markets !== false;
-  return { marketsOn, tariffsOn: marketsOn && options.tariffs !== false, investmentOn: options.investment !== false,
-    inflationOn: options.inflation === true, cycleOn: options.cycle !== "off" };
+  return { loansOn: options.loans !== false, marketsOn, tariffsOn: marketsOn && options.tariffs !== false,
+    investmentOn: options.investment !== false, inflationOn: options.inflation === true, cycleOn: options.cycle !== "off" };
 }
 
 /**
@@ -92,12 +92,12 @@ function upcoming(f, shown) {
     treasury: [
       { stage: "trade", part: shown.markets ? "LOC_ECONOMICS_PART_TAB_TRADE_ONLY" : "LOC_ECONOMICS_PART_TAB_TRADE" },
       { stage: "coinage", part: shown.markets ? "LOC_ECONOMICS_PART_TAB_WORLD" : "LOC_ECONOMICS_PART_TAB_WORLD_MARKETS" },
-      { stage: "moneylending", part: "LOC_ECONOMICS_PART_CIV_LOANS" },
+      ...(f.loansOn ? [{ stage: "moneylending", part: "LOC_ECONOMICS_PART_CIV_LOANS" }] : []),
     ],
-    loans: [
+    loans: f.loansOn ? [
       { stage: "moneylending", part: "LOC_ECONOMICS_PART_CIV_LOANS" },
       { stage: "publicDebt", part: "LOC_ECONOMICS_PART_BOND" },
-    ],
+    ] : [],
     fiscal: f.tariffsOn ? [{ stage: "tariffs", part: "LOC_ECONOMICS_PART_TARIFFS" }] : [],
     markets: f.marketsOn ? [{ stage: "trade", part: "LOC_ECONOMICS_PART_TRADE_BILLS" }] : [],
     trade: f.investmentOn ? [
@@ -119,7 +119,8 @@ export function tabRules(f) {
   const r = f.reached;
   const shown = {
     treasury: true,
-    loans: r.moneylending || f.openLoan || f.citizenOffer,
+    // With the Loans option off there's nothing to borrow, lend or guard, so the tab stays away.
+    loans: f.loansOn && (r.moneylending || f.openLoan || f.citizenOffer),
     fiscal: true,
     // Markets opens with Coinage (the Market building's tech) or Trade, whichever comes first.
     markets: r.trade || r.coinage,
@@ -131,6 +132,21 @@ export function tabRules(f) {
 }
 
 /**
+ * The loan parts the Loans option gates: before the Loans tab, the guard switch and any loan line live on the
+ * Treasury tab; with the option off none of them show.
+ * @param {TabFacts} f
+ * @param {Record<TabKey, boolean>} shown
+ */
+function loanSections(f, shown) {
+  const r = f.reached;
+  return {
+    "treasury.loans": f.loansOn && !shown.loans,
+    "loans.borrow": f.loansOn && (r.moneylending || r.publicDebt || f.citizenOffer),
+    "loans.lend": f.loansOn && r.publicDebt,
+  };
+}
+
+/**
  * The sections shown inside the tabs.
  * @param {TabFacts} f
  * @param {Record<TabKey, boolean>} shown
@@ -138,8 +154,7 @@ export function tabRules(f) {
 function sectionsFor(f, shown) {
   const r = f.reached;
   return {
-    // Before the Loans tab, the guard switch and any loan line live on the Treasury tab.
-    "treasury.loans": !shown.loans,
+    ...loanSections(f, shown),
     // The loan figures (what's owed and due, the debt-service scale, the projection with and without loans) wait for
     // the rule that opens the Loans tab; before it the projection is the plain balance.
     "treasury.loanFigures": shown.loans,
@@ -149,10 +164,8 @@ function sectionsFor(f, shown) {
     "treasury.cycle": !shown.world && f.cycleOn,
     "treasury.depth": r.coinage,
     "treasury.old": !f.firstAge,
-    "loans.borrow": r.moneylending || r.publicDebt || f.citizenOffer,
     "loans.civLoans": r.moneylending,
     "loans.bond": r.publicDebt,
-    "loans.lend": r.publicDebt,
     "fiscal.tariff": f.tariffsOn && r.tariffs,
     "trade.project": f.investmentOn && r.guildPatronage,
     "trade.general": f.investmentOn && r.charteredCompanies,

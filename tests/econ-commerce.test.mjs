@@ -142,7 +142,7 @@ test("a development loan on an AI city's current build: progress, the Gold used,
   const record = out.ledger.investments[0];
   assert.deepEqual([record.kind, record.principal, record.mille, record.cityId, record.outstanding],
     ["project", 12000, 60, "6:1", 25 * 720], "6% on a role building");
-  assert.deepEqual(out.relationships, [{ a: ME, b: AI, delta: 1 }], "120 Gold is 6 turns of a 20 Gold host");
+  assert.deepEqual(out.relationships, [{ a: ME, b: AI, delta: 6 }], "120 Gold is 6 turns of a 20 Gold host");
   assert.equal(out.notices.find((n) => n.kind === "invested").loanId, "I1");
   const next = plan({ civs, turn: 51, ledger: out.ledger });
   assert.deepEqual(next.transfers.map((t) => [t.loanId, t.from, t.to, t.cents, t.reason]),
@@ -208,20 +208,24 @@ test("two development loans on one city in a turn land as one progress row (econ
   assert.deepEqual(out.progress.map((p) => [p.cityId, p.amount]), [["6:1", 20]], "one row, both grants");
 });
 
-test("aid: no record, no return, the relationship at +1 per 2.5 turns of the host's income", () => {
+test("aid: no record, no return, the relationship at +1 per half a turn of the host's income", () => {
   const civs = [me(), ai(AI, { incomeCents: 2000, cities: [city("6:1")] })];
   const gold = plan({ civs, requests: [{ kind: "invest", investor: ME, host: AI, form: "general", cents: 10000,
     asAid: true }] });
   assert.deepEqual(gold.transfers.map((t) => [t.loanId, t.from, t.to, t.cents]), [[`A${ME}-${AI}`, ME, AI, 10000]]);
   assert.deepEqual(gold.ledger.investments, []);
-  assert.deepEqual(gold.relationships, [{ a: ME, b: AI, delta: 2 }]);
+  assert.deepEqual(gold.relationships, [{ a: ME, b: AI, delta: 10 }]);
   const build = plan({ civs, requests: [{ kind: "invest", investor: ME, host: AI, form: "project", cents: 3000,
     cityId: "6:1", asAid: true }] });
   assert.deepEqual(build.progress, [{ host: AI, cityId: "6:1", amount: 10, investmentId: `A${ME}-${AI}` }]);
   assert.deepEqual(build.ledger.investments, []);
-  const twice = plan({ civs, requests: [{ kind: "invest", investor: ME, host: AI, form: "general", cents: 100,
-    asAid: true }, { kind: "invest", investor: ME, host: AI, form: "general", cents: 100, asAid: true }] });
+  const twice = plan({ civs, requests: [{ kind: "invest", investor: ME, host: AI, form: "general", cents: 1000,
+    asAid: true }, { kind: "invest", investor: ME, host: AI, form: "general", cents: 1000, asAid: true }] });
   assert.equal(refusal(twice, "invest"), "same-turn", "one gift per pair per turn");
+  const small = plan({ civs, requests: [{ kind: "invest", investor: ME, host: AI, form: "general", cents: 999,
+    asAid: true }] });
+  assert.equal(refusal(small, "invest"), "too-small", "under half a turn of the host's income buys nothing");
+  assert.deepEqual(small.transfers, [], "and nothing is sent");
 });
 
 test("a missed dividend costs standing and Influence; three in a row is default, a block, then the garnish", () => {
@@ -352,7 +356,7 @@ test("aid to a civ in default to the giver clears that debt first (AI-PLAN 2); t
   const gift = out.transfers.find((t) => t.reason === "invest");
   assert.deepEqual([gift.from, gift.to, gift.cents], [ME, AI, 2000], "100 of aid: 80 cleared, 20 sent");
   assert.equal(out.events.find((e) => e.kind === "invest").cleared, 8000);
-  assert.deepEqual(out.relationships, [{ a: ME, b: AI, delta: 2 }], "the goodwill counts the whole 100");
+  assert.deepEqual(out.relationships, [{ a: ME, b: AI, delta: 10 }], "the goodwill counts the whole 100");
   assert.equal(out.notices.find((n) => n.kind === "invested").cleared, 8000);
   const partly = plan({ civs, ledger, requests: [{ ...aid, cents: 2000 }], options: { loans: true } });
   assert.deepEqual(partly.transfers.filter((t) => t.reason === "invest"), [], "20 of aid: all of it clears L1");
@@ -371,12 +375,12 @@ test("AI aid (AI-PLAN 4.5): to a host with a stake of 10 in default, sized to bu
     principal: 100, outstanding: 100, ratePpm: 20000, term: 10, paid: 0, missed: 3, state: "default",
     emergency: false, restructured: false, opened: 1, closedTurn: null, writtenOff: 0, source: "borrow" }] };
   // Friendly at 30 is a stake of 10 and sits on the game's Friendly line, so the gift is the one point that takes it
-  // past: 2.5 turns of the host's income.
+  // past: half a turn of the host's income.
   const relations = [{ a: AI, b: OTHER, level: "friendly", levelNum: 30 }];
   const civs = [ai(AI, { stages: {} }), ai(OTHER, { balanceCents: 10000, stages: {} })];
   const out = plan({ civs, relations, ledger: inDefault });
   const aid = out.transfers.find((t) => t.reason === "invest");
-  assert.deepEqual([aid.from, aid.to, aid.cents], [AI, OTHER, 25000]);
+  assert.deepEqual([aid.from, aid.to, aid.cents], [AI, OTHER, 5000]);
   assert.equal(out.markets.aidTurns[`${AI}-${OTHER}`], 50);
   const again = plan({ civs, relations, ledger: out.ledger, markets: out.markets, turn: 64 });
   assert.equal(again.transfers.some((t) => t.reason === "invest"), false, "not within 15 turns of the last to this host");
@@ -384,7 +388,7 @@ test("AI aid (AI-PLAN 4.5): to a host with a stake of 10 in default, sized to bu
   assert.equal(later.transfers.some((t) => t.reason === "invest"), true);
   const cold = plan({ civs, relations: [{ a: AI, b: OTHER, level: "neutral", levelNum: 8, routes: 3 }], ledger: inDefault });
   const gift = cold.transfers.find((t) => t.reason === "invest");
-  assert.equal(gift?.cents, 50000, "a stake of 11.7 at level 8: 23 points past the Friendly line, 10 at most, 25 turns of the host's income capped at 5 of the giver's");
+  assert.equal(gift?.cents, 50000, "a stake of 11.7 at level 8: 23 points past the Friendly line, 20 at most, 10 turns of the host's income capped at 5 of the giver's");
   const weak = plan({ civs, relations: [{ a: AI, b: OTHER, level: "neutral", levelNum: 20 }], ledger: inDefault });
   assert.equal(weak.transfers.some((t) => t.reason === "invest"), false, "a stake of 6.7: under 10");
   const solvent = plan({ civs, relations });

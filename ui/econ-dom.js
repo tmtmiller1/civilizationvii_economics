@@ -135,9 +135,10 @@ export function amount(text, { kind = "gold", tone = 0, tooltip, big = false, un
  * @param {string} label
  * @param {string | HTMLElement} value
  * @param {string} [valueClass]
+ * @param {{ tooltip?: string }} [options] the tooltip goes on the whole row
  */
-export function row(label, value, valueClass = "") {
-  const node = el("div", "econ-row");
+export function row(label, value, valueClass = "", { tooltip } = {}) {
+  const node = tip(el("div", "econ-row"), tooltip);
   node.appendChild(el("div", "econ-row-label", label));
   const cell = typeof value === "string" ? el("div", "econ-row-value", value) : value;
   if (typeof value !== "string") cell.classList.add("econ-row-value");
@@ -244,7 +245,8 @@ export function chips(items, chosen, onPick) {
  * The red status pill (memory: status text as a red pill) for what needs attention; the plain one for a state. With
  * `action` the pill is a control: a press runs it, and the tooltip says where it goes.
  * @param {string} text
- * @param {boolean | "plain" | "caution" | "warning"} warning red when true or "warning", amber when "caution"
+ * @param {boolean | "plain" | "caution" | "warning" | "muted"} warning red when true or "warning", amber when
+ *   "caution", faded when "muted"
  * @param {{ onActivate: () => void, tooltip?: string | null }} [action]
  */
 export function pill(text, warning, action) {
@@ -431,40 +433,45 @@ const CHART_H = 100;
  * left, the first and last turn under it), a legend where it names its series, a reference line where one means
  * something (zero for a balance, 1.00 for an index), and a readout under it naming each series' figure for the turn
  * under the pointer or in focus, the last turn until then. Values that aren't finite are left out and break the
- * line; a lone point is a dot; with nothing to draw it says `emptyText`.
+ * line; a lone point is a dot; with nothing to draw it says `emptyText`. A mark is a thin upright line on one turn,
+ * and its label joins that turn's readout.
  * @param {{ values: (number | null | undefined)[], tone?: "gilt" | "ivory", label?: string }[]} series
  * @param {{ format: (value: number) => string, turns: string[], reference?: number | null, height?: string,
- *   emptyText?: string }} options
+ *   emptyText?: string, marks?: ChartMark[] }} options
  */
-export function lineChart(series, { format, turns, reference = null, height = "7rem", emptyText = "" }) {
+export function lineChart(series, { format, turns, reference = null, height = "7rem", emptyText = "",
+  marks = [] }) {
   const clean = cleanSeries(series, turns);
   const values = /** @type {number[]} */ (clean.flatMap((one) => one.values).filter((v) => v !== null));
   const wrap = el("div", "econ-chart-wrap");
   if (!values.length) { wrap.appendChild(empty(emptyText)); return wrap; }
   const readout = el("div", "econ-chart-readout");
+  const marked = marks.filter((m) => Number.isInteger(m.index) && m.index >= 0 && m.index < turns.length);
   wrap.appendChild(chartBody(clean, { scale: chartScale(values, reference, turns.length), reference, height, turns,
-    format }, readout));
+    format, marks: marked }, readout));
   wrap.appendChild(chartTurns(turns));
   wrap.appendChild(readout);
-  readout.textContent = readoutText(clean, turns, format, lastWithData(clean, turns.length));
+  readout.textContent = readoutText(clean, turns, format, lastWithData(clean, turns.length), marked);
   if (clean.some((one) => one.label)) wrap.appendChild(legend(clean));
   return wrap;
 }
+
+/** @typedef {{ index: number, label: string }} ChartMark */
 
 /**
  * The scale figures at the left and the chart with its hover columns.
  * @param {Series[]} series
  * @param {{ scale: { top: number, bottom: number, span: number, count: number }, reference: number | null,
- *   height: string, turns: string[], format: (value: number) => string }} q
+ *   height: string, turns: string[], format: (value: number) => string, marks: ChartMark[] }} q
  * @param {HTMLElement} readout
  */
-function chartBody(series, { scale, reference, height, turns, format }, readout) {
+function chartBody(series, { scale, reference, height, turns, format, marks }, readout) {
   const body = el("div", "econ-chart-body");
   body.appendChild(chartAxis(scale, format));
   const node = el("div", "econ-chart");
   node.style.height = height;
-  node.appendChild(chartSvg(series, scale, reference));
-  node.appendChild(chartHits(series, turns, format, readout));
+  node.appendChild(chartSvg(series, scale, reference, marks));
+  node.appendChild(chartHits(series, turns, format, readout, marks));
   body.appendChild(node);
   return body;
 }
@@ -484,17 +491,23 @@ function cleanSeries(series, turns) {
 }
 
 /**
- * The drawing: the reference line, then each series.
+ * The drawing: the reference line, the marks, then each series.
  * @param {Series[]} series
  * @param {{ top: number, bottom: number, span: number, count: number }} scale
  * @param {number | null} reference
+ * @param {ChartMark[]} [marks]
  */
-function chartSvg(series, scale, reference) {
+function chartSvg(series, scale, reference, marks = []) {
   const svg = svgEl("svg", { viewBox: `0 0 ${CHART_W} ${CHART_H}`, preserveAspectRatio: "none",
     class: "econ-chart-svg" });
   if (reference !== null) {
     const at = chartY(scale, reference).toFixed(1);
     svg.appendChild(svgEl("line", { x1: 0, x2: CHART_W, y1: at, y2: at, stroke: "#8a8578", "stroke-width": 1 }));
+  }
+  for (const k of new Set(marks.map((m) => m.index))) {
+    const x = chartX(scale, k).toFixed(1);
+    svg.appendChild(svgEl("line", { x1: x, x2: x, y1: 0, y2: CHART_H, stroke: "#C9A2E8", "stroke-width": 1,
+      "stroke-dasharray": "3 2", class: "econ-chart-mark" }));
   }
   for (const one of series) drawSeries(svg, one, scale, reference);
   return svg;
@@ -589,13 +602,14 @@ function drawSeries(svg, one, scale, reference) {
  * @param {string[]} turns
  * @param {(value: number) => string} format
  * @param {HTMLElement} readout
+ * @param {ChartMark[]} [marks]
  */
-function chartHits(series, turns, format, readout) {
+function chartHits(series, turns, format, readout, marks = []) {
   const hits = el("div", "econ-chart-hits");
   turns.forEach((_, k) => {
     const cell = el("div", "econ-chart-hit");
     cell.setAttribute("tabindex", "-1");
-    const text = readoutText(series, turns, format, k);
+    const text = readoutText(series, turns, format, k, marks);
     tip(cell, text);
     const show = () => { readout.textContent = text; };
     cell.addEventListener("mouseenter", show);
@@ -606,16 +620,27 @@ function chartHits(series, turns, format, readout) {
 }
 
 /**
- * "Turn 54: With your loans 120, Without them 80".
+ * "Turn 54: With your loans 120, Without them 80", then that turn's marks: ". A war began".
  * @param {Series[]} series
  * @param {string[]} turns
  * @param {(value: number) => string} format
  * @param {number} k
+ * @param {ChartMark[]} [marks]
  */
-function readoutText(series, turns, format, k) {
+function readoutText(series, turns, format, k, marks = []) {
   const parts = series.filter((one) => one.values[k] !== null)
     .map((one) => `${one.label ? `${one.label} ` : ""}${format(/** @type {number} */ (one.values[k]))}`);
-  return `${turns[k]}: ${parts.join(", ")}`;
+  const notes = marks.filter((m) => m.index === k).map((m) => m.label);
+  return `${turns[k]}: ${parts.join(", ")}${notes.length ? `. ${notes.join(". ")}` : ""}`;
+}
+
+/**
+ * A small word naming whose figure stands beside it: "Game" for the game's own Gold, "Economics" for the mod's.
+ * @param {string} text
+ * @param {"game" | "econ"} source
+ */
+export function sourceTag(text, source) {
+  return el("span", `econ-source econ-source--${source}`, text);
 }
 
 /**

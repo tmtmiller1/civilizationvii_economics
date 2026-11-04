@@ -1,9 +1,10 @@
 // econ-invest.js - Economics: development loans, general investment and aid (DESIGN 4.12), as plain data. A
 // development loan backs the build at the head of one city's queue right now, since a script can't set an AI's
-// queue: G / 3 progress, capped at what the build needs, the rest never leaves the investor, and a fixed return for
-// 25 turns. General investment is a Gold pair whose return moves with the host's income. Aid is either kind with no
-// return and no record. The records keep the loan rules for misses, default and the lender block. Nothing here reads
-// the engine; the glue lands the progress with addProgress and the Gold with grantYield.
+// queue: G over what buying that build costs a point (3 Gold when the price isn't read), capped at what it needs,
+// the rest never leaves the investor, and a fixed return for 25 turns. General investment is a Gold pair whose
+// return moves with the host's income. Aid is either kind with no return and no record. The records keep the loan
+// rules for misses, default and the lender block. Nothing here reads the engine; the glue lands the progress with
+// addProgress and the Gold with grantYield.
 
 import { INVEST, MISS } from "./econ-params.js";
 import { divCeil } from "./econ-money.js";
@@ -29,12 +30,15 @@ export function investSeq(id) {
 }
 
 /**
- * G / 3 Gold a point of progress, capped at what the build still needs; only the Gold the progress uses is spent.
+ * G over the build's price a point (what buying it costs the player; 3 Gold when unread), capped at what the build
+ * still needs; only the Gold the progress uses is spent.
  * @param {number} cents
  * @param {number} neededProgress
+ * @param {number | null} [pointCents] the city's price a point for its current build
  */
-export function progressFor(cents, neededProgress) {
-  const perPoint = INVEST.goldPerProgress * 100;
+export function progressFor(cents, neededProgress, pointCents = null) {
+  const perPoint = Number.isInteger(pointCents) && /** @type {number} */ (pointCents) > 0
+    ? /** @type {number} */ (pointCents) : INVEST.goldPerProgress * 100;
   const wanted = Math.floor(Math.max(0, cents) / perPoint);
   const progress = Math.max(0, Math.min(wanted, Math.floor(neededProgress) || 0));
   return { progress, usedCents: progress * perPoint, refundCents: Math.max(0, cents) - progress * perPoint };
@@ -89,7 +93,7 @@ export function dividendDue(record, hostIncomeCents, wide = false) {
 
 /**
  * The relationship a gift buys, once, both sides: +1 per `tenths / 10` turns of the host's income (at least 10 Gold
- * a turn), at most 10.
+ * a turn), at most `INVEST.maxRelationship`.
  * @param {number} cents
  * @param {number} hostIncomeCents
  * @param {number} tenthsPerPoint
@@ -98,6 +102,17 @@ export function relationshipGain(cents, hostIncomeCents, tenthsPerPoint) {
   const perTurn = Math.max(INVEST.minHostIncomeCents, hostIncomeCents);
   const points = Math.floor((Math.max(0, cents) * 10) / (tenthsPerPoint * perTurn));
   return Math.min(INVEST.maxRelationship, points);
+}
+
+/**
+ * The least Gold that buys one point of relationship from this host: the first whole Gold at which `relationshipGain`
+ * doesn't round down to 0. Aid under it is refused as "too-small", since a gift nobody notices isn't worth offering.
+ * @param {number} hostIncomeCents
+ * @param {number} tenthsPerPoint
+ */
+export function giftMinimumCents(hostIncomeCents, tenthsPerPoint) {
+  const perTurn = Math.max(INVEST.minHostIncomeCents, hostIncomeCents);
+  return Math.ceil((tenthsPerPoint * perTurn) / 1000) * 100;
 }
 
 /**

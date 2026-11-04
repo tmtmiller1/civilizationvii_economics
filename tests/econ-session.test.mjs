@@ -28,7 +28,7 @@ test("every major is read with the same fields, human and AI alike; stages come 
   for (const c of input.civs) {
     assert.deepEqual(Object.keys(c).sort(), ["alive", "atWar", "balanceCents", "cities", "commerceSettlements",
       "cushionBp", "depthFactorPct", "depthTurns", "government", "happinessCents", "human", "id", "ideology", "incomeCents",
-      "stages", "strength", "tradeIncomeCents", "upkeepCents", "warehouses"], `civ ${c.id}`);
+      "influence", "production", "stages", "strength", "tradeIncomeCents", "upkeepCents", "warehouses"], `civ ${c.id}`);
   }
   assert.deepEqual(input.civs.map((c) => [c.balanceCents, c.incomeCents, c.human, c.atWar]),
     [[5000, 1200, true, false], [40000, 1200, false, true], [1000, 300, false, true]]);
@@ -162,7 +162,11 @@ test("the glue envelope keeps requests, stage turns, seen civs and the guard swi
   const clean = sanitizeGlue({ v: 1, stages: { 4: { moneylending: 3, publicDebt: "x" }, bad: {} }, seen: [1, -2, "3"],
     requests: [{ kind: "borrow" }, 5], guardOn: "yes" });
   assert.deepEqual(clean, { v: 2, stages: { 4: { moneylending: 3, publicDebt: null } }, seen: [1], requests: [{ kind: "borrow" }],
-    guardOn: null, turns: { age: null, base: 0, last: 0 }, roles: {}, cycleEvents: [], told: null, fresh: [], landed: null });
+    guardOn: null, turns: { age: null, base: 0, last: 0 }, roles: {}, cycleEvents: [], told: null, fresh: [], landed: null,
+    lines: null });
+  assert.deepEqual(sanitizeGlue({ lines: { turn: 12, age: "AGE_MODERN", want: { 3: { DEBT: 7, NOPE: 2, LOAN: -1 }, x: {} } } })
+    .lines, { turn: 12, age: "AGE_MODERN", want: { 3: { DEBT: 7 } } });
+  assert.equal(sanitizeGlue({ lines: { turn: "12", age: "AGE_MODERN" } }).lines, null);
   assert.deepEqual(sanitizeGlue({ told: ["tab:loans", "bad id", 4], fresh: ["loans", "nope"] }).told, ["tab:loans"]);
   assert.deepEqual(sanitizeGlue({ fresh: ["loans", "nope", "loans"] }).fresh, ["loans"]);
   assert.deepEqual(sanitizeGlue("junk"), emptyGlue());

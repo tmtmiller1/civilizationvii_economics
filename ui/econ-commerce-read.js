@@ -185,15 +185,54 @@ function readCity(city, rolesFor, trade, goldYieldOf) {
   const hash = safe(() => queue.currentProductionTypeHash, null);
   const empty = safe(() => queue.isEmpty === true, false);
   const type = !queue || empty || hash === null ? null : buildType(hash);
+  const where = whereOf(city);
   if (!type) {
     return { id, build: null, neededProgress: 0, roleBuilding: false, tradeBuildings: trade, purchaseCents: null,
-      population: readPopulation(city), progressScalePct: PROGRESS_SCALE_PCT };
+      population: readPopulation(city), progressScalePct: PROGRESS_SCALE_PCT, ...where };
   }
   const roles = rolesFor(type);
   return { id, build: type, neededProgress: neededProgress(queue, hash, type),
     roleBuilding: roles ? isRoleBuilding(roles) : false, tradeBuildings: trade,
     purchaseCents: roles ? readPurchaseCents(city, type) : null, population: readPopulation(city),
-    progressScalePct: PROGRESS_SCALE_PCT, turnsLeft: turnsLeftOf(queue), buildGoldYield: goldYieldOf(type) };
+    progressScalePct: PROGRESS_SCALE_PCT, turnsLeft: turnsLeftOf(queue), buildGoldYield: goldYieldOf(type),
+    military: isMilitaryUnit(hash), pointCents: readPointCents(city, hash, type), ...where };
+}
+
+/**
+ * What a point of the current build costs the player to buy, in cents: the game's Gold price for it over its
+ * production cost, the rate the production chooser charges (about 3.47 for a Modern building, 2.84 for a military
+ * unit, probed 2026-11-03), so a policy, civ bonus or another mod's price change carries over. Null when either read
+ * fails, and the plan then uses GOLD_PURCHASE_MULTIPLIER.
+ * @param {any} city
+ * @param {unknown} hash
+ * @param {string} type
+ */
+function readPointCents(city, hash, type) {
+  const unit = safe(() => GameInfo.Units.lookup(hash), null) !== null;
+  const gold = safe(() => Number(unit ? city.Gold.getUnitPurchaseCost(YieldTypes.YIELD_GOLD, type)
+    : city.Gold.getBuildingPurchaseCost(YieldTypes.YIELD_GOLD, type)), NaN);
+  const cost = safe(() => Number(unit ? city.Production.getUnitProductionCost(type)
+    : city.Production.getConstructibleProductionCost(type)), NaN);
+  return gold > 0 && cost > 0 ? Math.max(1, Math.round((gold * 100) / cost)) : null;
+}
+
+/**
+ * Where a settlement is and who founded it, for the crisis cards that read conquest (phase 0: a founding reads its
+ * founder as original owner; a capture keeps its plot and changes owner), and the Gold it yields a turn in cents.
+ * @param {any} city
+ */
+function whereOf(city) {
+  const x = safe(() => Number(city.location.x), Number.NaN);
+  const y = safe(() => Number(city.location.y), Number.NaN);
+  const orig = safe(() => Number(city.originalOwner), Number.NaN);
+  const gold = safe(() => Number(city.Yields.getNetYield(YieldTypes.YIELD_GOLD)), Number.NaN);
+  return { loc: Number.isFinite(x) && Number.isFinite(y) ? `${x},${y}` : null,
+    orig: Number.isInteger(orig) ? orig : null, goldCents: Number.isFinite(gold) ? Math.round(gold * 100) : 0 };
+}
+
+/** Whether a build hash is a military unit (the Units row's CoreClass). @param {unknown} hash */
+function isMilitaryUnit(hash) {
+  return safe(() => GameInfo.Units.lookup(hash)?.CoreClass === "CORE_CLASS_MILITARY", false) === true;
 }
 
 /**

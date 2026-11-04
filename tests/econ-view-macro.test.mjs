@@ -94,7 +94,7 @@ test("the Fiscal tab's system: its name, where it comes from, the blend after a 
     options: { systems: true }, macro: macro({}, { systems: { [ME]: { system: "merchantOligarchy", from: "tribute",
       since: 50 } } }) });
   assert.deepEqual(systemView(blending, ME), { on: true, system: "merchantOligarchy", source: "government",
-    from: "tribute", blendLeft: 6, planTakeCents: 0 });
+    from: "tribute", blendLeft: 6, planTakeCents: 0, planSpentCents: 0 });
   const host = document.createElement("div");
   renderFiscal(host, makeApi(blending));
   const text = textOf(host);
@@ -105,7 +105,13 @@ test("the Fiscal tab's system: its name, where it comes from, the blend after a 
   const planned = input({ civs: [civ(ME, { human: true, ideology: "IDEOLOGY_COMMUNISM", incomeCents: 5000 })],
     options: { systems: true } });
   assert.deepEqual(systemView(planned, ME), { on: true, system: "planned", source: "ideology", from: null, blendLeft: 0,
-    planTakeCents: 1000 });
+    planTakeCents: 1000, planSpentCents: 0 });
+  const priced = input({ civs: [civ(ME, { human: true, ideology: "IDEOLOGY_COMMUNISM", incomeCents: 4200,
+    cities: [{ id: "c1", population: 3, build: "B", neededProgress: 10, pointCents: 347 }] })],
+    options: { systems: true }, params: { goldPerPointCents: 400 } });
+  // 8.40 taken, two whole points at the build's own 3.47, so 6.94 spent (the multiplier says 4; players pay 3.47).
+  assert.deepEqual(systemView(priced, ME), { on: true, system: "planned", source: "ideology", from: null,
+    blendLeft: 0, planTakeCents: 840, planSpentCents: 694 });
   const planHost = document.createElement("div");
   renderFiscal(planHost, makeApi(planned));
   assert.ok(textOf(planHost).includes("LOC_ECONOMICS_FISCAL_PLAN"));

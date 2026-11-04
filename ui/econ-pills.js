@@ -16,7 +16,7 @@ const PHASE_TONES = /** @type {Record<string, Pill["tone"]>} */ ({ slump: "cauti
 
 /**
  * @param {{ inDefault: boolean, owedCents: number, phase: string | null, cycleOn: boolean, inflationOn: boolean,
- *   piPpm: number, inCrisis?: boolean }} q
+ *   piPpm: number, inCrisis?: boolean, running?: string[], arrears?: boolean }} q
  * @param {{ loc: (key: string, ...args: (string | number)[]) => string, gold: (cents: number) => string,
  *   rate: (ppm: number) => string, phaseKey: (phase: string) => string }} fmt
  * @returns {Pill[]}
@@ -36,10 +36,19 @@ function debtPill(q, fmt) {
     tip: fmt.loc("LOC_ECONOMICS_PILL_TIP_DEBT") };
 }
 
+/** @type {(q: Parameters<typeof pillsFor>[0], fmt: Parameters<typeof pillsFor>[1]) => string} */
+function phaseText(q, fmt) {
+  const parts = [fmt.loc(fmt.phaseKey(/** @type {string} */ (q.phase)))];
+  if (q.inCrisis && q.running?.length) parts.push(fmt.loc(q.running[0]));
+  if (q.inCrisis && q.arrears) parts.push(fmt.loc("LOC_ECONOMICS_PILL_ARREARS"));
+  return parts.join(" · ");
+}
+
 /** @type {(q: Parameters<typeof pillsFor>[0], fmt: Parameters<typeof pillsFor>[1]) => Pill | null} */
 function phasePill(q, fmt) {
   if (!q.cycleOn || !q.phase) return null;
-  return { text: fmt.loc(fmt.phaseKey(q.phase)), tone: PHASE_TONES[q.phase] ?? "plain", tab: "world",
+  // While a crisis response or a crisis-paths card runs, the pill names it: "Depression · New Deal programmes".
+  return { text: phaseText(q, fmt), tone: PHASE_TONES[q.phase] ?? "plain", tab: "world",
     focus: q.inCrisis ? ".econ-crisis" : ".econ-world-now",
     tip: fmt.loc(q.inCrisis ? "LOC_ECONOMICS_PILL_TIP_CRISIS" : "LOC_ECONOMICS_PILL_TIP_PHASE") };
 }

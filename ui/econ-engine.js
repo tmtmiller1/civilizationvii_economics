@@ -93,6 +93,36 @@ export function readIncomeCents(pid) {
   return toCents(safe(() => Players.get(pid).Stats.getNetYield(YieldTypes.YIELD_GOLD), 0));
 }
 
+/**
+ * The civ's Influence stock (the diplomacy treasury), in whole Influence; null when it doesn't read. A charge sent
+ * through grantYield lands at the turn's end and can take the stock below 0 (phase 0, 2026-11-02), so the crisis
+ * cards check their price against this read before they charge.
+ * @param {number} pid
+ */
+export function readInfluence(pid) {
+  const v = safe(() => Number(Players.get(pid).DiplomacyTreasury.diplomacyBalance), Number.NaN);
+  return Number.isFinite(v) ? Math.floor(v) : null;
+}
+
+/** The civ's net production a turn, the cities' sum (phase 0: the two agree). @param {number} pid */
+export function readProduction(pid) {
+  const v = safe(() => Number(Players.get(pid).Stats.getNetYield(YieldTypes.YIELD_PRODUCTION)), Number.NaN);
+  return Number.isFinite(v) ? Math.max(0, v) : 0;
+}
+
+/**
+ * An AI's war for the crisis paths' Foreign adventure: the game's own surprise war (phase 0, 2026-11-02: the same
+ * DIPLOMACY_ACTION_DECLARE_WAR an AI makes on its own, with its war support and its bar on peace). Only for AI seats;
+ * the human declares through the game.
+ * @param {number} a
+ * @param {number} b
+ */
+export function declareWar(a, b) {
+  const p = safe(() => Players.get(a), null);
+  if (!p || p.isHuman === true) return false;
+  return safe(() => { p.Diplomacy.forceDeclareWar(b); return true; }, false);
+}
+
 /** The celebration meter's per-turn happiness, for the tax fallback's forecast only. @param {number} pid */
 export function readHappinessCents(pid) {
   return toCents(safe(() => Players.get(pid).Stats.getNetYield(YieldTypes.YIELD_HAPPINESS), 0));
@@ -252,8 +282,22 @@ export function readBuildings(pid) {
  *   CityBuilding
  */
 
+/** The Tower mods' shared tag on script-placed marker buildings; they aren't buildings to the player. */
+export const MARKER_TAG = "TOWER_MARKER";
+
 /**
- * One city's standing buildings with their roles; a damaged building weighs 0 (P9).
+ * A finished building the player has, not a marker.
+ * @param {import("./econ-depth.js").BuildingData | undefined} info
+ * @param {any} instance
+ * @returns {info is import("./econ-depth.js").BuildingData}
+ */
+function isStanding(info, instance) {
+  return !!info && instance.complete !== false && !info.tags.includes(MARKER_TAG);
+}
+
+/**
+ * One city's standing buildings with their roles; a damaged building weighs 0 (P9), and a marker (MARKER_TAG) is
+ * left out.
  * @param {any} city
  * @returns {CityBuilding[]}
  */
@@ -266,7 +310,7 @@ export function readCityBuildings(city) {
     const instance = safe(() => Constructibles.getByComponentID(id), null);
     const row = instance ? safe(() => GameInfo.Constructibles.lookup(instance.type), null) : null;
     const info = row ? data.get(row.ConstructibleType) : undefined;
-    if (!row || !info || instance.complete === false) continue;
+    if (!row || !isStanding(info, instance)) continue;
     out.push({ type: row.ConstructibleType, roles: rolesOf(info, bankGold), goldYield: info.goldYield,
       weight: instance.damaged === true ? 0 : 1, age: info.age ?? null, ageless: info.tags.includes("AGELESS"),
       unique: info.unique === true, wonder: info.isWonder });

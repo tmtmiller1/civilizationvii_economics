@@ -17,6 +17,8 @@ import { tradeTermsOf } from "../ui/econ-commerce.js";
 import { owedByPair } from "../ui/econ-trade.js";
 import { responseById } from "../ui/econ-crisis-catalog.js";
 import { BASE_RATE_PPM, INFLATION_RULES } from "../ui/econ-params.js";
+import { checkPlan } from "../ui/econ-invariants.js";
+import { batchStatus, paidOf } from "../ui/econ-batch.js";
 import { OPEN, OPEN_ALL, OPEN_MACRO, civ, input } from "./_fixtures.mjs";
 
 const ME = 3;
@@ -215,7 +217,7 @@ test("tribute: two turns of income from each weaker civ Unfriendly or worse with
   const paid = transfer(out, "tribute");
   assert.deepEqual([paid.from, paid.to, paid.cents], [AI, ME, 10000], "the weaker one pays, the stronger doesn't");
   assert.deepEqual(out.grievances, [{ from: AI, against: ME, amount: 10 }]);
-  assert.deepEqual(out.ledger.legacies, [{ pid: ME, id: "tribute", since: 50, until: 60, nextAge: false, civs: [AI] }],
+  assert.deepEqual(out.ledger.legacies, [{ pid: ME, id: "tribute", since: 50, until: 61, nextAge: false, civs: [AI] }],
     "the row names the civs that paid");
 });
 
@@ -334,6 +336,27 @@ test("public works: the age's Gold a settlement into the civ's builds through th
   assert.deepEqual(out.ledger.responses.map((r) => [r.id, r.until]), [["public-works", null]], "until the crisis ends");
   const modern = plan({ age: "AGE_MODERN", civs: [me({ cities })], macro: DEPRESSION(), requests: [respond("public-works")] });
   assert.equal(transfer(modern, "works").cents, 1600, "8 Gold a settlement in Modern");
+});
+
+test("cheap public works: the bond market's share and the works are two transfers with their own ids, settled once", () => {
+  // Lab run 2026-11-04T05-03-57: an AI on half-cost works sent both under PW<pid>, and debt-3 logged it each turn.
+  const cities = [city("6:1"), city("6:2")];
+  const responses = [{ pid: AI, id: "public-works", crisis: "depression", since: 48, until: null, costPct: 50 }];
+  const civs = [me(), ai(AI, { cities })];
+  const out = plan({ age: "AGE_MODERN", civs, macro: DEPRESSION(),
+    ledger: ledgerWith([], { crises: [{ pid: AI, kind: "depression", since: 48 }], responses }) });
+  const works = out.transfers.filter((t) => t.reason === "works");
+  assert.deepEqual(works.map((t) => [t.loanId, t.from, t.to, t.cents]),
+    [[`PWB${AI}`, "bond", AI, 800], [`PW${AI}`, AI, "progress", 1600]], "the Gold is unchanged: 8 a settlement, half back");
+  assert.deepEqual(checkPlan({ plan: out, civs }).filter((v) => v.id === "debt-3"), []);
+  // A lost batch is re-sent as the civ's net (the works' 8 Gold among its other bills), and once it shows, never again.
+  const row = out.batch.civs.find((r) => r.pid === AI);
+  const net = out.transfers.reduce((sum, t) => sum + (t.to === AI ? t.cents : 0) - (t.from === AI ? t.cents : 0), 0);
+  assert.equal(row.net, net, "both works transfers counted once in the civ's net");
+  const lost = batchStatus(out.batch, new Map([[AI, row.snapshot]])).find((r) => r.pid === AI);
+  assert.deepEqual([lost.status, lost.cents], ["lost", paidOf(row)]);
+  const resent = batchStatus(out.batch, new Map([[AI, row.snapshot + paidOf(row)]])).find((r) => r.pid === AI);
+  assert.deepEqual([resent.status, resent.cents], ["landed", 0], "nothing to send again");
 });
 
 test("relief: a Gold a settlement a turn to the citizens for 4 Happiness a settlement", () => {
@@ -668,4 +691,13 @@ test("crisisView: the open crises with their causes, what can be taken with its 
   assert.deepEqual(view.standing, [{ id: "relief", since: 49, left: null, crisis: "depression" }]);
   assert.deepEqual(view.legacies, [{ id: "bullion", since: 45, world: false, left: 5, nextAge: false }, { id: "bank-failures", since: 45, world: true, left: null, nextAge: false }]);
   assert.equal(view.age, "MO");
+});
+
+test("a Depression ended after Confidence was taken twice names it once in the event and notice", () => {
+  const first = plan({ civs: [me()], macro: DEPRESSION(), requests: [respond("confidence")] });
+  const second = plan({ civs: [me()], turn: 55, ledger: first.ledger, macro: DEPRESSION(), requests: [respond("confidence")] });
+  assert.equal(second.ledger.crisisTurns.filter((r) => r.id === "take:confidence").length, 2);
+  const lifted = plan({ civs: [me()], turn: 58, ledger: second.ledger, macro: macroWith({ e: 10000 }) });
+  assert.equal(kinds(lifted, "crisis-end")[0].by, "confidence");
+  assert.equal(lifted.notices.find((n) => n.kind === "crisis-end").by, "confidence");
 });

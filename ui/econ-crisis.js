@@ -5,6 +5,7 @@
 // cascade) make it worse. The rows live in the ledger and the rules they change read them through the turn
 // context's crisis hooks (econ-crisis-rows.js). Nothing here reads the engine.
 
+import { policyWeights } from "./econ-policy.js";
 import { CRISIS_KINDS, CRISIS_RULES, RESPONSE_RULES as RR, ageKeyOf, responseById, responsesFor }
   from "./econ-crisis-catalog.js";
 import { crisesOn, crisisTerms, forgetTerms, hasLegacy, isRunning, legaciesOf, openCrises, standingResponses }
@@ -155,8 +156,8 @@ function startCrisis(ctx, civ, kind) {
 /** @param {TurnContext} ctx @param {Civ} civ @param {CrisisRow} row */
 function endCrisis(ctx, civ, row) {
   ctx.ledger.crises = ctx.ledger.crises.filter((x) => x !== row);
-  const by = ctx.ledger.crisisTurns.filter((x) => x.pid === civ.id && x.turn >= row.since && x.id.startsWith("take:"))
-    .map((x) => x.id.slice(5)).join(",");
+  const by = [...new Set(ctx.ledger.crisisTurns.filter((x) => x.pid === civ.id && x.turn >= row.since
+    && x.id.startsWith("take:")).map((x) => x.id.slice(5)))].join(",");
   ctx.ledger.crisisTurns = ctx.ledger.crisisTurns.filter((x) => !(x.pid === civ.id && x.id === `end:${row.kind}`));
   ctx.ledger.crisisTurns.push({ pid: civ.id, id: `end:${row.kind}`, turn: ctx.turn });
   const turns = ctx.turn - row.since;
@@ -164,7 +165,9 @@ function endCrisis(ctx, civ, row) {
   notice(ctx, civ.id, { kind: "crisis-end", crisis: row.kind, turns, by });
   for (const standing of standingResponses(ctx.ledger, civ.id)) {
     const spec = responseById(standing.id);
-    if (spec && spec.runs === "crisis" && standing.until === null) standing.until = ctx.turn + (spec.after || 0);
+    if (spec && spec.runs === "crisis" && standing.until === null && standing.crisis === row.kind) {
+      standing.until = ctx.turn + (spec.after || 0);
+    }
   }
 }
 
@@ -396,7 +399,7 @@ export function crisisWeights(ctx, events) {
   /** @type {Weighted[]} */
   const out = [];
   for (const civ of ctx.civs) if (civ.alive === true) out.push(...civWeights(ctx, civ));
-  out.push(...worldWeights(ctx), ...onceWeights(ctx));
+  out.push(...worldWeights(ctx), ...onceWeights(ctx), ...policyWeights(ctx));
   for (const row of events) {
     if (row.kind !== "disaster" || typeof row.a !== "number") continue;
     if (ctx.readings.civ.get(row.a)?.phase === "depression") out.push({ ...row, kind: "dust-bowl" });

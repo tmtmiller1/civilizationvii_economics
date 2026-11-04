@@ -10,7 +10,7 @@ built and checked offline. Part of 1.0 and 1.1 has been watched in test games an
 Gold gets a market. You can borrow from other civilizations or from a bond market and pay it back from what the Gold
 brings in, lend to a neighbour who's short and collect the interest, and set a tax level as a policy card. A missed
 payment costs you; three in a row is default; and you can always repudiate a debt outright, keep the Gold, and pay in
-reputation instead. Resources get a world price, and the civilizations you trade with settle the difference in what
+credit rating and goodwill instead. Resources get a world price, and the civilizations you trade with settle the difference in what
 you import from each other every turn; you can tariff a partner, or put Gold into a neighbour's build or treasury and
 collect a return. Wars, disasters, defaults and trade move the world's economy through booms and slumps, your
 government sets how your own economy runs, and the markets and banks of an earlier age fade as newer ones take over.
@@ -67,7 +67,7 @@ units need it (more so in wartime). The Markets tab lists the prices and their l
 civilizations that trade then settles the difference between what they import from each other: 2.5 percent of the
 price of each copy a turn, up 10 percent for each Trade building in the exporting city and down 10 percent for each in
 the importing one. Only the side that owes more pays, and never more than a tenth of its income; anything over that
-is waived, which in most games is rare.
+is forgiven, which in most games is rare.
 
 From Imperialism you can set a tariff on the Fiscal tab: Low or High holds back 10 or 25 percent of what you owe the
 civilizations you import from. A High tariff costs 1 relationship with each of them every five turns. The computer
@@ -81,8 +81,10 @@ once you're friends; it puts one back if you raise yours again or the two of you
 From the Trade tab you can put Gold into another civilization. A development loan (from Guilds) goes into the build a
 city is working on right now, 3 Gold for each point of production, and comes back at 5 percent a turn for 25 turns,
 6 percent on an economic building. General investment (from Colonialism) goes into the treasury and its return
-follows the host's income. Aid of either kind is a gift. Each raises the relationship, in proportion to the
-host's income. Computer players invest in and aid their friends, and their offers to you wait on the Trade tab for an
+follows the host's income. Aid of either kind is a gift that buys goodwill: 1 relationship for each half a turn of
+the receiver's income, up to 20 from one gift, and the line beside it says the number before you send. A gift too
+small to be noticed is greyed with the least Gold that would be. Loans raise the relationship too, more slowly.
+Computer players invest in and aid their friends, and their offers to you wait on the Trade tab for an
 answer. With this option on, a civilization that sends Military Aid pays the 2 Gold a turn its target gets.
 
 ## The business cycle
@@ -96,6 +98,27 @@ them dearer. Warehouses and old economic buildings soften a slump for you. Once 
 built on too much borrowing can turn into a Panic: for five turns civilizations stop lending to each other and bond
 rates jump, and a slump usually follows. The World tab shows the index, your phase, what moved it lately and its last
 30 turns, and the turn notification names the causes when your phase changes.
+
+## Crises and what you do about them
+
+A deep slump, debts you can't meet, prices swinging hard or trade falling apart opens a crisis on the World tab. Every
+civilization has the same shared responses to reach for, from public works and relief to a bank holiday or austerity,
+each with its price and what it leaves behind. Your economic system leans toward some of them: a card it's built for
+says "Institutional advantage" and costs a quarter less Gold, and one it resists says "Political opposition" and costs
+10 Influence on top.
+
+Some governments and ideologies also have answers only they can take. A Classical Republic can borrow from its
+citizens as a public duty, a Plutocracy can charter its merchants or turn its debts into shares, a Democracy can run
+New Deal programmes or regulate its banks, and a Fascist state can export its crisis into a war. These cost Influence.
+They come in three kinds: a Measure is quick and small, a Gamble is fast with a catch written on the card, and a
+Programme is a commitment that costs Influence and an administration charge every turn and has to run at least five
+turns. A Programme is judged on its own goal once the crisis is over. Meet it and it leaves a lasting institution;
+miss it or end it early and it leaves a mark of a different kind. Every institution you build makes that path cheaper
+next time and the others a little dearer, so over a game your civilization picks up its own way of handling a crisis.
+The pill in the top bar and the screen's header name what you're doing while it runs.
+
+With Partisans on, a deep Depression also counts toward partisan risings in your unhappiest settlements; Relief or New
+Deal programmes ease it. Austerity makes it worse in any crisis, Depression or not.
 
 ## Inflation
 
@@ -128,7 +151,7 @@ game reads these when a game is created, so they reach new games.
 The game lets you build over an earlier age's buildings. Here they fade instead of switching off. A Market keeps its
 full weight until you reach the stage that replaces it (Guild patronage for its trade, Public debt for its commerce),
 then fades to half, and to a quarter in the age after; a newer building of the same kind in the same city drops it to
-its floor at once. What it loses becomes a cushion against slumps, 1 percent a point and 10 percent at most. The
+its floor at once. What it loses makes a slump softer for you, 1 percent a point and 10 percent at most. The
 Treasury tab lists each old building with its weight and what moves it.
 
 ## Economic stages

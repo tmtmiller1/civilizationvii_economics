@@ -121,13 +121,14 @@ export const TARIFF_PCT = { none: 0, low: 10, high: 25 };
 export const TRADE = { billPermille: 25, tradeBuildingPct: 10, tradeBuildingMaxPct: 30, capPct: 10,
   tariffEveryTurns: 5, highRelationship: -1, aiMatchTurns: 2, aiPartnerSharePct: 34, aiPeaceTurns: 20 };
 // DESIGN 4.12. Development loan: G / 3 Gold per point of progress, ceil(G * 5%) a turn for 25 turns (6% on a role
-// building). General: ceil(G * 4.5% * growth) with growth clamped 0.5 to 2.0. Relationship +1 per 5, 7.5 and 2.5 turns
-// of the host's income (at least 10 Gold a turn) for the development loan, general and aid. The cap of 10 on one
-// gift's relationship gain is ours (NOTES choice 36), so Gold can't buy a whole relationship at once.
+// building). General: ceil(G * 4.5% * growth) with growth clamped 0.5 to 2.0. Relationship +1 per 1, 1.5 and 0.5
+// turns of the host's income (at least 10 Gold a turn) for the development loan, general and aid, so the default
+// 300 Gold shows a gain against a mid-game host (NOTES choice 63). The cap of 20 on one gift is ours, under the
+// game's 30-point band, so Gold can't buy a whole relationship step at once.
 export const INVEST = { goldPerProgress: 3, term: 25, projectMille: 50, roleProjectMille: 60, generalMille: 45,
   growthMinMille: 500, growthMaxMille: 2000, equityMinMille: 250, equityMaxMille: 3000,
-  minHostIncomeCents: 1000, projectTenthsPerPoint: 50,
-  generalTenthsPerPoint: 75, aidTenthsPerPoint: 25, maxRelationship: 10, aiSizeTurns: 5,
+  minHostIncomeCents: 1000, projectTenthsPerPoint: 10,
+  generalTenthsPerPoint: 15, aidTenthsPerPoint: 5, maxRelationship: 20, aiSizeTurns: 5,
   offerTurns: 3, incomeHistoryTurns: 10 };
 // AI-PLAN 4.5: the stake score (the terms of stakeOf in econ-stake.js) and the rules on it. An AI invests from what
 // it holds above its reserve in the host with the best stake of 8 or more, 3 to 8 turns of income rising with the

@@ -3,9 +3,12 @@
 // whether a host's income is growing, DESIGN 6), the age each AI last gave aid in (once per age, DESIGN 6) and each
 // AI's count of turns at peace with the civs behind its tariff and the civs it has eased off (DESIGN 6). A save from
 // before the count loads with none, so a standing tariff starts its count the first turn after. At most 32 KB; load
-// refuses anything that isn't ours without throwing, and save(load(x)) is a fixed point.
+// refuses anything that isn't ours without throwing, and save(load(x)) is a fixed point. For the Markets tab (Part 6)
+// it also keeps each resource's targets beside its prices, what the last batch read them from, and the turns a cause
+// moved them; a save from before has none of these and fills them in from its next batch.
 
 import { INVEST, PRICES } from "./econ-params.js";
+import { phaseOf } from "./econ-cycle.js";
 import { isTariffLevel } from "./econ-trade.js";
 import { utf8Bytes } from "./econ-state.js";
 
@@ -16,8 +19,12 @@ export const MARKETS_MAX_BYTES = 32768;
 /** @returns {MarketsState} */
 export function emptyMarkets() {
   return { lastTurn: null, prices: {}, history: {}, tariffs: [], incomes: {}, aidAge: {}, investTurn: {},
-    tariffPeace: {}, tariffEased: {}, aidTurns: {}, offerTurns: {} };
+    tariffPeace: {}, tariffEased: {}, aidTurns: {}, offerTurns: {}, targets: {}, basis: null, marks: [] };
 }
+
+/** At most this many marks are kept; the oldest go first. */
+export const MAX_MARKS = 120;
+const MARK_KINDS = ["war", "peace", "gain", "loss", "phase", "industry"];
 
 /** @param {unknown} x */
 const isInt = (x) => Number.isInteger(x);
@@ -151,6 +158,103 @@ export function sanitizeMarkets(input) {
   out.aidTurns = cleanPairTurns(raw.aidTurns);
   out.offerTurns = cleanPairTurns(raw.offerTurns);
   out.tariffEased = cleanPairLevels(raw.tariffEased);
+  out.targets = cleanSeries(raw.targets, isTypeKey, PRICES.historyTurns);
+  out.basis = cleanBasis(raw.basis);
+  out.marks = cleanMarks(raw.marks);
+  return out;
+}
+
+/**
+ * @param {unknown} raw
+ * @returns {MarketBasis | null}
+ */
+function cleanBasis(raw) {
+  if (!isRecord(raw)) return null;
+  const b = /** @type {Record<string, any>} */ (raw);
+  const ints = ["turn", "civs", "eBp", "industry", "smoothingPct", "pricePct"];
+  if (!ints.every((key) => isInt(b[key])) || typeof b.war !== "boolean") return null;
+  const types = (/** @type {unknown} */ list) => (Array.isArray(list) ? list.filter((x) => typeof x === "string"
+    && isTypeKey(x)) : []);
+  return { turn: b.turn, civs: b.civs, war: b.war, eBp: b.eBp, industry: b.industry, smoothingPct: b.smoothingPct,
+    pricePct: b.pricePct, copies: cleanPrices(b.copies), strategic: types(b.strategic), floored: types(b.floored) };
+}
+
+/**
+ * @param {unknown} raw
+ * @returns {MarketMark[]}
+ */
+function cleanMarks(raw) {
+  /** @type {MarketMark[]} */
+  const out = [];
+  for (const row of Array.isArray(raw) ? raw : []) {
+    const mark = cleanMark(row);
+    if (mark) out.push(mark);
+  }
+  return out.slice(-MAX_MARKS);
+}
+
+/**
+ * @param {unknown} raw
+ * @returns {MarketMark | null}
+ */
+function cleanMark(raw) {
+  if (!isRecord(raw)) return null;
+  const row = /** @type {Record<string, any>} */ (raw);
+  if (!isInt(row.t) || !MARK_KINDS.includes(row.k)) return null;
+  /** @type {MarketMark} */
+  const mark = { t: row.t, k: row.k };
+  if (typeof row.r === "string" && isTypeKey(row.r)) mark.r = row.r;
+  if (isInt(row.d)) mark.d = row.d;
+  if (typeof row.p === "string" && /^[a-z]{1,16}$/.test(row.p)) mark.p = row.p;
+  return mark;
+}
+
+/**
+ * After the batch's prices (Part 6): each resource's target added to its history, what the targets were read from,
+ * and a mark for each cause that changed since the last batch: a war begun or ended, copies gained or lost, a phase
+ * of the world economy, Industry buildings. Marks older than the history's turns go.
+ * @param {MarketsState} markets
+ * @param {{ turn: number, market: MarketRead, civs: number, war: boolean, eBp: number, smoothingPct: number,
+ *   pricePct: number, raw: Record<string, number>, targets: Record<string, number> }} q
+ */
+export function recordBasis(markets, { turn, market, civs, war, eBp, smoothingPct, pricePct, raw, targets }) {
+  /** @type {Record<string, number[]>} */
+  const series = {};
+  for (const [type, target] of Object.entries(targets)) {
+    series[type] = [...(markets.targets?.[type] || []), target].slice(-PRICES.historyTurns);
+  }
+  markets.targets = series;
+  const types = Object.keys(targets);
+  /** @type {MarketBasis} */
+  const basis = { turn, civs, war, eBp, industry: Math.max(0, Math.floor(market.industry || 0)), smoothingPct,
+    pricePct, copies: Object.fromEntries(types.map((type) => [type, market.copies?.[type] || 0])),
+    strategic: (market.strategic || []).filter((type) => type in targets),
+    floored: types.filter((type) => (markets.prices[type] ?? 0)
+      > Math.round(((raw[type] ?? 0) * (100 + pricePct)) / 100)) };
+  const before = markets.basis;
+  const fresh = before && before.turn < turn ? marksBetween(before, basis) : [];
+  markets.marks = [...(markets.marks || []), ...fresh].filter((m) => m.t > turn - PRICES.historyTurns)
+    .slice(-MAX_MARKS);
+  markets.basis = basis;
+}
+
+/**
+ * @param {MarketBasis} before
+ * @param {MarketBasis} now
+ * @returns {MarketMark[]}
+ */
+function marksBetween(before, now) {
+  /** @type {MarketMark[]} */
+  const out = [];
+  const t = now.turn;
+  if (before.war !== now.war) out.push({ t, k: now.war ? "war" : "peace" });
+  if (phaseOf(before.eBp) !== phaseOf(now.eBp)) out.push({ t, k: "phase", p: phaseOf(now.eBp) });
+  if (before.industry !== now.industry) out.push({ t, k: "industry", d: now.industry - before.industry });
+  for (const [type, count] of Object.entries(now.copies)) {
+    if (!(type in before.copies) || before.copies[type] === count) continue;
+    const d = count - before.copies[type];
+    out.push({ t, k: d > 0 ? "gain" : "loss", r: type, d });
+  }
   return out;
 }
 
@@ -160,7 +264,8 @@ export function cloneMarkets(markets) {
 }
 
 /**
- * The envelope text; past 32 KB the oldest half of each price history goes first, then the histories.
+ * The envelope text; past 32 KB the oldest half of each price and target history goes first (and the oldest marks
+ * with it), then the histories.
  * @param {MarketsState} markets
  */
 export function saveMarkets(markets) {
@@ -170,6 +275,8 @@ export function saveMarkets(markets) {
   while (utf8Bytes(text) > MARKETS_MAX_BYTES && keep > 0) {
     keep = Math.floor(keep / 2);
     for (const key of Object.keys(clean.history)) clean.history[key] = clean.history[key].slice(-keep);
+    for (const key of Object.keys(clean.targets)) clean.targets[key] = clean.targets[key].slice(-keep);
+    clean.marks = clean.marks.slice(-keep * 4);
     text = JSON.stringify({ mod: MARKETS_KEY, v: MARKETS_VERSION, markets: clean });
   }
   return text;

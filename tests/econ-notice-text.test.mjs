@@ -173,3 +173,10 @@ test("a closed loan's event names both sides, so the Treasury history lists \"pa
   assert.deepEqual([closed.loanId, closed.borrower, closed.lender], ["L1", 3, 6]);
   assert.equal(eventConcerns(closed, 3) && eventConcerns(closed, 6) && !eventConcerns(closed, 4), true);
 });
+
+test("a crisis that ends after Confidence was taken twice names Confidence once", () => {
+  const line = describeNotice({ pid: 2, kind: "crisis-end", crisis: "depression", turns: 8,
+    by: "confidence,public-works,confidence" }, ctx);
+  assert.deepEqual(line, { key: "LOC_ECONOMICS_NOTICE_CRISIS_END", args: ["LOC_ECONOMICS_CRISIS_DEPRESSION_NAME", 8,
+    ["LOC_ECONOMICS_RESPONSE_CONFIDENCE_NAME", "LOC_ECONOMICS_RESPONSE_PUBLIC_WORKS_NAME"]] });
+});

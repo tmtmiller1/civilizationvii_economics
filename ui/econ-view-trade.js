@@ -1,7 +1,7 @@
 // econ-view-trade.js - Economics: the Trade tab (DESIGN 4.10, 4.12, 5, 9). It opens on what's due: this turn's bill
 // with each partner and the cap, beside the Trade Income the game pays you; then the AI offers waiting for an answer;
-// then what you can do: a development loan on a city's current build, general investment or aid, each with what it
-// would return and the relationship it buys; then the routes the game would let you make and what each would add to
+// then what you can do: a development loan on a city's current build or general investment, each with what it would
+// return, and aid with the relationship it buys; then the routes the game would let you make and what each would add to
 // your bill; then your open investments. Aid needs no stage, so before this tab opens its own section sits on the
 // Treasury tab (aidSection).
 
@@ -25,8 +25,10 @@ export function renderTrade(host, api) {
   const input = api.input();
   const { rules } = rulesFor(api);
   const open = { project: rules.sections["trade.project"], general: rules.sections["trade.general"] };
-  host.appendChild(columns([settlementSection(input, api), offersSection(input, api), investSection(input, api, open)],
-    [holdingsSection(input, api), previewSection(input, api)]));
+  // Offers and holdings only take room when there's something in them.
+  const present = (/** @type {(HTMLElement | null)[]} */ parts) => /** @type {HTMLElement[]} */ (parts.filter(Boolean));
+  host.appendChild(columns(present([settlementSection(input, api), offersSection(input, api),
+    investSection(input, api, open)]), present([holdingsSection(input, api), previewSection(input, api)])));
   const next = opensNext(api, rules.next.trade);
   if (next) host.appendChild(next);
 }
@@ -81,8 +83,9 @@ function partnerRow(line, api) {
  */
 function offersSection(input, api) {
   const { offers } = investmentsView(input, api.me);
-  const block = section(api.loc("LOC_ECONOMICS_TRADE_OFFERS"));
   const said = feedbackLine("offers");
+  if (!offers.length && !said) return null;
+  const block = section(api.loc("LOC_ECONOMICS_TRADE_OFFERS"));
   if (said) block.appendChild(said);
   if (!offers.length) block.appendChild(empty(api.loc("LOC_ECONOMICS_TRADE_NO_OFFERS")));
   for (const offer of offers) {
@@ -248,7 +251,7 @@ function actionRow(api, q) {
     : api.loc(q.caption);
   const id = `invest:${q.host}:${q.form}:${q.asAid ? 1 : 0}:${q.city?.id ?? ""}`;
   line.appendChild(button(label, () => { setConfirming(id); api.rerender(); },
-    { disabled: q.refusal !== null, reason: q.refusal ? api.loc(reasonKey(q.refusal)) : null }));
+    { disabled: q.refusal !== null, reason: refusalText(q.refusal, forecast, api) }));
   if (!q.refusal) line.appendChild(note(forecastText(forecast, q, api)));
   if (isConfirming(id)) line.appendChild(investConfirm(api, q, label, forecast));
   return line;
@@ -274,17 +277,29 @@ function investConfirm(api, q, label, forecast) {
 }
 
 /**
+ * Why the line is greyed, or null. Aid too small to be noticed says the least Gold that would be.
+ * @param {string | null} refusal
+ * @param {ReturnType<typeof investForecast>} forecast
+ * @param {ScreenApi} api
+ */
+function refusalText(refusal, forecast, api) {
+  if (refusal === null) return null;
+  if (refusal === "too-small") return api.loc("LOC_ECONOMICS_INVEST_AID_MIN", formatGold(forecast.minimumCents));
+  return api.loc(reasonKey(refusal));
+}
+
+/**
+ * What the Gold buys. Aid is goodwill and says so; a loan is an investment, and the relationship it also books is a
+ * side effect the line leaves out, so a loan never reads as failed aid.
  * @param {ReturnType<typeof investForecast>} forecast
  * @param {{ form: InvestKind, asAid: boolean }} q
  * @param {ScreenApi} api
  */
 function forecastText(forecast, q, api) {
   if (q.asAid) return api.loc("LOC_ECONOMICS_INVEST_AID_FORECAST", formatGold(forecast.spentCents), forecast.relationship);
-  if (q.form === "general") {
-    return api.loc("LOC_ECONOMICS_INVEST_GENERAL_FORECAST", formatGold(forecast.perTurnCents), forecast.relationship);
-  }
+  if (q.form === "general") return api.loc("LOC_ECONOMICS_INVEST_GENERAL_FORECAST", formatGold(forecast.perTurnCents));
   return api.loc("LOC_ECONOMICS_INVEST_PROJECT_FORECAST", forecast.progress, formatGold(forecast.spentCents),
-    formatGold(forecast.perTurnCents), formatGold(forecast.totalCents), forecast.relationship);
+    formatGold(forecast.perTurnCents), formatGold(forecast.totalCents));
 }
 
 /**
@@ -310,6 +325,7 @@ function previewSection(input, api) {
  */
 function holdingsSection(input, api) {
   const view = investmentsView(input, api.me);
+  if (!view.open.length) return null;
   const block = section(api.loc("LOC_ECONOMICS_TRADE_HOLDINGS"), [
     row(api.loc("LOC_ECONOMICS_TRADE_INVESTED"), goldText(view.investedCents, api)),
     row(api.loc("LOC_ECONOMICS_TRADE_HOSTED"), goldText(view.owedCents, api)),

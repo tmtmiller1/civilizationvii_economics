@@ -51,6 +51,15 @@ test("each partner's bill as the batch settles it: owed both ways, netted, cappe
   assert.deepEqual([closed.stageOpen, closed.rows, closed.tradeIncomeCents], [false, [], 0]);
 });
 
+test("a tribute paid shows on the Trade tab: the payer's bill to the levier at double (X.13, run 2026-11-04T14-35-06)", () => {
+  // 6 levied tribute on ME; ME's 800 bill to 6 counts double, the batch's own term, where the tab used to show 800.
+  const ledger = { ...emptyLedger(), legacies: [{ pid: 6, id: "tribute", since: 1, until: 99, nextAge: false,
+    civs: [ME] }] };
+  const view = tradeView(world({ ledger, turn: 5, options: { crises: true } }), ME);
+  assert.equal(view.rows.find((r) => r.partner === 6).youOweCents, 1600);
+  assert.equal(view.rows.find((r) => r.partner === 8).theyOweCents, 500, "the other partner's bill is unchanged");
+});
+
 test("the route preview prices what a new route would bring", () => {
   assert.deepEqual(routePreview([{ owner: 6, city: "6:3", resources: ["RESOURCE_IRON", "RESOURCE_SALT"] },
     { owner: 8, city: "8:1", resources: [] }], prices).map((r) => [r.city, r.billCents]), [["6:3", 600], ["8:1", 0]]);
@@ -59,11 +68,13 @@ test("the route preview prices what a new route would bring", () => {
 test("a gift's forecast: the progress and Gold used, the return a turn and in all, the relationship", () => {
   const city = { id: "6:1", build: "BUILDING_BANK", neededProgress: 50, roleBuilding: true };
   assert.deepEqual(investForecast({ form: "project", cents: 30000, asAid: false, hostIncomeCents: 2000, city }),
-    { spentCents: 15000, progress: 50, perTurnCents: 900, totalCents: 22500, relationship: 1 });
+    { spentCents: 15000, progress: 50, perTurnCents: 900, totalCents: 22500, relationship: 7, minimumCents: 2000 });
   assert.deepEqual(investForecast({ form: "general", cents: 30000, asAid: false, hostIncomeCents: 2000 }),
-    { spentCents: 30000, progress: 0, perTurnCents: 1350, totalCents: 33750, relationship: 2 });
+    { spentCents: 30000, progress: 0, perTurnCents: 1350, totalCents: 33750, relationship: 10, minimumCents: 3000 });
   assert.deepEqual(investForecast({ form: "general", cents: 30000, asAid: true, hostIncomeCents: 2000 }),
-    { spentCents: 30000, progress: 0, perTurnCents: 0, totalCents: 0, relationship: 6 });
+    { spentCents: 30000, progress: 0, perTurnCents: 0, totalCents: 0, relationship: 20, minimumCents: 1000 });
+  assert.deepEqual(investForecast({ form: "general", cents: 30000, asAid: true, hostIncomeCents: 15000 }),
+    { spentCents: 30000, progress: 0, perTurnCents: 0, totalCents: 0, relationship: 4, minimumCents: 7500 });
   assert.equal(investForecast({ form: "project", cents: 30000, asAid: false, hostIncomeCents: 2000 }).spentCents, 30000,
     "no city read: the whole amount");
 });

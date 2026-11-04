@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dev-only probe data for docs/AI-NATIVE-LEVERS.md (E1, E2, M3; the slot probe in probe-slots.sql). Installed into Mods/ only for lab games. -->
+<Mod id="econ-ai-probe" version="1" xmlns="ModInfo">
+    <Properties>
+        <Name>Economics AI probe (dev)</Name>
+        <Description>Lab-only probe rows.</Description>
+        <Authors>Tower</Authors>
+        <ShowInBrowser>0</ShowInBrowser>
+        <Version>0.0.1</Version>
+        <AffectsSavedGames>1</AffectsSavedGames>
+    </Properties>
+    <Dependencies>
+        <Mod id="base-standard" title="LOC_MODULE_BASE_STANDARD_NAME"/>
+    </Dependencies>
+    <ActionCriteria>
+        <Criteria id="always"><AlwaysMet></AlwaysMet></Criteria>
+        <Criteria id="exploration"><AgeInUse>AGE_EXPLORATION</AgeInUse></Criteria>
+        <Criteria id="modern"><AgeInUse>AGE_MODERN</AgeInUse></Criteria>
+    </ActionCriteria>
+    <ActionGroups>
+        <ActionGroup id="econ-ai-probe-text" scope="game" criteria="always">
+            <Actions>
+                <UpdateText><Item>text/probe-text.sql</Item><Item>text/probe-diplo-text.sql</Item><Item>text/probe-diplo-b-text.sql</Item><Item>text/probe-diplo-c-text.sql</Item><Item>text/probe-diplo-d-text.sql</Item><Item>text/probe-diplo-e-text.sql</Item><Item>text/probe-slots-text.sql</Item></UpdateText>
+            </Actions>
+        </ActionGroup>
+        <ActionGroup id="econ-ai-probe-exploration" scope="game" criteria="exploration">
+            <Actions>
+                <UpdateDatabase><Item>data/probe-exploration.sql</Item></UpdateDatabase>
+            </Actions>
+        </ActionGroup>
+        <ActionGroup id="econ-ai-probe-modern" scope="game" criteria="modern">
+            <Actions>
+                <!-- probe-modern-m3.sql left out: reading a city's yields with the Gold-to-Production conversion crashes the game (AI-NATIVE-LEVERS.md, M3). -->
+                <UpdateDatabase><Item>data/probe-modern.sql</Item><Item>data/probe-diplo.sql</Item><Item>data/probe-diplo-b.sql</Item><Item>data/probe-diplo-c.sql</Item><Item>data/probe-diplo-de.sql</Item><Item>data/probe-disasters.sql</Item><Item>data/probe-slots.sql</Item></UpdateDatabase>
+            </Actions>
+        </ActionGroup>
+    </ActionGroups>
+</Mod>

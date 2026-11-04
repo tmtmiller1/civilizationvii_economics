@@ -45,9 +45,23 @@ export function demandPct({ strategic, war, factory, industry }) {
  * @param {{ civs: number, copies: number, strategic: boolean, war: boolean, industry: number, eBp?: number }} q
  */
 export function targetPriceCents(resource, { civs, copies, strategic, war, industry, eBp = 10000 }) {
+  return priceFactors(resource, { civs, copies, strategic, war, industry, eBp }).targetCents;
+}
+
+/**
+ * The target's factors, each with what it was read from, for the Markets tab's breakdown (Part 6): they multiply to
+ * the target the batch uses.
+ * @param {{ type: string, class: string }} resource
+ * @param {{ civs: number, copies: number, strategic: boolean, war: boolean, industry: number, eBp?: number }} q
+ */
+export function priceFactors(resource, { civs, copies, strategic, war, industry, eBp = 10000 }) {
   const factory = resource.class === "RESOURCECLASS_FACTORY";
+  const baseCents = basePriceCents(resource.class);
+  const scarcity = scarcityPct(civs, copies);
   const demand = demandPct({ strategic, war, factory, industry });
-  return Math.round((basePriceCents(resource.class) * scarcityPct(civs, copies) * demand * eBp) / 100000000);
+  return { baseCents, scarcityPct: scarcity, demandPct: demand, eBp, civs, copies, strategic, war: strategic && war,
+    factory, industry: factory ? Math.max(0, Math.floor(industry) || 0) : 0,
+    targetCents: Math.round((baseCents * scarcity * demand * eBp) / 100000000) };
 }
 
 /**
@@ -70,11 +84,12 @@ export function anyWar(relations) {
 }
 
 /**
- * The next prices and their history for every resource the market read lists; a resource the read no longer lists
- * drops out of both. `eBp` is the cycle's E; `capitalism` the Capitalism stage's faster smoothing (0.5).
+ * The next prices, their history and the targets they moved toward, for every resource the market read lists; a
+ * resource the read no longer lists drops out. `eBp` is the cycle's E; `capitalism` the Capitalism stage's faster
+ * smoothing (0.5).
  * @param {{ market: MarketRead, previous: MarketsState, civs: number, war: boolean, eBp?: number,
  *   capitalism?: boolean }} q
- * @returns {{ prices: Record<string, number>, history: Record<string, number[]> }}
+ * @returns {{ prices: Record<string, number>, history: Record<string, number[]>, targets: Record<string, number> }}
  */
 export function nextPrices({ market, previous, civs, war, eBp = 10000, capitalism = false }) {
   return pricesFrom({ market, previous, civs, war, eBp,
@@ -91,15 +106,18 @@ function pricesFrom({ market, previous, civs, war, eBp, smoothing }) {
   const prices = {};
   /** @type {Record<string, number[]>} */
   const history = {};
+  /** @type {Record<string, number>} */
+  const targets = {};
   for (const resource of market.resources || []) {
     if (!resource || typeof resource.type !== "string") continue;
     const target = targetPriceCents(resource, { civs, copies: market.copies?.[resource.type] || 0,
       strategic: strategic.has(resource.type), war, industry: market.industry || 0, eBp });
     const price = smoothPrice(previous.prices[resource.type], target, smoothing);
     prices[resource.type] = price;
+    targets[resource.type] = target;
     history[resource.type] = [...(previous.history[resource.type] || []), price].slice(-PRICES.historyTurns);
   }
-  return { prices, history };
+  return { prices, history, targets };
 }
 
 /**

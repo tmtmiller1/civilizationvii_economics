@@ -135,20 +135,31 @@ export function commitBatch(batch, { id, turn, civs, prior = null }) {
   const before = new Map((prior?.civs || []).map((row) => [row.pid, row]));
   /** @type {BatchRow[]} */
   const rows = [];
-  for (const civ of civs) {
-    if (civ.alive !== true) continue;
-    const last = before.get(civ.id);
-    const net = netOf(batch, civ.id);
-    const celebration = get(batch.celebration, civ.id);
-    const goldDue = net + (last?.carry ?? 0);
-    const celebrationDue = celebration + (last?.celebrationCarry ?? 0);
-    const paid = wholeGold(goldDue);
-    const celebrationPaid = wholeGold(celebrationDue);
-    rows.push({ pid: civ.id, snapshot: get(batch.snapshot, civ.id), net, paid, carry: goldDue - paid,
-      influence: get(batch.influence, civ.id), celebration, celebrationPaid,
-      celebrationCarry: celebrationDue - celebrationPaid });
-  }
+  for (const civ of civs) if (civ.alive === true) rows.push(batchRow(batch, civ, before.get(civ.id)));
   return { id, turn, civs: rows };
+}
+
+/**
+ * @param {Batch} batch
+ * @param {Civ} civ
+ * @param {BatchRow | undefined} last
+ * @returns {BatchRow}
+ */
+function batchRow(batch, civ, last) {
+  const net = netOf(batch, civ.id);
+  const celebration = get(batch.celebration, civ.id);
+  const goldDue = net + (last?.carry ?? 0);
+  const celebrationDue = celebration + (last?.celebrationCarry ?? 0);
+  const paid = wholeGold(goldDue);
+  const celebrationPaid = wholeGold(celebrationDue);
+  /** @type {BatchRow} */
+  const row = { pid: civ.id, snapshot: get(batch.snapshot, civ.id), net, paid, carry: goldDue - paid,
+    influence: get(batch.influence, civ.id), celebration, celebrationPaid,
+    celebrationCarry: celebrationDue - celebrationPaid };
+  // What the standing lines moved the treasury by at the roll (econ-standing.js): the snapshot counts it back, so
+  // the grant takes it off again.
+  if (Number.isInteger(civ.engineCents) && civ.engineCents !== 0) row.engine = civ.engineCents;
+  return row;
 }
 
 /**
@@ -157,6 +168,14 @@ export function commitBatch(batch, { id, turn, civs, prior = null }) {
  */
 export function paidOf(row) {
   return Number.isInteger(row.paid) ? /** @type {number} */ (row.paid) : wholeGold(row.net);
+}
+
+/**
+ * The Gold grant a batch row sends: what it pays, less what the standing lines already moved at the roll.
+ * @param {BatchRow} row
+ */
+export function grantOf(row) {
+  return paidOf(row) - (row.engine || 0);
 }
 
 /**
@@ -195,9 +214,11 @@ export function batchStatus(batch, balances, incomes = new Map()) {
     /** @type {"landed" | "lost" | "unknown"} */
     let status = "unknown";
     const paid = paidOf(row);
+    const grant = grantOf(row);
+    // The snapshot counts the standing lines back in, so a lost grant leaves the balance short of it by their charge.
     if (now === earned + paid) status = "landed";
-    else if (now === earned && paid !== 0) status = "lost";
-    out.push({ pid: row.pid, status, cents: status === "lost" ? paid : 0 });
+    else if (now === earned + (row.engine || 0) && grant !== 0) status = "lost";
+    out.push({ pid: row.pid, status, cents: status === "lost" ? grant : 0 });
   }
   return out;
 }

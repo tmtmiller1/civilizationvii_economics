@@ -541,7 +541,10 @@ made from the importer's resources whose origin city a major owns (`Resources.ge
 and add up to its imports) and C14 that copies count once at the origin, so the read is sound for AI pairs too. C9:
 `city.Yields.getTradeYields()` read 0 Gold in every route city over 120 turns, so the engine's exporter payment the
 game's text describes is unconfirmed, and the bill is the importer-to-exporter transfer DESIGN 12 item 6 defaults to;
-the Trade tab shows the game's Trade Income only when that read gives something. C9 also found the native per-import
+the Trade tab shows the game's Trade Income only when that read gives something. Probed again 2026-11-03 (lab run
+`2026-11-03T22-25-47`): the Gold is there, in the exporter city's `Yields.getYields()` breakdown as "Sea Trade from
+<city>" (or Land), the same amount as the route's `exportYields` read from `Trade.getCurrentTradeRoutes()`;
+`getTradeYields()` is the wrong read. C9 also found the native per-import
 charge works (exactly 1 Gold an import) and that a 1 Gold levy didn't reduce AI routes, so the AI doesn't seem to weigh
 it; it stays out. Embargo (C11) is untested, so tariffs stay a script rule. C2: `projectPossibleTradeRoutes` answers for
 the player and for AI ids, which the Trade tab's "Routes you could make" uses. A payment the payer's funds can't cover
@@ -936,16 +939,19 @@ wrong is in stage 3; a crisis with no cause at all isn't proposed, since the mod
 | | Development loan | General | Aid (either kind) |
 | --- | --- | --- | --- |
 | Backs | the current build of one city, a building or wonder | the host's economy | as chosen |
-| Gold goes to | `G / 3` progress on that build | the host's treasury, `G` (`grantYield` pair) | as chosen |
+| Gold goes to | `G` over the build's purchase price a point, as progress on that build | the host's treasury, `G` (`grantYield` pair) | as chosen |
 | Return, 25 turns | fixed: `ceil(G * 0.05)` (125%); 6% (150%) on a Commerce, Banking, Trade or Industry building (4.13) | moves with the host: `ceil(G * 0.045 * growth)`, `growth = clamp(income now / income at investment, 0.5, 2.0)` (about 112% if flat) | none |
-| Relationship, once, both sides | +1 per 5 turns of the host's income | +1 per 7.5 turns | +1 per 2.5 turns |
+| Relationship, once, both sides | +1 per turn of the host's income | +1 per 1.5 turns | +1 per half a turn |
 | Record | `kind: "project"` | `kind: "general"` | logged transfer, no record, no misses |
 | Needs | not at war, Neutral or better, Guild patronage stage | same, Chartered companies stage | not at war |
 | Host loses the city | schedule closed, rest written off | unaffected | n/a |
 
 Relationship gains are counted in turns of the host's income (`max(10, income)`), so a gift means as much to a Modern
-host as to an Antiquity one. Aid to a civ in default to the giver clears that debt first: the defaulted loans take the
-aid up to what's outstanding, and only the rest is sent as Gold (NOTES choice 122; the goodwill counts the whole gift).
+host as to an Antiquity one, and one gift books at most 20 points, under the game's 30-point band. The Trade tab shows
+the gain on aid only: a loan is an investment and its line says what comes back, and the goodwill it also books is a
+side effect. Aid that would round to 0 is refused (`too-small`), and the tab greys it with the least Gold the host
+would notice. Aid to a civ in default to the giver clears that debt first: the defaulted loans take the aid up to
+what's outstanding, and only the rest is sent as Gold (NOTES choice 122; the goodwill counts the whole gift).
 
 A development loan is a loan tied to a build, with a fixed return, and the screens call it that. General investment is
 the one whose return depends on how the host does. The record kind stays `project` so the code and tests keep their
@@ -959,10 +965,11 @@ started would leave the Gold waiting on a choice the AI can't see.
   is returned in that batch, so the ledger and the grants agree.
 - The build is re-read in the same tick as the grant, since `addProgress` lands on whatever is current 3 s later
   (P8). If P8 shows the progress landing on a different item, the return still runs, since the host got the value.
-- `G / 3` is a starting ratio. The balance checks (section 10) compare it with the game's own Gold purchase price for
-  the same build, by age and game speed. `addProgress` lands times the city's own production multiplier for the item
-  (NOTES finding L, 2026-10-30): as sent in the human's cities, under the difficulty handicap in an AI's, as the
-  city's own production does, so `G / 3` stays.
+- Since 2026-11-04 a point costs what buying the build costs the player: the build's Gold price over its production
+  cost, read per city by the glue (`pointCents`; about 3.47 for a Modern building, 2.84 for a military unit). 3 Gold
+  is the fallback when the price doesn't read. `addProgress` lands times the city's own production multiplier for the
+  item (NOTES finding L, 2026-10-30): as sent in the human's cities, under the difficulty handicap in an AI's, as the
+  city's own production does.
 - When the building stands, the city's Economics entry and the chronicle name the investor.
 - Holding Gold for a build the city hasn't started yet (an escrow) is left out of 1.1 and can come back if P8 and
   play show it's wanted.
@@ -984,7 +991,7 @@ Other rules:
 Built 2026-10-29 (version 0.3.0, offline only), with the 1.1 probe results folded in. C3 settled P8: `addProgress` on an
 AI city's current build lands within 3 s and the AI keeps the build for the next 3 turns, as a control city does, so a
 development loan backs the build at the head of the queue as written. A development loan's Gold goes to a world account,
-`progress`, and only the Gold its progress uses leaves the investor (3 Gold a point), so "the rest is returned" is the
+`progress`, and only the Gold its progress uses leaves the investor (3 Gold a point then; the build's purchase price a point since 2026-11-04), so "the rest is returned" is the
 rest never sent. The records sit in `ledger.investments` (ledger version 3) beside the loans, with the loan rules for
 misses, default, the lender block and garnish; the dividend doesn't step up on a miss. General investment's growth
 counts its base from 10 Gold a turn. One gift's relationship gain is capped at 10 points (ours, NOTES choice 63). The
@@ -1272,8 +1279,10 @@ Each row lists only the changes from Mixed. Mixed is sections 4.1 to 4.16 as wri
   - Whether celebration bought through interest beats what the same Gold buys through Light tax is a balance check
     (section 10). It shouldn't be a cheaper way to celebrate than Light tax.
 - The plan: each turn, take 20% of positive Gold income and spend it as `addProgress` across the civ's cities with a
-  queued item, split by population, at the game's own purchase price: `GOLD_PURCHASE_MULTIPLIER` Gold a point, read
-  from GlobalParameters at runtime with other mods' rows applied, 4 when the read fails. Game speed scales a build's
+  queued item, split by population, at the game's own purchase price: since 2026-11-04 each city's build's Gold price
+  over its production cost (`pointCents`), and `GOLD_PURCHASE_MULTIPLIER` Gold a point, read from GlobalParameters at
+  runtime with other mods' rows applied, only when that read fails (4 when both fail). The multiplier alone was about
+  15% above what players pay (3.47 a point for a Modern building, probed 2026-11-03). Game speed scales a build's
   cost and its purchase price alike, and the glue reads the points a build needs at the game's speed, so the price
   per point is the multiplier alone. What whole points leave over buys points in the biggest cities first. Empty
   queues are skipped. The Fiscal tab shows the take and where it went. P8 covers AI cities. `addProgress` lands as

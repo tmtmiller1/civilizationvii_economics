@@ -10,7 +10,8 @@ declare global {
   /** `project` and `general` are 1.1's investment records; 1.0 only writes `loan`. */
   type LoanKind = "loan" | "project" | "general";
   /** Who opened the record: a player's borrow or lend request, the guard, or an AI rule. */
-  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens" | "ai-build" | "refinance" | "crisis";
+  type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens" | "ai-build" | "refinance" | "crisis"
+    | "policy";
   type RelationLevel = "war" | "unfriendly" | "neutral" | "friendly" | "unmet";
   type BlockReason = "default" | "repudiation";
 
@@ -72,6 +73,8 @@ declare global {
   interface BatchRow {
     pid: number; snapshot: number; net: number; influence: number; celebration: number;
     paid?: number; carry?: number; celebrationPaid?: number; celebrationCarry?: number;
+    /** What the standing lines moved the treasury by at the roll, counted into `snapshot` (econ-standing.js). */
+    engine?: number;
   }
   interface BatchRecord { id: string; turn: number; civs: BatchRow[] }
 
@@ -112,16 +115,34 @@ declare global {
     /** The counters the conditions keep: turns of dues over income, of inflation at its cap, routes lately. */
     crisisCounters: CrisisCounterRow[];
     bubble: { since: number, burst: number | null } | null;
+    /** The crisis paths (econ-policy.js): running cards, outcomes, drift, the activation counter. */
+    policies: any[];
+    pathResults: any[];
+    affinity: { pid: number, steps: Record<string, number> }[];
+    policySeq: number;
+    /** Hard times for Partisans: each civ's Austerity strain and the turn its Depression began, as of `turn`. */
+    hardTimes?: HardTimesRow[];
+    /** Each AI's last six Influence stocks, newest last, for its Influence forecast (hard-times plan v2, Part 2). */
+    influenceLog?: InfluenceLogRow[];
   }
+
+  interface HardTimesRow { pid: number; strain: number; depSince: number | null; turn: number }
+
+  interface InfluenceLogRow { pid: number; turn: number; stocks: number[] }
+
+  /** What `__towerEconomics.hardTimes(pid)` returns (hard-times plan v2, Part 1). */
+  interface HardTimes { depression: number; depressionTurns: number; austerityStrain: number;
+    austerityRunning: boolean; arrearsPoints: number }
 
   type CrisisKind = "depression" | "credit-panic" | "price-shock" | "debt" | "inflation" | "trade-collapse";
   interface CrisisRow { pid: number; kind: CrisisKind; since: number }
-  interface ResponseRow { pid: number; id: string; crisis: CrisisKind; since: number; until: number | null }
+  interface ResponseRow { pid: number; id: string; crisis: CrisisKind; since: number; until: number | null;
+    costPct?: number; policy?: string }
   /** `civs` is the tribute legacy's list of the civs that paid, whose bills to the levier count double. */
   interface LegacyRow { pid: number | null; id: string; since: number; until: number | null; nextAge: boolean;
     civs?: number[] }
   interface CrisisTurnRow { pid: number; id: string; turn: number; age?: string }
-  interface CrisisCounterRow { pid: number; dues: number; hot: number; routes: number[] }
+  interface CrisisCounterRow { pid: number; dues: number; hot: number; routes: number[]; peace?: number }
 
   /** The crisis rules other steps read through the turn context, so no module has to import econ-crisis.js. */
   interface CrisisHooks {
@@ -195,10 +216,18 @@ declare global {
     purchaseCents?: number | null;
     /** The settlement's population, for the plan's split (DESIGN 4.17). */
     population?: number;
+    /** What a point of the current build costs to buy, in cents (its Gold price over its production cost). */
+    pointCents?: number | null;
     /** Percent of a point sent by addProgress that lands in this city (NOTES finding L); 100 until it's read. */
     progressScalePct?: number;
     /** Turns the current build needs on the city's own production (`BuildQueue.currentTurnsLeft`); null unread. */
     turnsLeft?: number | null;
+    /** The settlement's plot ("x,y"), its original owner and whether its build is a military unit (crisis paths). */
+    loc?: string | null;
+    orig?: number | null;
+    military?: boolean;
+    /** The settlement's net Gold a turn, in cents. */
+    goldCents?: number;
     /** The current build's base Gold yield, for the build loan's "pays for itself" test (DESIGN 6). */
     buildGoldYield?: number;
   }
@@ -244,6 +273,21 @@ declare global {
     aidTurns: Record<string, number>;
     /** By "<ai>-<host>": the turn the AI last offered the human host an investment (once per 10 turns). */
     offerTurns: Record<string, number>;
+    /** Markets tab (Part 6): the target each resource's price moved toward, kept beside `history`. */
+    targets: Record<string, number[]>;
+    /** Markets tab (Part 6): what the last batch's targets were read from. */
+    basis: MarketBasis | null;
+    /** Markets tab (Part 6): the turns a cause moved a target, over the history's turns. */
+    marks: MarketMark[];
+  }
+  /** What the last batch's prices were read from (Part 6), so the breakdown multiplies to the target it used. */
+  interface MarketBasis {
+    turn: number; civs: number; war: boolean; eBp: number; industry: number; smoothingPct: number; pricePct: number;
+    copies: Record<string, number>; strategic: string[]; floored: string[];
+  }
+  /** A turn a cause moved targets: a war begun or ended, copies gained or lost, a cycle phase, Industry buildings. */
+  interface MarketMark {
+    t: number; k: "war" | "peace" | "gain" | "loss" | "phase" | "industry"; r?: string; d?: number; p?: string;
   }
 
   /** Build progress the glue lands with `addProgress` on the city's current build (DESIGN 4.12). */
@@ -276,6 +320,11 @@ declare global {
     commerceSettlements?: number;
     /** The engine's military strength, or its combat units when that read fails; null when neither answers. */
     strength?: number | null;
+    /** The Influence stock (whole Influence, null unread) and net production a turn, for the crisis paths. */
+    influence?: number | null;
+    production?: number;
+    /** What the standing lines moved the treasury by at the last roll; the glue has added it back to the balance. */
+    engineCents?: number;
   }
 
   /** What the glue saw between batches that the cycle weighs (DESIGN 4.11): `pid` is the civ that took part. */
@@ -325,6 +374,8 @@ declare global {
   interface PlanRequest { kind: string; [field: string]: unknown }
 
   interface PlanInput {
+    /** A Treasury-tab projection turn: the standing lines aren't worked out. */
+    projection?: boolean;
     turn: number;
     age: string;
     ledger?: Ledger;
@@ -351,6 +402,9 @@ declare global {
     cents: number;
     reason: string;
     parts: Record<string, number>;
+    /** A stable text key naming the line in a ledger, with its arguments (text keys too), e.g. "Arrears: {card}". */
+    label?: string;
+    labelArgs?: string[];
   }
 
   /** One grantYield call the glue makes; `key` is the transfer it came from. */
@@ -381,6 +435,14 @@ declare global {
     favors: FavorRow[];
     /** Each AI's stake in each host the turn read, by "ai:host" (AI-PLAN 4.5), for the screens and the lab. */
     stakes: Record<string, number>;
+    /** AI wars to declare for the crisis paths' Foreign adventure. */
+    wars?: { a: number, b: number }[];
+    /** Each civ's standing Gold lines for the next roll (econ-standing.js). */
+    standing?: import("../ui/econ-standing.js").StandingRow[];
+    /** Each civ's hardship for Partisans, by pid (econ-policy.js hardshipRows). */
+    hardship?: Record<string, number>;
+    /** Each civ's hard times for Partisans, by pid (econ-policy.js hardTimesRows). */
+    hardTimes?: Record<string, HardTimes>;
   }
 
   /** The turn's Gold bookkeeping (DESIGN 4.14), each Map keyed by player id. */
@@ -434,6 +496,11 @@ declare global {
 
   /** What the plan's passes share for one turn (ui/econ-turn.js). */
   interface TurnContext {
+    /** The ledger is near its 64 KB envelope: the crisis paths refuse new cards (econ-plan.js). */
+    ledgerNearlyFull?: boolean;
+    projection?: boolean;
+    /** The crisis paths' terms, set by the plan (econ-policy.js policyTerms). */
+    policyTerms?: (ctx: TurnContext, pid: number, terms: Record<string, any>) => void;
     turn: number;
     age: string;
     civs: Civ[];

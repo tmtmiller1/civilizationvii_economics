@@ -4,13 +4,15 @@
 
 import { INVEST } from "./econ-params.js";
 import { capPayments, netPairs, owedByPair, routeBillCents, settlementCap, tariffOf } from "./econ-trade.js";
-import { baseDividend, isOpenInvestment, progressFor, relationshipGain, returnMille, tenthsFor }
+import { baseDividend, giftMinimumCents, isOpenInvestment, progressFor, relationshipGain, returnMille, tenthsFor }
   from "./econ-invest.js";
 import { hasStage } from "./econ-stages.js";
 import { relationLevel } from "./econ-lenders.js";
 import { aiHostRefusal, investRefusal } from "./econ-invest-open.js";
 import { viewContext } from "./econ-view-model.js";
 import { emptyMarkets } from "./econ-markets.js";
+import { tradeTermsOf } from "./econ-commerce.js";
+import { basePriceCents } from "./econ-prices.js";
 
 /**
  * The Markets tab: each priced resource with its holders, its price and the change over its history, dearest first.
@@ -42,7 +44,10 @@ export function tradeView(input, me) {
   const tariffsOn = input.options?.tariffs !== false;
   const markets = input.markets || emptyMarkets();
   const tariffs = markets.tariffs;
-  const owed = owedByPair({ routes: input.routes || [], prices: markets.prices, tariffs, civIds, tariffsOn });
+  // The batch's own terms: each civ's system and crisis, so a tribute's doubled bill shows as the batch charges it.
+  const ctx = viewContext(input);
+  const owed = owedByPair({ routes: input.routes || [], prices: markets.prices, tariffs, civIds, tariffsOn,
+    termsOf: tradeTermsOf(ctx), basePrices: ctx.basePrices });
   const income = (/** @type {number} */ pid) => live.find((civ) => civ.id === pid)?.incomeCents ?? 0;
   const paid = capPayments(netPairs(owed), income);
   const civ = live.find((c) => c.id === me);
@@ -95,12 +100,13 @@ export function routePreview(possible, prices) {
  * @param {{ form: InvestKind, cents: number, asAid: boolean, hostIncomeCents: number, city?: CityRead | null }} q
  */
 export function investForecast({ form, cents, asAid, hostIncomeCents, city = null }) {
-  const plan = form === "project" && city ? progressFor(cents, city.neededProgress) : null;
+  const plan = form === "project" && city ? progressFor(cents, city.neededProgress, city.pointCents) : null;
   const spent = plan ? plan.usedCents : cents;
   const mille = returnMille(form, city?.roleBuilding === true);
   const perTurn = asAid ? 0 : baseDividend(spent, mille);
   return { spentCents: spent, progress: plan?.progress ?? 0, perTurnCents: perTurn, totalCents: perTurn * INVEST.term,
-    relationship: relationshipGain(spent, hostIncomeCents, tenthsFor(form, asAid)) };
+    relationship: relationshipGain(spent, hostIncomeCents, tenthsFor(form, asAid)),
+    minimumCents: giftMinimumCents(hostIncomeCents, tenthsFor(form, asAid)) };
 }
 
 /**
@@ -137,4 +143,52 @@ export function investmentsView(input, me) {
   return { open, offers: (input.ledger?.offers || []).filter((offer) => offer.host === me),
     investedCents: open.filter((record) => record.investor === me).reduce((sum, r) => sum + r.outstanding, 0),
     owedCents: open.filter((record) => record.host === me).reduce((sum, r) => sum + r.outstanding, 0) };
+}
+
+/**
+ * What one resource adds to the bills between this civ and each partner (Part 6), from the batch's own bill terms:
+ * the bill with only this resource priced, before each pair nets and the cap. `carries` is true where a route
+ * carries it, even when its share rounds to nothing.
+ * @param {PlanInput} input
+ * @param {number} me
+ * @param {string} type
+ * @returns {{ partner: number, youOweCents: number, theyOweCents: number }[]}
+ */
+export function resourceBills(input, me, type) {
+  const live = new Set(input.civs.filter((civ) => civ.alive === true).map((civ) => civ.id));
+  const routes = (input.routes || []).filter((route) => carries(route, me, type));
+  /** @type {Map<number, { partner: number, youOweCents: number, theyOweCents: number }>} */
+  const rows = new Map();
+  for (const route of routes) {
+    const partner = route.importer === me ? route.exporter : route.importer;
+    if (live.has(partner)) rows.set(partner, { partner, youOweCents: 0, theyOweCents: 0 });
+  }
+  for (const pair of rows.size ? resourceOwed(input, routes, live, type) : []) {
+    const row = rows.get(pair.importer === me ? pair.exporter : pair.importer);
+    if (!row) continue;
+    if (pair.importer === me) row.youOweCents = pair.owed;
+    else row.theyOweCents = pair.owed;
+  }
+  return [...rows.values()].sort((a, b) => a.partner - b.partner);
+}
+
+/** @param {RouteRead} route @param {number} me @param {string} type */
+const carries = (route, me, type) => (route.importer === me || route.exporter === me)
+  && (route.resources || []).includes(type);
+
+/**
+ * The bills on these routes with only `type` priced, on the batch's own terms.
+ * @param {PlanInput} input
+ * @param {RouteRead[]} routes
+ * @param {Set<number>} live
+ * @param {string} type
+ */
+function resourceOwed(input, routes, live, type) {
+  const markets = input.markets || emptyMarkets();
+  const ctx = viewContext(input);
+  // A civ on fixed prices pays the class base (econ-commerce.js marketStep fills the batch's own table).
+  const resource = (input.market?.resources || []).find((row) => row.type === type);
+  const base = resource ? basePriceCents(resource.class) : ctx.basePrices[type] ?? 0;
+  return owedByPair({ routes, prices: { [type]: markets.prices[type] ?? 0 }, tariffs: markets.tariffs, civIds: live,
+    tariffsOn: input.options?.tariffs !== false, termsOf: tradeTermsOf(ctx), basePrices: { [type]: base } });
 }

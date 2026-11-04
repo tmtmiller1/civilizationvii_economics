@@ -33,59 +33,76 @@ export function ageKeyOf(age) {
  * @typedef {{ id: string, ages: AgeKey[], kinds: CrisisKind[], stage?: string, system?: string[] | null,
  *   notSystem?: string[], runs: number | "crisis", after?: number, oncePer: "crisis" | "age" | "game",
  *   costTurns?: number, legacy?: { turns?: number, age?: boolean, nextAge?: boolean, system?: string },
- *   prefer: string[], trap?: boolean, order: number }} Response
+ *   prefer: string[], trap?: boolean, order: number, against?: string[] }} Response
  */
 
 /** @type {Response[]} */
 export const RESPONSES = [
   // Shared across the ages: the same three ideas with the age's own name and figures.
-  { id: "public-works", ages: ["AQ", "EX", "MO"], kinds: ["depression", "credit-panic", "debt", "trade-collapse"],
+  { id: "public-works", against: ["tribute"], ages: ["AQ", "EX", "MO"], kinds: ["depression", "credit-panic", "debt", "trade-collapse"],
     runs: "crisis", after: 3, oncePer: "crisis", prefer: ["planned", "manorial", "market", "corporatist", "mixed"],
     order: 10 },
   // Relief leaves a mark only when it's ended early (relief-ended, econ-crisis-respond.js).
-  { id: "relief", ages: ["AQ", "EX", "MO"], kinds: ["depression", "price-shock", "trade-collapse"], runs: "crisis",
+  { id: "relief", against: ["tribute", "corporatist"], ages: ["AQ", "EX", "MO"], kinds: ["depression", "price-shock", "trade-collapse"], runs: "crisis",
     after: 2, oncePer: "crisis", prefer: ["religious", "civicMarket", "mixed"], order: 20 },
-  { id: "bank-holiday", ages: ["AQ", "EX", "MO"], kinds: ["depression", "credit-panic", "debt"], runs: 3,
+  { id: "bank-holiday", against: ["market"], ages: ["AQ", "EX", "MO"], kinds: ["depression", "credit-panic", "debt"], runs: 3,
     oncePer: "age", legacy: { turns: 20 }, prefer: [], order: 30 },
   { id: "confidence", ages: ["AQ", "EX", "MO"], kinds: ["depression", "credit-panic", "price-shock", "debt",
     "inflation", "trade-collapse"], runs: 0, oncePer: "crisis", prefer: [], order: 90 },
   // Antiquity: the temple, the grain and the debt bondage.
-  { id: "cancel-debts", ages: ["AQ"], kinds: ["debt", "depression"], runs: 5, oncePer: "age", legacy: { age: true },
+  { id: "cancel-debts", against: ["merchantOligarchy", "mercantile"], ages: ["AQ"], kinds: ["debt", "depression"], runs: 5, oncePer: "age", legacy: { age: true },
     prefer: ["civicMarket"], order: 40 },
-  { id: "debase", ages: ["AQ"], kinds: ["debt", "depression", "price-shock"], runs: 5, oncePer: "age",
+  { id: "debase", against: ["civicMarket", "merchantOligarchy"], ages: ["AQ"], kinds: ["debt", "depression", "price-shock"], runs: 5, oncePer: "age",
     legacy: { age: true }, prefer: ["palace", "tribute"], order: 50 },
   { id: "tribute", ages: ["AQ"], kinds: ["debt", "depression", "price-shock"], system: ["tribute"], runs: 0,
     oncePer: "crisis", legacy: { turns: 10 }, prefer: ["tribute"], order: 60 },
-  { id: "temple-lends", ages: ["AQ"], kinds: ["debt", "depression"], runs: 0, oncePer: "age", legacy: { age: true },
+  { id: "temple-lends", against: ["merchantOligarchy"], ages: ["AQ"], kinds: ["debt", "depression"], runs: 0, oncePer: "age", legacy: { age: true },
     prefer: ["palace", "civicMarket", "mixed"], order: 70 },
   // Exploration: the bankers, the bullion and the companies.
-  { id: "suspend", ages: ["EX"], kinds: ["debt", "credit-panic", "depression"], runs: 3, oncePer: "age",
+  { id: "suspend", against: ["mercantile"], ages: ["EX"], kinds: ["debt", "credit-panic", "depression"], runs: 3, oncePer: "age",
     legacy: { turns: 20, age: true }, prefer: ["manorial"], order: 40 },
   { id: "recoinage", ages: ["EX", "MO"], kinds: ["inflation", "price-shock"], stage: "publicDebt", costTurns: 2,
     runs: 0, oncePer: "age", legacy: { age: true }, prefer: ["mercantile", "manorial", "religious", "mixed"],
     order: 50 },
-  { id: "charter", ages: ["EX"], kinds: ["trade-collapse", "depression", "debt"], stage: "charteredCompanies",
+  { id: "charter", against: ["manorial", "planned"], ages: ["EX"], kinds: ["trade-collapse", "depression", "debt"], stage: "charteredCompanies",
     runs: 20, oncePer: "age", legacy: { age: true }, prefer: ["mercantile"], order: 60 },
-  { id: "navigation-acts", ages: ["EX"], kinds: ["trade-collapse", "price-shock", "depression"], stage: "tariffs",
+  { id: "navigation-acts", against: ["market"], ages: ["EX"], kinds: ["trade-collapse", "price-shock", "depression"], stage: "tariffs",
     runs: 10, oncePer: "age", legacy: { age: true }, prefer: ["mercantile"], trap: true, order: 70 },
-  { id: "bullion", ages: ["EX"], kinds: ["debt", "depression", "credit-panic"], runs: 5, oncePer: "age",
+  { id: "bullion", against: ["religious"], ages: ["EX"], kinds: ["debt", "depression", "credit-panic"], runs: 5, oncePer: "age",
     legacy: { turns: 20 }, prefer: ["manorial"], order: 80 },
-  { id: "lend-crown", ages: ["EX"], kinds: ["debt", "credit-panic", "depression"], runs: 0, oncePer: "age",
+  { id: "lend-crown", against: ["market"], ages: ["EX"], kinds: ["debt", "credit-panic", "depression"], runs: 0, oncePer: "age",
     legacy: { age: true }, prefer: ["manorial", "religious", "mixed"], order: 85 },
   // Modern: the New Deal and the Hoover trap.
-  { id: "deposit-insurance", ages: ["MO"], kinds: ["credit-panic", "depression", "debt"], stage: "banking",
+  { id: "deposit-insurance", against: ["corporatist", "planned"], ages: ["MO"], kinds: ["credit-panic", "depression", "debt"], stage: "banking",
     costTurns: 2, runs: 0, oncePer: "game", legacy: { age: true, nextAge: true, system: "market" },
     prefer: ["market", "corporatist", "mixed"], order: 40 },
   { id: "gold-standard", ages: ["MO"], kinds: ["depression", "debt", "credit-panic"], stage: "publicDebt",
     notSystem: ["planned"], runs: 5, oncePer: "age", legacy: { age: true }, prefer: ["market", "corporatist"],
     order: 50 },
-  { id: "price-supports", ages: ["MO"], kinds: ["price-shock", "depression", "trade-collapse"], runs: "crisis",
+  { id: "price-supports", against: ["market"], ages: ["MO"], kinds: ["price-shock", "depression", "trade-collapse"], runs: "crisis",
     after: 0, oncePer: "crisis", legacy: { turns: 10 }, prefer: ["mercantile", "corporatist", "planned"], order: 60 },
-  { id: "rearmament", ages: ["MO"], kinds: ["depression", "trade-collapse", "credit-panic"], runs: 10,
+  { id: "rearmament", against: ["religious", "market"], ages: ["MO"], kinds: ["depression", "trade-collapse", "credit-panic"], runs: 10,
     oncePer: "age", legacy: { turns: 20 }, prefer: ["corporatist", "planned"], order: 70 },
-  { id: "austerity", ages: ["AQ", "EX", "MO"], kinds: ["debt", "depression", "credit-panic", "inflation"],
+  { id: "austerity", against: ["civicMarket", "religious"], ages: ["AQ", "EX", "MO"], kinds: ["debt", "depression", "credit-panic", "inflation"],
     runs: "crisis", after: 0, oncePer: "crisis", prefer: ["tribute", "palace"], trap: true, order: 95 },
 ];
+
+/**
+ * How a civ's economic system meets a shared response (crisis paths phase 2): "advantage" when the response is one
+ * its system prefers (a quarter less Gold), "opposition" when its system resists it (10 Influence more), else null.
+ * @param {Response} spec
+ * @param {string} system
+ * @returns {"advantage" | "opposition" | null}
+ */
+export function affinityOf(spec, system) {
+  // A mixed economy leans no way: the prefer lists name it only for the AI's fallback order.
+  if (!system || system === "mixed") return null;
+  if (spec.prefer.includes(system)) return "advantage";
+  return (spec.against || []).includes(system) ? "opposition" : null;
+}
+
+/** The Influence a political opposition adds to a response, and the Gold factor an advantage takes off. */
+export const AFFINITY = { oppositionInfluence: 10, advantageCostPct: 75 };
 
 /** @param {string} id */
 export function responseById(id) {

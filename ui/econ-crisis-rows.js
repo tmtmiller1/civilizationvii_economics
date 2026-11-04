@@ -40,7 +40,8 @@ export const crisesOn = (ctx) => ctx.options.crises === true;
  *   ownRatePct: number, bondPct: number, templePct: number, holiday: boolean, lendingClosed: boolean,
  *   piExtraPpm: number, erosionCapPct: number, billPct: number, tradeWarDouble: boolean, navigationActs: boolean,
  *   collapseHalf: boolean, pricePct: number, armyFactor: number, austerity: boolean, dole: boolean,
- *   billsToPct: Record<string, number> }} CrisisTerms
+ *   billsToPct: Record<string, number>, citizensCapPct: number, citizensRatePct: number, tariffCeilingLow: boolean,
+ *   aidGoodwillPct: number, aidBondHalf: boolean, tradeBuildingPctOf: number }} CrisisTerms
  */
 
 /** @returns {CrisisTerms} */
@@ -48,7 +49,8 @@ function plainTerms() {
   return { spreadFloor: false, noFreeze: false, panicPct: 100, capTurns: 0, capDepthPct: 100, ownRatePct: 100,
     bondPct: 100, templePct: 100, holiday: false, lendingClosed: false, piExtraPpm: 0, erosionCapPct: 100,
     billPct: 100, tradeWarDouble: false, navigationActs: false, collapseHalf: false, pricePct: 0, armyFactor: 1,
-    austerity: false, dole: false, billsToPct: {} };
+    austerity: false, dole: false, billsToPct: {}, citizensCapPct: 100, citizensRatePct: 100, tariffCeilingLow: false,
+    aidGoodwillPct: 100, aidBondHalf: false, tradeBuildingPctOf: 100 };
 }
 
 /** @param {number} a @param {number} b */
@@ -123,6 +125,9 @@ export function crisisTerms(ctx, pid) {
     for (const row of standingResponses(ctx.ledger, pid)) RUNNING_TERMS[row.id]?.(terms);
     for (const row of legaciesOf(ctx.ledger, pid)) LEGACY_TERMS[row.id]?.(terms);
     leviedTerms(ctx.ledger, pid, terms);
+    // The crisis paths' running cards and legacies (econ-policy.js), through the plan's hook so the modules don't
+    // import each other.
+    ctx.policyTerms?.(ctx, pid, /** @type {Record<string, any>} */ (terms));
   }
   cache.set(pid, terms);
   return terms;

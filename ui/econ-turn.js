@@ -124,13 +124,15 @@ export function notice(ctx, pid, fields) {
  * One loan's movement of Gold this turn.
  * @param {TurnContext} ctx
  * @param {{ id: string }} loan
- * @param {{ from: Party, to: Party, cents: number, reason: string, parts?: Record<string, number> }} spec
+ * @param {{ from: Party, to: Party, cents: number, reason: string, parts?: Record<string, number>, label?: string,
+ *   labelArgs?: string[] }} spec
  */
 export function emit(ctx, loan, spec) {
   if (spec.cents <= 0) return;
   /** @type {Transfer} */
   const transfer = { loanId: loan.id, turn: ctx.turn, from: spec.from, to: spec.to, cents: spec.cents,
     reason: spec.reason, parts: spec.parts || {} };
+  if (spec.label) { transfer.label = spec.label; transfer.labelArgs = spec.labelArgs || []; }
   ctx.out.transfers.push(transfer);
   record(ctx.batch, transfer);
 }
@@ -277,6 +279,21 @@ export function citizensFor(ctx, pid) {
   const ratePpm = citizenRatePpm({ age: ctx.age, standing: standing(ctx, pid), rates: ctx.rates,
     depthFactorPct: civ.depthFactorPct ?? 100 });
   if (ratePpm === null) return null;
-  return { ratePpm, roomCents: citizenCapCents({ incomeCents: civ.incomeCents,
-    commerceSettlements: civ.commerceSettlements ?? 0, owedCents: owed }) };
+  return citizensTerms(ctx, civ, { ratePpm, owed });
+}
+
+/**
+ * The crisis paths (econ-policy.js) move the citizens' cap and rate: Liturgies and Land reform halve the cap, the
+ * citizens' republic earned raises it, compromised dears their rate.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @param {{ ratePpm: number, owed: number }} q
+ */
+function citizensTerms(ctx, civ, { ratePpm, owed }) {
+  const terms = ctx.crisis ? ctx.crisis.terms(civ.id) : null;
+  const cap = citizenCapCents({ incomeCents: civ.incomeCents, commerceSettlements: civ.commerceSettlements ?? 0,
+    owedCents: 0 });
+  const scaled = Math.round((cap * (terms?.citizensCapPct ?? 100)) / 100);
+  return { ratePpm: Math.round((ratePpm * (terms?.citizensRatePct ?? 100)) / 100),
+    roomCents: Math.max(0, scaled - owed) };
 }

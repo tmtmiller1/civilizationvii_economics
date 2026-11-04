@@ -83,4 +83,8 @@ test("a city where sent points land bigger is sent fewer: the price divides the 
   assert.equal(pointPriceCents(null, undefined), 400);
   assert.equal(pointPriceCents(0, -5), 400, "a rate or a share that isn't positive reads as the fallback");
   assert.equal(pointPriceCents(1, 1), 1, "never below a cent");
+  assert.equal(pointPriceCents(400, 100, 347), 347, "the build's own purchase price wins over the multiplier");
+  assert.equal(pointPriceCents(400, 100, null), 400, "an unread own price falls back to the multiplier");
+  assert.deepEqual(planSplit(1000, [{ id: "a", build: "U", neededProgress: 50, population: 1, pointCents: 284 }], 400),
+    [{ cityId: "a", progress: 3, cents: 852 }], "a military build at 2.84 a point");
 });

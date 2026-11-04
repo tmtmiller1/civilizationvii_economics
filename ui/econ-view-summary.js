@@ -7,7 +7,7 @@
 import { amount, el, stat } from "./econ-dom.js";
 import { formatGold } from "./econ-format.js";
 import { outstandingOf } from "./econ-credit.js";
-import { phaseKey, systemKey } from "./econ-notice-text.js";
+import { phaseKey, policyKey, responseKey, systemKey } from "./econ-notice-text.js";
 import { dueNext } from "./econ-view-model.js";
 import { systemView, worldView } from "./econ-view-macro.js";
 import { emptyLedger } from "./econ-state.js";
@@ -31,6 +31,13 @@ export function renderSubtitle(host, api) {
   const parts = [];
   if (system.on) parts.push(api.loc("LOC_ECONOMICS_SUMMARY_SYSTEM", api.loc(systemKey(system.system))));
   if (world.cycleOn) parts.push(api.loc(phaseKey(world.mine?.phase ?? world.worldPhase)));
+  // What the player is doing about a crisis: its crisis-paths cards, then its standing responses.
+  const ledger = input.ledger;
+  const doing = [...(ledger?.policies || []).filter((row) => row.pid === api.me)
+    .map((row) => api.loc(policyKey(row.card))),
+    ...(ledger?.responses || []).filter((row) => row.pid === api.me && !row.policy && row.id !== "bank-run")
+      .map((row) => api.loc(responseKey(row.id)))];
+  if (doing.length) parts.push(doing.join(", "));
   parts.forEach((text, index) => {
     if (index > 0) host.appendChild(el("div", "econ-subtitle-dot", "·"));
     host.appendChild(el("div", "font-title uppercase", text));

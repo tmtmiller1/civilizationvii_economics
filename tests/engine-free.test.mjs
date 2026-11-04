@@ -10,7 +10,7 @@ const GLUE = new Set(["econ-bootstrap.js", "econ-log.js", "econ-engine.js", "eco
   "econ-notify.js", "econ-fiscal.js", "econ-settings.js", "econ-dom.js", "econ-screen.js", "econ-screen-api.js",
   "econ-dock.js", "econ-view-treasury.js", "econ-view-loans.js", "econ-view-borrow.js", "econ-view-fiscal.js",
   "econ-commerce-read.js", "econ-view-markets.js", "econ-view-trade.js", "econ-macro-read.js", "econ-view-world.js",
-  "econ-options.js", "econ-spoil.js"]);
+  "econ-options.js", "econ-spoil.js", "econ-standing-read.js"]);
 const BANNED = ["Game", "GameContext", "Players", "GameplayMap", "GameInfo", "WorldBuilder", "Units", "Cities",
   "engine", "UI", "localStorage", "sessionStorage", "Configuration", "Network", "document", "window", "Controls",
   "ContextManager", "YieldTypes", "Database"];

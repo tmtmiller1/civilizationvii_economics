@@ -1,6 +1,7 @@
 // econ-planned.js - Economics: the plan of a Planned civ (DESIGN 4.17), as plain data. Each turn 20% of positive
-// Gold income goes into the builds of the civ's cities that have something queued, split by population, at the game's
-// own purchase rate (GOLD_PURCHASE_MULTIPLIER Gold a point, read by the glue; 4 when it can't be read). A city's
+// Gold income goes into the builds of the civ's cities that have something queued, split by population, at what
+// buying that build costs the player a point (the city's `pointCents`, read by the glue; GOLD_PURCHASE_MULTIPLIER when
+// that read fails, 4 when neither can be read). A city's
 // `progressScalePct` says how much of a sent point lands (the glue's figure, 100; NOTES finding L), and the points sent
 // are divided by it. Empty queues are
 // skipped, and a city takes no more than its build still needs; the Gold a city can't use stays with the civ. No
@@ -18,13 +19,16 @@ export function planTakeCents(incomeCents) {
 }
 
 /**
- * The Gold a sent point costs in one city: the purchase rate times the share of a point that lands there. A missing
- * or unreadable rate is 4 Gold, a missing or unreadable share 100%.
+ * The Gold a sent point costs in one city: the city's own purchase price a point when it was read, else the game's
+ * purchase rate, times the share of a point that lands there. A missing or unreadable rate is 4 Gold, a missing or
+ * unreadable share 100%.
  * @param {number | null | undefined} goldPerPointCents
  * @param {number | null | undefined} [scalePct]
+ * @param {number | null | undefined} [ownCents] the city's price a point for its current build
  */
-export function pointPriceCents(goldPerPointCents, scalePct) {
-  const rate = Number.isInteger(goldPerPointCents) && /** @type {number} */ (goldPerPointCents) > 0
+export function pointPriceCents(goldPerPointCents, scalePct, ownCents = null) {
+  const valid = (/** @type {unknown} */ v) => Number.isInteger(v) && /** @type {number} */ (v) > 0;
+  const rate = valid(ownCents) ? /** @type {number} */ (ownCents) : valid(goldPerPointCents)
     ? /** @type {number} */ (goldPerPointCents) : PLANNED.fallbackGoldPerPoint * 100;
   const scale = Number.isFinite(scalePct) && /** @type {number} */ (scalePct) > 0
     ? /** @type {number} */ (scalePct) : 100;
@@ -47,8 +51,8 @@ export function planSplit(takeCents, cities, goldPerPointCents = null) {
   let total = 0;
   for (const city of open) total += weight(city);
   if (!(takeCents > 0) || total === 0) return [];
-  const rows = open.map((city) => ({ city, perPoint: pointPriceCents(goldPerPointCents, city.progressScalePct),
-    progress: 0 }));
+  const rows = open.map((city) => ({ city,
+    perPoint: pointPriceCents(goldPerPointCents, city.progressScalePct, city.pointCents), progress: 0 }));
   let left = takeCents;
   for (const row of rows) {
     const share = Math.floor((takeCents * weight(row.city)) / total);

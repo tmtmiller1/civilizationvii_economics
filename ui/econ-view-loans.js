@@ -59,7 +59,8 @@ function limitsSection(view, income, limit, api) {
       limitReason(limit, api)] : []),
     row(api.loc("LOC_ECONOMICS_LOANS_SERVICE"), api.loc("LOC_ECONOMICS_LOANS_SERVICE_OF",
       formatGold(view.serviceCents), formatGold(view.serviceCapCents))),
-    row(api.loc("LOC_ECONOMICS_LOANS_STANDING"), String(view.standingPct), view.standingPct < 100 ? "econ-negative" : ""),
+    row(api.loc("LOC_ECONOMICS_LOANS_STANDING"), String(view.standingPct), view.standingPct < 100 ? "econ-negative" : "",
+      { tooltip: api.loc("LOC_ECONOMICS_LOANS_STANDING_TIP") }),
     ...reserveRows(view, api),
   ]);
 }
@@ -74,7 +75,8 @@ function limitsSection(view, income, limit, api) {
 function reserveRows(view, api) {
   if (!view.mine.length) return [];
   const above = view.aboveReserveCents;
-  const rows = [row(api.loc("LOC_ECONOMICS_LOANS_RESERVE"), gold(api, view.reserveCents)),
+  const rows = [row(api.loc("LOC_ECONOMICS_LOANS_RESERVE"), gold(api, view.reserveCents), "",
+    { tooltip: api.loc("LOC_ECONOMICS_LOANS_RESERVE_TIP") }),
     row(api.loc(above >= 0 ? "LOC_ECONOMICS_LOANS_ABOVE_RESERVE" : "LOC_ECONOMICS_LOANS_UNDER_RESERVE"),
       gold(api, Math.abs(above)), above >= 0 ? "econ-positive" : "")];
   const next = view.ahead[1];

@@ -214,6 +214,7 @@
 .econ-section-head {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
 }
@@ -238,6 +239,11 @@
 .econ-section-subtitle {
     color: #a39b8b;
     font-size: 0.94rem;
+}
+
+/* In a section's head the subtitle wraps under the title (a row); elsewhere it stays its own height (a column). */
+.econ-section-head .econ-section-subtitle {
+    flex-basis: 100%;
 }
 
 .econ-rule {
@@ -1091,6 +1097,43 @@
     margin-left: 1rem;
 }
 
+/* A Markets row opens on press (Part 6): the breakdown, what it means for you, what moves it, the chart. */
+.econ-expand-head .econ-price {
+    flex: 1 1 auto;
+}
+
+.econ-market-line {
+    color: #c9c0ae;
+    font-size: 1.02rem;
+    line-height: 1.4;
+    padding: 0.15rem 0;
+}
+
+.econ-market-lever {
+    padding-left: 0.6rem;
+}
+
+.econ-market-head {
+    color: #b8ae98;
+    font-size: 0.91rem;
+    margin-top: 0.45rem;
+}
+
+/* Whose figure it is: the game's in plain light text, Economics' in the mod's gold. */
+.econ-source {
+    margin-left: 0.35rem;
+    font-size: 0.78rem;
+    text-transform: none;
+}
+
+.econ-source--game {
+    color: #EAE0CD;
+}
+
+.econ-source--econ {
+    color: #D0B270;
+}
+
 .econ-table-head {
     display: flex;
     flex-direction: row;
@@ -1196,4 +1239,43 @@
 
 .econ-legacy .econ-pill {
     margin-top: 0.15rem;
+}
+
+/* The crisis paths (econ-view-crisis.js): a government's own cards, the running Programme's milestones and goal. */
+.econ-policy {
+    border-left-color: rgba(208, 178, 112, 0.85);
+    border-left-style: solid;
+    border-left-width: 2px;
+}
+
+.econ-policy--gamble {
+    border-left-color: rgba(224, 162, 74, 1);
+}
+
+.econ-path-pips {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0.35rem 0 0.2rem 0;
+}
+
+.econ-path-pips .econ-pill {
+    margin-right: 0.35rem;
+}
+
+.econ-pill--muted {
+    opacity: 0.45;
+}
+
+.econ-path-parts {
+    display: flex;
+    flex-direction: column;
+    margin: 0.25rem 0 0.35rem 0;
+    font-size: 0.91rem;
+}
+
+.econ-tag-line {
+    display: flex;
+    flex-direction: row;
+    margin: 0.1rem 0 0.2rem 0;
 }

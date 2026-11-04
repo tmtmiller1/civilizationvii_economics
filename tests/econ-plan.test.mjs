@@ -719,3 +719,17 @@ test("a 0.5.4 save's standing becomes its credit reputation on load (AI-PLAN 4.4
     { pid: 7, rep: 7000, turn: 40 }], "a default and a miss: 0.7; a repudiation: 0.7");
   assert.deepEqual(load(save(loaded)).ledger.creditRep.sort((a, b) => a.pid - b.pid), loaded.creditRep, "round trip");
 });
+
+test("an AI losing 4,813 Gold a turn (lab run 2026-11-04T04-27-29): the emergency loan is the shortfall plus a turn of upkeep, within 10 turns of the deficit", () => {
+  // The run's 1,064,632 is cents: 10,646 Gold, which the UI log's grant of 10,663 Gold to that civ on turn 3 agrees with.
+  const deficit = { balanceCents: -80850, incomeCents: -481300, upkeepCents: 502482 };
+  const plan = planTurn(input({ civs: [me({ balanceCents: 5000, incomeCents: 100 }), civ(4, deficit)] }));
+  assert.deepEqual(plan.transfers.filter((t) => t.to === 4).map((t) => [t.from, t.cents]), [["bond", 1064632]]);
+  assert.equal(plan.ledger.loans[0].emergency, true);
+  // emergency_cap (DESIGN 4.6) is 10 * |income|: 48,130 Gold here. Past it, no loan and the cap notice.
+  const open = loan("L1", { borrower: 4, emergency: true, principal: 4000000, outstanding: 4000000, term: 10 });
+  const capped = planTurn(input({ ledger: ledgerWith([open]), civs: [me({ balanceCents: 5000, incomeCents: 100 }),
+    civ(4, deficit)] }));
+  assert.deepEqual(capped.transfers.filter((t) => t.to === 4), []);
+  assert.equal(capped.events.find((e) => e.kind === "guard-cap" && e.pid === 4).cap, 4813000);
+});

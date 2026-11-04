@@ -352,8 +352,9 @@ test("the Trade tab: this turn's bill per partner, offers to answer, investments
   assert.ok(text.includes("LOC_ECONOMICS_TRADE_PAY | 2"), "500 owed against 300: pay 200");
   assert.ok(text.includes("LOC_ECONOMICS_OFFER_GENERAL_ROW|Civ 6|50"));
   assert.ok(text.includes("LOC_ECONOMICS_INVEST_PROJECT|build:BUILDING_LIBRARY|city:6:1"));
-  assert.ok(text.includes("LOC_ECONOMICS_INVEST_PROJECT_FORECAST|40|120|6|150|1"),
-    "300 Gold offered, 40 points used: 120 Gold, 6 a turn back");
+  assert.ok(text.includes("LOC_ECONOMICS_INVEST_PROJECT_FORECAST|40|120|6|150"),
+    "300 Gold offered, 40 points used: 120 Gold, 6 a turn back; a loan's line leaves the relationship out");
+  assert.ok(text.includes("LOC_ECONOMICS_INVEST_AID_FORECAST|300|"), "aid says what the relationship gains");
   assert.ok(text.includes("LOC_ECONOMICS_TRADE_PREVIEW_ROW|city:6:3|Civ 6|1"), "the empty route is left out");
   assert.ok(text.includes("LOC_ECONOMICS_HOLDING_OUT|I2|Civ 6|225|25"));
   const accept = byClass(host, "econ-button").find((b) => b.textContent === "LOC_ECONOMICS_OFFER_ACCEPT");
@@ -487,8 +488,22 @@ test("what Economics moved, by kind of flow, for the Treasury tab's breakdown", 
   const rows = flowBreakdown([{ from: 6, to: ME, cents: 500, reason: "principal" }, { from: ME, to: 6, cents: 120,
     reason: "payment" }, { from: "cycle", to: ME, cents: 80, reason: "cycle" }, { from: 8, to: 6, cents: 999,
     reason: "trade" }, { from: ME, to: "x", cents: 5, reason: "mystery" }], ME);
-  assert.deepEqual(rows, [{ key: "LOC_ECONOMICS_FLOW_LABEL_LOANS", cents: 380 },
-    { key: "LOC_ECONOMICS_FLOW_LABEL_CYCLE", cents: 80 }, { key: "LOC_ECONOMICS_FLOW_LABEL_OTHER", cents: -5 }]);
+  assert.deepEqual(rows, [{ key: "LOC_ECONOMICS_FLOW_LABEL_LOANS", args: [], cents: 380 },
+    { key: "LOC_ECONOMICS_FLOW_LABEL_CYCLE", args: [], cents: 80 },
+    { key: "LOC_ECONOMICS_FLOW_LABEL_OTHER", args: [], cents: -5 }]);
+});
+
+test("a card's arrears and administration show as their own named rows, not in Crisis responses", async () => {
+  const { flowBreakdown } = await import("../ui/econ-notice-text.js");
+  const card = ["LOC_ECONOMICS_POLICY_LITURGIES_NAME"];
+  const rows = flowBreakdown([
+    { from: ME, to: "cycle", cents: 644, reason: "arrears", label: "LOC_ECONOMICS_LEDGER_ARREARS", labelArgs: card },
+    { from: ME, to: "cycle", cents: 300, reason: "administration", label: "LOC_ECONOMICS_LEDGER_ADMINISTRATION",
+      labelArgs: card },
+    { from: ME, to: "cycle", cents: 800, reason: "response" }], ME);
+  assert.deepEqual(rows, [{ key: "LOC_ECONOMICS_FLOW_LABEL_CRISIS", args: [], cents: -800 },
+    { key: "LOC_ECONOMICS_LEDGER_ARREARS", args: card, cents: -644 },
+    { key: "LOC_ECONOMICS_LEDGER_ADMINISTRATION", args: card, cents: -300 }]);
 });
 
 test("the stepper moves its figure at once, stops at its ends, and a double press runs once", async () => {

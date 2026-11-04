@@ -15,6 +15,7 @@ import { funds, lenderBalance } from "./econ-batch.js";
 import { distressOf } from "./econ-distress.js";
 import { repudiate } from "./econ-repudiation.js";
 import { respondRequest } from "./econ-crisis-respond.js";
+import { policyRequest } from "./econ-policy.js";
 import { canChangeTax, isTaxLevel } from "./econ-tax.js";
 import { canChangeTariff, isTariffLevel, withTariff } from "./econ-trade.js";
 import { hasStage } from "./econ-stages.js";
@@ -307,10 +308,24 @@ function tariffRefusal(ctx, { pid, level }) {
   if (!ctx.options.markets || !ctx.options.tariffs) return "tariffs-off";
   if (!isHuman(ctx, pid) || !isTariffLevel(level)) return "parties";
   if (!hasStage(ctx.civ.get(pid), "tariffs", ctx.turn, ctx.options)) return "tariff-stage";
-  const row = ctx.markets.tariffs.find((tariff) => tariff.pid === pid);
-  if (!canChangeTariff(row?.changedTurn, ctx.turn)) return "too-soon";
+  const late = tariffTiming(ctx, pid, level);
+  if (late) return late;
   ctx.markets.tariffs = withTariff(ctx.markets.tariffs, pid, level, ctx.turn);
   event(ctx, { kind: "tariff", pid, level });
+  return null;
+}
+
+/**
+ * One change per 5 turns, and Debt into shares' claim (econ-policy.js): no tariff above Low while the company holds
+ * it.
+ * @param {TurnContext} ctx
+ * @param {unknown} pid
+ * @param {unknown} level
+ */
+function tariffTiming(ctx, pid, level) {
+  const row = ctx.markets.tariffs.find((tariff) => tariff.pid === pid);
+  if (!canChangeTariff(row?.changedTurn, ctx.turn)) return "too-soon";
+  if (level === "high" && ctx.crisis?.terms(/** @type {number} */ (pid)).tariffCeilingLow) return "tariff-ceiling";
   return null;
 }
 
@@ -330,6 +345,8 @@ const HANDLERS = {
     offerAnswerRefusal(ctx, request, false)),
   respond: (ctx, request) => refuse(ctx, "respond", { pid: request.pid },
     respondRequest(ctx, /** @type {PlanRequest} */ (request))),
+  policy: (ctx, request) => refuse(ctx, "policy", { pid: request.pid },
+    policyRequest(ctx, /** @type {PlanRequest} */ (request))),
 };
 
 /**

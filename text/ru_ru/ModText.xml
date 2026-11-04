@@ -76,7 +76,7 @@
         <Replace Tag="LOC_ECONOMICS_TAB_FISCAL" Language="ru_RU"><Text>Fiscal</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TAB_FAILED" Language="ru_RU"><Text>This tab couldn't be drawn. The log has the reason.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GOLD_AMOUNT" Language="ru_RU"><Text>{1_Amount} Gold</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TURNS" Language="ru_RU"><Text>{1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TURNS" Language="ru_RU"><Text>{1_Turns} {1_Turns : plural 1?turn; other?turns;}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_ON" Language="ru_RU"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OFF" Language="ru_RU"><Text>Off</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CONFIRM" Language="ru_RU"><Text>Confirm</Text></Replace>
@@ -101,7 +101,7 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_BALANCE" Language="ru_RU"><Text>Balance</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_INCOME" Language="ru_RU"><Text>Income per turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_UPKEEP" Language="ru_RU"><Text>Upkeep per turn</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TREASURY_ESCROW" Language="ru_RU"><Text>In escrow for next turn's payments</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_ESCROW" Language="ru_RU"><Text>Set aside for next turn's payments</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OUTSTANDING" Language="ru_RU"><Text>Owed on loans</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_DUE_NEXT" Language="ru_RU"><Text>Loan payments due next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_SERVICE_SHARE" Language="ru_RU"><Text>Share of income going to loans</Text></Replace>
@@ -116,11 +116,11 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_NO_FLOWS" Language="ru_RU"><Text>Loans haven't moved any of your Gold yet.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_FLOWS_NOTE" Language="ru_RU"><Text>The newest lines first; the last batch ran on turn {1_Turn}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TURN_EARLIER_AGE" Language="ru_RU"><Text>Last age</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TREASURY_BUILDINGS" Language="ru_RU"><Text>Buildings and financial depth</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_BUILDINGS" Language="ru_RU"><Text>Your economic buildings</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_ROLE_COMMERCE" Language="ru_RU"><Text>Commerce buildings</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_ROLE_BANKING" Language="ru_RU"><Text>Banking buildings</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TREASURY_DEPTH_TURNS" Language="ru_RU"><Text>Extra turns of income on your credit limit</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TREASURY_DEPTH_FACTOR" Language="ru_RU"><Text>Rate factor from depth</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_DEPTH_TURNS" Language="ru_RU"><Text>Turns of income they add to your credit limit</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_DEPTH_FACTOR" Language="ru_RU"><Text>What they do to your loan rates</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SUMMARY_SYSTEM" Language="ru_RU"><Text>{1_System}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SUMMARY_TREASURY" Language="ru_RU"><Text>Treasury</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SUMMARY_TREASURY_TIP" Language="ru_RU"><Text>The Gold you hold now.</Text></Replace>
@@ -168,7 +168,7 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_MOD_NET_LATER" Language="ru_RU"><Text>The breakdown shows again after the next turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_MOD_NET_NONE" Language="ru_RU"><Text>Economics didn't move any of your Gold last turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_LOANS" Language="ru_RU"><Text>Loans</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_ESCROW" Language="ru_RU"><Text>Escrow (held for payments, back when they're made)</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_ESCROW" Language="ru_RU"><Text>Set aside for payments (it comes back as they're made)</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_TRADE" Language="ru_RU"><Text>Trade bills</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_INVESTMENT" Language="ru_RU"><Text>Investment</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_CYCLE" Language="ru_RU"><Text>Business cycle</Text></Replace>
@@ -196,7 +196,7 @@
         <Replace Tag="LOC_ECONOMICS_RESTRUCTURE_WHY_DONE" Language="ru_RU"><Text>This loan has been restructured once already.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REPAY_NOTE" Language="ru_RU"><Text>If your treasury is short next turn, you pay what it holds and the rest stays on the loan.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REPUDIATE_KEEP" Language="ru_RU"><Text>You keep</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REPUDIATE_STANDING" Language="ru_RU"><Text>Your credit reputation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REPUDIATE_STANDING" Language="ru_RU"><Text>Your credit rating</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENT_TITLE" Language="ru_RU"><Text>Lent to {1_Borrower}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENT_OWED" Language="ru_RU"><Text>Still owed to you</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENT_PAYMENT" Language="ru_RU"><Text>They pay a turn</Text></Replace>
@@ -211,23 +211,25 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_CARDS_SUB" Language="ru_RU"><Text>One card at a time, in its own slot.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST_GOLD" Language="ru_RU"><Text>Gold a turn, against now</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST_HAPPINESS" Language="ru_RU"><Text>Happiness a turn, against now</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_MARKETS_SUB" Language="ru_RU"><Text>Dearest first. Hover a line for each turn's price.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_SUB" Language="ru_RU"><Text>Dearest first. Press a resource to see what sets its price and what it costs you.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MARKETS_COL_RESOURCE" Language="ru_RU"><Text>Resource</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MARKETS_COL_PRICE" Language="ru_RU"><Text>Price</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MARKETS_COL_HELD" Language="ru_RU"><Text>Copies</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MARKETS_COL_CHANGE" Language="ru_RU"><Text>Change</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MARKETS_COL_HISTORY" Language="ru_RU"><Text>Last 30 turns</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_INVEST_SUB" Language="ru_RU"><Text>Pick the Gold, then where it goes. Each line says what it brings back.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_SUB" Language="ru_RU"><Text>Pick the Gold, then where it goes. A loan says what comes back; aid says how much better the relationship gets.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_YOU_SEND" Language="ru_RU"><Text>You send, next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_HISTORY_NOTE" Language="ru_RU"><Text>The grey line is 1.00. Hover the chart for each turn's figure.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_LIMITS" Language="ru_RU"><Text>Your limits</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_MOST" Language="ru_RU"><Text>Most you can borrow over {1_Turns} turns</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE" Language="ru_RU"><Text>Payments per turn, of the limit</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_SERVICE_OF" Language="ru_RU"><Text>{1_Used} of {2_Cap} Gold</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOANS_STANDING" Language="ru_RU"><Text>Credit reputation (100 is clean; a missed payment -5, a default -20, a repudiation -30; it mends by half every 50 turns, and a loan repaid in full earns 5)</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOANS_RESERVE" Language="ru_RU"><Text>Reserve (10 turns of income, or the next three turns' payments and a turn of upkeep)</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOANS_ABOVE_RESERVE" Language="ru_RU"><Text>You hold this much above it; the computer players repay early with half of theirs</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LOANS_UNDER_RESERVE" Language="ru_RU"><Text>You're this much under it</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_STANDING" Language="ru_RU"><Text>Credit rating</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_STANDING_TIP" Language="ru_RU"><Text>How lenders see you, out of 100. A missed payment costs 5, a default 20 and a repudiation 30; a loan repaid in full earns 5, and the damage mends by half every 50 turns. Under 100, every lender charges you more and AI lenders turn you away under 50.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_RESERVE_TIP" Language="ru_RU"><Text>The Gold a careful treasury keeps in hand: 10 turns of income, or your next three turns of payments plus a turn of upkeep, whichever is more. The computer players repay early with half of what they hold above theirs.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_RESERVE" Language="ru_RU"><Text>Your reserve</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_ABOVE_RESERVE" Language="ru_RU"><Text>You hold this much more</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LOANS_UNDER_RESERVE" Language="ru_RU"><Text>You're this much short of it</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_AHEAD_SHORT" Language="ru_RU"><Text>Next turn's payments of {1_Dues} Gold won't fit the {2_Funds} Gold you're on course to have. Restructure a loan, borrow, or let it miss.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENS_NEXT" Language="ru_RU"><Text>Opens next: {1_Part}, with {2_Node}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENS_NEXT_AGE" Language="ru_RU"><Text>Opens next: {1_Part}, in the next age.</Text></Replace>
@@ -235,22 +237,22 @@
         <Replace Tag="LOC_ECONOMICS_PART_BOND" Language="ru_RU"><Text>the bond market, lending to other civilizations and 30-turn loans</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PART_TAB_TRADE" Language="ru_RU"><Text>the Markets and Trade tabs, with world prices and trade bills</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PART_TAB_TRADE_ONLY" Language="ru_RU"><Text>the Trade tab, with trade bills between partners</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PART_TAB_WORLD" Language="ru_RU"><Text>the World tab, with the business cycle, and financial depth from your Markets</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PART_TAB_WORLD_MARKETS" Language="ru_RU"><Text>the Markets and World tabs, with world prices, the business cycle and financial depth from your Markets</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TAB_WORLD" Language="ru_RU"><Text>the World tab, with the business cycle, and a bigger credit limit from your Markets</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_TAB_WORLD_MARKETS" Language="ru_RU"><Text>the Markets and World tabs, with world prices, the business cycle and a bigger credit limit from your Markets</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PART_TRADE_BILLS" Language="ru_RU"><Text>trade bills between partners and the Trade tab</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PART_TARIFFS" Language="ru_RU"><Text>tariffs on your trading partners</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PART_DEV_LOANS" Language="ru_RU"><Text>development loans toward another civilization's builds</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PART_GENERAL" Language="ru_RU"><Text>investment in another civilization's treasury</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PART_INFLATION" Language="ru_RU"><Text>inflation, once the bond market is open</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_PART_PANICS" Language="ru_RU"><Text>Panics, when the world borrows too much</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_PANICS" Language="ru_RU"><Text>Panics, when the world borrows too much in a Boom</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PART_CARD" Language="ru_RU"><Text>the {1_Card} card</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENED_LOANS_LENDERS" Language="ru_RU"><Text>Economics: the Loans tab is open. Other civilizations will lend to you now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENED_LOANS" Language="ru_RU"><Text>Economics: the Loans tab is open, with your loans and the auto-loan guard.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENED_MARKETS_TRADE" Language="ru_RU"><Text>Economics: the Markets and Trade tabs are open. Resources have world prices now, and trading partners settle what they owe each other every turn.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_OPENED_MARKETS_WORLD" Language="ru_RU"><Text>Economics: the Markets and World tabs are open. Resources have world prices now, and you can follow booms and slumps. Your Markets add to your financial depth.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_MARKETS_WORLD" Language="ru_RU"><Text>Economics: the Markets and World tabs are open. Resources have world prices now, and you can follow booms and slumps. Your Markets now raise your credit limit.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENED_MARKETS" Language="ru_RU"><Text>Economics: the Markets tab is open. Resources have world prices now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENED_TRADE" Language="ru_RU"><Text>Economics: the Trade tab is open. Trading partners settle what they owe each other every turn.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_OPENED_WORLD" Language="ru_RU"><Text>Economics: the World tab is open. Follow booms and slumps there, and your Markets now add to your financial depth.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_OPENED_WORLD" Language="ru_RU"><Text>Economics: the World tab is open. Follow booms and slumps there. Your Markets now raise your credit limit.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENED_CIV_LOANS" Language="ru_RU"><Text>Economics: other civilizations will lend to you now, for up to 20 turns, on the Loans tab.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENED_BOND" Language="ru_RU"><Text>Economics: the bond market is open on the Loans tab, and you can lend to other civilizations.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPENED_TARIFFS" Language="ru_RU"><Text>Economics: you can set tariffs on the Fiscal tab now.</Text></Replace>
@@ -286,16 +288,16 @@
         <Replace Tag="LOC_ECONOMICS_LOANS_REPAY_HALF" Language="ru_RU"><Text>Repay half next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_RESTRUCTURE" Language="ru_RU"><Text>Restructure</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_REPUDIATE_LENDER" Language="ru_RU"><Text>Repudiate what you owe {1_Lender}</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESTRUCTURE_PREVIEW" Language="ru_RU"><Text>What's left, {1_Owed} Gold, spreads over 10 new turns at the current {2_Rate}: about {3_Payment} Gold a turn. Your credit reputation takes a missed payment's 5, and this loan can't be restructured again.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REPUDIATE_PREVIEW" Language="ru_RU"><Text>You keep {1_Kept} Gold and stop paying. {2_Lender} books a grudge of {3_Grudge} grievances against you and its relationship with you moves {10_LenderDelta}; {4_Count} civilizations you've met each move {5_Delta}; your credit reputation falls to {6_Standing}; {7_Lender} closes to you for {8_For}; your credit limit loses {9_Turns} turns of income and terms stay at 10 turns for 40 turns.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REPUDIATE_AT_WAR" Language="ru_RU"><Text>You're at war with this lender, so the world expects it: the witness and reputation costs are halved.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CLOSED_TURNS" Language="ru_RU"><Text>{1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESTRUCTURE_PREVIEW" Language="ru_RU"><Text>What's left, {1_Owed} Gold, spreads over 10 new turns at the current {2_Rate}: about {3_Payment} Gold a turn. It costs your credit rating what a missed payment would, 5 points, and this loan can't be restructured again.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REPUDIATE_PREVIEW" Language="ru_RU"><Text>You keep {1_Kept} Gold and stop paying. {2_Lender} books a grudge of {3_Grudge} grievances against you and its relationship with you moves {9_LenderDelta}; {4_Count} civilizations you've met each move {5_Delta}; your credit rating falls to {6_Standing}; {2_Lender} won't lend to you for {7_For}; your credit limit loses {8_Turns} turns of income, and you can only borrow over 10 turns for the next 40 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REPUDIATE_AT_WAR" Language="ru_RU"><Text>You're at war with this lender, so the world expects it: the relationship cost with the civilizations watching and the hit to your credit rating are halved.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CLOSED_TURNS" Language="ru_RU"><Text>{1_Turns} {1_Turns : plural 1?turn; other?turns;}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CLOSED_AGES" Language="ru_RU"><Text>the rest of this age and the whole of the next</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_LENT" Language="ru_RU"><Text>What you've lent</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_ALLOW_RESTRUCTURE" Language="ru_RU"><Text>Let them restructure</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEND" Language="ru_RU"><Text>Lend</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEND_NOBODY" Language="ru_RU"><Text>There's no civilization to lend to.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LEND_BOND_RATE" Language="ru_RU"><Text>Their bond rate is {1_Rate}; they accept up to 1.2 times it</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEND_BOND_RATE" Language="ru_RU"><Text>The bond market charges them {1_Rate}; they accept up to 1.2 times that from you</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEND_RISK" Language="ru_RU"><Text>Repudiation risk: {1_Text}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEND_RULE" Language="ru_RU"><Text>They accept while they're short of Gold, their income is positive and the payments fit their limits. If they default or repudiate, the loss is yours.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RISK_LOW" Language="ru_RU"><Text>low. They repudiate a debt worth keeping (over four turns of their income) to an enemy at war, to a weaker civilization they dislike, or to anyone but a friend while insolvent.</Text></Replace>
@@ -309,7 +311,7 @@
         <Replace Tag="LOC_ECONOMICS_GUARD_ALLOWANCE" Language="ru_RU"><Text>Emergency allowance left</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GUARD_SWITCH_ON" Language="ru_RU"><Text>Switch the guard on</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GUARD_SWITCH_OFF" Language="ru_RU"><Text>Switch the guard off</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_GUARD_NOTE" Language="ru_RU"><Text>The guard borrows for you when your balance would go below 0 while your income is at or below 0, which is when the game disbands units. A dip with positive income doesn't cost you anything, so it leaves that alone.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD_NOTE" Language="ru_RU"><Text>The guard borrows for you when your balance would drop below 0 while your income is 0 or less, which is when the game starts disbanding units. A dip while your income is positive costs you nothing, so the guard leaves it alone.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_PENDING" Language="ru_RU"><Text>Queued for next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_PENDING_NONE" Language="ru_RU"><Text>Nothing queued.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_PENDING_NOTE" Language="ru_RU"><Text>Requests run at the start of the next turn, in this order. The turn's notice says what was refused and why.</Text></Replace>
@@ -320,7 +322,7 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_GOLD_NOW" Language="ru_RU"><Text>Gold a turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_HAPPINESS_NOW" Language="ru_RU"><Text>Happiness a turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION" Language="ru_RU"><Text>Next celebration</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS" Language="ru_RU"><Text>in {1_Turns} turns</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_TURNS" Language="ru_RU"><Text>in {1_Turns} {1_Turns : plural 1?turn; other?turns;}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_TURN" Language="ru_RU"><Text>next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATION_NEVER" Language="ru_RU"><Text>not until your Happiness rises</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CELEBRATING" Language="ru_RU"><Text>you're celebrating now</Text></Replace>
@@ -343,7 +345,7 @@
         <Replace Tag="LOC_ECONOMICS_NOTICE_NET" Language="ru_RU"><Text>Your treasury moved by {1_Amount} Gold this turn, from {2_Flows}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_NET_PLAIN" Language="ru_RU"><Text>Your treasury moved by {1_Amount} Gold this turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LOANS" Language="ru_RU"><Text>loans</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FLOW_ESCROW" Language="ru_RU"><Text>the escrow for your next payments</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_ESCROW" Language="ru_RU"><Text>the Gold set aside for your next payments</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_TRADE" Language="ru_RU"><Text>trade bills</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_INVESTMENT" Language="ru_RU"><Text>investment</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_CYCLE" Language="ru_RU"><Text>the business cycle</Text></Replace>
@@ -407,7 +409,7 @@
         <Replace Tag="LOC_ECONOMICS_EVENT_OPEN" Language="ru_RU"><Text>Loan {1_Loan} opened: {2_Amount} Gold from {3_Lender} to {4_Borrower}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_MISS" Language="ru_RU"><Text>Nothing paid on {1_Loan}, {4_Due} Gold added to it ({2_Count} missed in a row).</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_MISS_PART" Language="ru_RU"><Text>{1_Loan}: paid {3_Paid} of {4_Due} Gold, {5_Short} added to the loan ({2_Count} missed in a row).</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_EVENT_CREDIT_REP" Language="ru_RU"><Text>{1_Civ}'s credit reputation moved {2_Points} ({3_Why}) to {4_After}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_CREDIT_REP" Language="ru_RU"><Text>{1_Civ}'s credit rating moved {2_Points} ({3_Why}) to {4_After}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_REPAY_EARLY" Language="ru_RU"><Text>{1_Civ} repaid {2_Amount} Gold of {3_Loan} early, from what it held above its reserve.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_REFINANCE" Language="ru_RU"><Text>{1_Civ} refinanced: {2_Amount} Gold from {3_Lender} to meet the turn's payments.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_AID_CLEARED" Language="ru_RU"><Text>Aid from {1_Giver} cleared {2_Amount} Gold of {3_Loan}, which {4_Borrower} had defaulted on.</Text></Replace>
@@ -428,7 +430,52 @@
         <Replace Tag="LOC_ECONOMICS_MARKETS_OFF" Language="ru_RU"><Text>The Markets and trade bills option is off for this game.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MARKETS_NONE" Language="ru_RU"><Text>No prices yet. They're set at the start of the next turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MARKETS_ROW" Language="ru_RU"><Text>{1_Holders} copies held; {2_Change} Gold over the last {3_Turns} turns</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_MARKETS_NOTE" Language="ru_RU"><Text>A price sets what an import adds to the trade bills. Holding a resource doesn't earn anything by itself.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_INTRO" Language="ru_RU"><Text>These are Economics' own world prices; the game itself doesn't price resources. A price follows how many copies the civilizations hold, whether this age's units need it, and the world economy. It sets what each import adds to the trade bills between civilizations, on the Trade tab. Holding a resource doesn't earn you anything by itself.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SOURCE_ECON" Language="ru_RU"><Text>Economics</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_NO_BASIS" Language="ru_RU"><Text>The breakdown shows after the next turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_TARGET" Language="ru_RU"><Text>Target {1_Gold} Gold = {2_Factors}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_PACE" Language="ru_RU"><Text>The price is {1_Gold} Gold now and moves {2_Pct}% of the way to the target each turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_F_BASE" Language="ru_RU"><Text>{1_Gold} base ({2_Class})</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_F_SCARCE" Language="ru_RU"><Text>{1_Factor} scarce ({2_Civs} civilizations, {3_Copies} copies)</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_F_PLENTY" Language="ru_RU"><Text>{1_Factor} plentiful ({2_Civs} civilizations, {3_Copies} copies)</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_F_EVEN" Language="ru_RU"><Text>{1_Factor} ({2_Civs} civilizations, {3_Copies} copies)</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_F_DEMAND" Language="ru_RU"><Text>{1_Factor} demand ({2_Causes})</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_F_WORLD" Language="ru_RU"><Text>{1_Factor} {2_Phase}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_CAUSE_UNITS" Language="ru_RU"><Text>units use it this age</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_CAUSE_WAR" Language="ru_RU"><Text>a war on</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_CAUSE_INDUSTRY" Language="ru_RU"><Text>{1_Count} Industry buildings in the world</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_CLASS_BONUS" Language="ru_RU"><Text>Bonus resource</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_CLASS_CITY" Language="ru_RU"><Text>City resource</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_CLASS_EMPIRE" Language="ru_RU"><Text>Empire resource</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_CLASS_TREASURE" Language="ru_RU"><Text>Treasure resource</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_CLASS_FACTORY" Language="ru_RU"><Text>Factory resource</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_CLASS_OTHER" Language="ru_RU"><Text>other resource</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_CRISIS" Language="ru_RU"><Text>Crisis measures add {1_Pct}% on top while they run: {2_Measures}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_CRISIS_BY" Language="ru_RU"><Text>{1_Measure} ({2_Civ})</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_FLOOR" Language="ru_RU"><Text>Price supports are holding it up for now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_YOU_HEAD" Language="ru_RU"><Text>What it means for you</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_YOU_PAY" Language="ru_RU"><Text>Adds {1_Gold} Gold a turn to what you owe {2_Civ}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_YOU_GET" Language="ru_RU"><Text>{2_Civ} owes you {1_Gold} Gold a turn for it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_YOU_NONE" Language="ru_RU"><Text>You don't trade it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_YOU_NET" Language="ru_RU"><Text>You and each partner net what you owe each other, so only the difference changes hands (Trade tab).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_LESS" Language="ru_RU"><Text>less than 0.1</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_LEVERS_HEAD" Language="ru_RU"><Text>What moves it</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_LEVER_COPIES" Language="ru_RU"><Text>More copies in the world bring it down; fewer push it up.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_LEVER_WAR" Language="ru_RU"><Text>A war between any two civilizations pushes it up while units use it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_LEVER_INDUSTRY" Language="ru_RU"><Text>Each Industry building in the world adds 2%, up to double.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_LEVER_WORLD" Language="ru_RU"><Text>A Boom lifts every price and a Slump lowers them.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_LEVER_TRADE" Language="ru_RU"><Text>Trade buildings in the exporting city raise the bill on it; in the importing city they lower it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_LEVER_TARIFF" Language="ru_RU"><Text>A tariff holds back part of what its importer owes.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_LEVER_CAPITALISM" Language="ru_RU"><Text>Once a civilization reaches Capitalism, prices move halfway to their target each turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_LINE_PRICE" Language="ru_RU"><Text>Price</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_LINE_TARGET" Language="ru_RU"><Text>Target</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_MARK_WAR" Language="ru_RU"><Text>A war began</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_MARK_PEACE" Language="ru_RU"><Text>The last war ended</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_MARK_GAIN" Language="ru_RU"><Text>{1_Count} more {1_Count : plural 1?copy; other?copies;} in the world</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_MARK_LOSS" Language="ru_RU"><Text>{1_Count} fewer {1_Count : plural 1?copy; other?copies;} in the world</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_MARK_PHASE" Language="ru_RU"><Text>The world economy turned to {1_Phase}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_MARK_INDUSTRY_UP" Language="ru_RU"><Text>{1_Count} more Industry buildings</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MARKETS_MARK_INDUSTRY_DOWN" Language="ru_RU"><Text>{1_Count} fewer Industry buildings</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_SETTLEMENT" Language="ru_RU"><Text>This turn's trade bills</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_INCOME" Language="ru_RU"><Text>Trade Income the game pays your cities</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_CAP" Language="ru_RU"><Text>The most you pay in bills a turn</Text></Replace>
@@ -437,8 +484,8 @@
         <Replace Tag="LOC_ECONOMICS_TRADE_OWED" Language="ru_RU"><Text>They owe for theirs</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_PAY" Language="ru_RU"><Text>You pay</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_RECEIVE" Language="ru_RU"><Text>You receive</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TRADE_WAIVED" Language="ru_RU"><Text>{1_Amount} Gold over the cap is waived.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TRADE_NOTE" Language="ru_RU"><Text>Each pair settles the difference between what they import from each other, and only the side that owes more pays. Anything over a tenth of the payer's income is waived; it doesn't carry over to the next turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_WAIVED" Language="ru_RU"><Text>{1_Amount} Gold over the cap is forgiven.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TRADE_NOTE" Language="ru_RU"><Text>You and each partner settle the difference between what you import from each other, and only the side that owes more pays. A bill over a tenth of the payer's income is forgiven above that, and the rest doesn't carry over.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_OFFERS" Language="ru_RU"><Text>Offers to you</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_NO_OFFERS" Language="ru_RU"><Text>Nobody is offering to invest in you right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OFFER_PROJECT_ROW" Language="ru_RU"><Text>{1_Investor} offers {2_Amount} Gold toward the build in {3_City}, repaid with interest over 25 turns.</Text></Replace>
@@ -451,12 +498,13 @@
         <Replace Tag="LOC_ECONOMICS_INVEST_GENERAL" Language="ru_RU"><Text>General investment</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_AID" Language="ru_RU"><Text>Aid</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_AID" Language="ru_RU"><Text>Send aid</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_AID_SUB" Language="ru_RU"><Text>Pick the Gold, then who gets it. It's a gift, so it won't come back, but the relationship gets better. Once the Trade tab opens, aid moves there.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_AID_SUB" Language="ru_RU"><Text>Pick the Gold, then who gets it. It's a gift, so it won't come back, but each line says how much better the relationship gets. Once the Trade tab opens, aid moves there.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_AID_NOBODY" Language="ru_RU"><Text>You haven't met anyone to send aid to yet.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_PROJECT" Language="ru_RU"><Text>Development loan: {1_Build} in {2_City}</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_INVEST_GENERAL_FORECAST" Language="ru_RU"><Text>About {1_Amount} Gold a turn back for 25 turns, more if their income grows; relationship +{2_Points}</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_INVEST_AID_FORECAST" Language="ru_RU"><Text>{1_Amount} Gold as a gift; relationship +{2_Points}</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_INVEST_PROJECT_FORECAST" Language="ru_RU"><Text>{1_Progress} production for {2_Amount} Gold, {3_Return} Gold a turn back for 25 turns ({4_Total} in all); relationship +{5_Points}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_GENERAL_FORECAST" Language="ru_RU"><Text>About {1_Amount} Gold a turn back for 25 turns, more if their income grows</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_AID_FORECAST" Language="ru_RU"><Text>{1_Amount} Gold as a gift: relationship +{2_Points}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_AID_MIN" Language="ru_RU"><Text>too little for them to notice. Send at least {1_Amount} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_INVEST_PROJECT_FORECAST" Language="ru_RU"><Text>{1_Progress} production for {2_Amount} Gold, {3_Return} Gold a turn back for 25 turns ({4_Total} in all)</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_INVEST_NOTE" Language="ru_RU"><Text>A development loan goes into the build a city is working on now, and the Gold it doesn't need stays with you. If the host loses the city, what's still to come is lost.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_PREVIEW" Language="ru_RU"><Text>Routes you could make</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TRADE_PREVIEW_UNREAD" Language="ru_RU"><Text>The game didn't say which routes you could make.</Text></Replace>
@@ -476,7 +524,7 @@
         <Replace Tag="LOC_ECONOMICS_TARIFF_WAIT" Language="ru_RU"><Text>A tariff can change once every five turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TARIFF_NOTE" Language="ru_RU"><Text>A tariff holds back that share of what you owe the civilizations you import from, so they earn less selling to you. It's a trade-war lever, and a High tariff costs 1 relationship with each of them every five turns. The game's own Tariffs policy card raises your Trade Income instead; the two are separate.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE" Language="ru_RU"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_WAIVED" Language="ru_RU"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold; {3_Waived} Gold over your cap was waived.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_WAIVED" Language="ru_RU"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold; {3_Waived} Gold over your cap was forgiven.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_TARIFF_COST" Language="ru_RU"><Text>Your High tariff cost 1 relationship with each civilization you import from ({1_Count}).</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_PROJECT" Language="ru_RU"><Text>Your development loan of {1_Amount} Gold to {2_Host} added {3_Progress} production to its build.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_GENERAL" Language="ru_RU"><Text>You invested {1_Amount} Gold in {2_Host}.</Text></Replace>
@@ -513,6 +561,7 @@
         <Replace Tag="LOC_ECONOMICS_REASON_BLOCKED" Language="ru_RU"><Text>they defaulted on or repudiated what they owed you, so you can't invest in them for now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_BUILD" Language="ru_RU"><Text>that city isn't working on anything that needs production.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_SAME_TURN" Language="ru_RU"><Text>you've already given them aid this turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TOO_SMALL" Language="ru_RU"><Text>that's too little aid for them to notice.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_RELATION" Language="ru_RU"><Text>you can't invest in a civilization you're at war with or that's Unfriendly to you; aid only needs peace.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_HOST_DEFAULT" Language="ru_RU"><Text>they're in default and won't take general investment. A development loan on one of their builds is still open to you.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED_PROJECT" Language="ru_RU"><Text>You can still put {2_Amount} Gold into one of {1_Host}'s builds as a development loan from the Trade tab.</Text></Replace>
@@ -623,7 +672,7 @@
         <Replace Tag="LOC_ECONOMICS_LENDER_INFLATION" Language="ru_RU"><Text>inflation</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_CYCLE" Language="ru_RU"><Text>the business cycle</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LENDER_PLAN" Language="ru_RU"><Text>the plan</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LENDER_ESCROW" Language="ru_RU"><Text>the escrow</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LENDER_ESCROW" Language="ru_RU"><Text>the Gold set aside for payments</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_UNMET" Language="ru_RU"><Text>you haven't met them yet.</Text></Replace>
         <Replace Tag="LOC_OPTIONS_GROUP_ECONOMICS" Language="ru_RU"><Text>Economics</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_OPTIONS_SPOIL_GUARD" Language="ru_RU"><Text>Spoil Guard</Text></Replace>
@@ -653,11 +702,11 @@
         <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_NOTE" Language="ru_RU"><Text>Only civilizations with Public debt take part. Gold above twenty turns of income loses this much each turn, and bond rates rise with it. Paying bond debt down brings it back.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_DEBT" Language="ru_RU"><Text>World debt</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_OUTSTANDING" Language="ru_RU"><Text>All loans outstanding</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_LEVERAGE" Language="ru_RU"><Text>In turns of the world's income</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_NOTE" Language="ru_RU"><Text>From the Banking stage, a boom with loans above {1_Turns} turns of the world's income can turn into a Panic.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_LEVERAGE" Language="ru_RU"><Text>As turns of the world's income</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_NOTE" Language="ru_RU"><Text>Once a civilization has Banking, a Boom with the world's debt above {1_Turns} turns of the world's income can turn into a Panic.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY" Language="ru_RU"><Text>Old buildings</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_POINTS" Language="ru_RU"><Text>Legacy</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_CUSHION" Language="ru_RU"><Text>Slump cushion</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_POINTS" Language="ru_RU"><Text>Roles your old buildings have lost</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_CUSHION" Language="ru_RU"><Text>How much softer a slump is for you</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_LEGACY_NOTE" Language="ru_RU"><Text>Markets, banks and other economic buildings from earlier ages fade as you reach newer stages. What they lose softens a slump for you: 1 percent a point, 10 percent at most, with warehouses on top.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM" Language="ru_RU"><Text>Economic system</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEMS_OFF" Language="ru_RU"><Text>Economic systems are off in this game; every civilization runs a mixed economy.</Text></Replace>
@@ -667,9 +716,9 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_BLEND" Language="ru_RU"><Text>Moving over from the {1_Old}: {2_Turns} more turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_BLEND_ONE" Language="ru_RU"><Text>Moving over from the {1_Old}: one more turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_PLAN" Language="ru_RU"><Text>The plan this turn</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_FISCAL_PLAN_NOTE" Language="ru_RU"><Text>A fifth of your Gold income goes into your cities' builds, split by population, at 3 Gold a point of production.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FISCAL_PLAN_NOTE" Language="ru_RU"><Text>A fifth of your Gold income goes into your cities' builds, split by population, at what buying each build would cost you. Gold that doesn't make a whole point stays in your treasury.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_TAX_NOTE" Language="ru_RU"><Text>Your government's changes to the tax cards show on each city's yields while the card is slotted.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TREASURY_RESERVE" Language="ru_RU"><Text>Inflation reserve</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_RESERVE" Language="ru_RU"><Text>Safe from inflation up to</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_EROSION" Language="ru_RU"><Text>Lost to inflation next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OLD" Language="ru_RU"><Text>Old buildings</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_NONE" Language="ru_RU"><Text>Your economic buildings all belong to this age.</Text></Replace>
@@ -678,7 +727,7 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_FADING" Language="ru_RU"><Text>fading</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_FLOOR" Language="ru_RU"><Text>at its floor</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_REPLACED" Language="ru_RU"><Text>at its floor: a newer building with its role stands in this city</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_NOTE" Language="ru_RU"><Text>An old building's Commerce, Trade and Banking roles fade from 1.0 to 0.5 once you reach the stage that replaces them, and from 0.5 to 0.25 in the age after. What they lose becomes your slump cushion.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_NOTE" Language="ru_RU"><Text>An old building's Commerce, Trade and Banking roles fade from 1.0 to 0.5 once you reach the stage that replaces them, and from 0.5 to 0.25 in the age after. What they lose makes a slump softer for you; the World tab shows how much.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_STAGE_NAME_PUBLIC_DEBT" Language="ru_RU"><Text>Public debt</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_STAGE_NAME_GUILD_PATRONAGE" Language="ru_RU"><Text>Guild patronage</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_STAGE_NAME_CAPITALISM" Language="ru_RU"><Text>Capitalism</Text></Replace>
@@ -690,7 +739,7 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_CRISES_ON" Language="ru_RU"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_CRISES_ON_DESCRIPTION" Language="ru_RU"><Text>A crisis opens a Crisis section on the World tab with the responses of its age, and what you choose leaves a legacy.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_DEPRESSION_NAME" Language="ru_RU"><Text>Depression</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CRISIS_DEPRESSION_LINE" Language="ru_RU"><Text>Your economy's index is under 0.80: the slump charge eats your income, credit costs more, and only time and what you choose here lift it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CRISIS_DEPRESSION_LINE" Language="ru_RU"><Text>Your economy's index, where 1.00 is normal, is under 0.80. A slump charge eats your income and credit costs more until it climbs back, and only time and what you choose here lift it.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_CREDIT_PANIC_NAME" Language="ru_RU"><Text>Credit panic</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_CREDIT_PANIC_LINE" Language="ru_RU"><Text>A Panic while you hold loans, or a bubble bursting with loans on your books: nobody lends for five turns and bond rates jump.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_PRICE_SHOCK_NAME" Language="ru_RU"><Text>Price shock</Text></Replace>
@@ -704,16 +753,16 @@
         <Replace Tag="LOC_ECONOMICS_CRISIS_SECTION" Language="ru_RU"><Text>Crisis</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_DOING" Language="ru_RU"><Text>What you're doing</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_CAN_DO" Language="ru_RU"><Text>What you can do</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CRISIS_SINCE" Language="ru_RU"><Text>Since turn {1_Turn}, after {2_Causes}.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CRISIS_SINCE_QUIET" Language="ru_RU"><Text>Since turn {1_Turn}.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CRISIS_TURNS" Language="ru_RU"><Text>{1_Turns} {1_Turns : plural 1?turn; other?turns;} in</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CRISIS_SINCE" Language="ru_RU"><Text>Started turn {1_Turn}. Causes: {2_Causes}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CRISIS_SINCE_QUIET" Language="ru_RU"><Text>Started turn {1_Turn}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CRISIS_TURNS" Language="ru_RU"><Text>{1_Turns} {1_Turns : plural 1?turn; other?turns;} so far</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_END_BUTTON" Language="ru_RU"><Text>End it</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_END_TITLE" Language="ru_RU"><Text>End {1_Response}?</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_END_NOTE" Language="ru_RU"><Text>It stops next turn. What it paid for stays; what it was doing each turn stops with it.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CRISIS_END_RELIEF" Language="ru_RU"><Text>Ending relief while the crisis still runs is remembered: -2 Happiness a settlement for 10 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CRISIS_END_RELIEF" Language="ru_RU"><Text>Ending relief while the crisis still runs is remembered: -2 Public support a settlement for 10 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_UNTIL_END" Language="ru_RU"><Text>until the crisis ends</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_TURNS_LEFT" Language="ru_RU"><Text>{1_Turns} {1_Turns : plural 1?turn; other?turns;} left</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CRISIS_NOTHING_NOTE" Language="ru_RU"><Text>Doing nothing is a choice too. The index drifts back toward Steady by a tenth of the gap a turn, while the slump charge, dearer credit and a Panic pull the other way. Tariffs and austerity have made a Depression longer before: the cards that follow say which.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CRISIS_NOTHING_NOTE" Language="ru_RU"><Text>Doing nothing is a choice too. The index drifts back toward Steady by a tenth of the gap a turn, while the slump charge, dearer credit and a Panic pull the other way. High tariffs can make a Depression last longer: enough of them start a world trade war.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_CREDIT_PANIC_ALONE" Language="ru_RU"><Text>Left alone, it ends when the Panic passes or your last loan is paid off. Nobody lends to you until then.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_PRICE_SHOCK_ALONE" Language="ru_RU"><Text>Left alone, it ends when the price settles back within 40% of where it stood ten turns before.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_DEBT_ALONE" Language="ru_RU"><Text>Left alone, it ends the first turn your payments fit inside your income again, as long as no default on a civilization's loan stands against you.</Text></Replace>
@@ -739,13 +788,13 @@
         <Replace Tag="LOC_ECONOMICS_RESPONSE_PUBLIC_WORKS_LEGACY" Language="ru_RU"><Text>the builds themselves.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_RELIEF_NAME" Language="ru_RU"><Text>Relief</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_RELIEF_HISTORY" Language="ru_RU"><Text>The grain dole, FERA, Social Security, 1933 to 1935</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_RELIEF_NOW" Language="ru_RU"><Text>1 Gold a settlement a turn into the celebration meter, worth +4 Happiness a settlement. Emigration and Partisans read it as Happiness.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_RELIEF_NOW" Language="ru_RU"><Text>1 Gold a settlement a turn buys +4 Public support a settlement: your celebration meter fills as 4 Happiness a settlement would. Your settlements' own Happiness doesn't change.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_RELIEF_PRICE" Language="ru_RU"><Text>the Gold, every turn it runs; it runs until the crisis ends and two turns more.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_RELIEF_LEGACY" Language="ru_RU"><Text>a people who remember: end it early while the crisis still runs and you lose 2 Happiness a settlement for 10 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_RELIEF_LEGACY" Language="ru_RU"><Text>a people who remember: end it early while the crisis still runs and you lose 2 Public support a settlement for 10 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_BANK_HOLIDAY_NAME" Language="ru_RU"><Text>Bank holiday</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_BANK_HOLIDAY_HISTORY" Language="ru_RU"><Text>The Emergency Banking Act, 9 March 1933</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_BANK_HOLIDAY_NOW" Language="ru_RU"><Text>For 3 turns you pay nobody and nobody pays you, and no payment counts as missed. Your index gets a lift of 0.02 next turn.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_BANK_HOLIDAY_PRICE" Language="ru_RU"><Text>each of your lenders' relationship with you -2, and your credit reputation -3.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_BANK_HOLIDAY_PRICE" Language="ru_RU"><Text>each of your lenders' relationship with you -2, and your credit rating -3.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_BANK_HOLIDAY_LEGACY" Language="ru_RU"><Text>lenders who remember the holiday for 20 turns. Once per age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_CONFIDENCE_NAME" Language="ru_RU"><Text>Confidence</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_CONFIDENCE_HISTORY" Language="ru_RU"><Text>The fireside chats, 1933 to 1944</Text></Replace>
@@ -754,8 +803,8 @@
         <Replace Tag="LOC_ECONOMICS_RESPONSE_CONFIDENCE_LEGACY" Language="ru_RU"><Text>no mark on the list. You can take it again in 5 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_CANCEL_DEBTS_NAME" Language="ru_RU"><Text>Cancel the debts</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_CANCEL_DEBTS_HISTORY" Language="ru_RU"><Text>Solon's seisachtheia, Athens, 594 BC</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_CANCEL_DEBTS_NOW" Language="ru_RU"><Text>The loans you owe your citizens and the temple treasuries are written off. Your index gets a lift of 0.02 next turn, and your settlements +4 Happiness each for 5 turns.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_CANCEL_DEBTS_PRICE" Language="ru_RU"><Text>your credit reputation -20, and your citizens won't lend to you again this age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_CANCEL_DEBTS_NOW" Language="ru_RU"><Text>The loans you owe your citizens and the temple treasuries are written off. Your index gets a lift of 0.02 next turn, and you gain +4 Public support a settlement for 5 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_CANCEL_DEBTS_PRICE" Language="ru_RU"><Text>your credit rating -20, and your citizens won't lend to you again this age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_CANCEL_DEBTS_LEGACY" Language="ru_RU"><Text>temple treasuries that lend to you at 1.5x the rate for 20 turns. Once per age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_DEBASE_NAME" Language="ru_RU"><Text>Debase the coin</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_DEBASE_HISTORY" Language="ru_RU"><Text>Nero's denarius, AD 64</Text></Replace>
@@ -804,13 +853,13 @@
         <Replace Tag="LOC_ECONOMICS_RESPONSE_LEND_CROWN_LEGACY" Language="ru_RU"><Text>the wider cap, for the age. Once per age; needs a Friendly civilization with Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_DEPOSIT_INSURANCE_NAME" Language="ru_RU"><Text>Deposit insurance</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_DEPOSIT_INSURANCE_HISTORY" Language="ru_RU"><Text>The FDIC and Glass-Steagall, June 1933</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_DEPOSIT_INSURANCE_NOW" Language="ru_RU"><Text>Your Panics drop half as far, your bond spread floors at 1.0, and the Panic freeze lifts for you.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_DEPOSIT_INSURANCE_PRICE" Language="ru_RU"><Text>2 turns of income into the fund, and a quarter off your credit cap's depth term.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_DEPOSIT_INSURANCE_NOW" Language="ru_RU"><Text>A Panic hits your economy half as hard, the bond market stops charging you extra for a slump, and civilizations keep lending to you through a Panic.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_DEPOSIT_INSURANCE_PRICE" Language="ru_RU"><Text>2 turns of income into the fund, and your economic buildings add a quarter less to your credit limit.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_DEPOSIT_INSURANCE_LEGACY" Language="ru_RU"><Text>lasts the age; a Market economy keeps it into the next. Once a game.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_GOLD_STANDARD_NAME" Language="ru_RU"><Text>Off the gold standard</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_GOLD_STANDARD_HISTORY" Language="ru_RU"><Text>April 1933; the dollar devalued, January 1934</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_GOLD_STANDARD_NOW" Language="ru_RU"><Text>The loans you owe the bond market, the temple treasuries and your citizens lose a tenth. Your index climbs 0.01 a turn and prices rise 3% a turn for 5 turns, with your own inflation +0.5% a turn.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_GOLD_STANDARD_PRICE" Language="ru_RU"><Text>each lending civilization's relationship with you -3 and 10 grievances, and your credit reputation -10.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_GOLD_STANDARD_PRICE" Language="ru_RU"><Text>each lending civilization's relationship with you -3 and 10 grievances, and your credit rating -10.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_GOLD_STANDARD_LEGACY" Language="ru_RU"><Text>your own inflation +0.25% a turn for the rest of the age. Once per age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_PRICE_SUPPORTS_NAME" Language="ru_RU"><Text>Price supports</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_PRICE_SUPPORTS_HISTORY" Language="ru_RU"><Text>The Agricultural Adjustment Act, 1933</Text></Replace>
@@ -824,7 +873,7 @@
         <Replace Tag="LOC_ECONOMICS_RESPONSE_REARMAMENT_LEGACY" Language="ru_RU"><Text>your neighbours noticed, on the list for 20 turns. Once per age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_AUSTERITY_NAME" Language="ru_RU"><Text>Austerity</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_AUSTERITY_HISTORY" Language="ru_RU"><Text>Andrew Mellon's advice, as Hoover remembered it: liquidate</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_AUSTERITY_NOW" Language="ru_RU"><Text>Half your surplus above the reserve repays your dearest loan each turn, and your credit reputation gains 3.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_AUSTERITY_NOW" Language="ru_RU"><Text>Half your Gold above your reserve repays your dearest loan each turn, and your credit rating gains 3.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_AUSTERITY_PRICE" Language="ru_RU"><Text>your index falls 0.01 a turn while it runs. Right for a debt problem, wrong for a demand problem.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_AUSTERITY_LEGACY" Language="ru_RU"><Text>nothing but the debt you paid down.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_CANCEL_DEBTS_NAME" Language="ru_RU"><Text>The debts cancelled</Text></Replace>
@@ -846,13 +895,13 @@
         <Replace Tag="LOC_ECONOMICS_LEGACY_LEND_CROWN_NAME" Language="ru_RU"><Text>Lenders in deep</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_LEND_CROWN_LINE" Language="ru_RU"><Text>Your credit cap carries 4 turns of income more.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_DEPOSIT_INSURANCE_NAME" Language="ru_RU"><Text>Deposit insurance</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LEGACY_DEPOSIT_INSURANCE_LINE" Language="ru_RU"><Text>Panics drop half as far for you, your bond spread floors at 1.0, the Panic freeze lifts, and your cap's depth term is a quarter smaller.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_DEPOSIT_INSURANCE_LINE" Language="ru_RU"><Text>A Panic hits you half as hard, the bond market charges you nothing extra for a slump, civilizations keep lending to you through a Panic, and your economic buildings add a quarter less to your credit limit.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_GOLD_STANDARD_NAME" Language="ru_RU"><Text>Off the gold standard</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_GOLD_STANDARD_LINE" Language="ru_RU"><Text>Your own inflation runs +0.25% a turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_BANK_FAILURES_NAME" Language="ru_RU"><Text>Bank failures</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_BANK_FAILURES_LINE" Language="ru_RU"><Text>Credit caps carry 2 turns of income less.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_RELIEF_ENDED_NAME" Language="ru_RU"><Text>Relief ended early</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LEGACY_RELIEF_ENDED_LINE" Language="ru_RU"><Text>-2 Happiness a settlement while it lasts.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_RELIEF_ENDED_LINE" Language="ru_RU"><Text>-2 Public support a settlement while it lasts: your celebration meter fills more slowly.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_CHARTER_NAME" Language="ru_RU"><Text>A chartered company</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_CHARTER_LINE" Language="ru_RU"><Text>A fifth of your route income goes to its shareholders.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_TRIBUTE_NAME" Language="ru_RU"><Text>Tribute levied</Text></Replace>
@@ -872,14 +921,14 @@
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_AUSTERITY" Language="ru_RU"><Text>austerity</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_REARMAMENT" Language="ru_RU"><Text>rearmament</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_GOLD_STANDARD" Language="ru_RU"><Text>leaving the gold standard</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_BONUS_ARMY" Language="ru_RU"><Text>the Bonus Army marching</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_BONUS_ARMY" Language="ru_RU"><Text>people out of work protesting</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_TRADE_WAR" Language="ru_RU"><Text>a trade war</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_BANK_HOLIDAY" Language="ru_RU"><Text>a bank holiday</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_SUSPEND" Language="ru_RU"><Text>payments suspended</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CANCEL_DEBTS" Language="ru_RU"><Text>the debts cancelled</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CONFIDENCE" Language="ru_RU"><Text>a fireside chat</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_CONFIDENCE" Language="ru_RU"><Text>a call for confidence</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_BANK_RUN" Language="ru_RU"><Text>a bank run</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_DUST_BOWL" Language="ru_RU"><Text>the Dust Bowl</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_DUST_BOWL" Language="ru_RU"><Text>a disaster in hard times</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_CRISIS_START" Language="ru_RU"><Text>{1_Crisis} has begun, after {2_Causes}. The World tab shows what you can do.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_CRISIS_START_QUIET" Language="ru_RU"><Text>{1_Crisis} has begun. The World tab shows what you can do.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_CRISIS_END" Language="ru_RU"><Text>{1_Crisis} is over after {2_Turns} turns, with {3_By} behind you.</Text></Replace>
@@ -904,18 +953,298 @@
         <Replace Tag="LOC_ECONOMICS_EVENT_BUBBLE_BURST" Language="ru_RU"><Text>The bubble burst.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_CASCADE" Language="ru_RU"><Text>A bankruptcy cascade: the bond market closed for 5 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_RESPOND" Language="ru_RU"><Text>crisis response</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_POLICY" Language="ru_RU"><Text>crisis card</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_CRISES_OFF" Language="ru_RU"><Text>crises are off for this game.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_AGE" Language="ru_RU"><Text>that response belongs to another age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_NO_CRISIS" Language="ru_RU"><Text>you're not in a crisis it answers.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_STAGE" Language="ru_RU"><Text>you haven't reached the stage it needs.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_SYSTEM" Language="ru_RU"><Text>your economic system can't take it.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_RUNNING" Language="ru_RU"><Text>it's already running.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_REASON_ONCE" Language="ru_RU"><Text>you've taken it already, and it comes once a crisis, an age or a game.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_ONCE" Language="ru_RU"><Text>you've already taken it as often as it allows; the card says how often.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_FUNDS" Language="ru_RU"><Text>you don't hold the Gold it costs.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_NO_LENDER" Language="ru_RU"><Text>no civilization Friendly with you holds Gold to lend.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_NO_TRADE" Language="ru_RU"><Text>you have no trade to charter.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_NOT_RUNNING" Language="ru_RU"><Text>it isn't running.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_CRISIS" Language="ru_RU"><Text>a crisis response</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_CRISIS" Language="ru_RU"><Text>Crisis responses</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_OWN" Language="ru_RU"><Text>Your government's own answers</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TAG_ADVANTAGE" Language="ru_RU"><Text>Institutional advantage</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TAG_ADVANTAGE_TIP" Language="ru_RU"><Text>Your economic system is built for this one: its Gold cost is 25% lower for you.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TAG_OPPOSITION" Language="ru_RU"><Text>Political opposition</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TAG_OPPOSITION_TIP" Language="ru_RU"><Text>Your economic system resists this one: taking it costs 10 Influence on top of its price.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_OWN_SUB" Language="ru_RU"><Text>Only {1_Owner} can take these. A Programme is a commitment: it costs Influence and Gold every turn, it has to run at least 5 turns, and if it meets its goal it leaves a lasting institution. Public support fills your celebration meter the way Happiness would.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_DOING" Language="ru_RU"><Text>Your answer, under way</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_OWNER_GOVERNMENT_CLASSICAL_REPUBLIC" Language="ru_RU"><Text>a Classical Republic</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_OWNER_GOVERNMENT_PLUTOCRACY" Language="ru_RU"><Text>a Plutocracy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_OWNER_IDEOLOGY_DEMOCRACY" Language="ru_RU"><Text>a Democracy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_OWNER_IDEOLOGY_FASCISM" Language="ru_RU"><Text>a Fascist state</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TIER_MEASURE" Language="ru_RU"><Text>Measure</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TIER_PROGRAMME" Language="ru_RU"><Text>Programme</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TIER_GAMBLE" Language="ru_RU"><Text>Gamble</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TIER_MEASURE_TIP" Language="ru_RU"><Text>Quick relief with no goal to meet: cheap in Influence, small and short. Its cost lands within a few turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TIER_PROGRAMME_TIP" Language="ru_RU"><Text>A structural fix: costly in Influence and slower, but it works on the crisis turn after turn and leaves a lasting institution if it meets its goal.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TIER_GAMBLE_TIP" Language="ru_RU"><Text>A fast fix with no goal: it pays off if things go your way and costs you if they don't. The card says how.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_STATE_ACTIVE" Language="ru_RU"><Text>Running</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_STATE_SUSTAINED" Language="ru_RU"><Text>Minimum run done</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_STATE_RESOLVING" Language="ru_RU"><Text>Being judged</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_PIP_COMMIT" Language="ru_RU"><Text>Taken</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_PIP_SUSTAIN" Language="ru_RU"><Text>Minimum run done</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_PIP_OBJECTIVE" Language="ru_RU"><Text>Goal met</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_MIN_LEFT" Language="ru_RU"><Text>{1_Turns} {1_Turns : plural 1?turn; other?turns;} to go before it can be judged</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_WAITS_CRISIS" Language="ru_RU"><Text>Judged when the crisis ends</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_PROVISIONAL" Language="ru_RU"><Text>Not final yet: it's judged once the crisis is over and it has run its minimum turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_GOAL" Language="ru_RU"><Text>Goal</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_IF_MET" Language="ru_RU"><Text>If met</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_IF_MISSED" Language="ru_RU"><Text>If missed</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_IF_ENDED" Language="ru_RU"><Text>If ended early</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_PRICE_INFLUENCE" Language="ru_RU"><Text>{1_Influence} Influence now</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_PRICE_UPKEEP" Language="ru_RU"><Text>{1_Influence} Influence and {2_Gold} Gold every turn while it runs</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_PRICE_RATE" Language="ru_RU"><Text>Your new loans cost 25% more interest while it runs.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_DRIFT_CHEAPER" Language="ru_RU"><Text>Your past crises made this Programme {1_Pct}% cheaper.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_DRIFT_DEARER" Language="ru_RU"><Text>Your past crises made this Programme {1_Pct}% dearer.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TAKE" Language="ru_RU"><Text>Take it</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TAKE_TITLE" Language="ru_RU"><Text>Take {1_Name}?</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_END_TITLE" Language="ru_RU"><Text>End {1_Name} early?</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_PART_DONE" Language="ru_RU"><Text>✓ {1_Part}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_PART_OPEN" Language="ru_RU"><Text>✗ {1_Part}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_WAR_DUE" Language="ru_RU"><Text>Declare war on a civilization within {1_Turns} {1_Turns : plural 1?turn; other?turns;}, through the diplomacy screen.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_WAR_MISSED" Language="ru_RU"><Text>No war came in time: Public support falls and your import bills cost 25% more until one does.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_DEBT" Language="ru_RU"><Text>Upkeep borrowed so far: {1_Gold} Gold. It becomes a bond loan when the Programme is judged.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_ADDED" Language="ru_RU"><Text>Production it has added: {1_Points}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_SHAPED" Language="ru_RU"><Text>How your crises have shaped you</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_SHAPED_SUB" Language="ru_RU"><Text>Each institution you build makes that Programme cheaper next time and the others a little dearer, up to 15% either way. Building a different one moves it back.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_SHAPED_OTHERS" Language="ru_RU"><Text>Every Programme you didn't build</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_OUTCOME_EARNED" Language="ru_RU"><Text>Goal met</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_OUTCOME_COMPROMISED" Language="ru_RU"><Text>Goal missed</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_OUTCOME_ABANDONED" Language="ru_RU"><Text>Ended early</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_HARD_TIMES" Language="ru_RU"><Text>Hard times: with Partisans on, your least happy settlements are slowly turning toward a rising. City Details shows which ones and how fast. Relief or New Deal programmes ease the Depression's part.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_HARD_TIMES_STRAIN" Language="ru_RU"><Text>Austerity strain: {1_Turns}. Past 4, every turn you keep Austerity puts more of your settlements at risk, and the strain falls 2 a turn once it ends.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATH_CITIZENS_REPUBLIC_NAME" Language="ru_RU"><Text>The citizens' republic</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATH_COMPANY_STATE_NAME" Language="ru_RU"><Text>The company state</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATH_PUBLIC_INVESTMENT_NAME" Language="ru_RU"><Text>Public investment</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATH_FINANCIAL_REFORM_NAME" Language="ru_RU"><Text>Financial reform</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATH_WAR_ECONOMY_NAME" Language="ru_RU"><Text>The war economy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_ON_SCHEDULE" Language="ru_RU"><Text>the citizens' loan paid on schedule</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_NO_SECOND_CALL" Language="ru_RU"><Text>no second loan from the citizens while it stands</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_LOAN_SERVICED" Language="ru_RU"><Text>the charter loan paid without a miss</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_MORE_ROUTES" Language="ru_RU"><Text>one trade route more than when you began</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_FUNDED_PRODUCTION" Language="ru_RU"><Text>production worth a quarter turn of your output funded by the charter</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_ROUTES_HELD" Language="ru_RU"><Text>your routes kept the whole time it ran</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_GRANTS_LANDED" Language="ru_RU"><Text>every works grant paid in full</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_PRODUCTION" Language="ru_RU"><Text>production worth half a turn of your output added to your builds</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_RELIEF_HELD" Language="ru_RU"><Text>Relief never ended early</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_SERVICE_DOWN" Language="ru_RU"><Text>loan payments down to two thirds of the share of income they took at the start</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_NO_DEFAULT" Language="ru_RU"><Text>no loan in default</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_NO_NEW_LOANS" Language="ru_RU"><Text>no new borrowing while it runs</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_WAR_IN_TIME" Language="ru_RU"><Text>a war declared in time</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_DEBT_BOUNDED" Language="ru_RU"><Text>borrowed upkeep under 5 turns of your income</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PART_OUTCOME" Language="ru_RU"><Text>a settlement taken and held, or the war ended with nothing lost, or at war the whole time it ran with nothing lost</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEDGER_ADMINISTRATION" Language="ru_RU"><Text>Administration: {1_Card}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEDGER_ARREARS" Language="ru_RU"><Text>Arrears: {1_Card}</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LITURGIES_NAME" Language="ru_RU"><Text>Liturgies</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LITURGIES_HISTORY" Language="ru_RU"><Text>Athens asked its richest citizens to pay for a warship or a festival as a public duty.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LITURGIES_NOW" Language="ru_RU"><Text>Your citizens lend you 3 turns of income at no interest, repaid over 10 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LITURGIES_PRICE" Language="ru_RU"><Text>While the loan stands, 1 less Public support a settlement each turn, and you can borrow only half the usual amount from your citizens.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LITURGIES_GOAL" Language="ru_RU"><Text>Pay the citizens back on schedule and don't ask them for more while you do.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LITURGIES_EARNED" Language="ru_RU"><Text>The liturgy: your citizens lend you 50% more for the rest of the age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LITURGIES_COMPROMISED" Language="ru_RU"><Text>Your citizens charge 25% more interest for 20 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LITURGIES_ABANDONED" Language="ru_RU"><Text>Your citizens won't lend to you for 20 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LAND_REFORM_NAME" Language="ru_RU"><Text>Land reform</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LAND_REFORM_HISTORY" Language="ru_RU"><Text>Land to the landless, against the great families, as the Gracchi tried in Rome.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LAND_REFORM_NOW" Language="ru_RU"><Text>+4 Public support a settlement for 10 turns: your celebration meter fills as 4 Happiness a settlement would.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LAND_REFORM_PRICE" Language="ru_RU"><Text>2 Gold a settlement a turn for 10 turns, and you can borrow only half the usual amount from your citizens for 20 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LAND_REFORM_LEAVES" Language="ru_RU"><Text>Nothing beyond that smaller limit on your citizens' loans. Once per age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_ASSEMBLY_SPEAKS_NAME" Language="ru_RU"><Text>The assembly speaks</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_ASSEMBLY_SPEAKS_HISTORY" Language="ru_RU"><Text>The people meet on the hill and promise that the city will pay its way.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_ASSEMBLY_SPEAKS_NOW" Language="ru_RU"><Text>Your economy's index climbs 0.02 next turn, on confidence alone.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_ASSEMBLY_SPEAKS_PRICE" Language="ru_RU"><Text>If your index is still under 0.90 five turns on, the assembly turns on you: 4 less Public support a settlement for 5 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_ASSEMBLY_SPEAKS_LEAVES" Language="ru_RU"><Text>Nothing if your index is at 0.90 or more by then. Once per crisis.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_MERCHANT_CHARTER_NAME" Language="ru_RU"><Text>Merchant charter</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_MERCHANT_CHARTER_HISTORY" Language="ru_RU"><Text>The merchant companies borrowed against their charters to build ships, docks and warehouses.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_MERCHANT_CHARTER_NOW" Language="ru_RU"><Text>The bond market lends you 4 turns of income, repaid over 10 turns, and each turn it runs your builds get 2 production for every trade route you have.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_MERCHANT_CHARTER_PRICE" Language="ru_RU"><Text>The loan's payments, and you pay for that production in Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_MERCHANT_CHARTER_GOAL" Language="ru_RU"><Text>Pay the loan without a miss and do two of three: open a route, fund a quarter turn's production, keep your routes the whole time it runs.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_MERCHANT_CHARTER_EARNED" Language="ru_RU"><Text>The company's credit: 2 more turns of income on your credit limit and new loans 10% cheaper for the age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_MERCHANT_CHARTER_COMPROMISED" Language="ru_RU"><Text>Your new loans cost 25% more interest for 20 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_MERCHANT_CHARTER_ABANDONED" Language="ru_RU"><Text>New bond loans cost you 25% more interest for 20 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_DEBT_INTO_SHARES_NAME" Language="ru_RU"><Text>Debt into shares</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_DEBT_INTO_SHARES_HISTORY" Language="ru_RU"><Text>In 1711 a trading company took over a nation's debts in exchange for its shares.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_DEBT_INTO_SHARES_NOW" Language="ru_RU"><Text>A fifth of what you owe the bond market is written off.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_DEBT_INTO_SHARES_PRICE" Language="ru_RU"><Text>The company holds a claim: 3% of your income a turn for the rest of the age, and you can't set a tariff above Low while it stands.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_DEBT_INTO_SHARES_LEAVES" Language="ru_RU"><Text>If your index is under 0.85 five turns after the crisis ends, the bubble bursts: new bond loans cost you 50% more interest for the rest of the age. Once per game.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LOTTERY_LOAN_NAME" Language="ru_RU"><Text>Lottery loan</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LOTTERY_LOAN_HISTORY" Language="ru_RU"><Text>In 1694 a state raised a million by selling tickets that paid interest and a chance at a prize.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LOTTERY_LOAN_NOW" Language="ru_RU"><Text>The bond market lends you 4 turns of income at half its usual rate, and +1 Public support a settlement for the 5 turns you're repaying it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LOTTERY_LOAN_PRICE" Language="ru_RU"><Text>It's repaid in 5 turns, so the payments are steep. Miss one for lack of Gold and the rate doubles for what's left.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LOTTERY_LOAN_LEAVES" Language="ru_RU"><Text>Nothing once it's repaid. Once per age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_NEW_DEAL_NAME" Language="ru_RU"><Text>New Deal programmes</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_NEW_DEAL_HISTORY" Language="ru_RU"><Text>Relief, recovery and reform, 1933 to 1939: the WPA's works and Social Security, contested and never complete.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_NEW_DEAL_NOW" Language="ru_RU"><Text>While it runs, Public works and Relief cost you half their Gold and the bond market lends you the rest. You take them from the shared responses.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_NEW_DEAL_PRICE" Language="ru_RU"><Text>Public works and Relief keep running, and costing, for three turns after the crisis.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_NEW_DEAL_GOAL" Language="ru_RU"><Text>Pay every works grant in full, add half a turn's production to your builds, and keep Relief running.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_NEW_DEAL_EARNED" Language="ru_RU"><Text>Recovery institutions: +1 Public support a settlement for this age and the next, costing 1 Gold a settlement a turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_NEW_DEAL_COMPROMISED" Language="ru_RU"><Text>The cost of 1 Gold a settlement a turn for 10 turns, without the support.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_NEW_DEAL_ABANDONED" Language="ru_RU"><Text>Your new loans cost 25% more interest for 20 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_BANK_REGULATION_NAME" Language="ru_RU"><Text>Bank regulation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_BANK_REGULATION_HISTORY" Language="ru_RU"><Text>Glass-Steagall, 1933: banks that take deposits kept apart from banks that speculate.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_BANK_REGULATION_NOW" Language="ru_RU"><Text>Your new loans cost 20% less interest while it runs.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_BANK_REGULATION_PRICE" Language="ru_RU"><Text>Your credit limit is 2 turns of income lower while it runs.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_BANK_REGULATION_GOAL" Language="ru_RU"><Text>Cut the share of your income your loan payments take to two thirds of what it was when you started, without a default or new borrowing.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_BANK_REGULATION_EARNED" Language="ru_RU"><Text>The regulated bank: a Panic hits you half as hard for the rest of the age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_BANK_REGULATION_COMPROMISED" Language="ru_RU"><Text>A credit limit 2 turns of income lower for 20 turns, without the protection.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_BANK_REGULATION_ABANDONED" Language="ru_RU"><Text>Nothing beyond the Influence and Gold you've spent.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LEND_LEASE_NAME" Language="ru_RU"><Text>Lend-lease</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LEND_LEASE_HISTORY" Language="ru_RU"><Text>1941: arms and food on credit to friends at war, from a country still climbing out of a slump.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LEND_LEASE_NOW" Language="ru_RU"><Text>For 10 turns, aid you send to a civilization at war raises your relationship twice as much, and the bond market lends you half the aid. You can stay at peace.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LEND_LEASE_PRICE" Language="ru_RU"><Text>You pay the other half, and new bond loans cost you 25% more interest for 20 turns after.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_LEND_LEASE_LEAVES" Language="ru_RU"><Text>Dearer bond loans for 20 turns. Once per crisis.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_FOREIGN_ADVENTURE_NAME" Language="ru_RU"><Text>Diversionary war</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_FOREIGN_ADVENTURE_HISTORY" Language="ru_RU"><Text>A crisis at home turned outward into a war abroad, as more than one regime of the 1930s did.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_FOREIGN_ADVENTURE_NOW" Language="ru_RU"><Text>While you're at war, 2 production a settlement a turn into your cities building military units, and the bond market pays your army's upkeep.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_FOREIGN_ADVENTURE_PRICE" Language="ru_RU"><Text>The army upkeep you borrow becomes a bond loan when it's judged. 10 grievances with every civilization you've met, your trading partners lose 1 relationship with you every 5 turns, and your High tariff counts double toward a world trade war.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_FOREIGN_ADVENTURE_GOAL" Language="ru_RU"><Text>Declare war within 5 turns, keep the borrowed upkeep under 5 turns of income, and do one of these: take and hold a settlement, end the war with nothing lost, or stay at war the whole time it runs with nothing lost.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_FOREIGN_ADVENTURE_EARNED" Language="ru_RU"><Text>Mobilised: at war, 1 production a settlement a turn into military builds for the age. After 10 turns of peace your economy's index starts to slip.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_FOREIGN_ADVENTURE_COMPROMISED" Language="ru_RU"><Text>New bond loans cost you 25% more interest for 20 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_FOREIGN_ADVENTURE_ABANDONED" Language="ru_RU"><Text>The borrowed upkeep becomes a bond loan at 25% more interest.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_SELF_SUFFICIENCY_NAME" Language="ru_RU"><Text>Self-sufficiency</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_SELF_SUFFICIENCY_HISTORY" Language="ru_RU"><Text>The closed economy of the 1930s: buy nothing abroad that can be made at home.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_SELF_SUFFICIENCY_NOW" Language="ru_RU"><Text>A High tariff on everyone with no relationship cost, and your import bills halved, for 20 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_SELF_SUFFICIENCY_PRICE" Language="ru_RU"><Text>Your trading partners lose 1 relationship with you every 5 turns, and your High tariff counts double toward a world trade war.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_SELF_SUFFICIENCY_LEAVES" Language="ru_RU"><Text>An economy turned inward: your Trade buildings do 25% less for your trade bills for the age. Once per age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_OFF_BOOK_BILLS_NAME" Language="ru_RU"><Text>Off-book bills</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_OFF_BOOK_BILLS_HISTORY" Language="ru_RU"><Text>Arms paid for in paper a bank quietly backs, kept off the budget, in the 1930s.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_OFF_BOOK_BILLS_NOW" Language="ru_RU"><Text>4 turns of income from the bond market now, with nothing to pay for 10 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_OFF_BOOK_BILLS_PRICE" Language="ru_RU"><Text>Take a settlement in those 10 turns and 10 turns of its Gold pay the bills down. The rest becomes a bond loan at 50% more interest.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_OFF_BOOK_BILLS_LEAVES" Language="ru_RU"><Text>Inflation runs a little faster for you for the rest of the age. Once per age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_CITIZENS_EARNED_NAME" Language="ru_RU"><Text>The liturgy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_CITIZENS_EARNED_LINE" Language="ru_RU"><Text>Your citizens lend you 50% more.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_CITIZENS_COMPROMISED_NAME" Language="ru_RU"><Text>Wary citizens</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_CITIZENS_COMPROMISED_LINE" Language="ru_RU"><Text>Your citizens charge 25% more interest.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_CITIZENS_ABANDONED_NAME" Language="ru_RU"><Text>Broken liturgy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_CITIZENS_ABANDONED_LINE" Language="ru_RU"><Text>Your citizens won't lend to you.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_LAND_REFORM_NAME" Language="ru_RU"><Text>Land reform</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_LAND_REFORM_LINE" Language="ru_RU"><Text>The great families lend through the citizens at half the usual cap.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_ASSEMBLY_TURNED_NAME" Language="ru_RU"><Text>The assembly turned</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_ASSEMBLY_TURNED_LINE" Language="ru_RU"><Text>4 less Public support a settlement a turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_COMPANY_EARNED_NAME" Language="ru_RU"><Text>The company's credit</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_COMPANY_EARNED_LINE" Language="ru_RU"><Text>2 more turns of income on your credit limit and new loans 10% cheaper.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_COMPANY_COMPROMISED_NAME" Language="ru_RU"><Text>An overstretched company</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_COMPANY_COMPROMISED_LINE" Language="ru_RU"><Text>Your new loans cost 25% more interest.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_COMPANY_ABANDONED_NAME" Language="ru_RU"><Text>A failed charter</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_COMPANY_ABANDONED_LINE" Language="ru_RU"><Text>New bond loans cost you 25% more interest.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_SHARES_CLAIM_NAME" Language="ru_RU"><Text>The company's claim</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_SHARES_CLAIM_LINE" Language="ru_RU"><Text>3% of your income a turn to the shareholders, and no tariff above Low.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_SHARES_TURNED_NAME" Language="ru_RU"><Text>The bubble burst</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_SHARES_TURNED_LINE" Language="ru_RU"><Text>The bond market charges you half as much again.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_NEWDEAL_EARNED_NAME" Language="ru_RU"><Text>Recovery institutions</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_NEWDEAL_EARNED_LINE" Language="ru_RU"><Text>+1 Public support a settlement, costing 1 Gold a settlement a turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_NEWDEAL_COMPROMISED_NAME" Language="ru_RU"><Text>Unfunded programmes</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_NEWDEAL_COMPROMISED_LINE" Language="ru_RU"><Text>1 Gold a settlement a turn with nothing to show for it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_NEWDEAL_ABANDONED_NAME" Language="ru_RU"><Text>Unfinished works</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_NEWDEAL_ABANDONED_LINE" Language="ru_RU"><Text>Your new loans cost 25% more interest.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_BANK_EARNED_NAME" Language="ru_RU"><Text>The regulated bank</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_BANK_EARNED_LINE" Language="ru_RU"><Text>A Panic hits you half as hard.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_BANK_COMPROMISED_NAME" Language="ru_RU"><Text>Tight credit</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_BANK_COMPROMISED_LINE" Language="ru_RU"><Text>A credit limit 2 turns of income lower.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_LEND_LEASE_NAME" Language="ru_RU"><Text>Lend-lease debts</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_LEND_LEASE_LINE" Language="ru_RU"><Text>The bond market's loans cost you a quarter more.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_WAR_EARNED_NAME" Language="ru_RU"><Text>Mobilised</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_WAR_EARNED_LINE" Language="ru_RU"><Text>At war, 1 production a settlement a turn into military builds. After 10 turns of peace your economy's index slips.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_WAR_COMPROMISED_NAME" Language="ru_RU"><Text>War debts</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_PATH_WAR_COMPROMISED_LINE" Language="ru_RU"><Text>New bond loans cost you 25% more interest.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_SELF_SUFFICIENCY_NAME" Language="ru_RU"><Text>Turned inward</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_SELF_SUFFICIENCY_LINE" Language="ru_RU"><Text>Your Trade buildings count a quarter less.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_OFF_BOOK_NAME" Language="ru_RU"><Text>Paper money</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_OFF_BOOK_LINE" Language="ru_RU"><Text>Your prices rise a little faster.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NOT_YOURS" Language="ru_RU"><Text>another government's answer.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NEEDS_ROUTES" Language="ru_RU"><Text>you need a trade route first.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NEEDS_BOND" Language="ru_RU"><Text>the bond market isn't open to you.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NEEDS_BONDDEBT" Language="ru_RU"><Text>you don't owe the bond market anything.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NEEDS_BUILD" Language="ru_RU"><Text>none of your settlements is building anything.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NEEDS_CITIZENS" Language="ru_RU"><Text>your citizens won't lend to you right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NEEDS_METMAJOR" Language="ru_RU"><Text>you haven't met another civilization.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NEEDS_FRIENDATWAR" Language="ru_RU"><Text>no civilization you know is at war.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_PROGRAMME_RUNNING" Language="ru_RU"><Text>you can run one Programme at a time.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_PATH_AWARDED" Language="ru_RU"><Text>this crisis has already shaped one institution.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_INFLUENCE" Language="ru_RU"><Text>you don't have the Influence.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_INFLUENCE_NEED" Language="ru_RU"><Text>you need {1_Price} Influence and have {2_Have}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_INFLUENCE_UNREAD" Language="ru_RU"><Text>your Influence couldn't be read this turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_LEDGER_FULL" Language="ru_RU"><Text>your save has no room for another one right now; wait for a running card to finish.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_TARIFF_CEILING" Language="ru_RU"><Text>the company's claim keeps your tariff at Low or below.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY" Language="ru_RU"><Text>You took {1_Name}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY_COST" Language="ru_RU"><Text>You took {1_Name} for {2_Influence} Influence.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY_SUSTAINED" Language="ru_RU"><Text>{1_Name} has run its five turns; it settles when the crisis ends.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY_EARNED" Language="ru_RU"><Text>{1_Name} met its goal and left a lasting institution. The Fiscal tab lists it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY_COMPROMISED" Language="ru_RU"><Text>{1_Name} ran its course but missed its goal. What it left is on the Fiscal tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY_ABANDONED" Language="ru_RU"><Text>{1_Name} was abandoned. What it left is on the Fiscal tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY_ABANDONED_ARREARS" Language="ru_RU"><Text>{1_Name} ended: it fell too far behind on payments. What it left is on the Fiscal tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY_TURNED" Language="ru_RU"><Text>{1_Name} turned on you.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_POLICY" Language="ru_RU"><Text>{1_Civ} took {2_Name}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_POLICY_SUSTAINED" Language="ru_RU"><Text>{1_Civ} held {2_Name} through its first five turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_POLICY_EARNED" Language="ru_RU"><Text>{1_Civ}'s {2_Name} met its goal.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_POLICY_COMPROMISED" Language="ru_RU"><Text>{1_Civ}'s {2_Name} ran its course and missed its goal.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_POLICY_ABANDONED" Language="ru_RU"><Text>{1_Civ} abandoned {2_Name}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_POLICY_TURNED" Language="ru_RU"><Text>{1_Civ}'s {2_Name} turned on it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_POLICY_ENDED" Language="ru_RU"><Text>{1_Civ}'s {2_Name} ran out.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_POLICY_CAPTURE" Language="ru_RU"><Text>{1_Civ} paid {2_Gold} Gold of its off-book bills with a settlement it took.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PILL_ARREARS" Language="ru_RU"><Text>behind on payments</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY_ARREARS_INFLUENCE" Language="ru_RU"><Text>{1_Name} is behind on payments: you couldn't pay its Influence. It keeps working for up to {2_Turns} more {2_Turns : plural 1?turn; other?turns;} at a rising price.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY_ARREARS_GOLD" Language="ru_RU"><Text>{1_Name} is behind on payments: you couldn't pay its administration Gold. It keeps working for up to {2_Turns} more {2_Turns : plural 1?turn; other?turns;} at a rising price.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY_ARREARS_INFLUENCE_LAST" Language="ru_RU"><Text>{1_Name} has been behind on payments for 3 turns: you couldn't pay its Influence. One more turn short and it ends.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_POLICY_ARREARS_GOLD_LAST" Language="ru_RU"><Text>{1_Name} has been behind on payments for 3 turns: you couldn't pay its administration Gold. One more turn short and it ends.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_POLICY_ARREARS" Language="ru_RU"><Text>{1_Civ}'s {2_Name} is behind on payments, turn {3_Run}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_POLICY_ABANDONED_ARREARS" Language="ru_RU"><Text>{1_Civ}'s {2_Name} fell too far behind on payments and ended.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_POLICY_ABANDONED_ARREARS_ENDED" Language="ru_RU"><Text>{1_Civ} ended {2_Name} rather than keep paying for it while behind.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_ARREARS_NOW" Language="ru_RU"><Text>Behind on payments: turn {1_Run} of {2_Grace}. This turn cost {3_Gold} Gold and {4_Support} Public support a settlement. Next turn: {5_Gold} Gold. Lapses: {6_Points} of {7_Max}; three paid turns clear one.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_ARREARS_INFLUENCE" Language="ru_RU"><Text>Gain {1_Influence} Influence to pay it again.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_ARREARS_END_NEXT" Language="ru_RU"><Text>If it stays, next turn's charge is {1_Gold} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PATHS_TIER_PROGRAMME_ARREARS" Language="ru_RU"><Text>A Programme you can't pay for can fall behind for a few turns, at a cost, before it ends.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_FOREIGN_ADVENTURE_WAR" Language="ru_RU"><Text>The war goes on after this card ends.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_POLICY_FOREIGN_ADVENTURE_ABANDONED_WAR" Language="ru_RU"><Text>The borrowed upkeep becomes a bond loan at 25% more interest. The war goes on.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_AUSTERITY_PARTISANS" Language="ru_RU"><Text>With Partisans on, it's safe from risings for about ten turns; after that every turn you keep it puts more of your settlements at risk, and the risk stays after you end it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_DEBT_DESCRIPTION" Language="ru_RU"><Text>Part of what you pay on your loans each turn. Economics puts it in your capital so the game counts it in your Gold per turn, and settles the rest of each payment itself at the start of the turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_DEBT_1_NAME" Language="ru_RU"><Text>Debt service: -1 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_DEBT_2_NAME" Language="ru_RU"><Text>Debt service: -2 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_DEBT_4_NAME" Language="ru_RU"><Text>Debt service: -4 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_DEBT_8_NAME" Language="ru_RU"><Text>Debt service: -8 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_DEBT_16_NAME" Language="ru_RU"><Text>Debt service: -16 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_DEBT_32_NAME" Language="ru_RU"><Text>Debt service: -32 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_DEBT_64_NAME" Language="ru_RU"><Text>Debt service: -64 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_DEBT_128_NAME" Language="ru_RU"><Text>Debt service: -128 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_DEBT_256_NAME" Language="ru_RU"><Text>Debt service: -256 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_DEBT_512_NAME" Language="ru_RU"><Text>Debt service: -512 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_LOAN_DESCRIPTION" Language="ru_RU"><Text>Part of what your borrowers pay you on their loans each turn. Economics puts it in your capital so the game counts it in your Gold per turn, and settles the rest of each payment itself at the start of the turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_LOAN_1_NAME" Language="ru_RU"><Text>Loan repayments: +1 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_LOAN_2_NAME" Language="ru_RU"><Text>Loan repayments: +2 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_LOAN_4_NAME" Language="ru_RU"><Text>Loan repayments: +4 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_LOAN_8_NAME" Language="ru_RU"><Text>Loan repayments: +8 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_LOAN_16_NAME" Language="ru_RU"><Text>Loan repayments: +16 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_LOAN_32_NAME" Language="ru_RU"><Text>Loan repayments: +32 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_LOAN_64_NAME" Language="ru_RU"><Text>Loan repayments: +64 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_LOAN_128_NAME" Language="ru_RU"><Text>Loan repayments: +128 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_LOAN_256_NAME" Language="ru_RU"><Text>Loan repayments: +256 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_LOAN_512_NAME" Language="ru_RU"><Text>Loan repayments: +512 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILL_DESCRIPTION" Language="ru_RU"><Text>Part of what you pay your trading partners each turn for the resources you import. Economics puts it in your capital so the game counts it in your Gold per turn, and settles the rest of each bill itself at the start of the turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILL_1_NAME" Language="ru_RU"><Text>Trade bills: -1 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILL_2_NAME" Language="ru_RU"><Text>Trade bills: -2 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILL_4_NAME" Language="ru_RU"><Text>Trade bills: -4 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILL_8_NAME" Language="ru_RU"><Text>Trade bills: -8 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILL_16_NAME" Language="ru_RU"><Text>Trade bills: -16 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILL_32_NAME" Language="ru_RU"><Text>Trade bills: -32 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILL_64_NAME" Language="ru_RU"><Text>Trade bills: -64 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILL_128_NAME" Language="ru_RU"><Text>Trade bills: -128 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILL_256_NAME" Language="ru_RU"><Text>Trade bills: -256 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILL_512_NAME" Language="ru_RU"><Text>Trade bills: -512 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_DESCRIPTION" Language="ru_RU"><Text>Part of what your trading partners pay you each turn for the resources they import from you. Economics puts it in your capital so the game counts it in your Gold per turn, and settles the rest of each bill itself at the start of the turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_1_NAME" Language="ru_RU"><Text>Trade bills paid to you: +1 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_2_NAME" Language="ru_RU"><Text>Trade bills paid to you: +2 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_4_NAME" Language="ru_RU"><Text>Trade bills paid to you: +4 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_8_NAME" Language="ru_RU"><Text>Trade bills paid to you: +8 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_16_NAME" Language="ru_RU"><Text>Trade bills paid to you: +16 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_32_NAME" Language="ru_RU"><Text>Trade bills paid to you: +32 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_64_NAME" Language="ru_RU"><Text>Trade bills paid to you: +64 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_128_NAME" Language="ru_RU"><Text>Trade bills paid to you: +128 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_256_NAME" Language="ru_RU"><Text>Trade bills paid to you: +256 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_512_NAME" Language="ru_RU"><Text>Trade bills paid to you: +512 Gold</Text></Replace>
     </LocalizedText>
 </Database>

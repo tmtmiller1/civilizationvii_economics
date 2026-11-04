@@ -8,7 +8,7 @@ import { macroReadings, emptyMacro } from "./econ-macro-state.js";
 import { phaseOf, leverPct } from "./econ-cycle.js";
 import { erosionCents, reserveCents } from "./econ-inflation.js";
 import { IDEOLOGY_SYSTEMS, systemFor, termsOf } from "./econ-systems.js";
-import { planTakeCents } from "./econ-planned.js";
+import { planSplit, planTakeCents } from "./econ-planned.js";
 import { isOpen } from "./econ-loan.js";
 import { hasStage } from "./econ-stages.js";
 import { CYCLE_RULES, SYSTEM_BLEND_TURNS } from "./econ-params.js";
@@ -55,7 +55,7 @@ function systemSource(civ) {
 
 /**
  * The Fiscal tab's system section: the system, where it comes from, how much of a change's blend is left, and the
- * plan's take this turn for a Planned civ.
+ * plan's take this turn for a Planned civ and the Gold its whole points spend.
  * @param {PlanInput} input
  * @param {number} me
  */
@@ -63,20 +63,26 @@ export function systemView(input, me) {
   const civ = input.civs.find((row) => row.id === me) || null;
   const row = (input.macro || emptyMacro()).systems[String(me)] || null;
   const on = optionsOf(input).systems !== false;
-  if (!on) return { on, system: "mixed", source: systemSource(civ), from: null, blendLeft: 0, planTakeCents: 0 };
+  if (!on) return { on, system: "mixed", source: systemSource(civ), from: null, blendLeft: 0, ...planFor("mixed", null, input) };
   const system = row ? row.system : systemFor(civ || {});
   const blendLeft = blendTurnsLeft(row, input.turn);
   return { on, system, source: systemSource(civ), from: blendLeft > 0 ? row?.from ?? null : null, blendLeft,
-    planTakeCents: planTakeFor(system, civ) };
+    ...planFor(system, civ, input) };
 }
 
 /**
- * The plan's take this turn for a Planned civ; 0 for any other system.
+ * The plan this turn for a Planned civ: its take and the Gold its whole points spend (the split the batch makes, so
+ * the tab shows what leaves the treasury); both are 0 for any other system.
  * @param {import("./econ-systems.js").SystemId} system
  * @param {Civ | null} civ
+ * @param {PlanInput} input
  */
-function planTakeFor(system, civ) {
-  return termsOf(system).plan && civ ? planTakeCents(civ.incomeCents) : 0;
+function planFor(system, civ, input) {
+  const rate = input.params?.goldPerPointCents ?? null;
+  const take = termsOf(system).plan && civ ? planTakeCents(civ.incomeCents) : 0;
+  let spent = 0;
+  for (const row of planSplit(take, civ?.cities || [], rate)) spent += row.cents;
+  return { planTakeCents: take, planSpentCents: spent };
 }
 
 /**
