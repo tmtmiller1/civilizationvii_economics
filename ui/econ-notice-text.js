@@ -221,8 +221,7 @@ const NOTICES = {
   "overdrawn-units-soon": () => ({ key: `${PREFIX}NOTICE_OVERDRAWN_UNITS_SOON`, args: [] }),
   "overdrawn-buildings-soon": (notice) => ({ key: `${PREFIX}NOTICE_OVERDRAWN_BUILDINGS_SOON`,
     args: [Number(notice.turns) || 0] }),
-  trade: (notice) => ({ key: `${PREFIX}NOTICE_TRADE${Number(notice.waived) > 0 ? "_WAIVED" : ""}`,
-    args: [gold(notice.paid), gold(notice.received), gold(notice.waived)] }),
+  trade: (notice) => tradeLine(notice),
   "tariff-cost": (notice) => ({ key: `${PREFIX}NOTICE_TARIFF_COST`, args: [Number(notice.partners) || 1] }),
   invested: (notice, ctx) => ({ key: `${PREFIX}NOTICE_INVESTED_${investForm(notice)}`,
     args: [gold(notice.cents), name(ctx, notice.borrower), Number(notice.progress) || 0, gold(notice.cleared)] }),
@@ -404,6 +403,20 @@ export function flowBreakdown(transfers, pid) {
     .map((flow) => ({ key: `${PREFIX}FLOW_LABEL_${flow}`, args: /** @type {string[]} */ ([]),
       cents: /** @type {number} */ (sums.get(flow)) })),
   ...[...named.values()].filter((part) => part.cents !== 0)];
+}
+
+/**
+ * The trade bill line in whole Gold, as the game lands it (`wholeGold`: toward zero, so 0.6 is nothing); a turn whose
+ * bills come to under a whole Gold each way has no line.
+ * @param {{ paid?: number, received?: number, waived?: number }} notice
+ */
+function tradeLine(notice) {
+  const whole = (/** @type {unknown} */ cents) => Math.trunc((Number(cents) || 0) / 100) * 100 || 0;
+  const paid = whole(notice.paid);
+  const received = whole(notice.received);
+  const waived = whole(notice.waived);
+  if (!paid && !received && !waived) return null;
+  return { key: `${PREFIX}NOTICE_TRADE${waived > 0 ? "_WAIVED" : ""}`, args: [gold(paid), gold(received), gold(waived)] };
 }
 
 /** The least Gold the mod has to move in a turn for the net line to show, in cents. */

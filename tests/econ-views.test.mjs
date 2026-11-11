@@ -566,3 +566,30 @@ test("a lender the player repudiated shows on the borrow form as an amends loan 
   renderLoans(host, api);
   assert.ok(textOf(host).includes("LOC_ECONOMICS_BORROW_AMENDS"), "the card says it's an amends loan and what repaying does");
 });
+
+test("below zero: the disbanding line needs a unit with upkeep, and past the overdraft the tab says so", () => {
+  // Lab W15: the seat with no units read "Your costliest units are being disbanded"; W16's tab showed an overdraft of
+  // 600 with 2,914 used and nothing saying it was past it.
+  const lastBatch = { id: "B1", turn: 49, civs: [{ pid: ME, snapshot: -291400, net: 0, influence: 0, celebration: 0,
+    below: 5 }] };
+  const render = (units) => {
+    const host = document.createElement("div");
+    renderTreasury(host, makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: -291400, incomeCents: 6000,
+      overdraftCents: undefined, units }), civ(6)], ledger: { ...emptyLedger(), lastBatch } } }));
+    return textOf(host);
+  };
+  const none = render(0);
+  assert.equal(none.includes("LOC_ECONOMICS_TREASURY_OVERDRAWN_DISBAND"), false);
+  assert.ok(none.includes("LOC_ECONOMICS_TREASURY_OVERDRAWN_PAST|2314|15|30"), none.slice(0, 400));
+  assert.ok(render(3).includes("LOC_ECONOMICS_TREASURY_OVERDRAWN_DISBAND"));
+});
+
+test("below zero the tab uses the overdraft the turn held, not one from this turn's lower income", () => {
+  // Lab W21 (1.5.1): two tanks took the seat's income from 60 to 45; the turn held 600 of overdraft, the tab read 450.
+  const lastBatch = { id: "B1", turn: 49, civs: [{ pid: ME, snapshot: -285600, net: 0, influence: 0, celebration: 0,
+    below: 5, overdraft: 60000 }] };
+  const host = document.createElement("div");
+  renderTreasury(host, makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: -285600, incomeCents: 4500,
+    overdraftCents: undefined, units: 1 }), civ(6)], ledger: { ...emptyLedger(), lastBatch } } }));
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_TREASURY_OVERDRAWN_PAST|2256|15|30"));
+});

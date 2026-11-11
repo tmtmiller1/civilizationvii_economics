@@ -23,7 +23,7 @@ import { newTurnOnScreen, openScreen, rerenderScreen, setScreenApi, showTab } fr
 import { installDock, refreshDock, refreshPill } from "./econ-dock.js";
 import { formatGold } from "./econ-format.js";
 import { outstandingOf } from "./econ-credit.js";
-import { readCityName, readPossibleRoutes, readTypeName } from "./econ-commerce-read.js";
+import { readCityName, readPossibleRoutes, readTypeName, resourceLabel } from "./econ-commerce-read.js";
 import { civHidden } from "./econ-spoil.js";
 
 const VERSION = "0.5.4";
@@ -95,7 +95,7 @@ function screenApi(session) {
     swapTo,
     canSwap: () => canSwap(localId()),
     rerender: () => { rerenderScreen(); refreshPill(); },
-    resourceName: (type) => loc(readTypeName(type)),
+    resourceName: (type) => resourceLabel(type, loc),
     buildName: (type) => loc(readTypeName(type)),
     cityName: (cityId) => loc(readCityName(cityId)),
     possibleRoutes: () => readPossibleRoutes(localId(), aliveMajorIds()),

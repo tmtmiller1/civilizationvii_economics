@@ -365,6 +365,18 @@ export function readCityName(key) {
 }
 
 /**
+ * A resource's name for the screen. The game gives its Distant Lands treasure resources (`RESOURCE_GOLD_DISTANT_LANDS`)
+ * the plain resource's name, so those read "Gold (Distant Lands)", with the game's own word for the Distant Lands.
+ * @param {string} type
+ * @param {(key: string, ...args: (string | number)[]) => string} locFn
+ */
+export function resourceLabel(type, locFn) {
+  const name = locFn(readTypeName(type));
+  if (!/_DISTANT_LANDS$/.test(type)) return name;
+  return locFn("LOC_ECONOMICS_RESOURCE_DISTANT_LANDS", name, locFn("LOC_RESOURCE_GENERAL_TYPE_DISTANT_LANDS"));
+}
+
+/**
  * The name key of a type from whichever table holds it (a resource, a building, a unit, a project).
  * @param {string} type
  */

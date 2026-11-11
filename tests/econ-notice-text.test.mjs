@@ -33,7 +33,7 @@ test("every notice kind the plan emits has a line, with the loan's figures looke
     for (const form of [{ form: "project" }, { form: "general" }, { form: "general", aid: 1 }, { waived: 3 },
       { form: "general", aid: 1, cleared: 5 }, { paid: 0 }]) {
       const line = describeNotice({ pid: 2, kind, loanId: "L1", borrower: 4, lender: "bond", cents: 1, missed: 1, turns: 5,
-        cap: 1, deficit: 1, investor: 4, paid: 1, received: 0, ...form }, ctx);
+        cap: 1, deficit: 1, investor: 4, paid: 100, received: 100, ...form }, ctx);
       assert.ok(line && english.has(line.key), `${kind} -> ${line && line.key}`);
     }
   }
@@ -185,4 +185,14 @@ test("a crisis that ends after Confidence was taken twice names Confidence once"
     by: "confidence,public-works,confidence" }, ctx);
   assert.deepEqual(line, { key: "LOC_ECONOMICS_NOTICE_CRISIS_END", args: ["LOC_ECONOMICS_CRISIS_DEPRESSION_NAME", 8,
     ["LOC_ECONOMICS_RESPONSE_CONFIDENCE_NAME", "LOC_ECONOMICS_RESPONSE_PUBLIC_WORKS_NAME"]] });
+});
+
+test("the trade bill line reads in whole Gold, the way the game lands it, and a bill under a Gold each way says nothing", () => {
+  const ctx2 = { ledger: emptyLedger(), nameOf: () => "x" };
+  assert.equal(describeNotice({ pid: 2, kind: "trade", paid: 0, received: 60, waived: 0 }, ctx2), null, "received 0.6: no line");
+  assert.equal(describeNotice({ pid: 2, kind: "trade", paid: 99, received: 99, waived: 0 }, ctx2), null);
+  assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 0, received: 120, waived: 0 }, ctx2),
+    { key: "LOC_ECONOMICS_NOTICE_TRADE", args: ["0", "1", "0"] }, "1.2 lands as 1");
+  assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 1290, received: 0, waived: 250 }, ctx2),
+    { key: "LOC_ECONOMICS_NOTICE_TRADE_WAIVED", args: ["12", "0", "2"] });
 });

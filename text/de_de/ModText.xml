@@ -540,6 +540,7 @@
         <Replace Tag="LOC_ECONOMICS_TARIFF_PENDING" Language="de_DE"><Text>Your change takes effect next turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TARIFF_WAIT" Language="de_DE"><Text>A tariff can change once every five turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TARIFF_NOTE" Language="de_DE"><Text>A tariff holds back that share of what you owe the civilizations you import from, so they earn less selling to you. It's a trade-war lever, and a High tariff costs 1 relationship with each of them every five turns. The game's own Tariffs policy card raises your Trade Income instead; the two are separate.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESOURCE_DISTANT_LANDS" Language="de_DE"><Text>{1_Name} ({2_Where})</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE" Language="de_DE"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_WAIVED" Language="de_DE"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold; {3_Waived} Gold over your cap was forgiven.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_TARIFF_COST" Language="de_DE"><Text>Your High tariff cost 1 relationship with each civilization you import from ({1_Count}).</Text></Replace>
@@ -1329,6 +1330,7 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAWN_SHUT" Language="de_DE"><Text>Settlements with their buildings shut down</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAFT" Language="de_DE"><Text>Overdraft</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAFT_USED" Language="de_DE"><Text>Overdraft used</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAWN_PAST" Language="de_DE"><Text>You're {1_Amount} Gold past your overdraft. Payments you can't cover now go unpaid, every settlement has {2_Gloom} less Happiness, and everything you buy costs {3_Premium}% more.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAWN_GLOOM" Language="de_DE"><Text>Happiness in each settlement</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAWN_PREMIUM" Language="de_DE"><Text>Prices, from the overdraft</Text></Replace>
     </LocalizedText>

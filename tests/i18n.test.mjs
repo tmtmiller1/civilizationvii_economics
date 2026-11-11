@@ -18,7 +18,7 @@ export const LANGUAGES = {
 
 /** Base-game keys the mod uses without defining. */
 const BASE_KEYS = new Set(["LOC_MODULE_BASE_STANDARD_NAME", "LOC_UI_CONTENT_MGR_SUBTITLE",
-  "LOC_UI_CONTENT_MGR_SUBTITLE_DESCRIPTION"]);
+  "LOC_UI_CONTENT_MGR_SUBTITLE_DESCRIPTION", "LOC_RESOURCE_GENERAL_TYPE_DISTANT_LANDS"]);
 
 function textsIn(paths) {
   const out = new Map();

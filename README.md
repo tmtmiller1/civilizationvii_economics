@@ -271,8 +271,6 @@ Copy the `economics` folder into your `Mods` folder (on macOS,
 `~/Library/Application Support/Civilization VII/Mods/`), start the game once so it registers, and enable it under
 Additional Content. The setup options appear under Game Options when you create a game.
 
-## Credits
-
 ## License
 
 Tower Mod License 1.0, in [LICENSE](LICENSE). You're welcome to play it and read it; reuploading it, reusing the code

@@ -16,7 +16,7 @@ import { lastBankruptcy } from "./econ-bankruptcy.js";
 import { cycleDial, inflationMeter, serviceMeter } from "./econ-view-instruments.js";
 import { guardSection, mineSection, pendingSection } from "./econ-view-loans.js";
 import { aidSection } from "./econ-view-trade.js";
-import { BANKRUPTCY, CREDIT, OVERDRAWN, rowHeldCents } from "./econ-params.js";
+import { BANKRUPTCY, CREDIT, OVERDRAWN, overdraftLimitCents, rowHeldCents } from "./econ-params.js";
 import { emptyLedger } from "./econ-state.js";
 import { overdrawnState } from "./econ-overdrawn.js";
 
@@ -97,8 +97,7 @@ function nowSection(input, view, rules, api) {
     now.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_INSOLVENT")));
   }
   now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_BALANCE"), goldAmount(api, view.balanceCents)));
-  for (const line of overdrawnLines(view, api, belowTurns(input, view.pid))) now.appendChild(line);
-  for (const line of bankruptcyLines(input, view, api)) now.appendChild(line);
+  for (const line of belowZeroLines(input, view, api)) now.appendChild(line);
   now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_INCOME"), goldAmount(api, view.incomeCents,
     { signed: true, tone: true })));
   now.appendChild(modNetRow(input, api));
@@ -121,23 +120,53 @@ function nowSection(input, view, rules, api) {
  * @param {ReturnType<typeof treasuryView>} view
  * @param {ScreenApi} api
  * @param {number} turns turns below zero in a row
+ * @param {number} [units] the seat's units that cost upkeep, from this turn's read; unread, the disbanding line shows
+ * @param {number} [held] the overdraft the last batch held while the seat was below zero (econ-turn.js holdOverdrafts)
  */
-function overdrawnLines(view, api, turns) {
-  const state = overdrawnState({ balanceCents: view.balanceCents, incomeCents: view.incomeCents }, turns);
+function overdrawnLines(view, api, turns, units, held) {
+  const limit = overdraftLimitCents(view.incomeCents);
+  const state = overdrawnState({ balanceCents: view.balanceCents, incomeCents: view.incomeCents,
+    ...(Number.isInteger(held) ? { overdraftCents: Math.max(limit, /** @type {number} */ (held)) } : {}) }, turns);
   if (!state) return [];
   const pct = (/** @type {number} */ value) => amount(`+${value}%`, { kind: null });
   const lines = [pill(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_PILL"), true),
     note(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN")),
     row(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAFT"), goldAmount(api, state.limitCents)),
     row(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAFT_USED"), goldAmount(api, state.cents), "econ-negative"),
+    ...pastLine(state, api),
     row(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_GLOOM"), amount(`-${state.gloom}`, { kind: null }), "econ-negative"),
     row(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_PREMIUM"), pct(Math.round(state.premiumBp / 100)), "econ-negative")];
-  if (turns > OVERDRAWN.warnTurns) lines.push(note(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_DISBAND")));
+  // Disbanding needs a unit to disband: a seat with none that cost upkeep isn't told its units are going.
+  if (turns > OVERDRAWN.warnTurns && units !== 0) lines.push(note(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_DISBAND")));
   // The settlements shut now, read from the game: the ramp's number counts past the ones with buildings to shut.
   const shut = api.shutCount ? api.shutCount() : state.shut;
   if (shut) lines.push(row(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_SHUT"), amount(String(shut), { kind: null }),
     "econ-negative"));
   return lines;
+}
+
+/**
+ * The below-zero block and the bankruptcy controls, from the seat's read and the last batch's row.
+ * @param {PlanInput} input
+ * @param {ReturnType<typeof treasuryView>} view
+ * @param {ScreenApi} api
+ */
+function belowZeroLines(input, view, api) {
+  const units = (input.civs || []).find((civ) => civ.id === view.pid)?.units;
+  return [...overdrawnLines(view, api, belowTurns(input, view.pid), units, heldOverdraft(input, view.pid)),
+    ...bankruptcyLines(input, view, api)];
+}
+
+/**
+ * Past the overdraft: how far past, and what that costs now, as the turn's notice says it.
+ * @param {NonNullable<ReturnType<typeof overdrawnState>>} state
+ * @param {ScreenApi} api
+ * @returns {HTMLElement[]}
+ */
+function pastLine(state, api) {
+  if (!state.past) return [];
+  return [note(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_PAST", formatGold(state.cents - state.limitCents),
+    state.gloom, Math.round(state.premiumBp / 100)))];
 }
 
 /**
@@ -167,6 +196,17 @@ function bankruptcyLines(input, view, api) {
       onConfirm: () => send(api, { kind: "bankrupt", pid: api.me }, "bankrupt"), rerender: api.rerender }));
   }
   return lines;
+}
+
+/**
+ * The overdraft the last batch held for a civ still below zero, which the turn keeps at its largest (lab W11); none
+ * once it's back above zero, when the limit follows its income again.
+ * @param {PlanInput} input
+ * @param {number} pid
+ */
+function heldOverdraft(input, pid) {
+  const row = input.ledger?.lastBatch?.civs?.find((x) => x.pid === pid);
+  return row && rowHeldCents(row) < 0 && Number.isInteger(row.overdraft) ? row.overdraft : undefined;
 }
 
 /**

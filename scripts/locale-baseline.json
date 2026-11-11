@@ -536,6 +536,7 @@
  "LOC_ECONOMICS_TARIFF_PENDING": "Your change takes effect next turn.",
  "LOC_ECONOMICS_TARIFF_WAIT": "A tariff can change once every five turns.",
  "LOC_ECONOMICS_TARIFF_NOTE": "A tariff holds back that share of what you owe the civilizations you import from, so they earn less selling to you. It's a trade-war lever, and a High tariff costs 1 relationship with each of them every five turns. The game's own Tariffs policy card raises your Trade Income instead; the two are separate.",
+ "LOC_ECONOMICS_RESOURCE_DISTANT_LANDS": "{1_Name} ({2_Where})",
  "LOC_ECONOMICS_NOTICE_TRADE": "Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold.",
  "LOC_ECONOMICS_NOTICE_TRADE_WAIVED": "Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold; {3_Waived} Gold over your cap was forgiven.",
  "LOC_ECONOMICS_NOTICE_TARIFF_COST": "Your High tariff cost 1 relationship with each civilization you import from ({1_Count}).",
@@ -1325,6 +1326,7 @@
  "LOC_ECONOMICS_TREASURY_OVERDRAWN_SHUT": "Settlements with their buildings shut down",
  "LOC_ECONOMICS_TREASURY_OVERDRAFT": "Overdraft",
  "LOC_ECONOMICS_TREASURY_OVERDRAFT_USED": "Overdraft used",
+ "LOC_ECONOMICS_TREASURY_OVERDRAWN_PAST": "You're {1_Amount} Gold past your overdraft. Payments you can't cover now go unpaid, every settlement has {2_Gloom} less Happiness, and everything you buy costs {3_Premium}% more.",
  "LOC_ECONOMICS_TREASURY_OVERDRAWN_GLOOM": "Happiness in each settlement",
  "LOC_ECONOMICS_TREASURY_OVERDRAWN_PREMIUM": "Prices, from the overdraft"
 }
