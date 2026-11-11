@@ -1,7 +1,7 @@
 // econ-invariants.js - Economics: the TEST-PLAN section 2 invariants as pure checks over a plan and a ledger. Each
 // returns a list of violations ({ id, detail }); an empty list is a pass. The tests feed crafted bad states to each.
 
-import { LIMITS, MISS, isWorldAccount } from "./econ-params.js";
+import { LIMITS, MISS, isWorldAccount, overdraftOf } from "./econ-params.js";
 import { grantsFor, netGrants, transferKey, unbalancedPairs, worldNet } from "./econ-conservation.js";
 import { utf8Bytes } from "./econ-state.js";
 import { MARKETS_MAX_BYTES } from "./econ-markets.js";
@@ -85,27 +85,32 @@ export function debt5(envelopeText) {
 }
 
 /**
- * debt-6 (DESIGN 4.14 commit check): no payer goes past its funds. What a civ paid out this turn is at most its
- * snapshot balance plus income plus what world accounts put in plus the principal of loans that landed this turn;
- * other Gold from civs counts next turn.
+ * debt-6 (DESIGN 4.14 commit check): no payer goes past what it can pay. What a civ paid out this turn is at most its
+ * snapshot balance plus income plus what world accounts put in plus the principal of loans that landed this turn
+ * plus its overdraft (DESIGN 4.18); other Gold from civs counts next turn. Overdraft interest isn't counted: it's
+ * added to the debt even past the overdraft, as a bank adds unpaid interest.
  * @param {Transfer[]} transfers
  * @param {Civ[]} civs
+ * @param {BatchRow[]} [rows] the turn's batch rows, whose overdraft a civ still below zero held (econ-turn.js)
  * @returns {Violation[]}
  */
-export function debt6(transfers, civs) {
+export function debt6(transfers, civs, rows = []) {
+  const held = new Map(rows.map((row) => [row.pid, row.overdraft]));
   /** @type {Map<Party, number>} */
   const out = new Map();
   /** @type {Map<Party, number>} */
   const worldIn = new Map();
   for (const transfer of transfers) {
     const fromWorld = isWorldAccount(transfer.from);
-    if (!fromWorld) out.set(transfer.from, (out.get(transfer.from) || 0) + transfer.cents);
+    if (!fromWorld && transfer.reason !== "overdraft") out.set(transfer.from, (out.get(transfer.from) || 0) + transfer.cents);
     if (isWorldAccount(transfer.to) || (!fromWorld && transfer.reason !== "principal")) continue;
     worldIn.set(transfer.to, (worldIn.get(transfer.to) || 0) + transfer.cents);
   }
   return civs.flatMap((civ) => {
     const paid = out.get(civ.id) || 0;
-    const had = Math.max(0, civ.balanceCents + civ.incomeCents + (worldIn.get(civ.id) || 0));
+    const pending = Number.isInteger(civ.rollPendingCents) ? /** @type {number} */ (civ.rollPendingCents) : 0;
+    const had = Math.max(0, civ.balanceCents + civ.incomeCents + pending + (worldIn.get(civ.id) || 0)
+      + (held.get(civ.id) ?? overdraftOf(civ)));
     return paid > had ? [{ id: "debt-6", detail: `${civ.id} paid ${paid} with ${had}` }] : [];
   });
 }
@@ -233,7 +238,7 @@ export function checkPlan({ plan, civs, envelopeText, issued, marketsText, macro
     ...debt3(plan.transfers, issued),
     ...debt4(plan.events),
     ...(envelopeText === undefined ? [] : debt5(envelopeText)),
-    ...debt6(plan.transfers, civs),
+    ...debt6(plan.transfers, civs, plan.batch?.civs),
     ...debt7(grants, plan.transfers),
     ...debt8(plan.ledger, plan.transfers),
     ...aliveTargets(grants, civs),

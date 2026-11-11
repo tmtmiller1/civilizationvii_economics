@@ -34,18 +34,18 @@ test("a civ never lends with a default against the borrower, nor while a block s
   assert.equal(civLenderRefusal({ ...base, ledger: blk }), "blocked");
 });
 
-test("blocks (DESIGN 4.5): a default ends with the age, a civ repudiation one age later, a world one in 30 turns", () => {
+test("blocks (DESIGN 4.5): a default ends with the age, a civ repudiation in 10 turns, a world one in 30 turns", () => {
   const d = blockFor({ lender: 5, borrower: 2, reason: "default", turn: 10 });
   const r = blockFor({ lender: 5, borrower: 2, reason: "repudiation", turn: 10 });
   const b = blockFor({ lender: "bond", borrower: 2, reason: "repudiation", turn: 10 });
   const t = blockFor({ lender: "temple", borrower: 2, reason: "repudiation", turn: 10 });
   assert.deepEqual(d, { lender: 5, borrower: 2, reason: "default", agesLeft: 0, untilTurn: null });
-  assert.deepEqual(r, { lender: 5, borrower: 2, reason: "repudiation", agesLeft: 1, untilTurn: null });
+  assert.deepEqual(r, { lender: 5, borrower: 2, reason: "repudiation", agesLeft: null, untilTurn: 20 });
   assert.equal(b.untilTurn, 40);
   assert.equal(t.untilTurn, 40);
   const next = blocksAfterAge([d, r, b]);
-  assert.deepEqual(next.map((x) => [x.lender, x.agesLeft]), [[5, 0], ["bond", null]]);
-  assert.deepEqual(blocksAfterAge(next).map((x) => x.lender), ["bond"]);
+  assert.deepEqual(next.map((x) => [x.lender, x.agesLeft]), [[5, null], ["bond", null]], "turn blocks run on");
+  assert.deepEqual(blocksAfterAge(next).map((x) => x.lender), [5, "bond"]);
   const led = { ...emptyLedger(), blocks: [b] };
   assert.equal(isBlocked(led, "bond", 2, 39), true);
   assert.equal(isBlocked(led, "bond", 2, 40), false);

@@ -6,7 +6,7 @@
 
 import { STAKE } from "./econ-params.js";
 import { creditRepOf } from "./econ-credit.js";
-import { relationLevel } from "./econ-lenders.js";
+import { amendsRecord, relationLevel } from "./econ-lenders.js";
 import { isIncomeGrowing } from "./econ-markets.js";
 
 /**
@@ -146,6 +146,10 @@ export function stakeFor(ctx, ai, host) {
  * @param {number} borrower
  */
 export function lenderGate(ctx, lender, borrower) {
+  // A lender the borrower repudiated and hasn't been made good to lends it an amends loan whatever its reputation and
+  // its stake: the repudiation is what put both there, and the loan's 1.5 times rate is the price of the risk (DESIGN
+  // 4.5; lab 2026-11-10, the seat 10 turns after repudiating Persia had reputation 41 and Persia's stake -16.9).
+  if (amendsRecord(ctx.ledger, borrower, lender, ctx.turn) !== null) return true;
   if (creditRepOf(ctx.ledger, borrower, ctx.turn) < STAKE.lendRepMin * 100) return false;
   return stakeFor(ctx, lender, borrower) >= STAKE.lendStakeMin;
 }

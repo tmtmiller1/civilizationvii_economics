@@ -93,7 +93,7 @@ export function treasuryView(input, pid) {
   const withLoans = projectBalances(input, 20).find((row) => row.id === pid)?.balances || [];
   const without = Array.from({ length: 20 }, (_, k) => balanceCents + incomeCents * (k + 1));
   const lowTurns = ledger.lowIncome.find((row) => row.pid === pid)?.turns || 0;
-  return { balanceCents, incomeCents, upkeepCents: civ.upkeepCents || 0, dueNextCents: dueNext(ledger, pid),
+  return { pid, balanceCents, incomeCents, upkeepCents: civ.upkeepCents || 0, dueNextCents: dueNext(ledger, pid),
     serviceCents: service, servicePct: servicePct(service, incomeCents), outstandingCents: outstandingOf(ledger, pid),
     projection: { withLoans, without }, insolvent: isInsolvent(lowTurns), escrowCents: escrowOf(ledger, pid) };
 }
@@ -117,7 +117,7 @@ export function loanOffers(input, pid, principal, term) {
   return offers.map((offer) => {
     const paymentCents = firstPayment(principal, offer.ratePpm, term);
     const refusal = limitRefusal(ctx, pid, { principal, ratePpm: offer.ratePpm, term });
-    return { lender: offer.lender, ratePpm: offer.ratePpm, paymentCents,
+    return { lender: offer.lender, ratePpm: offer.ratePpm, amends: offer.amends === true, paymentCents,
       interestCents: totalInterest(principal, offer.ratePpm, term),
       servicePctAfter: servicePct(serviceNow + paymentCents, income), refusal,
       mostCents: refusal ? mostBorrowCents(ctx, pid, { lender: offer.lender, ratePpm: offer.ratePpm, term }) : null };

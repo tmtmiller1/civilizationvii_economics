@@ -11,7 +11,7 @@ declare global {
   type LoanKind = "loan" | "project" | "general";
   /** Who opened the record: a player's borrow or lend request, the guard, or an AI rule. */
   type LoanSource = "borrow" | "lend" | "guard" | "ai-shortfall" | "ai-citizens" | "ai-build" | "refinance" | "crisis"
-    | "policy";
+    | "policy" | "amends";
   type RelationLevel = "war" | "unfriendly" | "neutral" | "friendly" | "unmet";
   type BlockReason = "default" | "repudiation";
 
@@ -37,6 +37,8 @@ declare global {
     partnership?: boolean;
     /** The borrower's income when a partnership opened. */
     baseIncome?: number;
+    /** An amends loan (DESIGN 4.5): taken from a lender the borrower repudiated, the repudiation's turn. */
+    amends?: number;
   }
 
   /** A lender refusing a borrower: for the rest of the age, for a number of ages, or until a turn. */
@@ -49,7 +51,15 @@ declare global {
   }
 
   interface MissRow { pid: number; turn: number; n: number }
-  interface RepudiationRow { pid: number; lender: Party; turn: number; cents: number; atWar: boolean }
+  interface RepudiationRow {
+    pid: number; lender: Party; turn: number; cents: number; atWar: boolean;
+    /** The lender's whole grudge and the witnesses' named note it booked (DESIGN 4.5), for making amends. */
+    grudge?: number; note?: number;
+    /** The turn an amends loan to that lender was repaid in full; from then it no longer counts against credit. */
+    madeGood?: number | null;
+    /** 1 when the row is a bankruptcy (econ-bankruptcy.js): the overdraft written off, booked on the bond market. */
+    bankrupt?: number;
+  }
   interface TurnRow { pid: number; turn: number }
   interface LowIncomeRow { pid: number; turns: number }
   /** What a civ holds in escrow for its next payments (AI-PLAN 4.2). */
@@ -75,6 +85,10 @@ declare global {
     paid?: number; carry?: number; celebrationPaid?: number; celebrationCarry?: number;
     /** What the standing lines moved the treasury by at the roll, counted into `snapshot` (econ-standing.js). */
     engine?: number;
+    /** The civ's overdraft this turn (DESIGN 4.18), held at least while it stays below zero. */
+    overdraft?: number;
+    /** Turns below zero in a row, this one included (DESIGN 4.18). */
+    below?: number;
   }
   interface BatchRecord { id: string; turn: number; civs: BatchRow[] }
 
@@ -323,8 +337,18 @@ declare global {
     /** The Influence stock (whole Influence, null unread) and net production a turn, for the crisis paths. */
     influence?: number | null;
     production?: number;
+    /** How many settlements the civ holds, for the bankruptcy weighing (econ-bankruptcy.js). */
+    settlements?: number;
+    /** How many units it has that cost upkeep, which the weighing can lose to disbanding. */
+    units?: number;
     /** What the standing lines moved the treasury by at the last roll; the glue has added it back to the balance. */
     engineCents?: number;
+    /** The local seat only: what its standing lines will move its treasury by at its roll, which comes after the
+     * batch (its markers go up a moment into its turn, after its own roll). Its funds leave that out (econ-batch.js). */
+    rollPendingCents?: number;
+    /** How far below zero its dues can take it this turn, when a rule sets it; unset, the batch uses
+     * overdraftLimitCents (DESIGN 4.18). The glue leaves it unset. */
+    overdraftCents?: number;
   }
 
   /** What the glue saw between batches that the cycle weighs (DESIGN 4.11): `pid` is the civ that took part. */
@@ -360,10 +384,8 @@ declare global {
     crises?: boolean;
   }
 
-  /** The engine's negative-balance lines, in cents; null when the GlobalParameters row couldn't be read. */
+  /** What the glue reads from the game's GlobalParameters. */
   interface EngineParams {
-    amenityLineCents?: number | null;
-    disbandLineCents?: number | null;
     /** GOLD_PURCHASE_MULTIPLIER in cents: the game's Gold price of a point of production (DESIGN 4.17 the plan). */
     goldPerPointCents?: number | null;
     /** The game's Friendly line and the top of Hostile (relationshipBands); absent reads STAKE's numbers. */
@@ -376,6 +398,8 @@ declare global {
   interface PlanInput {
     /** A Treasury-tab projection turn: the standing lines aren't worked out. */
     projection?: boolean;
+    /** What each civ's price stack was measured to do to its purchase prices, by pid (econ-standing-read.js). */
+    priceFactors?: Record<string, { stack: number, factorPpm: number }>;
     turn: number;
     age: string;
     ledger?: Ledger;
@@ -414,6 +438,18 @@ declare global {
   interface RelationshipRow { a: number; b: number; delta: number }
   interface Notice { pid: number; kind: string; [field: string]: unknown }
 
+  /**
+   * A civ below zero at the batch (econ-overdrawn.js, DESIGN 4.18): how far in cents, its overdraft, the full quarters
+   * of it used (0 to 4), whether it's past it, and what that costs: Happiness a settlement, a price premium in basis
+   * points, units to disband this turn.
+   */
+  interface OverdrawnRow {
+    cents: number; limitCents: number; quarters: number; past: boolean; gloom: number; premiumBp: number;
+    disband: number;
+    /** Turns below zero in a row, this one included, and the settlements whose buildings are shut down. */
+    turns?: number; shut?: number;
+  }
+
   interface PlanOutput {
     ledger: Ledger;
     transfers: Transfer[];
@@ -437,6 +473,11 @@ declare global {
     stakes: Record<string, number>;
     /** AI wars to declare for the crisis paths' Foreign adventure. */
     wars?: { a: number, b: number }[];
+    /** One-shot markers to stand in a civ's capital for the next turn, such as a repudiation's named grievance from
+     * every other major (econ-standing.js REPUDIATED). */
+    notes?: { pid: number, line: "REPUDIATED" | "REPAID", amount: number }[];
+    /** Each civ below zero at the batch, by pid (econ-overdrawn.js, DESIGN 4.18). */
+    overdrawn?: Record<string, OverdrawnRow>;
     /** Each civ's standing Gold lines for the next roll (econ-standing.js). */
     standing?: import("../ui/econ-standing.js").StandingRow[];
     /** Each civ's hardship for Partisans, by pid (econ-policy.js hardshipRows). */
@@ -457,9 +498,13 @@ declare global {
     committed: Map<number, number>;
     influence: Map<number, number>;
     celebration: Map<number, number>;
+    /** How far below zero each civ's obligations can take it this turn (DESIGN 4.18). */
+    overdraft: Map<number, number>;
+    /** Turns below zero in a row, this one included (econ-overdrawn.js). */
+    below?: Map<number, number>;
   }
 
-  interface Offer { lender: Party; ratePpm: number }
+  interface Offer { lender: Party; ratePpm: number; amends?: boolean }
 
   /** A civ as a would-be lender sees it: balance net of what it has already committed this turn. */
   interface LenderView { id: number; balanceCents: number; stages?: StageTurns; depthTurns?: number }
@@ -496,6 +541,10 @@ declare global {
 
   /** What the plan's passes share for one turn (ui/econ-turn.js). */
   interface TurnContext {
+    /** The civs that declared bankruptcy this turn (econ-bankruptcy.js). */
+    bankrupt?: Set<number>;
+    /** What each civ's price stack was measured to do (PlanInput.priceFactors), by pid. */
+    priceFactors?: Record<string, { stack: number, factorPpm: number }>;
     /** The ledger is near its 64 KB envelope: the crisis paths refuse new cards (econ-plan.js). */
     ledgerNearlyFull?: boolean;
     projection?: boolean;

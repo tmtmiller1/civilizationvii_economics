@@ -1,16 +1,19 @@
 // econ-session.js - Economics: the game-side session. It holds the ledger, the markets envelope (prices, tariffs) and
 // the glue's own envelope (stage turns, the civs ever seen, the player's pending requests, the guard switch), builds
 // the plan input from the engine once per turn, runs the model and sends what comes back (DESIGN 4.14). The batch runs
-// at TurnBegin: right after the roll every balance is fresh and nobody has spent yet, and a negative balance with
-// positive income has just been wiped by the engine (P3, P4). The ledger is written before the grants go out, so a save
+// at TurnBegin: right after the roll every balance is fresh and nobody has spent yet (P3); a negative balance carries
+// over as it is (lab W10, 2026-11-10). The ledger is written before the grants go out, so a save
 // in the second before they land can be told from one after (P15; batchStatus on load).
 
 import { planTurn } from "./econ-plan.js";
 import { MOD_ID, emptyLedger, load, save } from "./econ-state.js";
 import { batchStatus, celebrationPaidOf, grantOf } from "./econ-batch.js";
-import { placeLines, readCharged, readHeldMarkers } from "./econ-standing-read.js";
-import { STANDING_LINES } from "./econ-standing.js";
-import { engineLines, purchasePointCents, relationshipBands } from "./econ-params.js";
+import { placeLines, readCharged, readHeldMarkers, readIncomePct, shutNow } from "./econ-standing-read.js";
+import { priceChange } from "./econ-price-read.js";
+import { ONE_SHOT, isActionKind, isMarkerKind } from "./econ-standing.js";
+import { disbandUnits } from "./econ-disband.js";
+import { appendNotice } from "./econ-notify.js";
+import { purchasePointCents, relationshipBands } from "./econ-params.js";
 import { checkPlan } from "./econ-invariants.js";
 import { viewRules } from "./econ-view-model.js";
 import { TAB_KEYS, newlyOpened, openParts } from "./econ-view-tabs.js";
@@ -28,14 +31,14 @@ import { blendedTerms, termsOf } from "./econ-systems.js";
 import { readCrisisStage, readEconomy, readGovernment, readIdeology, readPopulations, resolveCycleEvents,
   sanitizePending, withPending } from "./econ-macro-read.js";
 import { aliveMajorIds, ageType, bankGoldYield, bookFavor, bookGrievance, bookRelationship, buildingData, declareWar,
-  gameTurn, isAliveMajor, player, readAtWar, readBalanceCents, readConfig, readEnvelope, readGlobalParameters,
-  readHappinessCents, readIncomeCents, readInfluence, readProduction, readRelations, readRelationshipRows, readStrength,
-  readUpkeepCents, safe,
+  gameTurn, isAliveMajor, localId, player, readAtWar, readBalanceCents, readConfig, readEnvelope, readGlobalParameters,
+  readHappinessCents, readIncomeCents, readInfluence, readProduction, readSettlements, readUpkeepUnits, readRelations,
+  readRelationshipRows, readStrength, loc, readUpkeepCents, safe,
   scaleAiPreference, sendCelebration, sendGold, sendInfluence, writeEnvelope } from "./econ-engine.js";
 
 export const GLUE_KEY = "tower-economics-glue";
 export const GLUE_VERSION = 2;
-const REQUEST_KINDS = ["borrow", "lend", "repay", "restructure", "repudiate", "tax", "tariff", "invest",
+const REQUEST_KINDS = ["borrow", "lend", "repay", "restructure", "repudiate", "bankrupt", "tax", "tariff", "invest",
   "accept-offer", "decline-offer", "respond", "policy"];
 const MAX_REQUESTS = 16;
 
@@ -48,7 +51,8 @@ const MAX_REQUESTS = 16;
  *   guardOn: boolean | null, turns: import("./econ-turn-count.js").TurnCount, roles: Record<string, string>,
  *   cycleEvents: import("./econ-macro-read.js").PendingCycleEvent[], told: string[] | null,
  *   fresh: string[], landed: { batch: string, pids: number[] } | null,
- *   lines: { turn: number, age: string, want: Record<string, Record<string, number>> } | null }} GlueState
+ *   lines: { turn: number, age: string, want: Record<string, Record<string, number>> } | null,
+ *   prices?: Record<string, { stack: number, factorPpm: number }> }} GlueState
  * @typedef {{ ledger: Ledger, glue: GlueState, lastPlan: PlanOutput | null, params: EngineParams | null,
  *   markets: MarketsState, macro: import("./econ-macro-state.js").MacroState, pops: Map<string, number>,
  *   skipsLogged: Set<string> }} Session
@@ -57,7 +61,7 @@ const MAX_REQUESTS = 16;
 /** @returns {GlueState} */
 export function emptyGlue() {
   return { v: GLUE_VERSION, stages: {}, seen: [], requests: [], guardOn: null, turns: emptyTurnCount(), roles: {},
-    cycleEvents: [], told: null, fresh: [], landed: null, lines: null };
+    cycleEvents: [], told: null, fresh: [], landed: null, lines: null, prices: {} };
 }
 
 /** @param {unknown} raw */
@@ -90,7 +94,7 @@ function cleanWantRow(row) {
   /** @type {Record<string, number>} */
   const lines = {};
   for (const [line, gold] of Object.entries(row)) {
-    if (line in STANDING_LINES && Number.isInteger(gold) && /** @type {number} */ (gold) > 0) {
+    if ((isMarkerKind(line) || isActionKind(line)) && Number.isInteger(gold) && /** @type {number} */ (gold) > 0) {
       lines[line] = /** @type {number} */ (gold);
     }
   }
@@ -153,7 +157,25 @@ export function sanitizeGlue(raw) {
   out.fresh = cleanIds(value.fresh, (id) => /** @type {readonly string[]} */ (TAB_KEYS).includes(id));
   out.landed = cleanLanded(value.landed);
   out.lines = cleanLines(value.lines);
+  out.prices = cleanPrices(value.prices);
   return out;
+}
+
+/** @param {unknown} raw */
+function cleanPrices(raw) {
+  /** @type {Record<string, { stack: number, factorPpm: number }>} */
+  const out = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [pid, row] of Object.entries(/** @type {Record<string, any>} */ (raw)).slice(0, 64)) {
+    if (/^\d+$/.test(pid) && isPriceRow(row)) out[pid] = { stack: row.stack, factorPpm: row.factorPpm };
+  }
+  return out;
+}
+
+/** @param {any} row */
+function isPriceRow(row) {
+  return !!row && Number.isInteger(row.stack) && row.stack >= 0 && row.stack <= 127
+    && Number.isInteger(row.factorPpm) && row.factorPpm >= 500000 && row.factorPpm <= 4000000;
 }
 
 /** @param {unknown} request */
@@ -244,7 +266,8 @@ export function readCiv(pid, majors, stages, extra = {}) {
   const civ = { id: pid, alive: true, human, balanceCents: readBalanceCents(pid), incomeCents: readIncomeCents(pid),
     upkeepCents: readUpkeepCents(pid), stages, atWar: readAtWar(pid, majors), happinessCents: readHappinessCents(pid),
     government: readGovernment(pid), ideology: readIdeology(pid), strength: readStrength(pid),
-    influence: readInfluence(pid), production: readProduction(pid),
+    influence: readInfluence(pid), production: readProduction(pid), settlements: readSettlements(pid),
+    units: readUpkeepUnits(pid),
     ...economyFields(extra.economy) };
   if (extra.cities) Object.assign(civ, { cities: extra.cities, tradeIncomeCents: readTradeIncomeCents(pid) });
   return civ;
@@ -338,13 +361,13 @@ export function displayTurn(session, turn) {
 }
 
 /**
- * The engine's lines and the game's purchase rate from GlobalParameters, read once a session, with other mods' rows
+ * The game's purchase rate and relationship bands from GlobalParameters, read once a session, with other mods' rows
  * applied.
  * @returns {EngineParams}
  */
 function readParams() {
   const rows = readGlobalParameters();
-  return { ...engineLines(rows), goldPerPointCents: purchasePointCents(rows),
+  return { goldPerPointCents: purchasePointCents(rows),
     ...relationshipBands(rows, readRelationshipRows()) };
 }
 
@@ -389,7 +412,7 @@ export function buildInput(session, standing = {}) {
     routes: options.markets && commerce ? commerce.routes : [],
     market: options.markets ? commerce?.market : undefined, macro: session.macro,
     cycleEvents: resolveCycleEvents(session.glue.cycleEvents, readPopulations(majors)),
-    crisisStage: readCrisisStage() };
+    crisisStage: readCrisisStage(), priceFactors: session.glue.prices || {} };
 }
 
 /**
@@ -411,6 +434,9 @@ function withCharged(civ, charged) {
   if (!charged || civ.alive !== true || (!charged.cents && !charged.perTurn)) return civ;
   const out = { ...civ, incomeCents: civ.incomeCents - charged.perTurn };
   if (charged.cents) Object.assign(out, { balanceCents: civ.balanceCents - charged.cents, engineCents: charged.cents });
+  // An AI's markers stood through its roll before this batch; the local seat's went up after its own roll, so their
+  // charge is still to come out of the income it's about to be paid, and its funds leave it out (econ-batch.js).
+  if (charged.cents && civ.id === localId()) out.rollPendingCents = charged.cents;
   return out;
 }
 
@@ -550,19 +576,69 @@ function wantOf(plan) {
 }
 
 /**
- * Brings every living civ's markers to the lines the last batch wants, from a fresh read of what stands. Sent on the
- * local player's turn; running it again changes nothing once they've landed. Returns how many requests went out.
+ * Brings every living civ's markers to the lines the last batch wants, from a fresh read of what stands, a paying
+ * line sized by the capital's Income percentage. Sent on the local player's turn; running it again changes nothing
+ * once they've landed, except that a one-shot marker is wanted only once: it's taken out of the glue as it's sent, so
+ * the next pass takes it down. Returns how many requests went out.
  * @param {Session} session
  */
 export function placeLinesNow(session) {
   const want = session.glue.lines?.want || {};
   let sent = 0;
+  let consumed = false;
   for (const pid of aliveMajorIds()) {
     const row = want[String(pid)] || {};
     const wanted = new Map(/** @type {[import("./econ-standing.js").StandingLine, number][]} */ (Object.entries(row)));
-    sent += placeLines(pid, wanted, readHeldMarkers(pid));
+    const held = readHeldMarkers(pid);
+    const measure = priceChange(session.glue, pid, wanted, held, () => writeGlue(session));
+    sent += placeLines(pid, wanted, held, wanted.size || held.length ? readIncomePct(pid) : 0);
+    if (measure) measure();
+    disbandNow(pid, row);
+    shutBuildings(pid, row, held);
+    if (consumeOneShots(row)) consumed = true;
   }
+  if (consumed) writeGlue(session);
   return sent;
+}
+
+/**
+ * An overdrawn civ with its income below zero loses the units the plan says (DESIGN 4.18, econ-disband.js); the
+ * player hears which of theirs went, added to the turn's notification.
+ * @param {number} pid
+ * @param {Record<string, number>} row
+ */
+function disbandNow(pid, row) {
+  if (!row.DISBAND) return;
+  const names = disbandUnits(pid, row.DISBAND);
+  if (names.length && pid === localId()) {
+    appendNotice(names.map((name) => loc("LOC_ECONOMICS_NOTICE_OVERDRAWN_DISBANDED", name)));
+  }
+}
+
+/**
+ * An overdrawn civ's settlements with their buildings shut down, as many as the ramp says, the costliest first
+ * (DESIGN 4.18, econ-standing-read.js shutNow); the player hears which of theirs shut, added to the notification.
+ * @param {number} pid
+ * @param {Record<string, number>} row
+ * @param {import("./econ-standing-read.js").HeldMarker[]} held
+ */
+function shutBuildings(pid, row, held) {
+  const names = shutNow(pid, row.SHUT || 0, held);
+  if (names.length && pid === localId()) {
+    appendNotice(names.map((name) => loc("LOC_ECONOMICS_NOTICE_OVERDRAWN_SHUT", name)));
+  }
+}
+
+/**
+ * Takes the one-shot kinds out of a civ's wanted lines once they've been sent; true when there was one.
+ * @param {Record<string, number>} row
+ */
+function consumeOneShots(row) {
+  let consumed = false;
+  for (const line of Object.keys(row)) {
+    if (ONE_SHOT.has(line) || isActionKind(line)) { delete row[line]; consumed = true; }
+  }
+  return consumed;
 }
 
 /**

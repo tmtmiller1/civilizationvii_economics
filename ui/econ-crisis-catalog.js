@@ -136,7 +136,7 @@ export const RESPONSE_RULES = {
   tribute: { incomeTurns: 2, grievance: 10, billPct: 200, turns: 10 },
   templeLends: { incomeTurns: 3, term: 20, worldTemplePct: 125 },
   suspend: { turns: 3, lenderLevel: -3, grievance: 10, bondPct: 150, bondTurns: 20 },
-  recoinage: { costTurns: 2, erosionCapPct: 50 },
+  recoinage: { costTurns: 2, priceCapPct: 50 },
   charter: { capTurns: 2, billPct: 80, turns: 20, dividendPct: 20 },
   navigationActs: { turns: 10 },
   bullion: { incomeTurns: 3, pricePctPerTurn: 3, turns: 5, piExtraPpm: 2500, piTurns: 10, collapseHalfTurns: 20 },

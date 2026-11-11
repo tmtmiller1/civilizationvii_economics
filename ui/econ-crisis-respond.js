@@ -8,7 +8,7 @@ import { crisesOn, forgetTerms, hasLegacy, isRunning, openCrises, settlementsOf,
   from "./econ-crisis-rows.js";
 import { BASE_RATE_PPM, BOND, CITIZENS, CYCLE, INFLATION, PROGRESS, TEMPLE, isWorldAccount } from "./econ-params.js";
 import { closeLoan, emit, event, notice, openLoan, repChange, replaceLoan } from "./econ-turn.js";
-import { funds } from "./econ-batch.js";
+import { funds, payable } from "./econ-batch.js";
 import { duesOf } from "./econ-distress.js";
 import { isOpen } from "./econ-loan.js";
 import { hasStage } from "./econ-stages.js";
@@ -503,6 +503,14 @@ export function aiRespond(ctx, civ) {
  * @param {number} wanted
  */
 const within = (ctx, pid, wanted) => Math.min(wanted, Math.max(0, funds(ctx.batch, pid)));
+/**
+ * A running response's dues (relief, rearmament, a company's dividends, price supports' bill) can take the treasury
+ * into its overdraft (DESIGN 4.18); public works turn Gold into production, which needs Gold in hand.
+ * @param {TurnContext} ctx
+ * @param {number} pid
+ * @param {number} wanted
+ */
+const withinDue = (ctx, pid, wanted) => Math.min(wanted, Math.max(0, payable(ctx.batch, pid)));
 
 /**
  * Relief: a Gold a settlement to the citizens, four Happiness a settlement back; the dole ended early, a grudge.
@@ -514,7 +522,7 @@ function reliefFor(ctx, civ) {
   if (isRunning(ctx.ledger, civ.id, "relief")) {
     // New Deal programmes (econ-policy.js) run relief at half its Gold.
     const pct = (responseCostPct(ctx.ledger, civ.id, "relief") * goldPct(ctx, civ.id, "relief")) / 100;
-    const cents = within(ctx, civ.id, Math.round((RR.relief.goldPerSettlement * n * pct) / 100));
+    const cents = withinDue(ctx, civ.id, Math.round((RR.relief.goldPerSettlement * n * pct) / 100));
     if (cents > 0) {
       emit(ctx, { id: `RL${civ.id}` }, { from: civ.id, to: CITIZENS, cents, reason: "relief" });
       ctx.out.celebration.push({ pid: civ.id, amount: RR.relief.celebrationPerSettlement * n, reason: "relief" });
@@ -571,7 +579,7 @@ function worksFor(ctx, civ) {
 function armsFor(ctx, civ) {
   if (!isRunning(ctx.ledger, civ.id, "rearmament")) return;
   const full = RR.rearmament.goldPerSettlement * settlementsOf(civ);
-  const cents = within(ctx, civ.id, Math.round((full * goldPct(ctx, civ.id, "rearmament")) / 100));
+  const cents = withinDue(ctx, civ.id, Math.round((full * goldPct(ctx, civ.id, "rearmament")) / 100));
   if (cents > 0) emit(ctx, { id: `RA${civ.id}` }, { from: civ.id, to: CYCLE, cents, reason: "rearmament" });
 }
 
@@ -583,13 +591,13 @@ function armsFor(ctx, civ) {
 function billsFor(ctx, civ) {
   const tradeIncome = civ.tradeIncomeCents ?? 0;
   if (hasLegacy(ctx.ledger, civ.id, "charter") && tradeIncome > 0) {
-    const cents = within(ctx, civ.id, Math.floor((tradeIncome * RR.charter.dividendPct) / 100));
+    const cents = withinDue(ctx, civ.id, Math.floor((tradeIncome * RR.charter.dividendPct) / 100));
     if (cents > 0) emit(ctx, { id: `CO${civ.id}` }, { from: civ.id, to: CITIZENS, cents, reason: "company" });
   }
   if (isRunning(ctx.ledger, civ.id, "price-supports")) {
     const bill = Math.floor((Math.max(0, civ.incomeCents) * RR.priceSupports.costIncomePct
       * goldPct(ctx, civ.id, "price-supports")) / 10000);
-    const cents = within(ctx, civ.id, bill);
+    const cents = withinDue(ctx, civ.id, bill);
     if (cents > 0) emit(ctx, { id: `PS${civ.id}` }, { from: civ.id, to: CYCLE, cents, reason: "price-supports" });
     importersResent(ctx, civ);
   }

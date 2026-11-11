@@ -49,7 +49,7 @@ test("single player: one boot line, the batch at TurnBegin, the notification at 
   const { world, lines, harness } = await boot("sp", {});
   assert.equal(lines.filter((line) => line.startsWith(`[Economics] v${VERSION} loaded; turn 10,`)).length, 1, lines.join("\n"));
   assert.deepEqual([...world.handlers.keys()].sort(), ["CityRazingStarted", "CityTransfered", "PlayerTurnActivated",
-    "RandomEventOccurred", "TurnBegin"]);
+    "PlayerTurnDeactivated", "RandomEventOccurred", "TurnBegin"]);
   assert.equal(harness.multiplayer, false);
   assert.equal(harness.request({ kind: "borrow", borrower: 0, lender: "bond", principal: 3000, term: 10 }), true);
   world.turn = 11;

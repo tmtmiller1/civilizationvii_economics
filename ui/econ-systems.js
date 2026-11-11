@@ -29,7 +29,7 @@ export const IDEOLOGY_SYSTEMS = { IDEOLOGY_DEMOCRACY: "market", IDEOLOGY_FASCISM
 /**
  * @typedef {{ bondPct: number, borrowPct: number, lendPct: number, creditTurns: number, creditPct: number,
  *   tradeBuildingPct: number, commercePct: number, billPaidPct: number, exportPct: number, dividendMille: number,
- *   aidRelationPct: number, erosionPct: number, industryPct: number, lDecayPct: number, lMultPct: number,
+ *   aidRelationPct: number, pricePct: number, industryPct: number, lDecayPct: number, lMultPct: number,
  *   warehouseMultPct: number, panicL: number, highTariffEveryTurns: number, civLendersOnly: boolean,
  *   citizens: boolean, partnership: boolean, devLoansOnly: boolean, fixedPrices: boolean, outOfCycle: boolean,
  *   plan: boolean, warBoom: boolean }} SystemTerms
@@ -43,7 +43,7 @@ export const IDEOLOGY_SYSTEMS = { IDEOLOGY_DEMOCRACY: "market", IDEOLOGY_FASCISM
 /** @type {Readonly<SystemTerms>} */
 export const MIXED_TERMS = Object.freeze({ bondPct: 100, borrowPct: 100, lendPct: 100, creditTurns: 0,
   creditPct: 100, tradeBuildingPct: 10, commercePct: 100, billPaidPct: 100, exportPct: 100, dividendMille: 0,
-  aidRelationPct: 100, erosionPct: 100, industryPct: 100, lDecayPct: 80, lMultPct: 100, warehouseMultPct: 100,
+  aidRelationPct: 100, pricePct: 100, industryPct: 100, lDecayPct: 80, lMultPct: 100, warehouseMultPct: 100,
   panicL: 0, highTariffEveryTurns: 5, civLendersOnly: false, citizens: false, partnership: false,
   devLoansOnly: false, fixedPrices: false, outOfCycle: false, plan: false, warBoom: false });
 
@@ -57,7 +57,7 @@ export const SYSTEM_CHANGES = {
   manorial: { creditTurns: -4, billPaidPct: 80, lMultPct: 75, warehouseMultPct: 200 },
   mercantile: { bondPct: 80, exportPct: 110, highTariffEveryTurns: 10, dividendMille: 10, lMultPct: 125 },
   religious: { partnership: true, aidRelationPct: 200 },
-  corporatist: { creditPct: 150, bondPct: 75, erosionPct: 200, industryPct: 200, devLoansOnly: true, warBoom: true },
+  corporatist: { creditPct: 150, bondPct: 75, pricePct: 200, industryPct: 200, devLoansOnly: true, warBoom: true },
   planned: { civLendersOnly: true, fixedPrices: true, devLoansOnly: true, outOfCycle: true, plan: true },
 };
 

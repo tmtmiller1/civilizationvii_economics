@@ -9,14 +9,16 @@ import { formatFactor, formatGold } from "./econ-format.js";
 import { composeArgs, describeEvent, eventConcerns, flowBreakdown, phaseKey } from "./econ-notice-text.js";
 import { loansView, treasuryView } from "./econ-view-model.js";
 import { cycleGoldLine, inflationLines, worldView } from "./econ-view-macro.js";
-import { amount, changeRow, columns, el, empty, expander, lineChart, note, pill, projectionChart, row, section }
-  from "./econ-dom.js";
-import { opensNext, rulesFor, turnLabels } from "./econ-view-common.js";
+import { amount, button, changeRow, columns, confirmCard, el, empty, expander, feedbackLine, isConfirming, lineChart,
+  note, pill, projectionChart, row, section, setConfirming } from "./econ-dom.js";
+import { opensNext, rulesFor, send, turnLabels } from "./econ-view-common.js";
+import { lastBankruptcy } from "./econ-bankruptcy.js";
 import { cycleDial, inflationMeter, serviceMeter } from "./econ-view-instruments.js";
 import { guardSection, mineSection, pendingSection } from "./econ-view-loans.js";
 import { aidSection } from "./econ-view-trade.js";
-import { CREDIT } from "./econ-params.js";
+import { BANKRUPTCY, CREDIT, OVERDRAWN, rowHeldCents } from "./econ-params.js";
 import { emptyLedger } from "./econ-state.js";
+import { overdrawnState } from "./econ-overdrawn.js";
 
 /** @typedef {import("./econ-screen-api.js").ScreenApi} ScreenApi */
 
@@ -95,6 +97,8 @@ function nowSection(input, view, rules, api) {
     now.appendChild(note(api.loc("LOC_ECONOMICS_TREASURY_INSOLVENT")));
   }
   now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_BALANCE"), goldAmount(api, view.balanceCents)));
+  for (const line of overdrawnLines(view, api, belowTurns(input, view.pid))) now.appendChild(line);
+  for (const line of bankruptcyLines(input, view, api)) now.appendChild(line);
   now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_INCOME"), goldAmount(api, view.incomeCents,
     { signed: true, tone: true })));
   now.appendChild(modNetRow(input, api));
@@ -112,7 +116,71 @@ function nowSection(input, view, rules, api) {
 }
 
 /**
- * The inflation reserve and erosion for a member, and this turn's cycle Gold before the World tab opens.
+ * While the treasury is below zero (DESIGN 4.18): a pill and what it costs, the overdraft and how much of it is used,
+ * the Happiness each settlement loses, the price premium, and the units and settlements the ramp has reached.
+ * @param {ReturnType<typeof treasuryView>} view
+ * @param {ScreenApi} api
+ * @param {number} turns turns below zero in a row
+ */
+function overdrawnLines(view, api, turns) {
+  const state = overdrawnState({ balanceCents: view.balanceCents, incomeCents: view.incomeCents }, turns);
+  if (!state) return [];
+  const pct = (/** @type {number} */ value) => amount(`+${value}%`, { kind: null });
+  const lines = [pill(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_PILL"), true),
+    note(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN")),
+    row(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAFT"), goldAmount(api, state.limitCents)),
+    row(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAFT_USED"), goldAmount(api, state.cents), "econ-negative"),
+    row(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_GLOOM"), amount(`-${state.gloom}`, { kind: null }), "econ-negative"),
+    row(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_PREMIUM"), pct(Math.round(state.premiumBp / 100)), "econ-negative")];
+  if (turns > OVERDRAWN.warnTurns) lines.push(note(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_DISBAND")));
+  // The settlements shut now, read from the game: the ramp's number counts past the ones with buildings to shut.
+  const shut = api.shutCount ? api.shutCount() : state.shut;
+  if (shut) lines.push(row(api.loc("LOC_ECONOMICS_TREASURY_OVERDRAWN_SHUT"), amount(String(shut), { kind: null }),
+    "econ-negative"));
+  return lines;
+}
+
+/**
+ * While below zero: the button to declare bankruptcy and its confirm, or when it can be declared again (DESIGN 4.18).
+ * @param {PlanInput} input
+ * @param {ReturnType<typeof treasuryView>} view
+ * @param {ScreenApi} api
+ * @returns {HTMLElement[]}
+ */
+function bankruptcyLines(input, view, api) {
+  if (!(view.balanceCents < 0)) return [];
+  const said = feedbackLine("bankrupt");
+  const lines = said ? [said] : [];
+  const last = lastBankruptcy(input.ledger || emptyLedger(), view.pid);
+  if (last !== null && input.turn - last < BANKRUPTCY.everyTurns) {
+    const from = last + BANKRUPTCY.everyTurns;
+    return [...lines, note(api.loc("LOC_ECONOMICS_TREASURY_BANKRUPT_WAIT", api.turnLabel(from) ?? from))];
+  }
+  const actions = el("div", "econ-actions");
+  actions.appendChild(button(api.loc("LOC_ECONOMICS_TREASURY_BANKRUPT"), () => { setConfirming("bankrupt"); api.rerender(); },
+    { className: "econ-button--warning econ-button--small" }));
+  lines.push(actions);
+  if (isConfirming("bankrupt")) {
+    lines.push(confirmCard({ title: api.loc("LOC_ECONOMICS_TREASURY_BANKRUPT_TITLE"),
+      lines: [note(api.loc("LOC_ECONOMICS_TREASURY_BANKRUPT_PREVIEW", formatGold(-view.balanceCents)))],
+      confirm: api.loc("LOC_ECONOMICS_CONFIRM"), cancel: api.loc("LOC_ECONOMICS_CANCEL"), warning: true,
+      onConfirm: () => send(api, { kind: "bankrupt", pid: api.me }, "bankrupt"), rerender: api.rerender }));
+  }
+  return lines;
+}
+
+/**
+ * A civ's turns below zero in a row, from the last batch's row (1 before there is one).
+ * @param {PlanInput} input
+ * @param {number} pid
+ */
+function belowTurns(input, pid) {
+  const row = input.ledger?.lastBatch?.civs?.find((x) => x.pid === pid);
+  return row && rowHeldCents(row) < 0 && Number.isInteger(row.below) ? /** @type {number} */ (row.below) : 1;
+}
+
+/**
+ * A member's prices from inflation and next turn's rise, and this turn's cycle Gold before the World tab opens.
  * @param {PlanInput} input
  * @param {import("./econ-view-tabs.js").TabRules} rules
  * @param {ScreenApi} api
@@ -123,9 +191,9 @@ function macroLines(input, rules, api) {
   const now = { appendChild: (/** @type {HTMLElement} */ node) => lines.push(node) };
   const inflation = inflationLines(input, api.me);
   if (inflation.member) {
-    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_RESERVE"), goldAmount(api, inflation.reserveCents)));
-    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_EROSION"), goldAmount(api, -inflation.erosionCents,
-      { tone: true })));
+    const pct = (/** @type {number} */ value) => amount(`+${value.toFixed(1)}%`, { kind: null });
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_PRICES"), pct(inflation.levelPct)));
+    now.appendChild(row(api.loc("LOC_ECONOMICS_TREASURY_PRICES_NEXT"), pct(inflation.nextPct)));
   }
   const cycle = rules.sections["treasury.cycle"] ? cycleGoldLine(input, api.me) : null;
   if (cycle?.on) {

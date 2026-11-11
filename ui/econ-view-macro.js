@@ -6,7 +6,8 @@
 import { DEFAULT_OPTIONS } from "./econ-plan.js";
 import { macroReadings, emptyMacro } from "./econ-macro-state.js";
 import { phaseOf, leverPct } from "./econ-cycle.js";
-import { erosionCents, reserveCents } from "./econ-inflation.js";
+import { nextLevelPpm } from "./econ-inflation.js";
+import { priceRiseFor, priceStackFor } from "./econ-standing.js";
 import { IDEOLOGY_SYSTEMS, systemFor, termsOf } from "./econ-systems.js";
 import { planSplit, planTakeCents } from "./econ-planned.js";
 import { isOpen } from "./econ-loan.js";
@@ -96,22 +97,44 @@ function blendTurnsLeft(row, turn) {
 }
 
 /**
- * The Treasury tab's inflation lines (DESIGN 4.8): whether the civ takes part, its reserve and what erosion would
- * take from it at this turn's pi.
+ * The Treasury tab's inflation lines (DESIGN 4.8): whether the civ takes part, how far its prices stand above the
+ * age's own as the game charges them, and how far they'd rise next turn at this turn's rate and its system's share
+ * (crisis terms aside).
  * @param {PlanInput} input
  * @param {number} me
  */
 export function inflationLines(input, me) {
   const options = optionsOf(input);
   const civ = input.civs.find((row) => row.id === me);
-  if (!civ || options.inflation !== true) return { on: false, member: false, reserveCents: 0, erosionCents: 0 };
+  if (!civ || options.inflation !== true) return { on: false, member: false, levelPct: 0, nextPct: 0 };
   const macro = input.macro || emptyMacro();
   const readings = macroReadings(macro, { civs: [civ], turn: input.turn, options });
   const terms = readings.terms.get(me) || termsOf("mixed");
   const member = hasStage(civ, "publicDebt", input.turn, options) && !terms.outOfCycle;
-  return { on: true, member, reserveCents: reserveCents(civ.incomeCents),
-    erosionCents: member ? erosionCents({ piPpm: readings.piPpm, balanceCents: civ.balanceCents,
-      incomeCents: civ.incomeCents, erosionPct: terms.erosionPct }) : 0 };
+  const levelPpm = levelOf(macro, input.age, me);
+  const next = member ? nextLevelPpm({ levelPpm, piPpm: readings.piPpm, pricePct: terms.pricePct }) : levelPpm;
+  const charged = chargedPct(input.priceFactors?.[String(me)]);
+  return { on: true, member, levelPct: charged(levelPpm), nextPct: charged(next) - charged(levelPpm) };
+}
+
+/**
+ * The civ's price level in ppm in this age, 0 before it has one.
+ * @param {import("./econ-macro-state.js").MacroState} macro
+ * @param {string} age
+ * @param {number} me
+ */
+function levelOf(macro, age, me) {
+  if (macro.inflation.levelAge !== age) return 0;
+  return macro.inflation.levels?.[String(me)] ?? 0;
+}
+
+/**
+ * What the game charges for a level: the rise of the marker stack that stands for it, as the glue measured it for this
+ * civ, or the lab's table before it has (econ-standing.js priceStackFor).
+ * @param {{ stack: number, factorPpm: number } | undefined} measured
+ */
+function chargedPct(measured) {
+  return (/** @type {number} */ ppm) => priceRiseFor(priceStackFor(Math.round(ppm / 100), measured), measured) / 100;
 }
 
 /**

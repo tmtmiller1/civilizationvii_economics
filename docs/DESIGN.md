@@ -248,7 +248,8 @@ Default:
 - Garnish each turn until `O = 0`, taken only from what the borrower has:
 
   ```
-  cash     = max(0, the borrower's funds after this turn's other charges)       4.14
+  cash     = max(0, what the borrower can pay after this turn's other charges,
+                 its overdraft included)                                         4.14, 4.18
   garnish  = min(max(ceil(O * 0.1), 1), floor(0.5 * income), cash)       income > 0
   garnish  = min(max(ceil(O * 0.05), 1), floor(0.1 * balance), cash)     income at or below 0 (NOTES finding C)
   ```
@@ -273,10 +274,10 @@ Repudiation:
 
   ```
   loss_turns     = written-off Gold / max(10, the lender's income)
-  lender grudge  = clamp(5 * loss_turns, 10, 40) grievances, booked on the repudiator:
-                   Players.get(repudiator).Diplomacy.changeNumGrievances(lender, grudge * 1000)
-  witnesses      = -3 relationship with each other major civ the repudiator has met
-  lender         = -10 to -30 relationship with the lender, sized like the grudge (AI-PLAN 4.4)
+  witnesses      = 3 grievances from every other major against the repudiator, named "They repudiated a loan"
+  lender grudge  = clamp(5 * loss_turns, 10, 40) grievances in all: the witnesses' 3 plus the rest, booked on the
+                   repudiator: Players.get(repudiator).Diplomacy.changeNumGrievances(lender, (grudge - 3) * 1000)
+  lender         = -10 to -30 relationship with the lender, sized like the whole grudge (AI-PLAN 4.4)
   reputation     = -30 (4.2), mending by half every 50 turns
   ```
 
@@ -287,12 +288,32 @@ Repudiation:
   A civ repudiating what it owes an enemy it's at war with pays half the witnesses' and the standing cost: the world
   expects debts to an enemy to go unpaid. Repudiating the bond market has no lender to hold a grudge, so the
   witnesses' cost is doubled.
+
+  The witnesses' grievances ride the game's own `EFFECT_GRANT_ALL_PLAYERS_FAVORS_GRIEVANCES` with Economics' event
+  `GRIEVANCE_FROM_ECON_REPUDIATION`, switched on by a one-turn marker in the repudiator's capital (econ-standing.js
+  REPUDIATED), so each civ's relationship breakdown names the row and the AI counts them as grievances, which it
+  sanctions and targets on. A script grievance has no name (the engine ignores the event type passed to
+  `changeNumGrievances`), so the lender's remainder still shows as an unnamed row; no route names a grievance between
+  one pair (AI-NATIVE-LEVERS "Lab runs 2026-11-09"). Built 2026-11-09.
 - Harder to borrow afterwards:
-  - That lender won't lend to or invest in the repudiator for the rest of this age and the whole of the next. After
-    a bond-market repudiation the bond market is closed to it for 30 turns, which also turns off its guard (4.6).
+  - That lender is closed to the repudiator for 10 turns, then lends to it again only as amends (below). After a
+    bond-market repudiation the bond market is closed to it for 30 turns, which also turns off its guard (4.6).
   - Every other lender charges more through standing (`r / standing`, 4.3), and `credit_cap` loses 4 turns of income
     per repudiation in the last 40 turns (4.2).
   - While a repudiation counts, terms are 10 turns at most, and AI civs don't invest in it (section 6).
+- Making amends (built 2026-11-10, the owner's call): after the 10 turns the wronged civ lender offers the repudiator
+  loans again at 1.5 times its rate, 10 turns at most; any loan from it before the repudiation is made good is an
+  amends loan (`loan.amends`, the repudiation's turn). Repaying one in full makes the repudiation good: the lender
+  books favors worth half its grudge, every other major books "They repaid a loan in full" (a one-shot REPAID marker,
+  the same all-players effect as the witnesses' note), the repudiator's reputation gets back what the repudiation
+  took, and the record (`madeGood`, the turn) stops counting for the 10-turn term limit, standing and credit. An AI
+  repudiator asks for one when it has a reason: a repudiation of a living civ lender not yet made good, past the 10
+  turns, at peace with it, none open, income above 0; it asks for about 3 turns of its income over 10 turns, within
+  its debt-service limit. An AI lender answers by its own lending rules, except that the wronged lender takes amends
+  with 5 turns of income in hand (20 for an ordinary loan) and whatever the repudiator's reputation and its own stake
+  in it, which the repudiation is what lowered (lab 2026-11-10: without these no amends loan came in either
+  direction); a human lender gets one notice per repudiation and lends from the Loans tab. The player's borrow form shows the wronged lender's offer with a line
+  saying it's an amends loan and what repaying it does. Records count for 40 turns, so amends are open until then.
 - Conflict comes indirectly, through the game's own grievances. The mod can't make an AI declare war (an operation
   sent for another player is ignored, section 3), but grievances are what the AI already acts on: in a watched pair of
   runs, 75 script grievances turned an AI's diplomatic actions hostile and made the other civ's cities its enemy
@@ -328,13 +349,16 @@ without the cycle and inflation terms (`2 * base_rate / standing * depth_factor`
 still gets emergency loans from them.
 
 ```
-guard line     = amenity line (0), so it covers both penalties (NOTES finding B)
+guard line     = 0 Gold, where the overdraft's interest and penalties start (4.18)
 emergency_cap  = max(100, 10 * |income|)        open emergency principal per civ
 ```
 
 - An emergency loan is breathing room, not a way to fund a deficit forever. When the next one would pass
-  `emergency_cap`, the guard stops, and the player is told once that the game's own penalties now apply (amenities at
-  0, disbanding at -10), with the deficit and its biggest causes. Paying emergency loans down frees the allowance.
+  `emergency_cap`, the guard stops, and the player is told once that the treasury now goes into its overdraft, how far
+  that reaches, and what being below 0 costs (4.18). Paying emergency loans down frees the allowance.
+- The line was once the game's own `GOLD_NEGATIVE_BALANCE_AMENITY_LOSS_LINE`. The game never acts on it or on the
+  disband line (lab W10, 2026-11-10: with both at -10, -1,000 and +1,000 a civ played its turns identically), so the
+  line is a constant and the penalties are Economics' own (4.18).
 - A civ whose income has been at or below 0 for 5 turns running is insolvent. The guard's notice says so and names
   the costs behind it, so the player can tell a bad turn from a deficit that needs a fix.
 - Setup default On. The player can switch it off or on again on the Loans tab at any time.
@@ -373,6 +397,9 @@ lets anyone change it, player or AI (section 3), so taxes use the game's own slo
     creation, so they only reach new games.
   - Whether the AI's card pass reads strategy priorities and modifier requirements at all is part of P17. If it
     doesn't, the cards still work for the AI; it just picks them on their face value.
+  - A strategy keyed on the government (`GovernmentMatches GOVERNMENT_CLASSICAL_REPUBLIC`, a Happiness bias of 300)
+    didn't move Classical Republic AIs toward Light Taxation in lab W20: 17 turns holding it with the strategy, 19
+    without. Not shipped.
 
 | Card | Unlocked by | Effect in each settlement | Partisans hardship |
 | --- | --- | --- | --- |
@@ -443,8 +470,9 @@ by age").
 
 ### 4.8 Inflation
 
-Off by default (section 8). Prices can't be raised, so inflation erodes Gold held above a reserve and makes new bond
-loans dearer.
+Off by default (section 8). Inflation raises a member's prices: everything it buys with Gold costs more, through the
+game's own purchase prices, and new bond loans get dearer. Built 2026-11-09; it replaced erosion of Gold above a
+reserve, which moved the balance with no line the player or the AI could read.
 
 Only civs with the Public debt stage (4.15) take part. They share the bond market, which is what ties their money
 together; a civ outside it keeps its Gold whole and pays no inflation premium.
@@ -453,29 +481,38 @@ together; a civ outside it keeps its Gold whole and pays no inflation premium.
 M        = sum of member balances, each floored at 0
 B        = total outstanding on bond-market loans
 pi       = min(0.005, 0.02 * B / max(M, 1000)) per turn          0 with no bond debt
-reserve  = 20 * max(income, 10)
-erosion  = floor(pi * max(0, balance - reserve)) per member per turn
+level    = level + (1 + level) * pi * share, per member per turn, at most +127%; starts at 0 each age
+share    = the system's (Corporatist 2x, Planned 0), halved by a recoinage; pi adds a crisis's own extra
 bond     = r_bond rises by 50 * pi, at most 25% (4.3)
 ```
 
-- The bond market is the only Gold source from outside the game; erosion is the matching sink. Loan balances aren't
-  eroded, so the 4.4 schedule stays whole.
-- The player can respond by spending above the reserve, paying down bond debt (which lowers `B`), lending or
-  investing abroad, or borrowing from civs, whose rates carry no inflation premium.
-- The Treasury tab shows the reserve line, the turn's erosion and the cause in one sentence ("bond debt is 1.4 times
-  the Gold the bond market's members hold, mostly Persia's").
+- The level stands in the member's capital as purchase-price markers in powers of two (1 to 64 percent): a game
+  modifier over all cities, gated on the city holding each marker, applies
+  `EFFECT_ADJUST_PLAYER_OR_CITY_ALL_PURCHASE_EFFICIENCY` at minus that percent, which raises every purchase price in
+  all of that player's cities and comes off with the marker (watched 2026-11-10). A stack's real rise isn't its
+  percent (8% of markers charge 7.44%, 64% charge 71.47%), so the level stands as the stack whose measured rise is
+  nearest it, and the Treasury tab shows that rise (`PRICE_CALIBRATION` in econ-standing.js, lab W8). The same stack
+  raises different civs' prices by different amounts (each civ's own purchase modifiers combine with it), so the
+  table is only the first guess: each time a civ's stack changes the glue reads one of its purchase prices before and
+  after and keeps the ratio (econ-price-read.js), and the next stack and the Treasury figure come from that civ's own
+  measured response (watched to within 0.05 of a point, lab W9). The AI's purchases read the same prices. Loan balances aren't touched, so the 4.4 schedule
+  stays whole; Gold borrowed and Gold repaid both buy less.
+- The player can respond by buying before prices climb further, paying down bond debt (which lowers `B`), taking a
+  recoinage in a crisis, or borrowing from civs, whose rates carry no inflation premium.
+- The Treasury tab shows the civ's price level and next turn's rise, and the World tab the cause in one sentence
+  ("bond debt is 1.4 times the Gold the bond market's members hold, mostly Persia's").
 
 Built 2026-10-30 (version 0.4.0, offline only). Members are the living civs past Public debt; `B` is what they owe the
-bond market, `M` the Gold they hold. Erosion goes to the world account `inflation` at step 3 of each member's pass,
-paid from its funds, and the premium enters the bond rate with the system's share and the cycle spread. A Corporatist
-civ erodes at twice the rate and a Planned one not at all (4.17). The game caps the Gold a civ carries into a new
+bond market, `M` the Gold they hold. The premium enters the bond rate with the system's share and the cycle spread.
+Until 2026-11-09 erosion went to the world account `inflation` at step 3 of each member's pass; the price level takes
+that step now, and the account stays for a recoinage's price. The game caps the Gold a civ carries into a new
 age: the lab's 2026-10-30 run found 6,000 into Exploration and 9,000 into Modern, set by the game's age-transition
 script (`capGold`, the transition setting's "keep more", which Play Now always uses) and not by
 `DefaultGoldOnTransition`'s 3,000. Nothing here predicts the cap: the first batch of an age takes the balance the
 engine reports, and records what the change took (NOTES choice 110) as a ledger event and a notice, "the age change
 kept 6,000 of your 11,432 Gold", measured from the start of the last turn. M10 found a negative purchase efficiency raises the
-game's prices by exactly its share: a native price rise is possible wherever the engine's own state can gate it (a
-government, age progress, the crisis), but none of those follows bond debt, so 4.8 stays script. In the 1.2 balance
+game's prices by exactly its share; the price markers (built 2026-11-09) are the per-civ switch that lets it follow
+bond debt. In the 1.2 balance
 run, with a human borrowing four turns of income from the bond market every 15 turns, `pi` stayed between 0.01 and
 0.1 percent a turn (section 10).
 
@@ -1057,10 +1094,19 @@ has the lower player id, and a turn is never applied twice.
    world accounts this turn (bond principal, positive tax and cycle Gold) plus the principal of any loan that lands
    this turn, from a civ as from the bond market (NOTES choice 120: a lender's offer is judged on its snapshot, so
    the borrower's funds still don't depend on the lender's turn). Other Gold coming in from civs this turn counts
-   from the next turn, which is what keeps one civ's result from depending on another's. Before the payments, the
-   distress read (4.6) finds each civ whose dues pass its funds and takes its refinancing loan. The payer's outgoing
-   transactions are taken in this order, each paid in full, as far as the funds go (a loan payment, 4.4) or missed
-   (garnish takes what's there, 4.5):
+   from the next turn, which is what keeps one civ's result from depending on another's. Every civ's income for the
+   turn lands after the batch, at its own activation, and the roll is balance + net income with no floor, standing
+   lines included (lab W10, 2026-11-10). A payer's dues are paid from its funds plus its overdraft (4.18): loan
+   payments, garnish, bills, dividends, taxes, cycle charges, a running card's or response's charges and the
+   overdraft's own interest. Spending it chooses (lending, aid, investing, a response's price, Gold into production)
+   needs Gold in hand. Its charging lines stand within what it can still pay after the batch, overdraft included, so
+   they can take its Gold a turn below 0. The human seat's markers go up a moment after its own roll, so the ones it
+   holds at the batch haven't been charged yet: its funds leave their charge out, and its grant goes out whole at the
+   batch, even when that takes its balance below 0. Before the payments, the distress read (4.6) finds each civ
+   whose dues pass its funds and takes its refinancing loan. The payer's outgoing transactions are taken in this
+   order, each paid in full, as far as the funds and overdraft go (a loan payment, 4.4) or missed (garnish takes
+   what's there, 4.5):
+   0. the overdraft's interest (4.18)
    1. write-offs (party eliminated, city lost): no Gold, records close
    2. repudiations, player and AI (4.5, section 6): the records close before any payment on them, then player
       requests: borrow, repay, lend, invest, tax level, tariff
@@ -1082,7 +1128,7 @@ has the lower player id, and a turn is never applied twice.
    `addProgress` calls: one 3 s lag per civ. Before sending, write the ledger with the turn, a batch id, each civ's
    snapshot balance and its net Gold. Checks on commit: each civ-to-civ transaction has a matching debit and credit;
    the sum of civ grants equals the net of the world accounts, each kept as its own line; no payer goes past its
-   funds except by a guard or shortfall loan.
+   funds and overdraft except by a guard or shortfall loan.
 5. Compose the notification at `TurnBegin`; send it at the local `PlayerTurnActivated`.
 
 On load, if the ledger's last batch is for the current turn, the batch isn't planned again (NOTES choice 22). The
@@ -1331,6 +1377,128 @@ Commons topics wait for Mod Commons. In the 1.2 balance run Corporatist came out
 swing and level on production, and the plan's production was worth 1.33 times the Gold it took at the game's purchase
 price; priced at that rate since (choice 104), it's worth the Gold it takes (section 10).
 
+### 4.18 Below zero
+
+The game's own handling of a negative treasury is thin: with positive income the end-of-turn update sets it back to
+0, and with negative income the game disbands a unit a turn (engine-closed.md, 2026-10-29 and 2026-11-10).
+Economics makes a treasury below 0 a real state, as an overdraft: dues keep being paid, the balance goes negative, and the hole costs
+money and more (below). Built 2026-11-10 at the owner's call: "everything should be able to go negative".
+
+```
+overdraft  = max(100 Gold, 10 * |income|)          how far below 0 a civ's dues can take it this turn
+payable    = funds + overdraft                       what a due is paid from (4.14)
+interest   = ceil(overdrawn * 2 * bond rate)         each turn the balance at the batch is below 0
+```
+
+- Dues go through on the overdraft: a loan payment, garnish, a trade bill, a dividend, a tax remittance, a slump's
+  cycle charge, a running card's administration and Gold a settlement, arrears, relief, rearmament, a company's
+  dividends, price supports' bill, and the standing lines. Past the overdraft a due misses, defaults or is waived as
+  before (4.4, 4.5, 4.10, 4.12).
+- Spending of choice needs Gold in hand: lending, aid, investing, a response's price, tribute, the plan's take and
+  public works (Gold into production), the escrow's hold, and an early repayment on top of a payment.
+- Interest: a civ whose balance is below 0 at the batch pays interest on it at twice the bond market's rate to it,
+  first among its dues, to the bond market (`overdraft` in the ledger, `OD<pid>`). It's a due, so it can deepen the
+  hole, and past the overdraft it's still added in full, as a bank adds unpaid interest to the debt (lab W11). It
+  recurs while the civ is below 0, so it
+  stands as an Economy costs line like the other world charges (4.14).
+- The guard (4.6) still borrows back to 0 while income is at or below 0 and its cap allows; after the cap the
+  treasury runs on the overdraft.
+- A civ still below zero keeps the largest overdraft it has had since it went under (the batch row's `overdraft`,
+  `econ-turn.js` holdOverdrafts): sized from net income alone, the limit shrank as disbanding closed the deficit, and
+  a civ climbing out read as past it (lab W11: 480 Gold at -48 a turn, 100 at +12). Back at 0 or above, the limit
+  follows its income again.
+- The debt stays on the books. At each civ's end-of-turn update the game sets a balance still below 0 back to 0 when
+  its income is positive, and no data value stops it (engine-closed.md, 2026-10-29 and W11). The glue
+  (`econ-restore.js`) notes each civ's balance just before its update (the seat's: its balance before the batch plus
+  the batch's grant; an AI's: when the seat ends its turn) and, when that civ's turn opens, charges back what the
+  update wiped (lab W12: exact every turn). Right after a load no batch has run in the session yet, so the restore
+  runs whenever the saved ledger has a last batch; before W15 it waited for this session's first batch, and the seat's
+  first turn after a reload ended without the AIs' balances read (the Ottomans' 7,343 of debt wiped to 0). The
+  game's own disbanding and Happiness lines are moved to -1,000,000
+  (`data/econ-bankruptcy.sql`), so the disbanding below is the only one.
+- A rule can set a civ's overdraft (`civ.overdraftCents`); at 0 the civ pays from its funds alone and pays no
+  interest. The glue leaves it unset, so every civ in a game has the overdraft above. The tests' civs set it to 0
+  unless a test is about the overdraft.
+
+What a treasury below zero costs (`econ-overdrawn.js`):
+
+A civ is overdrawn when its balance at the batch is below 0. Its depth counts in quarters of its overdraft (4.18,
+`overdraftOf`):
+
+```
+used      = -balance
+quarters  = min(4, floor(4 * used / overdraft))          4 with no overdraft at all
+past      = used > overdraft
+gloom     = past ? 15 : 2 + 2 * quarters                   Happiness off every settlement
+premium   = past ? 30% : 5% + 5% * quarters                on every purchase price
+turns     = turns below zero in a row, this one included (the batch row's `below`)
+disband   = turns 1-2: none (warnings); 3, 5: one unit; from 7: one a turn; until back above 0
+shut      = from turn 8: one settlement's buildings, one more every other turn (8-9: 1, 10-11: 2, ...)
+credit    = -2 reputation points a turn (4.2)
+```
+
+- Happiness. GLOOM markers (`BUILDING_ECON_GLOOM_1/2/4/8`, a Happiness yield of -n on the building, the route the W8
+  probe made a capital unhappy with) stand in the City Center of every settlement the civ holds, not only the capital,
+  and come down when the treasury is back above zero. They ride the standing-line glue (`econ-standing-read.js`
+  `placeLines`, kinds in `EVERY_SETTLEMENT`).
+- Prices. The premium adds to the civ's inflation level (4.8) and the two stand as one PRICE stack, scaled by the
+  civ's measured price factor; with Inflation off the premium stands alone.
+- Disbanding. The plan says how many (a DISBAND row of the civ's standing lines, which isn't a marker); on the local
+  player's turn the glue picks the civ's unit with the highest upkeep (`GameInfo.Units` Maintenance; units with none
+  never go), the strongest first on a tie, and removes it with `DESTROY_ELEMENT` sent as the local player
+  (`econ-disband.js`). It goes on whatever the income, until the treasury is back above zero (owner, 2026-11-10: the
+  upkeep keeps falling until the civ is out of debt); the Civilopedia's rule stops once income is positive. The seat's
+  notification names the unit.
+- The ramp (owner, 2026-11-10: units first, then buildings, slowly, after warnings). Happiness, prices and credit
+  start at once; the harsher steps wait. The first notice says when units start; turn 2 warns that one goes next
+  turn; turn 7 warns that buildings shut next turn. `OVERDRAWN.warnTurns`, `everyTurnFrom`, `shutFrom`, `shutEvery`.
+- Buildings shut down. From turn 8 a SHUT marker (`BUILDING_ECON_SHUT_1`) stands in the settlements the glue picks
+  (`econ-standing-read.js` shutNow): those already shut stay first, then the highest building Gold upkeep, never one
+  with none. Two game modifiers gated on the city holding it: every building's Gold upkeep to nothing
+  (`EFFECT_CITY_ADJUST_SPECIFIC_CONSTRUCTIBLE_MAINTENANCE`, class BUILDING, Percent -100) and all their output
+  (`EFFECT_CITY_ADJUST_CONSTRUCTIBLE_YIELD`, class BUILDING, Percent -100, one a yield). Watched in W13 on Persia's
+  capital: upkeep 12 to 0, Production 72 to 35.5 and Science 28 to 17.3, all back when the marker went. Gold upkeep
+  only: with Happiness in the same row the Happiness upkeep stayed off after the marker went (W13). A shut
+  settlement's GLOOM markers are buildings too, so their Happiness cut goes with the rest of its building output
+  (W15: the game listed each GLOOM marker at +8, +4, +2, +1 in a shut settlement, next to the Palace's, Temple's and
+  City Hall's Happiness taken away). The Palace is a building, so a shut capital loses its Palace yields as well
+  (W15: the Ottoman capital's Production 75 to 32). The count is a number of settlements, not a ladder of rungs, so
+  the standing row isn't capped at SHUT's one rung. The Treasury tab counts the settlements that hold the marker now,
+  which can be fewer than the ramp's number when the civ runs out of settlements with buildings to shut.
+  Back above zero, every settlement opens. The seat's notification names each settlement as it shuts.
+- The interest never takes more than half the civ's income while that income is above 0
+  (`OVERDRAFT.interestIncomePct`), so a civ earning Gold always pays its debt down. Before it, W15's Ottomans at
+  -6,000 with +190 a turn sank 2,000 deeper in 22 turns; with it, W16's went -5,829 to -5,212 in 7 turns and the seat
+  -2,979 to -2,914 in 3. With income at 0 or below there's no cap.
+- Bankruptcy (`econ-bankruptcy.js`). A civ below zero can declare it, at most once in 30 turns (`BANKRUPTCY`): the bond
+  market pays what it's overdrawn (a `bankruptcy` transfer), every lender it owes is repudiated with the usual costs,
+  and it pays no interest and no below-zero penalty that turn. The write-off is booked as a repudiation of the bond
+  market: onto the record a repudiated bond loan made that turn, or as its own record with the reputation cost, the
+  witnesses' note and 30 turns without bond loans. The row carries `bankrupt: 1`, which the 30-turn wait reads. The
+  seat declares it from the Treasury tab, which shows the turn it can declare again. Watched in W16.
+- The AI weighs bankruptcy (`bankruptcyWeighing`) each turn it's below zero once the warning turns are past, so its
+  refinancing and emergency loans come first. Both sides are in Gold. Staying costs every turn until the debt is paid
+  down (the debt over income less the capped interest, at most 30 turns): the interest, the gloom in every
+  settlement at 1 Gold a Happiness point, the premium on half its income, 2 credit points a turn, the units the ramp
+  disbands (a turn of income each, no more than it has) and the settlements it shuts (1.5 times an average
+  settlement's share of income and production, as the costliest shuts first). Bankruptcy costs 30 credit points per
+  lender (the bond market when there's none) at 0.1 turns of income a point, the witnesses' note and each civ
+  lender's grudge at 0.25 turns a point (a lender's grudge doubled when Friendly, halved when Unfriendly, nothing at
+  war, and half again when it's stronger), and 3 turns of income for the bond market's 30 turns (half without a loan
+  open). It declares when staying costs more than twice bankruptcy (`BANKRUPTCY.prudence` 2): a last resort. The
+  weighing looks ahead over the whole payoff, so the first one decides: with the Ottomans' and Persia's numbers a
+  debt of up to 7 turns of income is carried and paid off, units and a shut settlement included, and 9 or more is
+  declared at once. It changes its mind later only when something changes: its income falls, a war, the debt grows.
+  With loans open, an AI refinances a moderate overdraft into a bond loan first (W17), so the weighing matters for a
+  civ past its credit. Watched in W17 and W18 (`docs/verification-runs.md`).
+- Credit. Each turn overdrawn costs 2 reputation points, logged as a `credit-rep` event with `overdrawn`, so rates rise
+  and the credit cap falls the longer it lasts.
+- The seat is told when it goes below zero (how far, its overdraft, the Happiness a settlement, the premium, and the
+  disbanding sentence while it has units with upkeep), when it passes its overdraft, and when it's back above zero; not
+  every turn. The Treasury tab shows an Overdrawn pill, the overdraft and how much is used, the Happiness and the
+  premium while it lasts. The state is read from the last batch's snapshot, so no ledger field is kept.
+- Other mods read it at `__towerEconomics.overdrawn(pid)`: the row above, or null.
+
 ## 5. What the player can do
 
 - Borrow: pick lender, principal (up to `credit_cap` and the debt-service limit, 4.2), term 10, 20 or 30 (4.3). See
@@ -1394,8 +1562,8 @@ emergency loans or loses units to the game's penalties because of the mod's char
 
 Where the AI and the player are treated differently, and why:
 
-- Choices the player makes freely run on limits for the AI: investment once per 10 turns into Friendly hosts, aid
-  once per age, lending only above 20 turns of income. The AI's native spending doesn't see the mod's flows, so these
+- Choices the player makes freely run on limits for the AI: one open investment per host, into the host it has the
+  biggest stake in; aid to a struggling partner once per 15 turns per host; lending only above 20 turns of income. The AI's native spending doesn't see the mod's flows, so these
   limits keep it from giving away Gold it needs (the first principle above). What a deal does once made, and whether
   a host accepts it, is the same for both sides.
 - Tariffs: the player sets a tariff when it likes; the AI by the rule above. Until 2026-10-30 the AI only answered a
@@ -1419,9 +1587,9 @@ Where the AI and the player are treated differently, and why:
   price; the AI borrows by the build-loan rule above, sized and limited the same way, and the loan's Gold lands on
   its current build at the same price. The AI's door is narrower (once per 10 turns, only while its own credit is
   cheap, 10-turn terms) because its native spending can't see what it owes; the player's is the Loans tab.
-- Citizen loans: the player borrows when it likes, the AI by the rule above. The AI never repudiates its citizens
-  (among the world accounts its repudiation rule reaches the bond market and temple treasuries only), while the
-  player can.
+- Citizen loans: the player borrows when it likes, the AI by the rule above. The player can repudiate its citizens at
+  any time; the AI does it by its repudiation rule, only while insolvent, as with the bond market and the temple
+  treasuries (tests/econ-citizens.test.mjs).
 - Cycle Gold, erosion, the plan, partnerships, old-building weights and every system number run through one code
   path for every civ.
 

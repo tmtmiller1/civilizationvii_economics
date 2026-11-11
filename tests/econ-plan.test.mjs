@@ -195,11 +195,14 @@ test("repudiating a civ (DESIGN 4.5): records close, grievances and witness rows
   assert.deepEqual(plan.ledger.loans.map((l) => [l.id, l.state, l.writtenOff]),
     [["L1", "repudiated", 30000], ["L2", "repudiated", 5000], ["L3", "active", 0]]);
   assert.deepEqual(noEscrow(plan.transfers).map((t) => t.loanId), ["L3"], "the stiffed lender gets nothing, now or later");
-  assert.deepEqual(plan.grievances, [{ from: ME, against: 6, amount: 40 }], "35000 / 2000 = 17.5 turns, capped");
-  assert.deepEqual(plan.relationships, [{ a: ME, b: 8, delta: -3 }, { a: ME, b: 9, delta: -3 },
-    { a: ME, b: 6, delta: -30 }], "met and alive civs other than the lender at -3; the lender hit like its grudge");
+  assert.deepEqual(plan.grievances, [{ from: ME, against: 6, amount: 37 }],
+    "35000 / 2000 = 17.5 turns, capped at 40, less the 3 every other major books under the named note");
+  assert.deepEqual(plan.notes, [{ pid: ME, line: "REPUDIATED", amount: 3 }]);
+  assert.deepEqual(plan.relationships, [{ a: ME, b: 6, delta: -30 }], "the lender hit like its whole grudge");
+  assert.deepEqual(plan.standing.filter((r) => r.line === "REPUDIATED"), [{ pid: ME, line: "REPUDIATED", gold: 3 }]);
   assert.deepEqual(plan.events.find((e) => e.kind === "credit-rep" && e.why === "repudiation").after, 70);
-  assert.deepEqual(plan.ledger.blocks, [{ lender: 6, borrower: ME, reason: "repudiation", agesLeft: 1, untilTurn: null }]);
+  assert.deepEqual(plan.ledger.blocks, [{ lender: 6, borrower: ME, reason: "repudiation", agesLeft: null,
+    untilTurn: 60 }]);
   assert.equal(plan.events.find((e) => e.kind === "repudiation").chronicle, 1);
   assert.equal(plan.notices.some((n) => n.kind === "repudiated"), true);
   const later = planTurn(input({ turn: 51, ledger: plan.ledger, civs, relations, requests: [borrow({ principal: 1000,
@@ -219,7 +222,8 @@ test("repudiating the bond market: no grudge, doubled witness cost, the market a
   const plan = planTurn(input({ ledger: ledgerWith([loan("L1")]), civs, relations,
     requests: [{ kind: "repudiate", borrower: ME, lender: "bond" }] }));
   assert.deepEqual(plan.grievances, []);
-  assert.deepEqual(plan.relationships, [{ a: ME, b: 8, delta: -6 }]);
+  assert.deepEqual(plan.relationships, []);
+  assert.deepEqual(plan.notes, [{ pid: ME, line: "REPUDIATED", amount: 6 }]);
   assert.equal(plan.ledger.blocks[0].untilTurn, 80);
   const broke = planTurn(input({ turn: 60, ledger: plan.ledger, civs: [me({ balanceCents: -5000, incomeCents: -100 }),
     civ(8, { balanceCents: 100 })], relations }));
@@ -245,9 +249,10 @@ test("the AI repudiates an enemy at war (DESIGN 6), before any payment on the re
   const plan = planTurn(input({ ledger: ledgerWith([loan("L1", { borrower: 4, lender: 6 })]), civs, relations }));
   assert.equal(plan.ledger.loans[0].state, "repudiated");
   assert.deepEqual(plan.transfers, []);
-  assert.deepEqual(plan.grievances, [{ from: 4, against: 6, amount: 40 }]);
-  assert.deepEqual(plan.relationships, [{ a: 4, b: ME, delta: -2 }, { a: 4, b: 6, delta: -30 }],
-    "the witness halved: the world expects it; the lender's own hit sized like the grudge");
+  assert.deepEqual(plan.grievances, [{ from: 4, against: 6, amount: 38 }]);
+  assert.deepEqual(plan.notes, [{ pid: 4, line: "REPUDIATED", amount: 2 }]);
+  assert.deepEqual(plan.relationships, [{ a: 4, b: 6, delta: -30 }],
+    "the witnesses' note halved (2): the world expects it; the lender's own hit sized like the grudge");
   assert.equal(plan.events.find((e) => e.kind === "credit-rep" && e.why === "repudiation").after, 85, "15 at war");
   assert.equal(plan.ledger.repudiations[0].atWar, true);
   const calm = planTurn(input({ ledger: ledgerWith([loan("L1", { borrower: 4, lender: 6 })]), civs,
@@ -263,13 +268,12 @@ test("guard (DESIGN 4.6): a human below 0 gets one emergency loan for the shortf
   const plan = planTurn(input({ civs }));
   assert.deepEqual(plan.transfers.map((t) => [t.from, t.to, t.cents]), [["bond", ME, 3500 + 800]]);
   assert.deepEqual(planTurn(input({ civs: [me({ balanceCents: -3000, incomeCents: 500 })] })).transfers, [],
-    "a dip with positive income costs nothing: the engine wipes it at the roll (P4), so no loan");
+    "a dip with positive income costs nothing: the income covers it at the roll, so no loan");
   assert.equal(plan.ledger.loans[0].source, "guard");
   assert.equal(plan.ledger.loans[0].emergency, true);
   assert.equal(plan.ledger.loans[0].term, 10);
   assert.equal(plan.notices.filter((n) => n.kind === "guard").length, 1);
   assert.equal(planTurn(input({ civs, options: { guard: false } })).transfers.length, 0);
-  assert.equal(planTurn(input({ civs, params: {} })).transfers.length, 0, "no line, no guard");
   assert.equal(planTurn(input({ civs: [me({ balanceCents: -1, incomeCents: 0 })] })).transfers[0].cents, 1 + 500,
     "between 0 and the disband line is covered (finding B)");
 });
@@ -293,14 +297,19 @@ test("guard lenders by stage: temple treasuries first, a civ from Moneylending, 
   assert.equal(pdAlone.transfers[0].from, "bond", "temple treasuries close at Public debt");
 });
 
-test("guard cap: at emergency_cap the guard stops with one notice per spell naming the game's penalties", () => {
+test("guard cap: at emergency_cap the guard stops with one notice per spell naming the overdraft (DESIGN 4.18)", () => {
   const open = loan("L1", { emergency: true, outstanding: 8000, principal: 8000, term: 10, source: "guard" });
   const civs = [me({ balanceCents: -3000, incomeCents: -500, upkeepCents: 0 })];
   const plan = planTurn(input({ ledger: ledgerWith([open]), civs }));
   assert.deepEqual(plan.transfers, [], "8000 + 3500 passes max(100 Gold, 10 * 5 Gold)");
   const told = plan.notices.filter((n) => n.kind === "guard-cap");
   assert.equal(told.length, 1);
-  assert.deepEqual([told[0].deficit, told[0].cap, told[0].disbandLineCents], [3500, 10000, -1000]);
+  assert.deepEqual([told[0].deficit, told[0].cap, told[0].overdraftCents], [3500, 10000, 0]);
+  const withOverdraft = planTurn(input({ ledger: ledgerWith([open]), civs: [me({ balanceCents: -3000,
+    incomeCents: -500, upkeepCents: 0, overdraftCents: undefined })] }));
+  assert.deepEqual(withOverdraft.notices.find((n) => n.kind === "guard-cap").overdraftCents, 10000,
+    "the notice names how far below 0 the treasury can go: max(100 Gold, 10 * 5 Gold)");
+  assert.equal(withOverdraft.ledger.loans.length, 1, "no new emergency loan");
   const again = planTurn(input({ turn: 51, ledger: plan.ledger, civs }));
   assert.equal(again.notices.filter((n) => n.kind === "guard-cap").length, 0, "told once");
   const later = planTurn(input({ turn: 53, ledger: again.ledger, civs }));

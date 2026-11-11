@@ -7,18 +7,19 @@
 // repudiation rules (section 6) are here too, and its build loan, its door to "borrow to build", which the player has
 // through the Gold it spends: cheap credit puts progress on its own current build.
 
-import { AI, CITIZENS, PROGRESS, REFINANCE, RESERVE, SHORT_TERM, isWorldAccount } from "./econ-params.js";
-import { isOpen } from "./econ-loan.js";
-import { activeDefaults, emergencyOutstandingOf, outstandingOf, serviceOf } from "./econ-credit.js";
+import { AI, CITIZENS, GUARD_LINE_CENTS, PROGRESS, REFINANCE, REPUDIATION, RESERVE, SHORT_TERM, isWorldAccount,
+  overdraftOf } from "./econ-params.js";
+import { isOpen, makeLoan } from "./econ-loan.js";
+import { activeDefaults, emergencyOutstandingOf, fitsService, outstandingOf, serviceOf } from "./econ-credit.js";
 import { servicePrincipalCents } from "./econ-citizens.js";
-import { emergencyOffersFor, offersFor, relationLevel } from "./econ-lenders.js";
+import { amendsRecord, emergencyOffersFor, offersFor, relationLevel } from "./econ-lenders.js";
 import { distressOf, lookAhead, reserveOf } from "./econ-distress.js";
 import { paymentDue } from "./econ-loan.js";
 import { aiBuildBorrowStanding, aiBuildBorrowWanted, aiChoice, aiRepudiationTarget, aiShortfall, buildPays,
   loanToRestructure } from "./econ-ai.js";
 import { emergencyCap, guardDecision, isInsolvent } from "./econ-guard.js";
-import { projected } from "./econ-batch.js";
-import { aiLendersFor, event, incomeOf, isHuman, notice, offerQuery, openLoan } from "./econ-turn.js";
+import { lenderBalance, projected } from "./econ-batch.js";
+import { aiLendersFor, event, incomeOf, isHuman, lendersFor, notice, offerQuery, openLoan } from "./econ-turn.js";
 import { creditRoom, isAtLoanLimit, mostBorrowCents, repudiateFor, restructureLoan } from "./econ-requests.js";
 import { pointPriceCents } from "./econ-planned.js";
 
@@ -59,7 +60,7 @@ function noteCap(ctx, pid, principal) {
   if (last === ctx.turn - 1) return;
   const fields = { kind: "guard-cap", pid, cents: principal, deficit: Math.max(0, -projected(ctx.batch, pid)),
     cap: emergencyCap(incomeOf(ctx, pid)), insolvent: isInsolventCiv(ctx, pid) ? 1 : 0,
-    disbandLineCents: ctx.params.disbandLineCents ?? null };
+    overdraftCents: overdraftOf(ctx.civ.get(pid) || { incomeCents: 0 }) };
   event(ctx, fields);
   notice(ctx, pid, fields);
 }
@@ -93,7 +94,7 @@ export function guardFor(ctx, civ) {
   const { ledger, turn } = ctx;
   const fired = ledger.guardTurns.find((row) => row.pid === civ.id);
   const decision = guardDecision({ enabled: ctx.options.guard, projectedCents: projected(ctx.batch, civ.id),
-    upkeepCents: civ.upkeepCents || 0, lineCents: ctx.params.amenityLineCents, firedTurn: fired?.turn, turn,
+    upkeepCents: civ.upkeepCents || 0, lineCents: GUARD_LINE_CENTS, firedTurn: fired?.turn, turn,
     openEmergencyCents: emergencyOutstandingOf(ledger, civ.id), incomeCents: civ.incomeCents });
   if (decision.reason === "at-cap") { noteCap(ctx, civ.id, decision.principal); return; }
   if (!decision.fire || !openEmergency(ctx, civ.id, decision.principal, "guard")) return;
@@ -185,12 +186,12 @@ export function guardRefinance(ctx, civ) {
  * @param {Civ} civ
  */
 export function aiBorrow(ctx, civ) {
-  const need = aiShortfall(projected(ctx.batch, civ.id), ctx.params.amenityLineCents);
+  const need = aiShortfall(projected(ctx.batch, civ.id), GUARD_LINE_CENTS);
   if (!need || isAtLoanLimit(ctx, civ.id)) return;
   // The guard's own decision, so an AI's emergency loan is sized and capped exactly as the human's (DESIGN 4.6, "AI
   // civs get the same rule").
   const decision = guardDecision({ enabled: true, projectedCents: projected(ctx.batch, civ.id),
-    upkeepCents: civ.upkeepCents || 0, lineCents: ctx.params.amenityLineCents, turn: ctx.turn,
+    upkeepCents: civ.upkeepCents || 0, lineCents: GUARD_LINE_CENTS, turn: ctx.turn,
     incomeCents: civ.incomeCents, openEmergencyCents: emergencyOutstandingOf(ctx.ledger, civ.id) });
   if (decision.reason === "at-cap") { noteCap(ctx, civ.id, decision.principal); return; }
   if (decision.fire) openEmergency(ctx, civ.id, decision.principal, "ai-shortfall");
@@ -302,6 +303,77 @@ export function aiRepudiate(ctx, civ) {
     incomeCents: civ.incomeCents, strength: civ.strength ?? null, lastRepudiationTurn: last, turn: ctx.turn });
   if (lender === null || lender === undefined) return;
   repudiateFor(ctx, civ.id, lender);
+}
+
+/**
+ * DESIGN 4.5 making amends: why an AI won't ask the civ it repudiated for an amends loan now, or the repudiation it
+ * would make good. The reasons, in order: its income is 0 or less; it has no repudiation of a living civ lender left
+ * to make good; that lender is still cooling off; they're at war; an amends loan to it is already open.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @returns {{ record: RepudiationRow | null, reason: string | null }}
+ */
+export function amendsRefusal(ctx, civ) {
+  if (!(civ.incomeCents > 0)) return { record: null, reason: "income" };
+  const wronged = ctx.ledger.repudiations.filter((row) => row.pid === civ.id && !isWorldAccount(row.lender)
+    && ctx.civ.get(/** @type {number} */ (row.lender))?.alive === true)
+    .map((row) => amendsRecord(ctx.ledger, civ.id, row.lender, ctx.turn)).filter((row) => row !== null);
+  const record = /** @type {RepudiationRow | undefined} */ (wronged.sort((a, b) => b.turn - a.turn)[0]);
+  if (!record) return { record: null, reason: "none" };
+  if (ctx.turn < record.turn + REPUDIATION.amendsCoolTurns) return { record, reason: "cooling" };
+  if (relationLevel(ctx.relations, civ.id, record.lender) === "war") return { record, reason: "war" };
+  if (ctx.ledger.loans.some((loan) => loan.borrower === civ.id && loan.lender === record.lender
+    && loan.amends === record.turn && isOpen(loan))) return { record, reason: "open" };
+  return { record, reason: null };
+}
+
+/**
+ * DESIGN 4.5 making amends, an AI's rule: with a reason to (a repudiation of a living civ lender not yet made good,
+ * past the cooling-off, at peace with it, none open, income above 0), it asks that lender for about 3 turns of its
+ * income over 10 turns at the penalty rate, within its debt-service limit. An AI lender answers by its own lending
+ * rules; a human lender is asked once, by a notice, and lends through the Loans tab if it likes.
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ * @returns {string | null} why nothing opened, or null when a loan or an ask went out
+ */
+export function aiAmends(ctx, civ) {
+  const { record, reason } = amendsRefusal(ctx, civ);
+  if (reason || !record) return reason;
+  const lender = /** @type {number} */ (record.lender);
+  const principal = Math.floor((REPUDIATION.amendsIncomeTurns * civ.incomeCents) / 100) * 100;
+  if (principal <= 0) return "income";
+  if (isHuman(ctx, lender)) return askAmends(ctx, civ.id, lender, record, principal);
+  // The wronged lender takes amends with 5 turns of income in reserve, not the 20 an ordinary loan needs: it's paid
+  // half again its rate (lab 2026-11-10: Hawaii at 15 turns of income never lent at 20).
+  const offer = offersFor(offerQuery(ctx, civ.id, { principal, term: REPUDIATION.amendsTerm,
+    lenders: lendersFor(ctx, civ.id, (row) => row.id === lender && row.human !== true && row.incomeCents > 0
+      && lenderBalance(ctx.batch, row.id) > AI.amendsLendIncomeMultiple * row.incomeCents) }))
+    .find((row) => row.lender === lender && row.amends === true);
+  if (!offer) return "no-offer";
+  const first = paymentDue(makeLoan({ id: "amends", lender, borrower: civ.id, principal, ratePpm: offer.ratePpm,
+    term: REPUDIATION.amendsTerm, turn: ctx.turn })).total;
+  if (!fitsService({ serviceCents: serviceOf(ctx.ledger, civ.id), firstPaymentCents: first,
+    incomeCents: civ.incomeCents })) return "service";
+  openLoan(ctx, { lender, borrower: civ.id, principal, ratePpm: offer.ratePpm, term: REPUDIATION.amendsTerm,
+    source: "amends" });
+  return null;
+}
+
+/**
+ * Asks a human lender for an amends loan once per repudiation: a notice with the sum and the term.
+ * @param {TurnContext} ctx
+ * @param {number} borrower
+ * @param {number} lender
+ * @param {RepudiationRow} record
+ * @param {number} principal
+ */
+function askAmends(ctx, borrower, lender, record, principal) {
+  const asked = ctx.ledger.events.some((row) => row.kind === "amends-ask" && row.borrower === borrower
+    && row.lender === lender && row.repudiated === record.turn);
+  if (asked) return "asked";
+  event(ctx, { kind: "amends-ask", borrower, lender, repudiated: record.turn, cents: principal });
+  notice(ctx, lender, { kind: "amends-ask", borrower, cents: principal, term: REPUDIATION.amendsTerm });
+  return null;
 }
 
 /**

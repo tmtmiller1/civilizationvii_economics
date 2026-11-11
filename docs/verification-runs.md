@@ -1418,6 +1418,309 @@ more than it sells.
   `econ-crisis-respond.js` sends the bond subsidy and the spend into the build under the same id `PW<pid>` in one
   turn. The Panic test's moved `lastPanic` also let a third Panic start at turn 33; that one is the test's doing.
 
+## W20, 2026-11-10 (probe: a strategy keyed on Classical Republic, toward Light Taxation)
+
+Antiquity seed 4242, Economics alone, two 60-turn `lab drive` games (runs `2026-11-10T13-39-33` and `T13-44-15`).
+Arm A had `devtools/w20-probe-civic-market.sql` appended to the installed `econ-tax-cards.sql`: a strategy on
+`GovernmentMatches GOVERNMENT_CLASSICAL_REPUBLIC` raising a `YIELD_HAPPINESS` bias of 300 (the compiled DB held its
+condition). Arm B ran without it. Sampled each turn with `devtools/econ-w20-cards.js`.
+
+- Four of the five AIs ran a Classical Republic from turn 11 in both games (208 AI-turns each).
+- Light Taxation held: 17 of those turns with the strategy, 19 without. War Levy: 29 with, 49 without. The two games
+  first differ at turn 28 and the picks move about by a turn or a civ either way.
+- The strategy didn't raise how often a Classical Republic AI takes Light, as P17 found for the strategy rows at +50.
+  Nothing was built from it.
+
+## W19, 2026-11-10 (an AI changes its mind, the bankruptcy named in the turn's line)
+
+Modern seed 4242, Economics alone, loans off, guard off. Prep and restore: `devtools/w19-prep.sh`,
+`devtools/w19-restore.sh` (0 registry rows differ after).
+
+- The seat at -1,000 declared bankruptcy (queued by script); the turn's notification opened "Your treasury moved by
+  +1002 Gold this turn, from trade bills, the business cycle and your bankruptcy."
+- Persia at about 5 turns of income under (+136) carried its debt through its first weighing (-533, -389, -244 on
+  turns 1 to 3, one unit disbanded). Ten tanks placed for it by script took its income to +4; on its next weighing it
+  declared: staying 1,955 Gold against bankruptcy 300, 240 written off.
+
+## W18, 2026-11-10 (the weighing reweighted, bankruptcy with loans, the confirm card, two older items)
+
+Three lab games, Economics alone. Prep and restore: `devtools/w18-prep.sh`, `devtools/w18-restore.sh` (0 registry
+rows differ after).
+
+- The weighing, Modern 4242, loans off: the reads it uses came through for every AI (6 settlements, 15 units with
+  upkeep, production 162 to 199). Persia at -828 (5.6 turns of income) on its third turn: the plan input dumped from
+  the game and run offline declared it (staying 2,202 Gold against 1,779), so an AI at its first weighing went
+  bankrupt from about 5 turns of income under, before any unit or building mattered. Reweighted (`prudence` 2, a unit
+  at 1 turn of income, a shut settlement at 1.5 times its share) and deployed in the same game: Persia carried it,
+  -693 to +7 in five turns, one unit disbanded; the Ottomans at -1,369 on about +145 (9 turns) carried it too, -1,129
+  to -321 over seven turns, four units disbanded and one settlement shut on turn 8, no bankruptcy.
+- Bankruptcy with loans open, Modern 4242, loans on: the seat's own borrowing was refused (`service-cap`, income 37),
+  so a bond loan (L9, 306 owed) and one from Persia (L10, 204) were put in the ledger by script and the treasury set
+  to -1,966. The Treasury tab's "Declare bankruptcy" pressed through its handler (`action-activate`) opened the
+  confirm card (`working_screenshots/economics-overdrawn-2026-11-10/treasury-bankrupt-confirm-crop.png`); Confirm
+  queued `{ kind: "bankrupt", pid: 0 }` with "Sent: bankruptcy. It goes through at the start of next turn". Next turn:
+  the treasury +61, both loans repudiated (written off 306 and 204), Persia's grudge 10 and its relationship with the
+  seat -10 to -36, credit -30 twice, and the notification: "You repudiated 306 Gold owed to the bond market. | You
+  repudiated 204 Gold owed to Achaemenid Persia. | You declared bankruptcy. ... | Your treasury is back above zero."
+  Its first line read "moved by +1968 Gold this turn, from trade bills and the business cycle", without the
+  bankruptcy; fixed offline (`FLOW_OF` bankruptcy, "your bankruptcy"), not seen in a game.
+- A build point's price (24): AI build loans and a development project bought progress at 3.44 to 3.48 Gold a point
+  (L5 340.06 for 98, L7 417.6 for 120, I7 614.19 for 177), one at 3.02 (L4), against the old flat 4.
+- An Exploration start (C.30): the seat's Lighthouse, with no roles remembered from Antiquity, counts as 1 Commerce
+  and 1 Trade building on the Treasury tab and shows under Old buildings "full until you reach Economics"
+  (`exploration-treasury-commerce.png`); the Ottomans' Market counts the same way. The Lighthouse carries the Market's
+  data (Economic and Trade advisories, +4 Gold), so the count is the game's own. The Modern half was in W15's
+  capture (a Bank: Commerce 1, Banking 1).
+
+## W17, 2026-11-10 (the AI weighs bankruptcy)
+
+Modern seed 4242, Economics alone, guard off. Prep and restore: `devtools/w17-prep.sh`, `devtools/w17-restore.sh` (0
+registry rows differ after). Read with `devtools/econ-w17-read.js`.
+
+- Loans on: the Ottomans set to -3,000 and Persia to -1,000 refinanced at once into bond loans (L9 2,170 and L10
+  695, `refinance`), so neither stayed deep and no weighing came up. Refinancing comes first, as intended.
+- Loans off (a second game): the Ottomans at -2,766 with +139 weighed bankruptcy on their first turn after the
+  warnings, turn 14: staying 13,262 Gold against bankruptcy 1,672; they declared, writing off 2,624. Persia at -300
+  with +152 was clear in two turns. Then Persia set to -1,100: -960, -819, -673, -514, -351, -167, +22 over seven
+  turns, two units disbanded on the ramp (17 to 15), no settlement shut, no bankruptcy.
+- Not seen in a game: an AI riding out the units and declaring on the turn its buildings would shut (tests only).
+
+## W16, 2026-11-10 (the interest cap and bankruptcy)
+
+Same setup as W15: turn 11, the seat at -3,000, the Ottomans at -6,000. Prep and restore: `devtools/w16-prep.sh`,
+`devtools/w16-restore.sh` (0 registry rows differ after). Read with `devtools/econ-w16-read.js`.
+
+- The cap: every overdraft charge read `capped 1` (the seat 18 then 30 a turn, the Ottomans about 70). Both paid down:
+  the seat -2,979, -2,946, -2,914; the Ottomans -5,829 to -5,212 by turn 18. In W15 both sank every turn.
+- The seat's bankruptcy: the Treasury tab showed "Declare bankruptcy" under the overdraft rows
+  (`working_screenshots/economics-overdrawn-2026-11-10/treasury-bankrupt-button-crop.png`). The request it sends
+  (`{ kind: "bankrupt", pid: 0 }`, queued by script, no click) went through at the next batch: the treasury from
+  -2,914 to +60 (0 plus a turn's income), Heian-Kyo's Happiness 5 to 20 with the gloom markers down, and the
+  notification "You declared bankruptcy. The 2914 Gold you were overdrawn is written off ...". No charge-back after.
+  Set below zero again, the tab read "You can declare bankruptcy again from turn 45" in place of the button
+  (`treasury-bankrupt-wait-crop.png`).
+- The AI: the Ottomans declared on ramp turn 8 (turn 19), before any settlement shut: -5,212 to -50 that turn and +57
+  the next, every penalty down (OTTOMANS9 Production 48 to 61, Happiness -7 to 5), and the seat's notification read
+  "Ottomans declared bankruptcy: 5068 Gold of overdraft written off and every loan it had repudiated."
+
+## W15, 2026-11-10 (an AI's settlements shut, the Treasury tab's row)
+
+Modern seed 4242, Settler, the Economics working copy alone, guard off. Turn 11: the seat set to -3,000 (+37 a turn,
+one town placed), the Ottomans to -6,000 (+116). Prep and restore: `devtools/w15-prep.sh`, `devtools/w15-restore.sh`
+(0 registry rows differ after). Read each turn with `devtools/econ-w15-read.js`.
+
+- The Ottomans' ramp: warnings turns 1-2, a unit on turns 3, 5, 7, 8, 9, 10, 11 (15 units down to 9). On turn 8
+  OTTOMANS9 shut (Production 48 to 24, Happiness -7 to -15).
+- Found: on turns 10 and 11 the plan wanted 2 settlements and only 1 stayed shut. `standingRows` capped every marker
+  line at its rungs' sum, and SHUT has one rung. A count isn't capped now (`econ-standing.js`). After the fix, a
+  second run of the ramp shut OTTOMANS9 on turn 8 and their capital on turn 10 (Production 75 to 32, Happiness 3 to
+  -8), logged "shut for 2: 2 settlement(s)".
+- Found: after a UI reload the seat's turn ended before any batch had run in the new session, the restore was off, and
+  the Ottomans' -7,343 was wiped to -77. The restore now runs whenever the saved ledger has a last batch. Watched: set
+  to -6,000, reloaded, turn ended: "restore: 2 had -6000, the update wiped it; charged back -5826".
+- The gloom in a shut settlement: the game's Happiness breakdown listed each GLOOM marker at +8, +4, +2, +1 against
+  its -8, -4, -2, -1, alongside the Palace's (or City Hall's), Temple's and City Park's Happiness taken away. Heian-Kyo
+  went 20 to 5 with the gloom and to -1 shut: 15 of gloom back, 21 of building Happiness gone.
+- The Treasury tab (`working_screenshots/economics-overdrawn-2026-11-10/`): "Settlements with their buildings shut
+  down" first read 4, the ramp's number, with one settlement shut (the seat's new town has no building upkeep). It
+  now counts the settlements holding the marker, and read 1.
+- Seen on the way: below zero the interest outruns income. The Ottomans at about -6,000 with +150 to +200 a turn went
+  deeper every turn (-5,870 to -7,926 over 22 turns), and the seat at -3,000 with +64 went -3,044 to -3,745.
+
+## W13 and W14, 2026-11-10 (the debt stays, the ramp, buildings shut down)
+
+Modern seed 4242, Settler, the Economics working copy, guard off. W13 added a probe file with two shutdown markers.
+
+- Shutdown levers (W13, Persia's capital): a marker gating `EFFECT_CITY_ADJUST_SPECIFIC_CONSTRUCTIBLE_MAINTENANCE`
+  (class BUILDING, Percent -100) took building upkeep 12 to 0 and net Gold 115 to 127; one gating
+  `EFFECT_CITY_ADJUST_CONSTRUCTIBLE_YIELD` (class BUILDING, Percent -100 a yield) took Production 72 to 35.5 and
+  Science 28 to 17.3. Both came back when the markers went, except that the upkeep row's Happiness half (YieldType
+  "YIELD_GOLD, YIELD_HAPPINESS") stayed off: Persia's University, Shipyard and Wharf read 0 Happiness upkeep against
+  3 in other capitals. SHUT uses Gold only; in W14 the seat's buildings read the normal Gold and Happiness upkeep after
+  reopening.
+- The debt stays (W13): the seat at -60 with +7 and the Ottomans at -500 with +145 were wiped to 0 at each update and
+  charged back at once (`restore:` lines), and the Ottomans climbed out from below zero over three turns. The seat lost
+  a tank each turn with income at +45 and +61, and the game removed no unit itself (lines at -1,000,000).
+- The ramp (W14, the seat at -800 with six tanks and a town): turns 1-2 no unit, turn 2's warning; tanks on turns 3, 5,
+  7, then 8, 9, 10; on turn 7 the buildings warning, on turn 8 Heian-Kyo shut (Production 54 to 23, Happiness 5 to -1,
+  "The buildings of Heian-Kyo have shut down"). The fresh town had no building upkeep and was never shut. Lifted to
+  +2,000, every marker came down: Production 54, Happiness 20, "Your treasury is back above zero ... any shut
+  buildings are back to normal".
+- Found and fixed in W14: the Ottomans at -130 held read +30 on the batch snapshot, which counts their 160 of debt
+  lines back, so they paid no penalty; below zero is now judged on the treasury held (`heldCents`). After the fix they
+  went turn 1, 2 (warnings), 3 (a unit). The batch row's `overdraft` and `below` weren't saved; now they are, so a
+  reload keeps the held overdraft and the ramp's count.
+
+## W10, 2026-11-10 (what the game does to a treasury below zero)
+
+Four lab games, Modern seed 4242, Settler, every Economics option off so the batch skipped and nothing but the game
+moved Gold. Tanks placed by script pushed income below zero (the seat 4 tanks, net -48; the Ottomans 12, net -111).
+
+- A negative balance carries over with no floor. Set to -150 with +69 a turn, the Ottomans went -81, -11, +74. Set
+  to +10 with -48, the seat went -38, -86, -134, -182.
+- Nothing happens to a civ below zero. Over 4 to 5 turns under zero no unit disbanded, no city's Happiness moved,
+  and the only message was one `NOTIFICATION_ADVISOR_WARNING_ECONOMIC`. `NOTIFICATION_BANKRUPT_START` never came.
+- The game's bankruptcy lines change nothing. With `GOLD_NEGATIVE_BALANCE_DISBAND_UNIT_LINE` and `_AMENITY_LOSS_LINE`
+  at -10 (vanilla), -1000 and +1000, the Ottomans played their turns identically, Happiness per city included; at
+  +1000 the seat held 356 to 500 Gold under the line with income -48 and kept every tank.
+- Overturned by W11 and W12 the same night: these games only had civs with negative income or no units. With
+  positive income and units, the update sets a negative balance to 0 and the game disbands a unit, as the 10-29
+  entry in engine-closed.md already said. The disband line controls the disbanding (at -1000 no unit went); none of
+  the four values stops the reset to 0. A `grantYield` of the wiped amount at the civ's `PlayerTurnActivated` puts
+  the debt back exactly (W12: two AIs at -500 with about +150, three turns).
+
+## Watched 2026-11-10, fourth game (prices measured per civ, the seat's REPAID note)
+
+Run `2026-11-10T03-09-46`: Modern seed 4242, Deity, Inflation On, the Economics working copy plus the W5 and W8 probes.
+Prep and restore: `devtools/w9-prep.sh`, `devtools/w9-restore.sh` (0 registry rows differ after).
+
+- The table wasn't enough: on one turn the same 25% stack (16+8+1) raised the seat's prices 24.95% and Hawaii's
+  26.5% (Factory 3,900 to 4,872 and 3,796 to 4,804); each civ's own purchase modifiers combine with it. The glue now
+  measures each change: a purchase price (the dearest building the capital can buy) read before and 1.5 s after the
+  new markers, the ratio kept per civ (`econ-price-read.js`), the next stack scaled from it. Watched: from a clean
+  start every civ's stack was measured (seat 26 at +26.0%, AIs 4 at +3.6%); a turn later the seat stood 29 for a
+  28.80% level, the Treasury tab read "Your prices, from inflation +28.9%", and the seat's Factory, Schoolhouse and
+  Rail Station measured with and without the markers on that turn rose 28.92, 28.95 and 28.95%.
+- The seat's REPAID note, watched: a recorded repudiation of Persia (turn 1), an amends loan from Persia at turn 11
+  (L3, 1.08% a turn), repaid in full: made good at turn 12, and with the turn left open every civ's history read "They
+  repaid a loan in full" (2 + 1) toward the seat. The turn-18 miss in run `02-41-59` came with the turn ended about a
+  second after the markers went up.
+
+## Watched 2026-11-10, third game (price calibration, an unhappy captured town, the seat's one-off charge, amends)
+
+Run `2026-11-10T02-41-59`: Modern seed 4242, Deity, Inflation Off, the Economics working copy plus the W5 transfer and
+W8 gloom probes, turns by hand, fixes deployed mid-game (`deploy --prove`, no file STALE). Prep and restore:
+`devtools/w8-prep.sh`, `devtools/w8-restore.sh` (0 registry rows differ after).
+
+- Price markers, measured (`devtools/econ-w8-calibrate.js`): 19 stacks on Hawaii, 48 prices each across six cities,
+  every price back to its base when the markers came down. The rise follows the stack's total: 1% gave 0.90, 8%
+  7.44, 16% 16.15, 32% 34.64, 64% 71.47, 127% 144.02 (prices round down to steps of 4 Gold, and large stacks compound).
+  Economics now stands the stack whose measured rise is nearest the level and shows that rise (`PRICE_CALIBRATION`).
+- A captured town at a different percentage, watched: Goryeo's capital with its Loan repayments markers (23 Gold) went
+  to Persia; the town read +30% (-28 Happiness: "Income Penalty from Unhappiness" -80) against Persia's capital +110%.
+  Taking the town's markers down moved Persia's net Gold 411.39 to 381.49: they paid 29.90, the town's 23 x 1.30, where
+  the capital's rule gives 48.30. The next batch counted back -310 cents for Persia, the per-city figure (the old rule
+  gave +1,530).
+- The seat's one-off charge, watched after a fix: at 2 Gold with standing lines of 10 and income 12, the batch paid out
+  24 and the seat read -10 once its income landed. Its lines go up after its own roll, so the batch had counted their
+  charge back as already taken; the seat's funds now leave that charge out (`rollPendingCents`). Rerun: funds 14, the
+  batch took 2 (2 -> 0 at 55 ms), its income landed (0 -> 12 at 468 ms), the held-back 12 went out (12 -> 0 at
+  1,382 ms); it never read below 0.
+- Amends, watched after two fixes. The Ottomans' recorded repudiation of Hawaii cooled at turn 11, but no loan came:
+  an AI lends only with 20 turns of income in hand (Hawaii had about 15). The wronged lender now takes amends at 5.
+  Then the seat, 10 turns after repudiating Persia, had no offer: Persia's gate wanted a reputation of 50 (the seat had
+  41) and a stake of 0 (Persia's was -16.9), both put there by the repudiation; the wronged lender now waives both.
+  After that the Ottomans took L5 from Hawaii (1,059 Gold, 10 turns, 0.80% a turn, 1.5x Hawaii's rate), and the seat
+  took L7 from Persia (50 Gold at 2.51%; 200 was over its credit cap, which said it could take 105). The seat repaid L7
+  at once: closed, made good at turn 18, reputation back to 78.7, Persia's two script favors (+5, +5). The Ottomans
+  repaid L5 early and were made good at turn 22: Economics' REPAID note (2 + 1) showed "They repaid a loan in full"
+  with the Ottomans in every civ's history. The seat's own REPAID note at turn 18 didn't fire although the markers
+  stood; the same markers placed by hand on the seat did. That turn was ended about a second after they went up.
+
+## Watched 2026-11-10, second game (inflation end to end, the seat at 2 Gold, a captured town, an AI repudiation)
+
+Run `2026-11-10T02-04-37`: Modern seed 4242, Deity, Inflation On, the Economics working copy alone plus the W5
+transfer probe, 14 turns by `lab drive` with `mod_ideas_tested/economics/devtools/econ-w7-sample.js`, then a turn by
+hand. Prep and restore: `devtools/w7-prep.sh`, `devtools/w7-restore.sh` (0 registry rows differ after). Captures in
+`working_screenshots/econ-w-2026-11-09/w7-*.png`.
+
+- Inflation end to end, watched. Bond loans written at turn 2 set the rate to 0.5% a turn; the seat's level rose
+  0.55% then 1.15% on its own and its capital held a 1% price marker at turn 4. Set to 20% at turn 5, the markers
+  stood at 21% two turns later. On one turn, with the level at 31.2% and 16+8+4+2+1 standing, the seat's Factory cost
+  4,884 Gold with the markers and 3,660 with them taken down: +33.4%, so the rungs add up a little above their sum
+  (8+4 had read +11.7% in the price game). The Treasury tab read "Your prices, from inflation +32.5%" and "Rise next
+  turn +1.3%" (Corporatist: twice the rate) (`w7-treasury-prices.png`).
+- The seat at 2 Gold, watched: its treasury set to 2 Gold at turn 11 with a loan payment due. Traced every 10 ms from
+  the batch: 2 Gold, then 1 at 49 ms (the grant: the payment less what its Debt service line had already taken at
+  the roll), then +66 at 357 ms when its income landed. It never read below 0; the line carries the payment, so the
+  batch's own grant is small. A charge that isn't on a line (a one-off cost) can still take the seat below 0 for the
+  third of a second before its income lands.
+- A captured capital, watched with the per-city count-back built before the run: Goryeo's capital (a lender, so it
+  held Loan repayments lines) went to Persia at turn 9. At turn 10 Persia held the town's LOAN 16+2+1, WORLD and PRICE
+  markers, and the batch counted them back at the town's own percentage; it read +110%, the same as Persia's capital,
+  so the old capital-only rule would have given the same -239.10 here. The next batch took the town's markers down.
+- An AI repudiating a loan, watched: the Ottomans owed Hawaii 4,000, declared war on it at turn 4 and repudiated at
+  turn 5. From turn 6 every other civ, the seat, Persia, Hawaii, Goryeo and the Dai Viet, read "They repudiated a
+  loan -2" with the Ottomans (the witnesses' 3 halved at war); the seat's breakdown with Alexander read "From Their
+  Leader Agenda +2 / Shared Government +10 / They repudiated a loan -2" (`w7-ottomans-repudiated.png`).
+
+## Watched 2026-11-10 (paying lines by Income percentage, the roll's floor, prices, the age change, a lost grant)
+
+Run `2026-11-10T00-35-36`: Modern seed 4242, Deity, Inflation On, the Economics working copy alone plus the W5
+transfer probe, 16 turns by `lab drive` with `mod_ideas_tested/economics/devtools/econ-w6-sample.js`, then turns 17
+to 35 by hand with fixes deployed mid-game (`UI.reloadUI()`, `deploy --prove` with no file STALE). Prep and restore:
+`devtools/w6-prep.sh`, `devtools/w6-restore.sh` (0 registry rows differ after). Run `2026-11-10T01-00-05`:
+Exploration 4242 through the age change. One more Modern 4242 game for the price route, inflation Off.
+
+- Paying lines, watched after a fix. `readIncomePct` indexed `getYields()` with `YieldTypes.YIELD_GOLD`, a hash, so it
+  read 0 and nothing was scaled: at Deity (+100% for every Modern AI: +80 handicap, +20 Modern) Persia's Economy
+  receipts of 261 landed as about 522 and the batch counted back 261. Fixed (`GameInfo.Yields.lookup("YIELD_GOLD")
+  .$index`); after it, each AI capital read +100% (Persia +115%) and the paying lines stood at half (Ottomans' 54 as
+  27, Persia's Loan repayments 41 as 20).
+- A part of a Gold, watched after a fix. A line scaled by 115% moved Persia 12.70 at the roll, and `grantYield` pays
+  whole Gold, so a grant of 18.70 paid 18. The batch row now rounds the grant and carries the part: Persia's next
+  grant was a whole 20, the 0.18 carried, and its balance ended at snapshot + payment to the cent.
+- The roll's floor, as read at the time (the W10 games disproved the floor: see that section). Traced every 20 ms: each
+  civ's Gold lands at its own activation (the seat's, then the AIs' after the seat ends its turn), so the batch at
+  TurnBegin runs before any income for the turn lands. The roll ends at max(0, balance + net income): the Ottomans set
+  to -150 with +111 came out at 0, set to -50 with +115 at 65. The 11-09 run's -41 was this: the batch left AI 2 at -41,
+  its roll added income less 161 of lines (+24), and the game forgave the -17 while the next batch counted the 161 back
+  as paid. Charging lines now fit in what the batch leaves the civ (`standingRows`). Watched over 20 AI rolls after the
+  fix: the closest, the Dai Viet at -438 after the batch with +478 net, rolled to +40 with nothing forgiven. A change
+  that counted only the seat's income was tried first and reverted: the trace showed no AI's income is in its balance at
+  the batch.
+- Repudiation, watched: the seat's history read "You repudiated a loan" with each other civ.
+- Trade bills lines, watched with world prices x60 by script to turn 12: bills of 32 to 37 Gold stood as BILL and
+  BILLIN markers.
+- A capital captured, watched: BUILDING_W5_XFER handed Goryeo's capital to Persia at turn 10; at turn 11 Persia held
+  the town's old markers and Goryeo none, at turn 12 the town's were gone and Goryeo's new capital had its lines. On
+  that one turn the town's paying lines were counted back at Persia's capital percentage.
+- A lost grant on reload, watched: Gold grants held back for batch 33 (`Players.grantYield` wrapped), the game saved
+  in that state and loaded: "6 re-sent", five civs at snapshot + payment exactly, Persia 0.70 short (the part-of-a-Gold
+  finding above).
+- The age change, watched (run `2026-11-10T01-00-05`): the transition had no roll (the seat's 703.02 at the end of
+  Exploration was its first Modern snapshot), the first Modern batch counted nothing back, and the markers were taken
+  down and the new lines and the age's fresh price ladder put up on the first Modern turn.
+- Prices, a route that works watched with markers placed by hand (inflation Off): a game modifier over all cities,
+  gated on the city holding the marker, raised all six Hawaiian cities' purchase prices (Factory 3,524 to 3,788 for 8%,
+  3,936 for 8+4%), Goryeo's didn't move, and removing the markers put every price back at once and through the next
+  turn. Two other routes failed: on the player itself nothing changed; over the owner's cities with an owner
+  requirement it applied once per city and never came off (run `01-00-05`).
+
+## Watched 2026-11-09 (standing lines: Economy costs, paying lines, reload; the named-grievance probes)
+
+Run `2026-11-09T23-18-22` (`~/.tower-bench/runs/`): Modern seed 4242, `--setup fast --quick` (Settler), the Economics
+working copy alone with the W1 probe rows, 18 turns by `lab drive` with
+`mod_ideas_tested/economics/devtools/econ-lines-w1-sample.js`, then two turns without Autoplay. Script help at turn 2:
+three civ loans written into the ledger (AI 1 to AI 2, AI 3 to the seat, the seat to AI 4), the world index held at
+0.50 to turn 16, the seat +3,000 Gold and +500 Influence; the seat asked for Relief once its Depression opened. Prep
+and restore: `devtools/w1-prep.sh`, `devtools/w1-restore.sh` (0 registry rows differ after).
+
+- Economy costs lines, watched: from turn 11 every capital held WORLD markers beside its Debt service and Loan
+  repayments ones, and the capitals' Gold breakdowns listed them under "Minus Deductions" ("Economy costs: -64 Gold",
+  "-32", "-8"...). The seat's line at turn 16 was 40 = cycle Gold 34.18 + Relief 6.00, whole Gold each. For every AI,
+  every turn, the balance after the batch equalled the snapshot plus the payment to the cent ("d 0"); the seat ran
+  ahead by its own Gold per turn as before.
+- Paying lines, measured: the Income node of `city.Yields.getYields()` carries the percent steps, the Loan
+  repayments lines sit in its base, and Deductions has none. AI 1's capital: Unhappiness -9.89, Crusher of Rebellions
+  +10, the Settler handicap -20 and Modern's `MO_HANDICAP_GOLD_SCALING` +20, net +0.11%; AI 3's: Unhappiness -4.79%.
+  The 11-04 shortfall was the same mechanism (Exploration Settler, -20% with no Modern +20).
+- Reload, part watched: a save taken in a `TurnBegin` listener and loaded at once gave every civ the same balance as
+  the uninterrupted turn, "0 re-sent", and the wanted markers went up 5 s after the load from boot (every capital's
+  markers equal to its lines). The save was written after the grants landed, so the lost-grant window wasn't hit.
+- Markets plural, watched: `LOC_ECONOMICS_MARKETS_MARK_GAIN` reads "1 more copy in the world" and "2 more copies";
+  the loss line likewise.
+- Trade bills lines: not reached; Modern bills in this game were 7 to 38 cents.
+- Finding, not fixed: AI 2's balance went 2,000 to 703 to 105 to 32 to -41 Gold (turn 20) and -27 (turn 21). Its
+  turn-21 batch paid out about 273 Gold (cycle 61.03, price supports 73.12, a payment 38.10, a dividend 32.02, the
+  escrow hold 69.22) against funds of about 247 (snapshot 161, all of it the lines' charge, plus escrow and dividends
+  in). `funds()` counts the turn's income on top of the snapshot (DESIGN 4.14); whether a negative treasury is meant
+  to be possible there is the open question.
+
+Runs `2026-11-09T23-29-29`, `23-32-34`, `23-36-49`: the same setup with the W2 to W4 probe rows
+(`mod_ideas_tested/economics/devtools/w1-probe/`), markers placed by script at turn 9. Results in
+`docs/AI-NATIVE-LEVERS.md` "Lab runs 2026-11-09"; captures `working_screenshots/econ-w-2026-11-09/`.
+
 ## Watched 2026-11-03, third round (crisis paths)
 
 Lab run `2026-11-03T11-42-35`, Modern seed 4242, Economics and Partisans working copies, sample

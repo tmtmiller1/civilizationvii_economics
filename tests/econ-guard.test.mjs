@@ -2,10 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { emergencyCap, guardDecision, isInsolvent } from "../ui/econ-guard.js";
-import { ENGINE } from "./_fixtures.mjs";
+import { GUARD_LINE_CENTS } from "../ui/econ-params.js";
 
 const at = (over = {}) => guardDecision({ enabled: true, projectedCents: -1500, upkeepCents: 700,
-  lineCents: ENGINE.amenityLineCents, firedTurn: undefined, turn: 9, openEmergencyCents: 0, incomeCents: -1000,
+  lineCents: GUARD_LINE_CENTS, firedTurn: undefined, turn: 9, openEmergencyCents: 0, incomeCents: -1000,
   ...over });
 
 test("the guard fires below the amenity line (0) and borrows back to it plus one turn of upkeep", () => {

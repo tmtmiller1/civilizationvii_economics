@@ -4,7 +4,8 @@
 -- IGNORE_DISTRICT_PLACEMENT_CAP (no slot taken, nothing pushed out), AGELESS (no overbuild), TOWER_MARKER (every
 -- Tower script that reads a city's buildings skips it), owned by a trait no civ has. The Gold rides a city modifier
 -- the marker switches on, as the slot probe's CGOLD did: a yield on the building itself is scaled by the city's
--- Income percentage, the modifier charges exactly its Amount. Lines: DEBT and BILL take Gold, LOAN and BILLIN pay it.
+-- Income percentage, the modifier charges exactly its Amount. Lines: DEBT, BILL and WORLD take Gold, LOAN, BILLIN and
+-- WORLDIN pay it.
 INSERT OR IGNORE INTO Types (Type, Kind) VALUES ('TRAIT_ECON_LINE_NONE', 'KIND_TRAIT');
 INSERT OR IGNORE INTO Traits (TraitType, InternalOnly) SELECT 'TRAIT_ECON_LINE_NONE', 1
 WHERE EXISTS (SELECT 1 FROM Types WHERE Type = 'TRAIT_ECON_LINE_NONE');
@@ -49,7 +50,27 @@ INSERT INTO econ_line_s VALUES
   ('BUILDING_ECON_LINE_BILLIN_64', 'BILLIN', 64, 'ECON_LINE_BILLIN_64', 64),
   ('BUILDING_ECON_LINE_BILLIN_128', 'BILLIN', 128, 'ECON_LINE_BILLIN_128', 128),
   ('BUILDING_ECON_LINE_BILLIN_256', 'BILLIN', 256, 'ECON_LINE_BILLIN_256', 256),
-  ('BUILDING_ECON_LINE_BILLIN_512', 'BILLIN', 512, 'ECON_LINE_BILLIN_512', 512);
+  ('BUILDING_ECON_LINE_BILLIN_512', 'BILLIN', 512, 'ECON_LINE_BILLIN_512', 512),
+  ('BUILDING_ECON_LINE_WORLD_1', 'WORLD', 1, 'ECON_LINE_WORLD_1', -1),
+  ('BUILDING_ECON_LINE_WORLD_2', 'WORLD', 2, 'ECON_LINE_WORLD_2', -2),
+  ('BUILDING_ECON_LINE_WORLD_4', 'WORLD', 4, 'ECON_LINE_WORLD_4', -4),
+  ('BUILDING_ECON_LINE_WORLD_8', 'WORLD', 8, 'ECON_LINE_WORLD_8', -8),
+  ('BUILDING_ECON_LINE_WORLD_16', 'WORLD', 16, 'ECON_LINE_WORLD_16', -16),
+  ('BUILDING_ECON_LINE_WORLD_32', 'WORLD', 32, 'ECON_LINE_WORLD_32', -32),
+  ('BUILDING_ECON_LINE_WORLD_64', 'WORLD', 64, 'ECON_LINE_WORLD_64', -64),
+  ('BUILDING_ECON_LINE_WORLD_128', 'WORLD', 128, 'ECON_LINE_WORLD_128', -128),
+  ('BUILDING_ECON_LINE_WORLD_256', 'WORLD', 256, 'ECON_LINE_WORLD_256', -256),
+  ('BUILDING_ECON_LINE_WORLD_512', 'WORLD', 512, 'ECON_LINE_WORLD_512', -512),
+  ('BUILDING_ECON_LINE_WORLDIN_1', 'WORLDIN', 1, 'ECON_LINE_WORLDIN_1', 1),
+  ('BUILDING_ECON_LINE_WORLDIN_2', 'WORLDIN', 2, 'ECON_LINE_WORLDIN_2', 2),
+  ('BUILDING_ECON_LINE_WORLDIN_4', 'WORLDIN', 4, 'ECON_LINE_WORLDIN_4', 4),
+  ('BUILDING_ECON_LINE_WORLDIN_8', 'WORLDIN', 8, 'ECON_LINE_WORLDIN_8', 8),
+  ('BUILDING_ECON_LINE_WORLDIN_16', 'WORLDIN', 16, 'ECON_LINE_WORLDIN_16', 16),
+  ('BUILDING_ECON_LINE_WORLDIN_32', 'WORLDIN', 32, 'ECON_LINE_WORLDIN_32', 32),
+  ('BUILDING_ECON_LINE_WORLDIN_64', 'WORLDIN', 64, 'ECON_LINE_WORLDIN_64', 64),
+  ('BUILDING_ECON_LINE_WORLDIN_128', 'WORLDIN', 128, 'ECON_LINE_WORLDIN_128', 128),
+  ('BUILDING_ECON_LINE_WORLDIN_256', 'WORLDIN', 256, 'ECON_LINE_WORLDIN_256', 256),
+  ('BUILDING_ECON_LINE_WORLDIN_512', 'WORLDIN', 512, 'ECON_LINE_WORLDIN_512', 512);
 INSERT OR IGNORE INTO Types (Type, Kind) SELECT B, 'KIND_CONSTRUCTIBLE' FROM econ_line_s;
 INSERT OR IGNORE INTO Constructibles (ConstructibleType, Name, Description, Tooltip, ConstructibleClass, Cost,
   Population, ExistingDistrictOnly, CanBeHidden)
@@ -98,3 +119,166 @@ SELECT M, N, V FROM (
 WHERE M IN (SELECT ModifierId FROM Modifiers);
 INSERT OR IGNORE INTO GameModifiers (ModifierId) SELECT M FROM econ_line_s WHERE M IN (SELECT ModifierId FROM Modifiers);
 DROP TABLE econ_line_s;
+
+-- The markers that aren't Gold (econ-standing.js OTHER_MARKERS), the same free City Center buildings.
+-- PRICE: while a city holds BUILDING_ECON_PRICE_n, purchases cost n percent more (DESIGN 4.8): a game modifier over
+-- all cities, EFFECT_ADJUST_PLAYER_OR_CITY_ALL_PURCHASE_EFFICIENCY at -n, gated on the city holding the marker, the
+-- shape M2 watched rise and fall back. On the player itself (COLLECTION_OWNER) it changed no price, and over the
+-- owner's cities with an owner requirement it applied once per city and stayed after the marker went (lab
+-- 2026-11-10).
+-- NOTE_REPUDIATED: the marker landing books n grievances from every other major against its owner under Economics'
+-- own event, "They repudiated a loan" (EFFECT_GRANT_ALL_PLAYERS_FAVORS_GRIEVANCES with GrievancesEventType, watched in
+-- W4); it fires once, and the glue takes the marker down at the next batch.
+-- NOTE_REPAID: the same for a repudiator that made amends: every other major books n favors toward it, "They repaid a
+-- loan in full" (FavorsAmount/FavorsEventType, watched in W4 as Hawaii's +5).
+-- GLOOM: while its owner's treasury is below zero, every settlement holds the rungs of its gloom (DESIGN 4.18), and
+-- each takes n Happiness off that settlement as a yield on the building, the route the W8 probe's GLOOM building
+-- made a capital unhappy with (lab 2026-11-10).
+-- SHUT: a settlement whose owner has been below zero a while has its buildings shut down (DESIGN 4.18): two game
+-- modifiers over all cities gated on the city holding the marker, the PRICE shape. One sets the Gold upkeep of every
+-- building to nothing (EFFECT_CITY_ADJUST_SPECIFIC_CONSTRUCTIBLE_MAINTENANCE, class BUILDING, Percent -100), the
+-- other takes all their output (EFFECT_CITY_ADJUST_CONSTRUCTIBLE_YIELD, class BUILDING, Percent -100, one a yield).
+-- Watched in W13: Persia's capital upkeep 12 -> 0 and its building yields gone, both back when the marker went. The
+-- upkeep is Gold only: with Happiness in the same row the Happiness upkeep stayed off after the marker went (W13).
+INSERT OR IGNORE INTO Types (Type, Kind) VALUES ('GRIEVANCE_FROM_ECON_REPUDIATION', 'KIND_DIPLOMACY_FAVOR_GRIEVANCE_EVENT'),
+  ('FAVOR_FROM_ECON_LOAN_REPAID', 'KIND_DIPLOMACY_FAVOR_GRIEVANCE_EVENT');
+INSERT OR IGNORE INTO DiplomacyFavorsGrievancesEventsData (DiplomacyFavorGrievanceEventType, Name, AltName, Amount,
+  DiplomacyFavorGrievanceEventGroup, InfAward, InfAwardPerPopulation, Range, TeamPropagation)
+SELECT 'GRIEVANCE_FROM_ECON_REPUDIATION', 'LOC_ECONOMICS_GRIEVANCE_REPUDIATION',
+  'LOC_ECONOMICS_GRIEVANCE_REPUDIATION_ALT', 0, 'DIPLOMACY_GRIEVANCE', 0, 0, -1, 1
+WHERE EXISTS (SELECT 1 FROM Types WHERE Type = 'GRIEVANCE_FROM_ECON_REPUDIATION')
+  AND EXISTS (SELECT 1 FROM Types WHERE Type = 'DIPLOMACY_GRIEVANCE');
+INSERT OR IGNORE INTO DiplomacyFavorsGrievancesEventsData (DiplomacyFavorGrievanceEventType, Name, AltName, Amount,
+  DiplomacyFavorGrievanceEventGroup, InfAward, InfAwardPerPopulation, Range, TeamPropagation)
+SELECT 'FAVOR_FROM_ECON_LOAN_REPAID', 'LOC_ECONOMICS_FAVOR_REPAID', 'LOC_ECONOMICS_FAVOR_REPAID_ALT', 0,
+  'DIPLOMACY_FAVOR', 0, 0, -1, 1
+WHERE EXISTS (SELECT 1 FROM Types WHERE Type = 'FAVOR_FROM_ECON_LOAN_REPAID')
+  AND EXISTS (SELECT 1 FROM Types WHERE Type = 'DIPLOMACY_FAVOR');
+CREATE TEMP TABLE econ_mark_s (B TEXT, K TEXT, N INTEGER, M TEXT);
+INSERT INTO econ_mark_s VALUES
+  ('BUILDING_ECON_PRICE_1', 'PRICE', 1, 'ECON_PRICE_1'),
+  ('BUILDING_ECON_PRICE_2', 'PRICE', 2, 'ECON_PRICE_2'),
+  ('BUILDING_ECON_PRICE_4', 'PRICE', 4, 'ECON_PRICE_4'),
+  ('BUILDING_ECON_PRICE_8', 'PRICE', 8, 'ECON_PRICE_8'),
+  ('BUILDING_ECON_PRICE_16', 'PRICE', 16, 'ECON_PRICE_16'),
+  ('BUILDING_ECON_PRICE_32', 'PRICE', 32, 'ECON_PRICE_32'),
+  ('BUILDING_ECON_PRICE_64', 'PRICE', 64, 'ECON_PRICE_64'),
+  ('BUILDING_ECON_NOTE_REPUDIATED_1', 'NOTE_REPUDIATED', 1, 'ECON_NOTE_REPUDIATED_1'),
+  ('BUILDING_ECON_NOTE_REPUDIATED_2', 'NOTE_REPUDIATED', 2, 'ECON_NOTE_REPUDIATED_2'),
+  ('BUILDING_ECON_NOTE_REPUDIATED_4', 'NOTE_REPUDIATED', 4, 'ECON_NOTE_REPUDIATED_4'),
+  ('BUILDING_ECON_NOTE_REPUDIATED_8', 'NOTE_REPUDIATED', 8, 'ECON_NOTE_REPUDIATED_8'),
+  ('BUILDING_ECON_NOTE_REPAID_1', 'NOTE_REPAID', 1, 'ECON_NOTE_REPAID_1'),
+  ('BUILDING_ECON_NOTE_REPAID_2', 'NOTE_REPAID', 2, 'ECON_NOTE_REPAID_2'),
+  ('BUILDING_ECON_NOTE_REPAID_4', 'NOTE_REPAID', 4, 'ECON_NOTE_REPAID_4'),
+  ('BUILDING_ECON_NOTE_REPAID_8', 'NOTE_REPAID', 8, 'ECON_NOTE_REPAID_8'),
+  ('BUILDING_ECON_GLOOM_1', 'GLOOM', 1, 'ECON_GLOOM_1'),
+  ('BUILDING_ECON_GLOOM_2', 'GLOOM', 2, 'ECON_GLOOM_2'),
+  ('BUILDING_ECON_GLOOM_4', 'GLOOM', 4, 'ECON_GLOOM_4'),
+  ('BUILDING_ECON_GLOOM_8', 'GLOOM', 8, 'ECON_GLOOM_8'),
+  ('BUILDING_ECON_SHUT_1', 'SHUT', 1, 'ECON_SHUT_1');
+INSERT OR IGNORE INTO Types (Type, Kind) SELECT B, 'KIND_CONSTRUCTIBLE' FROM econ_mark_s;
+INSERT OR IGNORE INTO Constructibles (ConstructibleType, Name, Description, Tooltip, ConstructibleClass, Cost,
+  Population, ExistingDistrictOnly, CanBeHidden)
+SELECT B, 'LOC_ECONOMICS_' || K || '_' || N || '_NAME', 'LOC_ECONOMICS_' || K || '_DESCRIPTION',
+  'LOC_ECONOMICS_' || K || '_DESCRIPTION', 'BUILDING', 1, 0, 1, 1
+FROM econ_mark_s WHERE B IN (SELECT Type FROM Types);
+INSERT OR IGNORE INTO Buildings (ConstructibleType, Movable, Purchasable, Town, TraitType)
+SELECT B, 0, 0, 1, 'TRAIT_ECON_LINE_NONE' FROM econ_mark_s
+WHERE B IN (SELECT ConstructibleType FROM Constructibles)
+  AND EXISTS (SELECT 1 FROM Traits WHERE TraitType = 'TRAIT_ECON_LINE_NONE');
+INSERT OR IGNORE INTO Constructible_ValidDistricts (ConstructibleType, DistrictType)
+SELECT B, 'DISTRICT_CITY_CENTER' FROM econ_mark_s
+WHERE B IN (SELECT ConstructibleType FROM Constructibles)
+  AND EXISTS (SELECT 1 FROM Districts WHERE DistrictType = 'DISTRICT_CITY_CENTER');
+INSERT OR IGNORE INTO TypeTags (Type, Tag)
+SELECT B, T FROM econ_mark_s, (SELECT 'IGNORE_DISTRICT_PLACEMENT_CAP' T UNION ALL SELECT 'TOWER_MARKER'
+  UNION ALL SELECT 'AGELESS')
+WHERE B IN (SELECT Type FROM Types) AND T IN (SELECT Tag FROM Tags);
+INSERT OR IGNORE INTO Types (Type, Kind) VALUES ('ECON_PRICE_TYPE', 'KIND_MODIFIER'),
+  ('ECON_NOTE_REPUDIATED_TYPE', 'KIND_MODIFIER'), ('ECON_NOTE_REPAID_TYPE', 'KIND_MODIFIER');
+INSERT OR IGNORE INTO DynamicModifiers (ModifierType, CollectionType, EffectType)
+SELECT 'ECON_PRICE_TYPE', 'COLLECTION_ALL_CITIES', 'EFFECT_ADJUST_PLAYER_OR_CITY_ALL_PURCHASE_EFFICIENCY'
+WHERE EXISTS (SELECT 1 FROM GameEffects WHERE Type = 'EFFECT_ADJUST_PLAYER_OR_CITY_ALL_PURCHASE_EFFICIENCY')
+UNION ALL SELECT 'ECON_NOTE_REPUDIATED_TYPE', 'COLLECTION_OWNER', 'EFFECT_GRANT_ALL_PLAYERS_FAVORS_GRIEVANCES'
+WHERE EXISTS (SELECT 1 FROM GameEffects WHERE Type = 'EFFECT_GRANT_ALL_PLAYERS_FAVORS_GRIEVANCES')
+UNION ALL SELECT 'ECON_NOTE_REPAID_TYPE', 'COLLECTION_OWNER', 'EFFECT_GRANT_ALL_PLAYERS_FAVORS_GRIEVANCES'
+WHERE EXISTS (SELECT 1 FROM GameEffects WHERE Type = 'EFFECT_GRANT_ALL_PLAYERS_FAVORS_GRIEVANCES');
+INSERT OR IGNORE INTO Requirements (RequirementId, RequirementType)
+SELECT 'REQ_' || M, 'REQUIREMENT_CITY_HAS_BUILDING' FROM econ_mark_s
+WHERE K = 'PRICE' AND B IN (SELECT ConstructibleType FROM Buildings);
+INSERT OR IGNORE INTO RequirementArguments (RequirementId, Name, Value)
+SELECT 'REQ_' || M, 'BuildingType', B FROM econ_mark_s WHERE 'REQ_' || M IN (SELECT RequirementId FROM Requirements);
+INSERT OR IGNORE INTO RequirementSets (RequirementSetId, RequirementSetType)
+SELECT 'REQS_' || M, 'REQUIREMENTSET_TEST_ALL' FROM econ_mark_s
+WHERE 'REQ_' || M IN (SELECT RequirementId FROM Requirements);
+INSERT OR IGNORE INTO RequirementSetRequirements (RequirementSetId, RequirementId)
+SELECT 'REQS_' || M, 'REQ_' || M FROM econ_mark_s WHERE 'REQS_' || M IN (SELECT RequirementSetId FROM RequirementSets);
+INSERT OR IGNORE INTO Modifiers (ModifierId, ModifierType, SubjectRequirementSetId)
+SELECT M, 'ECON_PRICE_TYPE', 'REQS_' || M FROM econ_mark_s
+WHERE K = 'PRICE' AND 'REQS_' || M IN (SELECT RequirementSetId FROM RequirementSets)
+  AND EXISTS (SELECT 1 FROM DynamicModifiers WHERE ModifierType = 'ECON_PRICE_TYPE')
+UNION ALL SELECT M, 'ECON_NOTE_REPUDIATED_TYPE', NULL FROM econ_mark_s
+WHERE K = 'NOTE_REPUDIATED' AND B IN (SELECT ConstructibleType FROM Buildings)
+  AND EXISTS (SELECT 1 FROM DynamicModifiers WHERE ModifierType = 'ECON_NOTE_REPUDIATED_TYPE')
+  AND EXISTS (SELECT 1 FROM DiplomacyFavorsGrievancesEventsData
+    WHERE DiplomacyFavorGrievanceEventType = 'GRIEVANCE_FROM_ECON_REPUDIATION')
+UNION ALL SELECT M, 'ECON_NOTE_REPAID_TYPE', NULL FROM econ_mark_s
+WHERE K = 'NOTE_REPAID' AND B IN (SELECT ConstructibleType FROM Buildings)
+  AND EXISTS (SELECT 1 FROM DynamicModifiers WHERE ModifierType = 'ECON_NOTE_REPAID_TYPE')
+  AND EXISTS (SELECT 1 FROM DiplomacyFavorsGrievancesEventsData
+    WHERE DiplomacyFavorGrievanceEventType = 'FAVOR_FROM_ECON_LOAN_REPAID');
+INSERT OR IGNORE INTO ModifierArguments (ModifierId, Name, Value)
+SELECT M, N, V FROM (
+  SELECT M, 'Percent' N, CAST(-N AS TEXT) V FROM econ_mark_s WHERE K = 'PRICE'
+  UNION ALL SELECT M, 'GrievancesAmount', CAST(N AS TEXT) FROM econ_mark_s WHERE K = 'NOTE_REPUDIATED'
+  UNION ALL SELECT M, 'GrievancesEventType', 'GRIEVANCE_FROM_ECON_REPUDIATION' FROM econ_mark_s
+    WHERE K = 'NOTE_REPUDIATED'
+  UNION ALL SELECT M, 'FavorsAmount', CAST(N AS TEXT) FROM econ_mark_s WHERE K = 'NOTE_REPAID'
+  UNION ALL SELECT M, 'FavorsEventType', 'FAVOR_FROM_ECON_LOAN_REPAID' FROM econ_mark_s WHERE K = 'NOTE_REPAID')
+WHERE M IN (SELECT ModifierId FROM Modifiers);
+INSERT OR IGNORE INTO GameModifiers (ModifierId)
+SELECT M FROM econ_mark_s WHERE K = 'PRICE' AND M IN (SELECT ModifierId FROM Modifiers);
+INSERT OR IGNORE INTO Types (Type, Kind) VALUES ('ECON_SHUT_UPKEEP_TYPE', 'KIND_MODIFIER'),
+  ('ECON_SHUT_OUTPUT_TYPE', 'KIND_MODIFIER');
+INSERT OR IGNORE INTO DynamicModifiers (ModifierType, CollectionType, EffectType)
+SELECT 'ECON_SHUT_UPKEEP_TYPE', 'COLLECTION_ALL_CITIES', 'EFFECT_CITY_ADJUST_SPECIFIC_CONSTRUCTIBLE_MAINTENANCE'
+WHERE EXISTS (SELECT 1 FROM GameEffects WHERE Type = 'EFFECT_CITY_ADJUST_SPECIFIC_CONSTRUCTIBLE_MAINTENANCE')
+UNION ALL SELECT 'ECON_SHUT_OUTPUT_TYPE', 'COLLECTION_ALL_CITIES', 'EFFECT_CITY_ADJUST_CONSTRUCTIBLE_YIELD'
+WHERE EXISTS (SELECT 1 FROM GameEffects WHERE Type = 'EFFECT_CITY_ADJUST_CONSTRUCTIBLE_YIELD');
+INSERT OR IGNORE INTO Requirements (RequirementId, RequirementType)
+SELECT 'REQ_' || M, 'REQUIREMENT_CITY_HAS_BUILDING' FROM econ_mark_s
+WHERE K = 'SHUT' AND B IN (SELECT ConstructibleType FROM Buildings);
+INSERT OR IGNORE INTO RequirementArguments (RequirementId, Name, Value)
+SELECT 'REQ_' || M, 'BuildingType', B FROM econ_mark_s
+WHERE K = 'SHUT' AND 'REQ_' || M IN (SELECT RequirementId FROM Requirements);
+INSERT OR IGNORE INTO RequirementSets (RequirementSetId, RequirementSetType)
+SELECT 'REQS_' || M, 'REQUIREMENTSET_TEST_ALL' FROM econ_mark_s
+WHERE K = 'SHUT' AND 'REQ_' || M IN (SELECT RequirementId FROM Requirements);
+INSERT OR IGNORE INTO RequirementSetRequirements (RequirementSetId, RequirementId)
+SELECT 'REQS_' || M, 'REQ_' || M FROM econ_mark_s
+WHERE K = 'SHUT' AND 'REQS_' || M IN (SELECT RequirementSetId FROM RequirementSets);
+INSERT OR IGNORE INTO Modifiers (ModifierId, ModifierType, SubjectRequirementSetId)
+SELECT M || '_UPKEEP', 'ECON_SHUT_UPKEEP_TYPE', 'REQS_' || M FROM econ_mark_s
+WHERE K = 'SHUT' AND 'REQS_' || M IN (SELECT RequirementSetId FROM RequirementSets)
+  AND EXISTS (SELECT 1 FROM DynamicModifiers WHERE ModifierType = 'ECON_SHUT_UPKEEP_TYPE')
+UNION ALL SELECT M || '_' || Y.YieldType, 'ECON_SHUT_OUTPUT_TYPE', 'REQS_' || M FROM econ_mark_s, Yields Y
+WHERE K = 'SHUT' AND 'REQS_' || M IN (SELECT RequirementSetId FROM RequirementSets)
+  AND EXISTS (SELECT 1 FROM DynamicModifiers WHERE ModifierType = 'ECON_SHUT_OUTPUT_TYPE');
+INSERT OR IGNORE INTO ModifierArguments (ModifierId, Name, Value)
+SELECT I, N, V FROM (
+  SELECT M || '_UPKEEP' I, 'ConstructibleClass' N, 'BUILDING' V FROM econ_mark_s WHERE K = 'SHUT'
+  UNION ALL SELECT M || '_UPKEEP', 'YieldType', 'YIELD_GOLD' FROM econ_mark_s WHERE K = 'SHUT'
+  UNION ALL SELECT M || '_UPKEEP', 'Percent', '-100' FROM econ_mark_s WHERE K = 'SHUT'
+  UNION ALL SELECT M || '_' || Y.YieldType, 'ConstructibleClass', 'BUILDING' FROM econ_mark_s, Yields Y WHERE K = 'SHUT'
+  UNION ALL SELECT M || '_' || Y.YieldType, 'YieldType', Y.YieldType FROM econ_mark_s, Yields Y WHERE K = 'SHUT'
+  UNION ALL SELECT M || '_' || Y.YieldType, 'Percent', '-100' FROM econ_mark_s, Yields Y WHERE K = 'SHUT')
+WHERE I IN (SELECT ModifierId FROM Modifiers);
+INSERT OR IGNORE INTO GameModifiers (ModifierId)
+SELECT ModifierId FROM Modifiers WHERE ModifierType IN ('ECON_SHUT_UPKEEP_TYPE', 'ECON_SHUT_OUTPUT_TYPE');
+INSERT OR IGNORE INTO ConstructibleModifiers (ConstructibleType, ModifierId)
+SELECT B, M FROM econ_mark_s WHERE K IN ('NOTE_REPUDIATED', 'NOTE_REPAID') AND M IN (SELECT ModifierId FROM Modifiers);
+INSERT OR IGNORE INTO Constructible_YieldChanges (ConstructibleType, YieldType, YieldChange)
+SELECT B, 'YIELD_HAPPINESS', -N FROM econ_mark_s
+WHERE K = 'GLOOM' AND B IN (SELECT ConstructibleType FROM Constructibles)
+  AND EXISTS (SELECT 1 FROM Yields WHERE YieldType = 'YIELD_HAPPINESS');
+DROP TABLE econ_mark_s;

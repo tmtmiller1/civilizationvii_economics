@@ -8,7 +8,7 @@ import { POLICY_RULES as PR } from "./econ-policy-catalog.js";
 import { crisesOn, settlementsOf, standingResponses } from "./econ-crisis-rows.js";
 import { CYCLE } from "./econ-params.js";
 import { emit, event, notice } from "./econ-turn.js";
-import { funds } from "./econ-batch.js";
+import { payable } from "./econ-batch.js";
 import { hardshipPoints, indexOf, keepOrEnd, runningPolicies } from "./econ-policy-read.js";
 
 /** @typedef {import("./econ-policy-catalog.js").Policy} Policy */
@@ -22,7 +22,8 @@ export const LEDGER_LABELS = { administration: "LOC_ECONOMICS_LEDGER_ADMINISTRAT
 export const policyNameKey = (id) => `LOC_ECONOMICS_POLICY_${id.toUpperCase().replace(/-/g, "_")}_NAME`;
 
 /** @param {TurnContext} ctx @param {number} pid @param {number} wanted */
-const within = (ctx, pid, wanted) => Math.min(wanted, Math.max(0, funds(ctx.batch, pid)));
+// An arrears charge is a due, so it can take the treasury into its overdraft (DESIGN 4.18).
+const within = (ctx, pid, wanted) => Math.min(wanted, Math.max(0, payable(ctx.batch, pid)));
 
 /**
  * What a turn short costs in Gold, in cents: the unpaid Influence at a twentieth of the income at Commit (a Gold a
@@ -79,8 +80,8 @@ function shortTurn(/** @type {PolicyRow} */ row) {
 }
 
 /**
- * The turn's charge from the treasury, never borrowed, and its Public support: 1 a settlement, 2 when the treasury
- * can't cover the Gold; the notice on the first turn short and the last of grace.
+ * The turn's charge from the treasury (its overdraft included, never a loan), and its Public support: 1 a
+ * settlement, 2 when the treasury can't cover the Gold; the notice on the first turn short and the last of grace.
  * @param {TurnContext} ctx
  * @param {{ civ: Civ, spec: Policy, row: PolicyRow }} card
  * @param {{ cents: number, nextCents: number }} charge

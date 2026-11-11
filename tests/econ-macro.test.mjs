@@ -125,17 +125,23 @@ test("Panic: from Banking, leverage above 1.7 turns of world income in a boom; E
   assert.equal(calm.macro.cycle.panicUntil, null, "no Panic before the Banking stage");
 });
 
-test("inflation On: bond debt beside idle Gold erodes the Gold above the reserve; Off erodes nothing", () => {
+test("inflation On: bond debt beside idle Gold raises a member's price level; Off leaves prices alone", () => {
   const rich = ai(AI, { balanceCents: 1000000 });
   const ledger = { ...emptyLedger(), nextId: 2, loans: [makeLoan({ id: "L1", lender: "bond", borrower: AI,
     principal: 100000, ratePpm: 40000, term: 30, turn: 49 })] };
   const on = plan({ civs: [me(), rich], ledger, options: { inflation: true } });
   assert.equal(on.macro.inflation.piPpm, 1818, "0.02 * 1000 / (1000 + 10000 the two members hold)");
-  const erosion = on.transfers.find((t) => t.reason === "erosion");
-  assert.deepEqual([erosion.from, erosion.to, erosion.cents], [AI, "inflation", 1454]);
+  assert.equal(on.transfers.some((t) => t.reason === "erosion"), false, "nothing comes out of the treasury");
+  assert.deepEqual(on.macro.inflation.levels, { [String(AI)]: 1818, [String(ME)]: 1818 });
+  assert.equal(on.macro.inflation.levelAge, "AGE_EXPLORATION");
   assert.equal(on.macro.inflation.top, AI);
-  const off = plan({ civs: [me(), rich], ledger });
-  assert.equal(off.transfers.some((t) => t.reason === "erosion"), false);
+  const later = plan({ civs: [me(), rich], ledger, macro: on.macro, turn: 51, options: { inflation: true } });
+  assert.equal(later.macro.inflation.levels[String(AI)], 1818 + Math.floor((1001818 * 1818) / 1000000), "compounds");
+  const newAge = plan({ civs: [me(), rich], ledger, macro: on.macro, turn: 51, age: "AGE_MODERN",
+    options: { inflation: true } });
+  assert.equal(newAge.macro.inflation.levels[String(AI)], 1818, "a new age starts from its own prices");
+  const off = plan({ civs: [me(), rich], ledger, macro: on.macro });
+  assert.deepEqual(off.macro.inflation.levels, {});
   assert.equal(off.macro.inflation.piPpm, 0);
   const ctx = viewContext(input({ civs: [me(), rich], ledger, macro: on.macro, options: { ...ON, inflation: true } }));
   const bond = offersFor(offerQuery(ctx, ME, { principal: 1000, term: 10 })).find((o) => o.lender === "bond");

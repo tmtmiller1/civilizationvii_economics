@@ -5,7 +5,7 @@ import { checkPlan } from "../ui/econ-invariants.js";
 import { conservationGap, transferKey } from "../ui/econ-conservation.js";
 import { planTurn } from "../ui/econ-plan.js";
 import { load, save } from "../ui/econ-state.js";
-import { MISS, TERMS } from "../ui/econ-params.js";
+import { MISS, TERMS, overdraftOf } from "../ui/econ-params.js";
 import { emergencyOutstandingOf } from "../ui/econ-credit.js";
 import { emergencyCap } from "../ui/econ-guard.js";
 import { PARAMS } from "./_fixtures.mjs";
@@ -26,7 +26,9 @@ function economy(seed) {
   const civs = ids.map((id, i) => ({ id, alive: true, human: i === 0, balanceCents: g.int(-5000, 200000),
     incomeCents: g.int(-3000, 6000), upkeepCents: g.int(0, 2000), depthTurns: g.pick([0, 0, 2, 4]),
     depthFactorPct: g.pick([100, 100, 90, 70]),
-    stages: { moneylending: g.chance(0.8) ? g.int(0, 60) : null, publicDebt: g.chance(0.7) ? g.int(40, 120) : null } }));
+    stages: { moneylending: g.chance(0.8) ? g.int(0, 60) : null, publicDebt: g.chance(0.7) ? g.int(40, 120) : null },
+    // Some civs run with no overdraft, so the economies still reach the misses, restructurings and defaults past it.
+    ...(g.chance(0.4) ? { overdraftCents: 0 } : {}) }));
   const relations = [];
   for (let i = 0; i < n; i += 1) for (let j = i + 1; j < n; j += 1) {
     relations.push({ a: ids[i], b: ids[j], level: g.pick(LEVELS) });
@@ -68,7 +70,7 @@ function run(seed, onTurn, roundTrip = false) {
   const e = economy(seed);
   const { g } = e;
   let w = world({ civs: e.civs, params: PARAMS, options: e.options, relations: e.relations, turn: 1,
-    age: ageAt(e, 1), roundTrip });
+    age: ageAt(e, 1), roundTrip, roll: true });
   for (let k = 0; k < TURNS; k += 1) {
     const turn = w.turn;
     const civs = w.civs.map((c) => ({ ...c, alive: c.alive && !(e.dies.get(c.id) <= turn),
@@ -76,21 +78,37 @@ function run(seed, onTurn, roundTrip = false) {
     w = { ...w, civs, age: ageAt(e, turn) };
     const requests = requestsFor(g, civs, w);
     const before = w.balances;
-    const { plan, next, civs: planned } = step(w, { requests });
-    onTurn({ turn, plan, civs: planned, before, after: next.balances, seed, requests, state: w });
+    const { plan, next, civs: planned, shifts } = step(w, { requests });
+    onTurn({ turn, plan, civs: planned, before, after: next.balances, seed, requests, state: w, shifts });
     w = next;
   }
   return w;
 }
 
-function checkTurn({ turn, plan, civs, before, after, seed }, issued, opened) {
+function checkTurn({ turn, plan, civs, before, after, seed, shifts }, issued, opened) {
   const at = `seed ${seed} turn ${turn}`;
   const envelopeText = turn % 25 === 0 ? save(plan.ledger) : undefined;
   assert.deepEqual(checkPlan({ plan, civs, envelopeText, issued }), [], at);
   for (const t of plan.transfers) issued.add(transferKey(t));
   const incomeTotal = civs.reduce((s, c) => s + (c.alive ? c.incomeCents : 0), 0);
-  assert.equal(conservationGap({ before, after, incomeTotal, transfers: plan.transfers }), 0, at);
+  let shift = 0;
+  for (const k of shifts?.values() || []) shift += k;
+  assert.equal(conservationGap({ before, after, incomeTotal: incomeTotal + shift, transfers: plan.transfers }), 0, at);
   for (const v of after.values()) assert.ok(Number.isInteger(v), at);
+  // Economics takes a civ below zero only through its overdraft (DESIGN 4.18): once the turn's income has landed it
+  // ends no deeper than its own turn left it less the overdraft's limit and the overdraft's interest. The seat's book moves by its shift as well
+  // (_sim.mjs), as the conservation check above counts it.
+  for (const c of civs) {
+    if (!c.alive) continue;
+    const held = before.get(c.id) + c.incomeCents + (shifts?.get(c.id) || 0);
+    // The overdraft held this turn (econ-turn.js holdOverdrafts), and its interest, which goes on the debt in full.
+    const row = plan.ledger.lastBatch?.civs?.find((x) => x.pid === c.id);
+    const interest = plan.transfers.filter((t) => t.reason === "overdraft" && t.from === c.id)
+      .reduce((s, t) => s + t.cents, 0);
+    const floor = Math.min(0, held) - (row?.overdraft ?? overdraftOf(c)) - interest;
+    assert.ok(after.get(c.id) >= floor, `${at} civ ${c.id} ${c.human ? "(human)" : "(AI)"} held ${held},`
+      + ` ended ${after.get(c.id)}, floor ${floor}`);
+  }
   for (const c of civs) {
     if (!c.alive) continue;
     const cap = emergencyCap(c.incomeCents);

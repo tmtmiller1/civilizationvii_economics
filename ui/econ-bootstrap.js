@@ -4,10 +4,14 @@
 // multiplayer game it says once that it's off and does nothing. Every engine read is guarded in econ-engine.js.
 
 import { logLine } from "./econ-log.js";
-import { aliveMajorIds, gameTurn, isMultiplayer, listen, loc, localId, readAtWar, safe } from "./econ-engine.js";
+import { installRestore, noteSeatBeforeUpdate } from "./econ-restore.js";
+import { readHeldMarkers } from "./econ-standing-read.js";
+import { grantOf } from "./econ-batch.js";
+import { aliveMajorIds, gameTurn, isMultiplayer, listen, loc, localId, readAtWar, readBalanceCents,
+  safe } from "./econ-engine.js";
 import { buildInput, displayTurn, dropRequest, economyOf, loadSession, markSeen, noteCycleEvent, noteLanded,
-  noteOpened, placeLinesNow, queueRequest, readOptions, resendLostBatch, runTurn, setGuard, stageTurnsOf, turnNow }
-  from "./econ-session.js";
+  noteOpened, placeLinesNow, queueRequest, readOptions, resendLostBatch, runTurn, setGuard,
+  stageTurnsOf, turnNow } from "./econ-session.js";
 import { captureEvent, disasterEvent, razeEvent, readPopulations } from "./econ-macro-read.js";
 import { phaseKey, policyKey, responseKey } from "./econ-notice-text.js";
 import { pillsFor } from "./econ-pills.js";
@@ -99,6 +103,7 @@ function screenApi(session) {
     stageTurns: () => stageTurnsOf(session, localId()),
     lastTransfers: () => session.lastPlan?.transfers ?? null,
     seenTab: (tab) => { if (markSeen(session, tab)) refreshDock(); },
+    shutCount: () => readHeldMarkers(localId()).filter((m) => m.line === "SHUT").length,
   };
 }
 
@@ -162,8 +167,12 @@ function catchUp(session) {
 function onTurnBegin() {
   const session = state.session;
   if (!session) return;
+  const before = readBalanceCents(localId());
   const plan = safe(() => runTurn(session, `TurnBegin ${gameTurn()}`), null);
   if (plan) watchLanded(session);
+  // The seat's update comes right after this batch; what it holds then is its balance now plus the grant (DESIGN 4.18).
+  const row = plan?.batch?.civs?.find((x) => x.pid === localId());
+  if (plan && !plan.skipped) noteSeatBeforeUpdate(before, row ? grantOf(row) : 0);
   afterBatch(session, plan);
   refreshPill();
   newTurnOnScreen();
@@ -211,6 +220,13 @@ function installConsole() {
     // batch.
     hardTimes: (/** @type {number} */ pid) => hardTimesOf(state.multiplayer ? null
       : state.session?.lastPlan?.hardTimes?.[String(pid)]),
+    // A civ whose treasury was below zero at the last batch (DESIGN 4.18), for other mods to read: how far, its
+    // overdraft, the quarters used, whether it's past it, the Happiness a settlement, the price premium in basis points
+    // and the units it disbands this turn; null when it isn't overdrawn, in multiplayer, or before the first batch.
+    overdrawn: (/** @type {number} */ pid) => {
+      const row = state.multiplayer ? null : state.session?.lastPlan?.overdrawn?.[String(pid)];
+      return row ? { ...row } : null;
+    },
   };
 }
 
@@ -253,6 +269,14 @@ function boot() {
   installClickHandler(() => openScreen());
   listen("TurnBegin", onTurnBegin);
   listen("PlayerTurnActivated", onPlayerTurnActivated);
+  // A debt the game wipes at a civ's update is charged back when its turn opens (DESIGN 4.18, lab W12).
+  // Right after a load no batch has run yet in this session, and the seat's turn can end before one does (lab W15: the
+  // Ottomans' 7,300 of debt wiped after a reload), so the saved ledger's last batch stands in for it.
+  installRestore(() => {
+    const s = state.session;
+    if (state.multiplayer || !s) return false;
+    return s.lastPlan ? s.lastPlan.skipped !== "all-off" : !!s.ledger?.lastBatch;
+  });
   listenCycle(session);
   logLine(`v${VERSION} loaded; turn ${gameTurn()}, ${session.ledger.loans.length} loan record(s), `
     + `${lost.length} re-sent, options ${JSON.stringify(readOptions(session.glue))}`);

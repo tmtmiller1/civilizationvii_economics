@@ -79,16 +79,17 @@ test("the plan's progress joins a development loan's row for the same city, one 
   assert.equal(empty.transfers.some((t) => t.reason === "plan"), false);
 });
 
-test("erosion only for Public debt members, never for a Planned civ, and only from what the funds hold", () => {
+test("prices climb only for Public debt members, never for a Planned civ; nothing is taken from Gold", () => {
   const ledger = { ...emptyLedger(), nextId: 2, loans: [makeLoan({ id: "L1", lender: "bond", borrower: AI,
     principal: 500000, ratePpm: 40000, term: 30, turn: 49 })] };
   const early = { ...OPEN_ALL, publicDebt: null };
   const out = plan({ civs: [me({ stages: early, balanceCents: 900000 }), ai(AI, { balanceCents: 900000 })], ledger,
     options: { inflation: true } });
-  assert.deepEqual(out.transfers.filter((t) => t.reason === "erosion").map((t) => t.from), [AI]);
+  assert.deepEqual(Object.keys(out.macro.inflation.levels), [String(AI)]);
+  assert.equal(out.transfers.some((t) => t.reason === "erosion"), false);
   const planned = plan({ civs: [ai(AI, { balanceCents: 900000, ideology: "IDEOLOGY_COMMUNISM" })], ledger,
     options: { inflation: true } });
-  assert.equal(planned.transfers.some((t) => t.reason === "erosion"), false);
+  assert.deepEqual(planned.macro.inflation.levels, {});
   assert.equal(planned.macro.inflation.top, AI);
 });
 

@@ -2,11 +2,11 @@
 // and the small verbs that write a transfer, an event or a notice. econ-plan.js builds it; econ-requests.js and
 // econ-shortfall.js act on it. Nothing here reads the engine.
 
-import { CITIZENS, isWorldAccount, ratesPct } from "./econ-params.js";
+import { CITIZENS, heldCents, isWorldAccount, overdraftLimitCents, ratesPct } from "./econ-params.js";
 import { isOpen, loanId, makeLoan } from "./econ-loan.js";
 import { changeCreditRep, standingPct } from "./econ-credit.js";
 import { REPUTATION } from "./econ-params.js";
-import { rateCapPpm } from "./econ-lenders.js";
+import { amendsRecord, rateCapPpm } from "./econ-lenders.js";
 import { createBatch, lenderBalance, record } from "./econ-batch.js";
 import { aiWillLend } from "./econ-ai.js";
 import { cloneMarkets, emptyMarkets } from "./econ-markets.js";
@@ -36,7 +36,7 @@ export function turnContext(input, options, out) {
   const unmet = new Set((input.relations || []).filter((row) => row.level === "unmet")
     .map((row) => (row.a < row.b ? `${row.a}:${row.b}` : `${row.b}:${row.a}`)));
   // Civs are held sorted by id so every pass runs in one order whatever order the glue listed them in.
-  const civs = [...(input.civs || [])].sort(byId);
+  const civs = holdOverdrafts([...(input.civs || [])].sort(byId), out.ledger);
   const rates = ratesPct(options.rates);
   const macro = input.macro ? cloneMacro(input.macro) : emptyMacro();
   return { turn, age, civs, relations, requests, params, options, out, ledger: out.ledger, rates,
@@ -45,6 +45,24 @@ export function turnContext(input, options, out) {
     markets: input.markets ? cloneMarkets(input.markets) : emptyMarkets(), trade: [], owed: [], macro,
     readings: macroReadings(macro, { civs, turn, options }), basePrices: {}, unmet, distressed: new Set(),
     stakes: new Map(), market: marketOf(input), crisisTerms: new Map(), crisis: null };
+}
+
+/**
+ * A civ still below zero keeps the largest overdraft it has had since it went under (DESIGN 4.18): sized from its
+ * net income alone, the limit shrank as disbanding and cuts closed the deficit, and a civ climbing out was pushed past
+ * it (lab W11, 2026-11-10: 480 Gold at -48 a turn, 100 at +12, so -164 read as past the overdraft). Back at 0 or
+ * above, the limit follows its income again. A civ a rule already gave an overdraft keeps that one.
+ * @param {Civ[]} civs
+ * @param {Ledger} ledger
+ * @returns {Civ[]}
+ */
+function holdOverdrafts(civs, ledger) {
+  const before = new Map((ledger.lastBatch?.civs || []).map((row) => [row.pid, row.overdraft]));
+  return civs.map((civ) => {
+    const held = before.get(civ.id);
+    if (Number.isInteger(civ.overdraftCents) || !(heldCents(civ) < 0) || !Number.isInteger(held)) return civ;
+    return { ...civ, overdraftCents: Math.max(overdraftLimitCents(civ.incomeCents), /** @type {number} */ (held)) };
+  });
 }
 
 /** This turn's market read, or null without one. @param {PlanInput} input */
@@ -147,8 +165,11 @@ export function emit(ctx, loan, spec) {
 export function openLoan(ctx, spec) {
   const { ledger, turn } = ctx;
   const { lender, borrower, principal, ratePpm, term, source, emergency = false, payee = borrower } = spec;
-  const made = makeLoan({ id: loanId(ledger.nextId), lender, borrower, principal, ratePpm, term, turn, source,
+  const base = makeLoan({ id: loanId(ledger.nextId), lender, borrower, principal, ratePpm, term, turn, source,
     emergency });
+  // Any loan from a civ the borrower repudiated, before it's made good, is an amends loan (DESIGN 4.5).
+  const wronged = amendsRecord(ledger, borrower, lender, turn);
+  const made = wronged ? { ...base, amends: wronged.turn } : base;
   // A Religious lender lends as a partnership (DESIGN 4.17): its interest follows the borrower's income from here.
   const loan = !isWorldAccount(lender) && termsFor(ctx, lender).partnership
     ? { ...made, partnership: true, baseIncome: incomeOf(ctx, borrower) } : made;

@@ -17,6 +17,7 @@
     "mutation": "stryker run",
     "readme:pdf": "bash scripts/build_readme_pdf.sh",
     "steam-changelog": "node scripts/steam-changelog.mjs sync",
+    "descriptions": "node scripts/site-descriptions.mjs",
     "sync:locales": "node scripts/sync-locales.mjs",
     "sync:tax": "node scripts/sync-tax-cards.mjs"
   },

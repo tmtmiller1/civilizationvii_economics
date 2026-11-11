@@ -36,7 +36,7 @@ test("load refuses what isn't ours without throwing, and drops bad rows", () => 
   assert.deepEqual(dirty.cycle.events, [{ turn: 2, kind: "peace", a: 1, b: null, w: 100 }]);
   assert.deepEqual(dirty.cycle.phases, {});
   assert.deepEqual(Object.keys(dirty.systems), ["4"]);
-  assert.deepEqual(dirty.inflation, { piPpm: 0, bondCents: 0, moneyCents: 0, top: null });
+  assert.deepEqual(dirty.inflation, { piPpm: 0, bondCents: 0, moneyCents: 0, top: null, levels: {}, levelAge: null });
   assert.deepEqual(sanitizeMacro("junk"), emptyMacro());
 });
 

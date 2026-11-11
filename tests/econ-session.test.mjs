@@ -28,7 +28,8 @@ test("every major is read with the same fields, human and AI alike; stages come 
   for (const c of input.civs) {
     assert.deepEqual(Object.keys(c).sort(), ["alive", "atWar", "balanceCents", "cities", "commerceSettlements",
       "cushionBp", "depthFactorPct", "depthTurns", "government", "happinessCents", "human", "id", "ideology", "incomeCents",
-      "influence", "production", "stages", "strength", "tradeIncomeCents", "upkeepCents", "warehouses"], `civ ${c.id}`);
+      "influence", "production", "settlements", "stages", "strength", "tradeIncomeCents", "units", "upkeepCents",
+      "warehouses"], `civ ${c.id}`);
   }
   assert.deepEqual(input.civs.map((c) => [c.balanceCents, c.incomeCents, c.human, c.atWar]),
     [[5000, 1200, true, false], [40000, 1200, false, true], [1000, 300, false, true]]);
@@ -39,7 +40,7 @@ test("every major is read with the same fields, human and AI alike; stages come 
   assert.deepEqual([input.civs[1].depthTurns, input.civs[1].depthFactorPct], [2, 96], "one Bank");
   assert.equal(input.civs[1].upkeepCents, 200, "one unit type at 1 Gold plus one building at 1 Gold");
   assert.deepEqual(input.relations.map((r) => [r.a, r.b, r.level]), [[0, 3, "neutral"], [0, 5, "neutral"], [3, 5, "war"]]);
-  assert.deepEqual(input.params, { amenityLineCents: 0, disbandLineCents: -1000, goldPerPointCents: 400,
+  assert.deepEqual(input.params, { goldPerPointCents: 400,
     friendlyLevel: 30, hostileLevel: -60 }, "the bands from the game's rows times its scale");
   assert.equal(input.age, "AGE_EXPLORATION");
   removeFakeEngine();
@@ -163,7 +164,7 @@ test("the glue envelope keeps requests, stage turns, seen civs and the guard swi
     requests: [{ kind: "borrow" }, 5], guardOn: "yes" });
   assert.deepEqual(clean, { v: 2, stages: { 4: { moneylending: 3, publicDebt: null } }, seen: [1], requests: [{ kind: "borrow" }],
     guardOn: null, turns: { age: null, base: 0, last: 0 }, roles: {}, cycleEvents: [], told: null, fresh: [], landed: null,
-    lines: null });
+    lines: null, prices: {} });
   assert.deepEqual(sanitizeGlue({ lines: { turn: 12, age: "AGE_MODERN", want: { 3: { DEBT: 7, NOPE: 2, LOAN: -1 }, x: {} } } })
     .lines, { turn: 12, age: "AGE_MODERN", want: { 3: { DEBT: 7 } } });
   assert.equal(sanitizeGlue({ lines: { turn: "12", age: "AGE_MODERN" } }).lines, null);
@@ -202,5 +203,16 @@ test("atWar means a formal war with a living major the civ has met: an unmet pai
     { id: 7, war: [0, 3, 5], unmet: [0, 3, 5] }] });
   const input = buildInput(loadSession());
   assert.deepEqual(input.civs.map((c) => [c.id, c.atWar]), [[0, false], [3, true], [5, true], [7, false]]);
+  removeFakeEngine();
+});
+
+test("the seat's charge goes out whole at the batch, even past what it holds (DESIGN 4.18)", () => {
+  // Lab W10 (2026-11-10): the game carries a treasury below 0 from turn to turn, so the seat's grant isn't held back.
+  const world = fresh();
+  const seat = { pid: 0, snapshot: 200, net: -3000, influence: 0, celebration: 0, paid: -3000, carry: 0,
+    celebrationPaid: 0, celebrationCarry: 0 };
+  sendPlan({ batch: { id: "B9", turn: 10, civs: [seat, { ...seat, pid: 3 }] }, influence: [], grievances: [],
+    relationships: [], progress: [] });
+  assert.deepEqual(world.calls.filter((c) => c.startsWith("grant")), ["grant 0 1 -30", "grant 3 1 -30"]);
   removeFakeEngine();
 });

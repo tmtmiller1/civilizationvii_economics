@@ -6,12 +6,12 @@
 // econ-plan.js calls these in order; the arithmetic is in econ-cycle.js, econ-inflation.js, econ-systems.js,
 // econ-citizens.js and econ-planned.js. Nothing here reads the engine.
 
-import { BOND, CITIZENS, CYCLE, CYCLE_RULES as R, CYCLE_WEIGHTS as W, INFLATION, PLAN, SHORT_TERM }
+import { BOND, CITIZENS, CYCLE, CYCLE_RULES as R, CYCLE_WEIGHTS as W, PLAN, SHORT_TERM }
   from "./econ-params.js";
 import { civSum, crisisEvents, cycleGoldCents, emptyCycle, engineEvents, growthBp, ledgerEvents, leverPct,
   nextBoomTurns, nextE, nextL, nextTrendBp, overheatEvents, pairKey, panicDropBp, panicStarts, routeEvents,
   stageScalePct, swingFor, trendEvents, warEvents, worldSum } from "./econ-cycle.js";
-import { erosionCents, largestDebtor, piPpm } from "./econ-inflation.js";
+import { largestDebtor, nextLevelPpm, piPpm } from "./econ-inflation.js";
 import { nextSystems } from "./econ-systems.js";
 import { cycleKPct, emptyInflation, macroReadings } from "./econ-macro-state.js";
 import { planSplit, planTakeCents } from "./econ-planned.js";
@@ -19,7 +19,7 @@ import { aiCitizenPrincipal, servicePrincipalCents } from "./econ-citizens.js";
 import { serviceCap, serviceOf } from "./econ-credit.js";
 import { isOpen } from "./econ-loan.js";
 import { hasStage } from "./econ-stages.js";
-import { funds, lenderBalance } from "./econ-batch.js";
+import { funds, lenderBalance, payable } from "./econ-batch.js";
 import { citizensFor, emit, event, incomeOf, isAlive, notice, openLoan, termsFor } from "./econ-turn.js";
 import { isAtLoanLimit, limitRefusal } from "./econ-requests.js";
 import { isInsolventCiv } from "./econ-shortfall.js";
@@ -216,6 +216,10 @@ function bondDebts(ctx, ids) {
  */
 function inflationStep(ctx) {
   if (ctx.options.inflation !== true) { ctx.macro.inflation = emptyInflation(); return; }
+  // Each civ's price level carries from turn to turn and starts again with each age's own prices.
+  const before = ctx.macro.inflation || emptyInflation();
+  const sameAge = before.levelAge === ctx.age;
+  const levels = sameAge ? { ...(before.levels || {}) } : {};
   const members = ctx.civs.filter((civ) => civ.alive === true && hasStage(civ, "publicDebt", ctx.turn, ctx.options));
   const owed = bondDebts(ctx, new Set(members.map((civ) => civ.id)));
   let bond = 0;
@@ -224,7 +228,8 @@ function inflationStep(ctx) {
   let money = 0;
   for (const cents of balances) money += Math.max(0, cents);
   ctx.macro.inflation = { piPpm: piPpm({ bondOutstandingCents: bond, memberBalancesCents: balances }), bondCents: bond,
-    moneyCents: money, top: largestDebtor([...owed].map(([pid, cents]) => ({ pid, cents })))?.pid ?? null };
+    moneyCents: money, top: largestDebtor([...owed].map(([pid, cents]) => ({ pid, cents })))?.pid ?? null,
+    levels, levelAge: ctx.age ?? null };
 }
 
 /**
@@ -272,37 +277,50 @@ export function cycleInflows(ctx) {
 }
 
 /**
- * One payer's 1.2 charges in order: erosion (step 3), the plan (step 4), negative cycle Gold (step 5). Each is paid
- * in full from the payer's funds or skipped; nothing is carried.
+ * One payer's 1.2 charges in order: prices (step 3), the plan (step 4), negative cycle Gold (step 5). The cycle charge
+ * is paid in full from the payer's funds and overdraft (DESIGN 4.18) or skipped; the plan's take buys production and
+ * comes from Gold in hand only; nothing is carried.
  * @param {TurnContext} ctx
  * @param {number} pid
  */
 export function macroPayerSteps(ctx, pid) {
   const civ = ctx.civ.get(pid);
   if (!civ || civ.alive !== true) return;
-  erodeFor(ctx, civ);
+  priceFor(ctx, civ);
   planFor(ctx, civ);
   const charge = -cycleGoldFor(ctx, civ);
-  if (charge > 0 && funds(ctx.batch, pid) >= charge) {
+  if (charge > 0 && payable(ctx.batch, pid) >= charge) {
     emit(ctx, { id: `CY${pid}` }, { from: pid, to: CYCLE, cents: charge, reason: "cycle" });
   }
 }
 
 /**
- * DESIGN 4.8 erosion on a member's Gold above its reserve, at its system's share; none outside Public debt.
+ * DESIGN 4.8: a member's prices climb by its share of the rate (none outside Public debt). The level stands in its
+ * capital as purchase-price markers, so the game charges more for everything it buys; nothing is taken from its Gold.
  * @param {TurnContext} ctx
  * @param {Civ} civ
  */
-function erodeFor(ctx, civ) {
-  // A civ off the gold standard, with bullion fleets or a debased coin carries inflation of its own; a recoinage
-  // halves what erosion can take (DESIGN 4.11c).
+function priceFor(ctx, civ) {
+  const rate = priceRate(ctx, civ);
+  if (!rate) return;
+  const levels = ctx.macro.inflation.levels;
+  const key = String(civ.id);
+  const next = nextLevelPpm({ levelPpm: levels[key] ?? 0, piPpm: rate.pi, pricePct: rate.pricePct });
+  if (next > 0) levels[key] = next;
+}
+
+/**
+ * A member's rate this turn and its share, or null outside inflation. A civ off the gold standard, with bullion
+ * fleets or a debased coin carries inflation of its own; a recoinage halves its share (DESIGN 4.11c).
+ * @param {TurnContext} ctx
+ * @param {Civ} civ
+ */
+function priceRate(ctx, civ) {
+  if (ctx.options.inflation !== true) return null;
   const crisis = ctx.crisis ? ctx.crisis.terms(civ.id) : null;
   const pi = ctx.readings.piPpm + (crisis?.piExtraPpm ?? 0);
-  if (!pi || !hasStage(civ, "publicDebt", ctx.turn, ctx.options) || termsFor(ctx, civ.id).outOfCycle) return;
-  const erosionPct = Math.round((termsFor(ctx, civ.id).erosionPct * (crisis?.erosionCapPct ?? 100)) / 100);
-  const cents = Math.min(erosionCents({ piPpm: pi, balanceCents: civ.balanceCents, incomeCents: civ.incomeCents,
-    erosionPct }), Math.max(0, funds(ctx.batch, civ.id)));
-  if (cents > 0) emit(ctx, { id: `IN${civ.id}` }, { from: civ.id, to: INFLATION, cents, reason: "erosion" });
+  if (!pi || !hasStage(civ, "publicDebt", ctx.turn, ctx.options) || termsFor(ctx, civ.id).outOfCycle) return null;
+  return { pi, pricePct: Math.round((termsFor(ctx, civ.id).pricePct * (crisis?.priceCapPct ?? 100)) / 100) };
 }
 
 /**

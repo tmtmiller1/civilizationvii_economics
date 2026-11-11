@@ -18,7 +18,7 @@
         <Replace Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_CONTENT_TITLE" Language="es_ES"><Text>What a crisis is</Text></Replace>
         <Replace Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_OVERVIEW_CHAPTER_CONTENT_PARA_1" Language="es_ES"><Text>Economics gives each
             civilization an economy that can go wrong: the world's business cycle, the loans it carries, the prices it
-            trades at, the inflation idle Gold suffers. A crisis is the moment one of those readings crosses a line. It
+            trades at, the inflation that pushes its prices up. A crisis is the moment one of those readings crosses a line. It
             isn't rolled and it isn't saved for the end of the age; the mod reads the state of your economy every turn,
             and a crisis can start on any turn of any age. While it lasts, the World tab shows what's pulling you down
             and what you can do about it.</Text></Replace>
@@ -190,8 +190,8 @@
             the clippers.</Text></Replace>
         <Replace Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_RECOINAGE_PARA_2" Language="es_ES"><Text>In the game it costs two
             turns of your income, paid into the inflation account, and clears the inflation your own choices added
-            (a debased coin, bullion fleets, the gold standard left). The legacy is Steadied: erosion can take at most
-            half of what it otherwise would from your idle Gold for the rest of the age. Needs Public debt; once per
+            (a debased coin, bullion fleets, the gold standard left). The legacy is Steadied: your prices climb half as fast
+            with inflation for the rest of the age. Needs Public debt; once per
             age, in runaway inflation or a price shock.</Text></Replace>
         <Replace Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_CHARTER_TITLE" Language="es_ES"><Text>Charter a company</Text></Replace>
         <Replace Tag="LOC_PEDIA_CONCEPTS_PAGE_ECON_CRISES_EXPLORATION_CHAPTER_CHARTER_PARA_1" Language="es_ES"><Text>Elizabeth I chartered the

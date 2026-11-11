@@ -30,13 +30,14 @@ export function emergencyOutstandingOf(ledger, pid) {
 }
 
 /**
- * Repudiations by this civ in the last 40 turns.
+ * Repudiations by this civ in the last 40 turns that it hasn't made good with an amends loan (DESIGN 4.5).
  * @param {Ledger} ledger
  * @param {number} pid
  * @param {number} turn
  */
 export function recentRepudiations(ledger, pid, turn) {
-  return ledger.repudiations.filter((row) => row.pid === pid && turn - row.turn < STANDING.repudiationWindowTurns);
+  return ledger.repudiations.filter((row) => row.pid === pid && turn - row.turn < STANDING.repudiationWindowTurns
+    && !Number.isInteger(row.madeGood));
 }
 
 /**

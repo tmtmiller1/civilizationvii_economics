@@ -117,9 +117,20 @@ function cleanLoan(row) {
     opened: row.opened, closedTurn: isTurn(row.closedTurn) ? row.closedTurn : null,
     writtenOff: atLeast(row.writtenOff, 1) ? row.writtenOff : 0,
     source: LOAN_SOURCES.includes(row.source) ? row.source : "borrow",
-    // A Religious lender's partnership (DESIGN 4.17) keeps the borrower's income it opened at.
+    ...loanExtras(row),
+  };
+}
+
+/**
+ * A loan's optional fields: a Religious lender's partnership (DESIGN 4.17) keeps the borrower's income it opened at;
+ * an amends loan (DESIGN 4.5) keeps the turn of the repudiation it makes good.
+ * @param {any} row
+ */
+function loanExtras(row) {
+  return {
     ...(row.partnership === true ? { partnership: true, baseIncome: atLeast(row.baseIncome, 0) ? row.baseIncome : 0 }
       : {}),
+    ...(isTurn(row.amends) ? { amends: row.amends } : {}),
   };
 }
 
@@ -200,13 +211,21 @@ function cleanMisses(raw) {
   return rows;
 }
 
+/**
+ * A bankruptcy's mark on its repudiation row (econ-bankruptcy.js), kept only when it's set.
+ * @param {any} row
+ */
+const bankruptMark = (row) => (row.bankrupt === 1 ? { bankrupt: 1 } : {});
+
 /** @param {unknown} raw */
 function cleanRepudiations(raw) {
   /** @type {RepudiationRow[]} */
   const rows = [];
   for (const row of list(raw)) {
     if (!row || !isPid(row.pid) || !isParty(row.lender) || !isTurn(row.turn) || !atLeast(row.cents, 0)) continue;
-    rows.push({ pid: row.pid, lender: row.lender, turn: row.turn, cents: row.cents, atWar: row.atWar === true });
+    rows.push({ pid: row.pid, lender: row.lender, turn: row.turn, cents: row.cents, atWar: row.atWar === true,
+      grudge: atLeast(row.grudge, 0) ? row.grudge : 0, note: atLeast(row.note, 0) ? row.note : 0,
+      madeGood: isTurn(row.madeGood) ? row.madeGood : null, ...bankruptMark(row) });
   }
   return rows;
 }
@@ -242,7 +261,8 @@ function cleanBatchRow(row) {
 function paidFields(row) {
   /** @type {Record<string, number>} */
   const out = {};
-  for (const key of ["paid", "celebrationPaid", "engine"]) if (isInt(row[key])) out[key] = row[key];
+  // overdraft and below: the overdraft a civ below zero keeps, and its turns below zero (DESIGN 4.18).
+  for (const key of ["paid", "celebrationPaid", "engine", "overdraft", "below"]) if (isInt(row[key])) out[key] = row[key];
   for (const key of ["carry", "celebrationCarry"]) if (isInt(row[key]) && Math.abs(row[key]) < 100) out[key] = row[key];
   return out;
 }

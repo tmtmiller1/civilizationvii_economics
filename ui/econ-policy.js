@@ -16,7 +16,7 @@ import { POLICIES, POLICY_LEGACY_CHARGE, POLICY_LEGACY_SUPPORT, POLICY_LEGACY_TE
 import { crisesOn, legaciesOf, settlementsOf, standingResponses } from "./econ-crisis-rows.js";
 import { BOND, CITIZENS, CYCLE, PROGRESS } from "./econ-params.js";
 import { emit, event, notice, openLoan } from "./econ-turn.js";
-import { funds } from "./econ-batch.js";
+import { funds, payable } from "./econ-batch.js";
 import { LEDGER_LABELS, arrears, policyNameKey } from "./econ-arrears.js";
 import { isOpen } from "./econ-loan.js";
 import { planSplit } from "./econ-planned.js";
@@ -160,7 +160,11 @@ function aiDeclare(ctx, civ) {
 // --- Each turn -----------------------------------------------------------------------------------------------------
 
 /** @param {TurnContext} ctx @param {number} pid @param {number} wanted */
-const within = (ctx, pid, wanted) => Math.min(wanted, Math.max(0, funds(ctx.batch, pid)));
+// A running card's charges are dues and can take the treasury into its overdraft (DESIGN 4.18); Gold turned into
+// production is spending, which needs Gold in hand.
+const within = (ctx, pid, wanted) => Math.min(wanted, Math.max(0, payable(ctx.batch, pid)));
+/** @param {TurnContext} ctx @param {number} pid @param {number} wanted */
+const withinCash = (ctx, pid, wanted) => Math.min(wanted, Math.max(0, funds(ctx.batch, pid)));
 
 /**
  * Production points spread over the civ's builds, paid from its own Gold as public works are.
@@ -173,7 +177,7 @@ const within = (ctx, pid, wanted) => Math.min(wanted, Math.max(0, funds(ctx.batc
 function addProduction(ctx, civ, row, points, cities) {
   if (points <= 0 || !cities.length) return 0;
   const perPoint = ctx.params.goldPerPointCents || 400;
-  const cents = within(ctx, civ.id, Math.round(points * perPoint));
+  const cents = withinCash(ctx, civ.id, Math.round(points * perPoint));
   const split = planSplit(cents, cities, ctx.params.goldPerPointCents);
   let spent = 0;
   let pts = 0;

@@ -232,7 +232,8 @@ test("a missed dividend costs standing and Influence; three in a row is default,
   const record = makeInvestment({ id: "I1", kind: "project", investor: ME, host: AI, principal: 30000, turn: 40,
     cityId: "6:1" });
   let ledger = { ...emptyLedger(), investments: [record], nextInvestId: 2 };
-  const civs = [me(), ai(AI, { balanceCents: -9000, incomeCents: 1000, cities: [city("6:1")] })];
+  // Income enough to pay the 90 down: with 10 a turn the AI would weigh bankruptcy from its third turn (DESIGN 4.18).
+  const civs = [me(), ai(AI, { balanceCents: -9000, incomeCents: 3000, cities: [city("6:1")] })];
   const kinds = [];
   for (let turn = 50; turn < 53; turn += 1) {
     const out = plan({ civs, turn, ledger });

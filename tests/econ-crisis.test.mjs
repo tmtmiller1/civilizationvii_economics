@@ -260,7 +260,7 @@ test("recoinage: two turns of income to the inflation account, the civ's inflati
   assert.deepEqual(out.ledger.crises.map((r) => r.kind), ["inflation"]);
   assert.deepEqual([transfer(out, "response").to, transfer(out, "response").cents], ["inflation", 20000]);
   assert.deepEqual(out.ledger.legacies.map((r) => [r.pid, r.id]), [[AI, "bullion"], [ME, "recoinage"]], "the other civ's bullion stays");
-  assert.equal(crisisTerms(ctxFor({ civs: [me()], ledger: out.ledger }), ME).erosionCapPct, 50);
+  assert.equal(crisisTerms(ctxFor({ civs: [me()], ledger: out.ledger }), ME).priceCapPct, 50);
 });
 
 test("navigation acts: the High tariff as law for ten turns, the trade war counting the civ double for the age", () => {

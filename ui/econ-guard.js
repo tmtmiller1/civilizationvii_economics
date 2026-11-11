@@ -1,8 +1,7 @@
-// econ-guard.js - Economics: the auto-loan guard and the emergency cap (DESIGN 4.6). The guard line is the engine's
-// own amenity-loss line from GlobalParameters (0 on 1.5.0), which also covers the disband line below it (NOTES
-// finding B); with no line it does nothing rather than guess one. The guard has work only while income is at or
-// below 0: with positive income the engine wipes a negative balance to 0 at the roll and charges nothing (probe P4,
-// 2026-10-29), so a loan taken on such a dip would be Gold the game gives for free.
+// econ-guard.js - Economics: the auto-loan guard and the emergency cap (DESIGN 4.6). The guard line is 0 Gold, where
+// the overdraft's interest and penalties start (DESIGN 4.18); the game's own GOLD_NEGATIVE_BALANCE_* lines do nothing
+// on 1.5.0 (lab W10, 2026-11-10). The guard has work only while income is at or below 0: a dip with positive income
+// is left for that income to lift.
 
 import { EMERGENCY } from "./econ-params.js";
 

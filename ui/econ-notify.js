@@ -15,6 +15,9 @@ const TITLE_KEY = "LOC_ECONOMICS_NOTIFY_TITLE";
 let pending = null;
 /** @type {(() => void) | null} */
 let onActivate = null;
+/** The lines last sent this turn, so a line added later in the turn goes out with them; a new turn's lines clear it. */
+/** @type {string[]} */
+let lastSent = [];
 
 /**
  * A party's name in the game's language: civs by name, world accounts by their LOC key.
@@ -75,6 +78,7 @@ export function holdNotice(plan, state, opened = [], turn = null) {
   const me = localId();
   if (me < 0) return;
   const lines = [...opened, ...(plan ? composeLines(plan, me) : [])];
+  lastSent = [];
   if (!lines.length) { pending = null; return; }
   pending = { turn: plan?.ledger.lastTurn ?? turn ?? gameTurn(), lines };
   if (state.activeTurn === pending.turn) flushNotice();
@@ -86,6 +90,29 @@ export function flushNotice() {
   const me = localId();
   const { lines } = pending;
   pending = null;
+  lastSent = lines;
+  return send(me, lines);
+}
+
+/**
+ * Adds lines to this turn's notification, sent again with the lines it already had (the engine keeps one live
+ * notification per type and player). Used for what happens after the turn's notification went, such as a unit
+ * disbanded for an overdrawn treasury (DESIGN 4.18).
+ * @param {string[]} extra
+ */
+export function appendNotice(extra) {
+  const me = localId();
+  if (me < 0 || !extra.length) return false;
+  const lines = [...lastSent, ...extra];
+  lastSent = lines;
+  return send(me, lines);
+}
+
+/**
+ * @param {number} me
+ * @param {string[]} lines
+ */
+function send(me, lines) {
   logLine(`notice: ${lines.join(" | ")}`);
   const sent = safe(() => {
     Game.Notifications.send({ Type: Game.getHash(NOTIFICATION_TYPE), Message: loc(TITLE_KEY),

@@ -5,21 +5,21 @@
 // The 1.1 steps (prices, trade settlement, dividends, the investment and tariff rules) are in econ-commerce.js; the
 // 1.2 steps (systems, the cycle, inflation, the plan, citizen loans) in econ-macro.js.
 
-import { EMERGENCY, MISS, REPUTATION, STANDING, TAX, isWorldAccount } from "./econ-params.js";
+import { EMERGENCY, MISS, REPUDIATION, REPUTATION, STANDING, TAX, isWorldAccount } from "./econ-params.js";
 import { isOpen } from "./econ-loan.js";
 import { addMiss } from "./econ-credit.js";
 import { blockFor, blocksAfterAge } from "./econ-lenders.js";
 import { settleActive, settleDefault, withBlock } from "./econ-payments.js";
 import { aiShortfall } from "./econ-ai.js";
 import { applyGrants, grantsFor } from "./econ-conservation.js";
-import { addCelebration, addInfluence, commitBatch, funds, projected } from "./econ-batch.js";
+import { addCelebration, addInfluence, commitBatch, funds, payable, projected } from "./econ-batch.js";
 import { aiTaxLevel, canChangeTax, taxFlow } from "./econ-tax.js";
 import { cloneLedger, emptyLedger, prune } from "./econ-state.js";
 import { emptyMarkets } from "./econ-markets.js";
 import { isAlive, closeLoan, emit, event, notice, repChange, replaceLoan, turnContext } from "./econ-turn.js";
-import { runRequests } from "./econ-requests.js";
-import { aiBorrow, aiBuildBorrow, aiDecide, aiRepayEarly, aiRepudiate, guardFor, guardRefinance, isInsolventCiv,
-  lookAheadNotice, refinanceFor } from "./econ-shortfall.js";
+import { repudiateFor, runRequests } from "./econ-requests.js";
+import { aiAmends, aiBorrow, aiBuildBorrow, aiDecide, aiRepayEarly, aiRepudiate, guardFor, guardRefinance,
+  isInsolventCiv, lookAheadNotice, refinanceFor } from "./econ-shortfall.js";
 import { aiAid, aiInvest, aiTariff, investWriteOffs, marketStep, payDividendsFor, settleTradeFor, tradeNotices,
   tradeStep } from "./econ-commerce.js";
 import { aiMacro, cycleInflows, macroPayerSteps, macroSnapshot } from "./econ-macro.js";
@@ -32,7 +32,10 @@ import { adjustPrices, aiRespond, austerityCivs, crisisPayerSteps } from "./econ
 import { crisisTerms, onHoliday } from "./econ-crisis-rows.js";
 import { aiPolicy, hardshipRows, policyPayerSteps, policyTerms } from "./econ-policy.js";
 import { hardTimesRows } from "./econ-arrears.js";
-import { LIMITS } from "./econ-params.js";
+import { overdrawnRows, turnsBelow } from "./econ-overdrawn.js";
+import { aiBankruptcy } from "./econ-bankruptcy.js";
+import { chargeOverdraft } from "./econ-overdraft.js";
+import { GUARD_LINE_CENTS, LIMITS } from "./econ-params.js";
 import { standingRows } from "./econ-standing.js";
 
 /** The smallest drop across an age change that's recorded as the game's cap, not the turn's own spending. */
@@ -61,11 +64,12 @@ export function planTurn(input) {
   /** @type {PlanOutput} */
   const out = { ledger, transfers: [], influence: [], celebration: [], grievances: [], relationships: [], events: [],
     notices: [], batch: null, skipped: null, markets: input.markets || emptyMarkets(), progress: [], trade: [],
-    macro: input.macro || emptyMacro(), aiPreferences: [], favors: [], stakes: {}, wars: [] };
+    macro: input.macro || emptyMacro(), aiPreferences: [], favors: [], stakes: {}, wars: [], notes: [] };
   const skipped = skipReason(input, options, ledger);
   if (skipped) return { ...out, skipped };
   const ctx = turnContext(input, options, out);
   ctx.projection = input.projection === true;
+  ctx.priceFactors = input.priceFactors || {};
   // The crisis rules the other steps read (DESIGN 4.11c), as hooks so no step has to import them.
   ctx.crisis = { terms: (pid) => crisisTerms(ctx, pid), weights: (events) => crisisWeights(ctx, events),
     adjustPrices: (prices) => adjustPrices(ctx, prices), holiday: (pid) => onHoliday(ctx, pid) };
@@ -77,6 +81,7 @@ export function planTurn(input) {
   proposeStep(ctx);
   out.hardship = hardshipRows(ctx);
   out.hardTimes = hardTimesRows(ctx);
+  out.overdrawn = overdrawnRows(ctx);
   finishTurn(ctx);
   return out;
 }
@@ -105,6 +110,18 @@ function snapshotStep(ctx, input) {
 }
 
 /**
+ * Bankruptcy first (DESIGN 4.18): it repudiates every lender, so the repudiation rule after it has nothing left to
+ * weigh for that civ.
+ * @param {TurnContext} ctx
+ * @param {Civ[]} ai
+ * @param {Civ[]} borrowers
+ */
+function aiDebtRules(ctx, ai, borrowers) {
+  for (const civ of ai) aiBankruptcy(ctx, civ, turnsBelow(ctx.ledger, civ.id), repudiateFor);
+  for (const civ of borrowers) aiRepudiate(ctx, civ);
+}
+
+/**
  * DESIGN 4.14 steps 2 to 10, each payer on its own funds, then the guard and shortfall rules on projections.
  * @param {TurnContext} ctx
  */
@@ -113,7 +130,7 @@ function proposeStep(ctx) {
   const ai = ctx.options.ai ? live.filter((civ) => civ.human !== true) : [];
   // The AI's loan rules in step 2 (DESIGN 4.14): repudiation, then its decisions on the look-ahead (AI-PLAN 4.3).
   const borrowers = ctx.options.loans ? ai : [];
-  for (const civ of borrowers) aiRepudiate(ctx, civ);
+  aiDebtRules(ctx, ai, borrowers);
   tradeStep(ctx);
   for (const civ of borrowers) aiDecide(ctx, civ);
   aiCrisisSteps(ctx, ai);
@@ -123,6 +140,7 @@ function proposeStep(ctx) {
   for (const civ of austerityCivs(ctx)) if (!borrowers.includes(civ)) aiRepayEarly(ctx, civ, extras);
   aiCommerce(ctx, ai);
   aiMacro(ctx, ai);
+  for (const civ of borrowers) aiAmends(ctx, civ);
   for (const civ of borrowers) aiBuildBorrow(ctx, civ);
   resolveStep(ctx, live, ai, extras);
 }
@@ -209,6 +227,7 @@ function aiCommerce(ctx, ai) {
  * @param {Map<string, number>} extras
  */
 function payerSteps(ctx, pid, extras) {
+  chargeOverdraft(ctx, pid);
   macroPayerSteps(ctx, pid);
   crisisPayerSteps(ctx, pid);
   policyPayerSteps(ctx, pid);
@@ -239,7 +258,7 @@ function skipReason(input, options, ledger) {
  */
 function aiBorrowers(ctx, ai) {
   return ai
-    .map((civ) => ({ civ, need: aiShortfall(projected(ctx.batch, civ.id), ctx.params.amenityLineCents) }))
+    .map((civ) => ({ civ, need: aiShortfall(projected(ctx.batch, civ.id), GUARD_LINE_CENTS) }))
     .filter((row) => row.need > 0)
     .sort((x, y) => y.need - x.need || x.civ.id - y.civ.id)
     .map((row) => row.civ);
@@ -332,8 +351,8 @@ function taxOne(ctx, civ) {
     happinessCents: civ.happinessCents, atWar: civ.atWar === true });
   const id = { id: `T${civ.id}` };
   if (flow.goldCents > 0) emit(ctx, id, { from: TAX, to: civ.id, cents: flow.goldCents, reason: "tax" });
-  // A remittance the funds can't cover is missed like any other charge (DESIGN 4.14), with nothing carried.
-  if (flow.goldCents < 0 && funds(ctx.batch, civ.id) >= -flow.goldCents) {
+  // A remittance past what the civ can pay, overdraft included, is missed like any other charge (DESIGN 4.14).
+  if (flow.goldCents < 0 && payable(ctx.batch, civ.id) >= -flow.goldCents) {
     emit(ctx, id, { from: civ.id, to: TAX, cents: -flow.goldCents, reason: "tax" });
   }
   if (flow.celebrationCents === 0) return;
@@ -364,7 +383,8 @@ function payerPass(ctx, pid, extras) {
 function garnishOne(ctx, loan, extras) {
   const civ = /** @type {Civ} */ (ctx.civ.get(loan.borrower));
   const result = settleDefault(loan, { incomeCents: civ.incomeCents, balanceCents: civ.balanceCents,
-    cashCents: funds(ctx.batch, loan.borrower) }, extras.get(loan.id) || 0);
+    cashCents: payable(ctx.batch, loan.borrower), inHandCents: funds(ctx.batch, loan.borrower) },
+  extras.get(loan.id) || 0);
   emit(ctx, loan, { from: loan.borrower, to: loan.lender, cents: result.cents, reason: "garnish",
     parts: { garnish: result.garnish, extra: result.extra, forgiven: result.forgiven } });
   replaceLoan(ctx, result.loan);
@@ -378,8 +398,8 @@ function garnishOne(ctx, loan, extras) {
  */
 function payOne(ctx, loan, extras) {
   const extra = extras.get(loan.id) || 0;
-  const result = settleActive(loan, funds(ctx.batch, loan.borrower), { capPpm: ctx.capPpm, extra,
-    growthMille: loanGrowth(ctx, loan) });
+  const result = settleActive(loan, payable(ctx.batch, loan.borrower), { capPpm: ctx.capPpm, extra,
+    growthMille: loanGrowth(ctx, loan), cash: funds(ctx.batch, loan.borrower) });
   replaceLoan(ctx, result.loan);
   // A short turn still pays what there was (AI-PLAN 4.1); the transfer carries what joined the loan.
   emit(ctx, loan, { from: loan.borrower, to: loan.lender, cents: result.cents, reason: "payment",
@@ -398,6 +418,32 @@ function payOne(ctx, loan, extras) {
     ctx.out.favors.push({ from: loan.borrower, to: /** @type {number} */ (loan.lender),
       amount: REPUTATION.favorsOnRepayment });
   }
+  makeGood(ctx, result.loan);
+}
+
+/**
+ * DESIGN 4.5 making amends: an amends loan repaid in full makes its repudiation good. The lender books favors worth
+ * half its grudge, every other major books a named favor ("They repaid a loan in full", a one-shot marker), the
+ * borrower's reputation gets back what the repudiation took, and the repudiation stops counting against its credit.
+ * @param {TurnContext} ctx
+ * @param {Loan} loan
+ */
+function makeGood(ctx, loan) {
+  if (!Number.isInteger(loan.amends)) return;
+  const record = ctx.ledger.repudiations.find((row) => row.pid === loan.borrower && row.lender === loan.lender
+    && row.turn === loan.amends && !Number.isInteger(row.madeGood));
+  if (!record) return;
+  record.madeGood = ctx.turn;
+  const lender = /** @type {number} */ (loan.lender);
+  const favors = Math.round(((record.grudge || REPUDIATION.grudgeMin) * REPUDIATION.amendsFavorPct) / 100);
+  ctx.out.favors.push({ from: loan.borrower, to: lender, amount: favors });
+  (ctx.out.notes ||= []).push({ pid: loan.borrower, line: "REPAID", amount: record.note || REPUDIATION.witness });
+  repChange(ctx, loan.borrower, record.atWar ? REPUTATION.repudiationAtWar : REPUTATION.repudiation, "made-good",
+    loan.id);
+  event(ctx, { kind: "made-good", loanId: loan.id, borrower: loan.borrower, lender, repudiated: record.turn,
+    chronicle: 1 });
+  notice(ctx, loan.borrower, { kind: "made-good", lender, loanId: loan.id });
+  notice(ctx, lender, { kind: "made-good-by", borrower: loan.borrower, loanId: loan.id });
 }
 
 /**

@@ -14,7 +14,6 @@ import { funds } from "./econ-batch.js";
 import { incomeOf, termsFor } from "./econ-turn.js";
 import { cycleGoldCents, swingFor } from "./econ-cycle.js";
 import { planTakeCents } from "./econ-planned.js";
-import { erosionCents } from "./econ-inflation.js";
 import { RESERVE } from "./econ-params.js";
 
 /**
@@ -67,11 +66,6 @@ function macroDues(ctx, pid) {
     sum += Math.max(0, -cycleGoldCents(reading.index, civ.incomeCents, swingFor(ctx.options.swings)));
   }
   if (terms.plan) sum += planTakeCents(civ.incomeCents);
-  const pi = ctx.readings.piPpm;
-  if (pi && hasStage(civ, "publicDebt", ctx.turn, ctx.options) && !terms.outOfCycle) {
-    sum += erosionCents({ piPpm: pi, balanceCents: civ.balanceCents, incomeCents: civ.incomeCents,
-      erosionPct: terms.erosionPct });
-  }
   return sum;
 }
 

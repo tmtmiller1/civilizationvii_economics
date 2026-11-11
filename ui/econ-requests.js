@@ -14,6 +14,7 @@ import { aiAccepts } from "./econ-ai.js";
 import { funds, lenderBalance } from "./econ-batch.js";
 import { distressOf } from "./econ-distress.js";
 import { repudiate } from "./econ-repudiation.js";
+import { declareBankruptcy } from "./econ-bankruptcy.js";
 import { respondRequest } from "./econ-crisis-respond.js";
 import { policyRequest } from "./econ-policy.js";
 import { canChangeTax, isTaxLevel } from "./econ-tax.js";
@@ -116,6 +117,18 @@ function addExtra(ctx, extras, request) {
   const loan = ctx.ledger.loans.find((row) => row.id === request.loanId);
   if (!loan || !isOpen(loan) || loan.opened === ctx.turn || !(request.cents > 0)) return;
   extras.set(loan.id, (extras.get(loan.id) || 0) + Math.floor(request.cents));
+}
+
+/**
+ * A repudiation's rows on the game's ledgers: the lender's grudge and hit, and the named note every other major books.
+ * @param {TurnContext} ctx
+ * @param {number} borrower
+ * @param {{ grievances: GrievanceRow[], relationships: RelationshipRow[], note: number }} result
+ */
+function bookRepudiation(ctx, borrower, result) {
+  ctx.out.grievances.push(...result.grievances.filter((row) => row.amount > 0));
+  ctx.out.relationships.push(...result.relationships);
+  if (result.note > 0) (ctx.out.notes ||= []).push({ pid: borrower, line: "REPUDIATED", amount: result.note });
 }
 
 /**
@@ -265,10 +278,9 @@ export function repudiateFor(ctx, borrower, lender) {
     repudiations: result.ledger.repudiations, investments: result.ledger.investments });
   repChange(ctx, borrower, -(result.record.atWar ? REPUTATION.repudiationAtWar : REPUTATION.repudiation),
     "repudiation");
-  ctx.out.grievances.push(...result.grievances);
-  ctx.out.relationships.push(...result.relationships);
+  bookRepudiation(ctx, borrower, result);
   event(ctx, { kind: "repudiation", borrower, lender, cents: result.writtenOff, loans: result.loanIds.length,
-    grievances: result.grievances[0]?.amount ?? 0, chronicle: 1 });
+    grievances: (result.grievances[0]?.amount ?? 0) + result.note, chronicle: 1 });
   notice(ctx, borrower, { kind: "repudiated", lender, cents: result.writtenOff });
   if (!isWorldAccount(lender)) notice(ctx, lender, { kind: "repudiated-by", borrower, cents: result.writtenOff });
   return null;
@@ -336,6 +348,8 @@ const HANDLERS = {
   restructure: (ctx, request) => refuse(ctx, "restructure", { loanId: request.loanId },
     restructureLoan(ctx, ctx.ledger.loans.find((loan) => loan.id === request.loanId), request.pid)),
   repudiate: (ctx, request) => refuse(ctx, "repudiate", { borrower: request.borrower }, repudiateRefusal(ctx, request)),
+  bankrupt: (ctx, request) => refuse(ctx, "bankrupt", { pid: request.pid },
+    isHuman(ctx, request.pid) ? declareBankruptcy(ctx, request.pid, repudiateFor) : "parties"),
   tax: (ctx, request) => refuse(ctx, "tax", { pid: request.pid }, taxRefusal(ctx, request)),
   tariff: (ctx, request) => refuse(ctx, "tariff", { pid: request.pid }, tariffRefusal(ctx, request)),
   invest: (ctx, request) => refuse(ctx, "invest", { lender: request.investor }, investRequestRefusal(ctx, request)),

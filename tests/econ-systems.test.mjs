@@ -30,7 +30,7 @@ test("each system changes only its own numbers from Mixed", () => {
   assert.deepEqual(diff("manorial"), ["billPaidPct", "creditTurns", "lMultPct", "warehouseMultPct"]);
   assert.deepEqual(diff("mercantile"), ["bondPct", "dividendMille", "exportPct", "highTariffEveryTurns", "lMultPct"]);
   assert.deepEqual(diff("religious"), ["aidRelationPct", "partnership"]);
-  assert.deepEqual(diff("corporatist"), ["bondPct", "creditPct", "devLoansOnly", "erosionPct", "industryPct", "warBoom"]);
+  assert.deepEqual(diff("corporatist"), ["bondPct", "creditPct", "devLoansOnly", "industryPct", "pricePct", "warBoom"]);
   assert.deepEqual(diff("planned"), ["civLendersOnly", "devLoansOnly", "fixedPrices", "outOfCycle", "plan"]);
   assert.equal(termsOf("market").bondPct, 90);
   assert.equal(termsOf("corporatist").creditPct, 150);

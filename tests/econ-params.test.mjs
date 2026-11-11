@@ -1,20 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { BASE_RATE_PPM, STAKE, engineLines, isWorldAccount, purchasePointCents, ratesPct, relationshipBands }
+import { BASE_RATE_PPM, STAKE, isWorldAccount, overdraftLimitCents, purchasePointCents, ratesPct, relationshipBands }
   from "../ui/econ-params.js";
-import { ENGINE } from "./_fixtures.mjs";
 
-test("engine lines: the 1.5.0 gameplay DB fixture gives the -10 disband line and the 0 amenity line", () => {
-  assert.equal(ENGINE.disbandLineCents, -1000);
-  assert.equal(ENGINE.amenityLineCents, 0);
-});
-
-test("engine lines: rows as an array read the same; a missing or unreadable line is null", () => {
-  const rows = [{ Name: "GOLD_NEGATIVE_BALANCE_DISBAND_UNIT_LINE", Value: "-25" }, null, { Value: 3 }];
-  assert.deepEqual(engineLines(rows), { disbandLineCents: -2500, amenityLineCents: null });
-  assert.deepEqual(engineLines({ GOLD_NEGATIVE_BALANCE_DISBAND_UNIT_LINE: "x" }).disbandLineCents, null);
-  assert.deepEqual(engineLines(null), { disbandLineCents: null, amenityLineCents: null });
+test("the overdraft reaches 100 Gold or 10 turns of income either side of 0, whichever is more (DESIGN 4.18)", () => {
+  assert.equal(overdraftLimitCents(0), 10000);
+  assert.equal(overdraftLimitCents(2500), 25000);
+  assert.equal(overdraftLimitCents(-4000), 40000);
+  assert.equal(overdraftLimitCents(Number.NaN), 10000);
 });
 
 test("base rates: 0.015 in Antiquity, 0.01 in Exploration, 0.0075 in Modern (DESIGN 4.3)", () => {

@@ -88,3 +88,20 @@ test("a city where sent points land bigger is sent fewer: the price divides the 
   assert.deepEqual(planSplit(1000, [{ id: "a", build: "U", neededProgress: 50, population: 1, pointCents: 284 }], 400),
     [{ cityId: "a", progress: 3, cents: 852 }], "a military build at 2.84 a point");
 });
+
+test("an insolvent AI repudiates what it owes its citizens, as the player can", async () => {
+  const { planTurn } = await import("../ui/econ-plan.js");
+  const { makeLoan } = await import("../ui/econ-loan.js");
+  const { emptyLedger } = await import("../ui/econ-state.js");
+  const { civ, input } = await import("./_fixtures.mjs");
+  const loan = { ...makeLoan({ id: "L1", lender: "citizens", borrower: 6, principal: 200000, ratePpm: 20000, term: 20,
+    turn: 30 }), source: "citizens" };
+  const ledger = { ...emptyLedger(), loans: [loan], nextId: 2, lowIncome: [{ pid: 6, turns: 6 }] };
+  const civs = [civ(3, { human: true }), civ(6, { balanceCents: 0, incomeCents: -500 })];
+  const plan = planTurn(input({ civs, relations: [{ a: 3, b: 6, level: "neutral" }], ledger }));
+  assert.ok(plan.events.some((e) => e.kind === "repudiation" && e.borrower === 6 && e.lender === "citizens"));
+  assert.equal(plan.ledger.loans[0].state, "repudiated");
+  const solvent = planTurn(input({ civs, relations: [{ a: 3, b: 6, level: "neutral" }],
+    ledger: { ...ledger, lowIncome: [] } }));
+  assert.equal(solvent.ledger.loans[0].state, "active", "only while insolvent");
+});

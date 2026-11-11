@@ -182,6 +182,8 @@ function offerCard(offer, ask, api) {
   const head = el("div", "econ-card-head");
   head.appendChild(el("div", "econ-card-title", lenderTitle(offer.lender, api)));
   head.appendChild(el("div", "econ-card-sub", api.loc("LOC_ECONOMICS_OFFER_RATE", formatRate(offer.ratePpm))));
+  // DESIGN 4.5: a lender the player repudiated lends again as amends, at a penalty, and says what repaying does.
+  if (offer.amends) card.appendChild(note(api.loc("LOC_ECONOMICS_BORROW_AMENDS")));
   card.appendChild(head);
   const after = ask.income - offer.paymentCents;
   card.appendChild(facts([

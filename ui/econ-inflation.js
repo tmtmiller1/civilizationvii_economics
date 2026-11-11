@@ -1,8 +1,9 @@
-// econ-inflation.js - Economics: inflation (DESIGN 4.8), as plain data, off by default (section 8). Prices can't be
-// raised by script, so inflation erodes Gold held above a generous reserve and makes new bond loans dearer. Only civs
-// with the Public debt stage take part: they share the bond market, which ties their money together, and it's the
-// only Gold source from outside the game; erosion is the matching sink. Loan balances aren't eroded, so the 4.4
-// schedule stays whole. Nothing here reads the engine.
+// econ-inflation.js - Economics: inflation (DESIGN 4.8), as plain data, off by default (section 8). Bond debt beside
+// the Gold the bond market's members hold sets a rate each turn; each member's prices climb by its share of that rate,
+// and the glue stands the price level in its capital as purchase-price markers (econ-standing.js PRICE), so the game's
+// own purchase prices rise for the player and the AI alike. Only civs with the Public debt stage take part: they share
+// the bond market, which ties their money together. Loan balances stay whole, so the 4.4 schedule does too. Nothing
+// here reads the engine.
 
 import { INFLATION_RULES as I } from "./econ-params.js";
 
@@ -19,21 +20,18 @@ export function piPpm({ bondOutstandingCents, memberBalancesCents }) {
   return Math.min(I.capPpm, raw);
 }
 
-/**
- * reserve = 20 * max(income, 10) Gold, in cents.
- * @param {number} incomeCents
- */
-export function reserveCents(incomeCents) {
-  return I.reserveTurns * Math.max(I.minIncomeCents, incomeCents);
-}
+/** The price level stops at +127%, the sum of the price ladder's rungs (econ-standing.js OTHER_MARKERS.PRICE). */
+export const LEVEL_CAP_PPM = 1270000;
 
 /**
- * erosion = floor(pi * max(0, balance - reserve)), times the system's share (Corporatist 2x, DESIGN 4.17).
- * @param {{ piPpm: number, balanceCents: number, incomeCents: number, erosionPct?: number }} q
+ * Next turn's price level, in ppm above the age's prices: it compounds by the civ's share of the rate (Corporatist
+ * twice, Planned not at all, DESIGN 4.17; a recoinage halves it, 4.11c), and stops at LEVEL_CAP_PPM.
+ * @param {{ levelPpm: number, piPpm: number, pricePct?: number }} q
  */
-export function erosionCents({ piPpm: pi, balanceCents, incomeCents, erosionPct = 100 }) {
-  const above = Math.max(0, balanceCents - reserveCents(incomeCents));
-  return Math.floor((pi * above * Math.max(0, erosionPct)) / (1000000 * 100));
+export function nextLevelPpm({ levelPpm, piPpm: pi, pricePct = 100 }) {
+  const level = Math.max(0, levelPpm || 0);
+  const rate = Math.floor((Math.max(0, pi) * Math.max(0, pricePct)) / 100);
+  return Math.min(LEVEL_CAP_PPM, level + Math.floor(((1000000 + level) * rate) / 1000000));
 }
 
 /**

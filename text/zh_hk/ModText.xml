@@ -4,7 +4,7 @@
 <Database>
     <LocalizedText>
         <Replace Tag="LOC_ECONOMICS_MOD_NAME" Language="zh_Hant_HK"><Text>Economics</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_MOD_DESCRIPTION" Language="zh_Hant_HK"><Text>Gold gets a market. Borrow from other civilizations or a bond market, lend to a neighbour who's short, set your taxes with a policy card, and let an auto-loan guard keep you clear of the game's negative-balance penalties; a missed payment or a repudiated debt costs you your good name. Resources get world prices, trading partners settle what they owe each other every turn, and you can put a tariff on a partner or invest in a neighbour's builds and treasury. Wars, disasters and debt push the world through booms and slumps, inflation can eat into idle Gold, old markets and banks fade across the ages, and your government sets how your economy runs. The computer players play by the same rules. Single-player.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_MOD_DESCRIPTION" Language="zh_Hant_HK"><Text>Gold gets a market. Borrow from other civilizations or a bond market, lend to a neighbour who's short, set your taxes with a policy card, and let an auto-loan guard keep you clear of the game's negative-balance penalties; a missed payment or a repudiated debt costs you your good name. Resources get world prices, trading partners settle what they owe each other every turn, and you can put a tariff on a partner or invest in a neighbour's builds and treasury. Wars, disasters and debt push the world through booms and slumps, inflation can push prices up, old markets and banks fade across the ages, and your government sets how your economy runs. The computer players play by the same rules. Single-player.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_NAME" Language="zh_Hant_HK"><Text>Loans</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_DESCRIPTION" Language="zh_Hant_HK"><Text>Whether civilizations can borrow from each other and, later, from a bond market, within a limit set by income. Off turns the loans off; trade bills and investment keep their own options.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_OFF" Language="zh_Hant_HK"><Text>Off</Text></Replace>
@@ -12,13 +12,13 @@
         <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_ON" Language="zh_Hant_HK"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_LOANS_ON_DESCRIPTION" Language="zh_Hant_HK"><Text>Loans between civilizations open with Moneylending, the bond market with Public debt.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_NAME" Language="zh_Hant_HK"><Text>Auto-loan guard</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_DESCRIPTION" Language="zh_Hant_HK"><Text>When your treasury is about to fall below the line where the game starts taking amenities, the guard takes out an emergency loan for you, up to a cap of ten turns of your income. You can also switch it on the Loans tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_DESCRIPTION" Language="zh_Hant_HK"><Text>When your treasury is about to go below zero while your income is at or below zero, the guard takes out an emergency loan for you, up to a cap of ten turns of your income. Past that your overdraft takes over. You can also switch it on the Loans tab.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_OFF" Language="zh_Hant_HK"><Text>Off</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_OFF_DESCRIPTION" Language="zh_Hant_HK"><Text>You borrow only when you ask to. The game's penalties for a negative balance apply as usual.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_ON" Language="zh_Hant_HK"><Text>On</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_GUARD_ON_DESCRIPTION" Language="zh_Hant_HK"><Text>An emergency loan covers a shortfall before the game's penalties start, until the cap is reached. You're told once when it is.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_AI_NAME" Language="zh_Hant_HK"><Text>AI borrowing and lending</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_AI_DESCRIPTION" Language="zh_Hant_HK"><Text>Whether the computer players take part: borrowing when they run short, lending when they're flush, restructuring an overdue loan, and now and then repudiating a debt to an enemy.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_AI_DESCRIPTION" Language="zh_Hant_HK"><Text>Whether the computer players use Economics' systems by its rules: borrowing and lending, restructuring and repudiating, investment and aid, tariffs, crisis responses and bankruptcy. Off, the world still charges them as it does you, and their choices are left to the game's own AI.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_AI_OFF" Language="zh_Hant_HK"><Text>Off</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_AI_OFF_DESCRIPTION" Language="zh_Hant_HK"><Text>Only you borrow and lend. The computer players keep their treasuries as the base game runs them.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_AI_ON" Language="zh_Hant_HK"><Text>On</Text></Replace>
@@ -168,6 +168,7 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_MOD_NET_LATER" Language="zh_Hant_HK"><Text>The breakdown shows again after the next turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_MOD_NET_NONE" Language="zh_Hant_HK"><Text>Economics didn't move any of your Gold last turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_LOANS" Language="zh_Hant_HK"><Text>Loans</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_BANKRUPTCY" Language="zh_Hant_HK"><Text>Bankruptcy</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_ESCROW" Language="zh_Hant_HK"><Text>Set aside for payments (it comes back as they're made)</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_TRADE" Language="zh_Hant_HK"><Text>Trade bills</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_LABEL_INVESTMENT" Language="zh_Hant_HK"><Text>Investment</Text></Replace>
@@ -207,7 +208,7 @@
         <Replace Tag="LOC_ECONOMICS_LEND_TO_CIV" Language="zh_Hant_HK"><Text>Lend to {1_Borrower}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEND_THEY_PAY_FOR" Language="zh_Hant_HK"><Text>They pay a turn, for {1_Turns} turns</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GUARD_SAID_ON" Language="zh_Hant_HK"><Text>The auto-loan guard is on.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_GUARD_SAID_OFF" Language="zh_Hant_HK"><Text>The auto-loan guard is off. A negative balance meets the game's own penalties.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD_SAID_OFF" Language="zh_Hant_HK"><Text>The auto-loan guard is off. Below 0 your treasury runs on its overdraft, with the interest and penalties that come with it.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_CARDS_SUB" Language="zh_Hant_HK"><Text>One card at a time, in its own slot.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST_GOLD" Language="zh_Hant_HK"><Text>Gold a turn, against now</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_FORECAST_HAPPINESS" Language="zh_Hant_HK"><Text>Happiness a turn, against now</Text></Replace>
@@ -264,6 +265,7 @@
         <Replace Tag="LOC_ECONOMICS_TREASURY_CYCLE" Language="zh_Hant_HK"><Text>Business cycle ({1_Phase})</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW" Language="zh_Hant_HK"><Text>Borrow</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_NO_OFFERS" Language="zh_Hant_HK"><Text>Nobody will lend you this amount on these terms right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_BORROW_AMENDS" Language="zh_Hant_HK"><Text>Amends loan: you repudiated this lender's loans, so it charges half again its rate, for 10 turns at most. Repay it in full and it thinks better of you, every other civilization hears that you repaid a loan, and the repudiation stops counting against your credit.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_MOST" Language="zh_Hant_HK"><Text>The most you can borrow from {1_Lender} over {2_Turns} turns is {3_Amount} Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_MOST_NONE" Language="zh_Hant_HK"><Text>Your payments already take all your limits allow, so you can't borrow from {1_Lender} over {2_Turns} turns right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_BORROW_THAT" Language="zh_Hant_HK"><Text>Borrow that instead</Text></Replace>
@@ -311,7 +313,7 @@
         <Replace Tag="LOC_ECONOMICS_GUARD_ALLOWANCE" Language="zh_Hant_HK"><Text>Emergency allowance left</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GUARD_SWITCH_ON" Language="zh_Hant_HK"><Text>Switch the guard on</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_GUARD_SWITCH_OFF" Language="zh_Hant_HK"><Text>Switch the guard off</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_GUARD_NOTE" Language="zh_Hant_HK"><Text>The guard borrows for you when your balance would drop below 0 while your income is 0 or less, which is when the game starts disbanding units. A dip while your income is positive costs you nothing, so the guard leaves it alone.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GUARD_NOTE" Language="zh_Hant_HK"><Text>The guard borrows for you when your balance would drop below 0 while your income is 0 or less, before the overdraft's interest and penalties start. A dip while your income is positive is left for your income to cover.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_PENDING" Language="zh_Hant_HK"><Text>Queued for next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_PENDING_NONE" Language="zh_Hant_HK"><Text>Nothing queued.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LOANS_PENDING_NOTE" Language="zh_Hant_HK"><Text>Requests run at the start of the next turn, in this order. The turn's notice says what was refused and why.</Text></Replace>
@@ -352,6 +354,7 @@
         <Replace Tag="LOC_ECONOMICS_FLOW_INFLATION" Language="zh_Hant_HK"><Text>inflation</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_PLAN" Language="zh_Hant_HK"><Text>the plan</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_TAX" Language="zh_Hant_HK"><Text>taxes</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FLOW_BANKRUPTCY" Language="zh_Hant_HK"><Text>your bankruptcy</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INFLUENCE" Language="zh_Hant_HK"><Text>Missed payments cost you {1_Amount} Influence.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_CELEBRATION" Language="zh_Hant_HK"><Text>Your celebration meter moved by {1_Amount}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_OPEN" Language="zh_Hant_HK"><Text>A loan of {1_Amount} Gold from {2_Lender} has landed, at {3_Rate} a turn over {4_Turns} turns.</Text></Replace>
@@ -369,12 +372,15 @@
         <Replace Tag="LOC_ECONOMICS_NOTICE_DEFAULTED_ON" Language="zh_Hant_HK"><Text>{1_Borrower} has defaulted on your loan {2_Loan}. You collect what you can each turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD" Language="zh_Hant_HK"><Text>The guard borrowed {1_Amount} Gold from {2_Lender} to keep you above 0.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD_INSOLVENT" Language="zh_Hant_HK"><Text>The guard borrowed {1_Amount} Gold from {2_Lender}. Your income has been at or below 0 for five turns: this covers a spell, not a deficit.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD_CAP" Language="zh_Hant_HK"><Text>The guard has reached its cap of {1_Cap} Gold and stops. You're {2_Deficit} Gold short this turn; the game's own penalties now apply below 0 Gold, and units disband below {3_Line}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD_CAP" Language="zh_Hant_HK"><Text>The guard has reached its cap of {1_Cap} Gold and stops. You're {2_Deficit} Gold short this turn, so your treasury goes into its overdraft, which reaches {3_Limit} Gold below 0. While you're below 0 you pay interest on it, your settlements lose Happiness, your prices rise and your credit suffers; with your income below 0 as well, a unit disbands each turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INSOLVENT" Language="zh_Hant_HK"><Text>Your income has been at or below 0 for {1_Turns} turns. Emergency loans cover a short spell only; cut upkeep or raise Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_RESTRUCTURE" Language="zh_Hant_HK"><Text>Loan {1_Loan} was restructured over 10 new turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_RESTRUCTURE_ASK" Language="zh_Hant_HK"><Text>{1_Borrower} asks to restructure loan {2_Loan}. You can allow it on the Loans tab.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REPUDIATED" Language="zh_Hant_HK"><Text>You repudiated {1_Amount} Gold owed to {2_Lender}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REPUDIATED_BY" Language="zh_Hant_HK"><Text>{1_Borrower} repudiated {2_Amount} Gold it owed you. Its grievance against you is booked, and the civilizations it has met think less of it.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_MADE_GOOD" Language="zh_Hant_HK"><Text>You repaid your amends loan to {1_Lender} in full. {1_Lender} thinks better of you, every other civilization hears that you repaid a loan, and your old repudiation stops counting against your credit.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_MADE_GOOD_BY" Language="zh_Hant_HK"><Text>{1_Borrower} repaid its amends loan to you in full. You think better of it, and its old repudiation of your loans is made good.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_AMENDS_ASK" Language="zh_Hant_HK"><Text>{1_Borrower} wants to make amends for the loans it repudiated: it asks to borrow {2_Amount} Gold from you over {3_Turns} turns at your penalty rate. You can lend it the Gold from the Loans tab.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED" Language="zh_Hant_HK"><Text>Your {1_Request} was refused: {2_Reason}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED_MOST" Language="zh_Hant_HK"><Text>The most you can borrow from {1_Lender} over {2_Turns} turns is {3_Amount} Gold. The Loans tab can borrow that instead.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED_NONE" Language="zh_Hant_HK"><Text>Your payments already take all your limits allow, so you can't borrow from {1_Lender} over {2_Turns} turns right now.</Text></Replace>
@@ -383,6 +389,16 @@
         <Replace Tag="LOC_ECONOMICS_REQUEST_REPAY" Language="zh_Hant_HK"><Text>early repayment</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_RESTRUCTURE" Language="zh_Hant_HK"><Text>restructure request</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_REPUDIATE" Language="zh_Hant_HK"><Text>repudiation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REQUEST_BANKRUPT" Language="zh_Hant_HK"><Text>bankruptcy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_NOT_OVERDRAWN" Language="zh_Hant_HK"><Text>your treasury isn't below zero.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_REASON_BANKRUPT_RECENTLY" Language="zh_Hant_HK"><Text>you declared bankruptcy in the last 30 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_BANKRUPT" Language="zh_Hant_HK"><Text>You declared bankruptcy. The {1_Amount} Gold you were overdrawn is written off and your treasury is back at 0, and every loan you had is repudiated. The civilizations you've met think less of you, and the bond market won't lend to you for 30 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_BANKRUPT_OTHER" Language="zh_Hant_HK"><Text>{1_Civ} declared bankruptcy: {2_Amount} Gold of overdraft written off and every loan it had repudiated.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_BANKRUPTCY" Language="zh_Hant_HK"><Text>{1_Civ} declared bankruptcy, writing off {2_Amount} Gold ({3_Loans} lenders repudiated).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_BANKRUPT" Language="zh_Hant_HK"><Text>Declare bankruptcy</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_BANKRUPT_TITLE" Language="zh_Hant_HK"><Text>Declare bankruptcy?</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_BANKRUPT_PREVIEW" Language="zh_Hant_HK"><Text>Your treasury goes back to 0 and the {1_Amount} Gold you're overdrawn is written off. Every loan you have is repudiated, each with its usual cost, the civilizations you've met think less of you, and the bond market won't lend to you for 30 turns. The penalties for being below zero end next turn. You can do this once every 30 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_BANKRUPT_WAIT" Language="zh_Hant_HK"><Text>You can declare bankruptcy again from turn {1_Turn}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_TAX" Language="zh_Hant_HK"><Text>tax change</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_UNKNOWN" Language="zh_Hant_HK"><Text>request</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REASON_CREDIT_CAP" Language="zh_Hant_HK"><Text>it's over your credit limit.</Text></Replace>
@@ -417,6 +433,7 @@
         <Replace Tag="LOC_ECONOMICS_EVENT_CLOSED" Language="zh_Hant_HK"><Text>{1_Loan} paid off.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_RESTRUCTURE" Language="zh_Hant_HK"><Text>{1_Loan} restructured with {2_Amount} Gold left.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_REPUDIATION" Language="zh_Hant_HK"><Text>{1_Borrower} repudiated {2_Amount} Gold owed to {3_Lender} ({4_Grudge} grievances).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_EVENT_MADE_GOOD" Language="zh_Hant_HK"><Text>{1_Borrower} made good its repudiation of {2_Lender}'s loans.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_WRITEOFF" Language="zh_Hant_HK"><Text>{1_Loan} written off: {2_Amount} Gold, a party is gone.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_GUARD" Language="zh_Hant_HK"><Text>The guard borrowed {1_Amount} Gold from {2_Lender}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_EVENT_GUARD_CAP" Language="zh_Hant_HK"><Text>The guard stopped at its cap of {1_Cap} Gold.</Text></Replace>
@@ -576,11 +593,11 @@
         <Replace Tag="LOC_ECONOMICS_REQUEST_DECLINE_OFFER" Language="zh_Hant_HK"><Text>refusal of an offer</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_MILAID_PAY_NAME" Language="zh_Hant_HK"><Text>Military Aid sent</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_NAME" Language="zh_Hant_HK"><Text>Inflation</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_DESCRIPTION" Language="zh_Hant_HK"><Text>When the civilizations with Public debt owe the bond market a lot beside the Gold they hold, the Gold each of them keeps above a reserve of twenty turns of income slowly loses value, and bond loans get dearer. Off by default.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_DESCRIPTION" Language="zh_Hant_HK"><Text>When the civilizations with Public debt owe the bond market a lot beside the Gold they hold, their prices climb a little every turn: everything they buy with Gold costs more, for the computer players as for you, and bond loans get dearer. Prices start over with each age. Off by default.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_OFF" Language="zh_Hant_HK"><Text>Off</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_OFF_DESCRIPTION" Language="zh_Hant_HK"><Text>Gold keeps its value.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_ON" Language="zh_Hant_HK"><Text>On</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_ON_DESCRIPTION" Language="zh_Hant_HK"><Text>Bond debt erodes idle Gold above the reserve and raises bond rates.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SETUP_INFLATION_ON_DESCRIPTION" Language="zh_Hant_HK"><Text>Bond debt pushes up what everything costs to buy and raises bond rates.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_NAME" Language="zh_Hant_HK"><Text>Business cycle</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_DESCRIPTION" Language="zh_Hant_HK"><Text>Wars, captures, disasters, the age's crisis, defaults and changes in trade move a world economic index and each civilization's own economy through booms and slumps. A boom pays Gold each turn and makes bonds cheaper; a slump takes Gold and makes them dearer. This sets how hard each event and each Panic hits; Economic swings sets how far the economy runs.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SETUP_CYCLE_OFF" Language="zh_Hant_HK"><Text>Off</Text></Replace>
@@ -623,7 +640,7 @@
         <Replace Tag="LOC_ECONOMICS_SYSTEM_MANORIAL_LINE" Language="zh_Hant_HK"><Text>Local stability over money: taxes come in kind, half the Gold and half the Happiness cost. You pay 20 percent less on trade bills, your warehouses shelter twice as much from a slump, the world's swings reach you less, and your credit limit is 4 turns lower.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SYSTEM_MERCANTILE_LINE" Language="zh_Hant_HK"><Text>You get rich exporting: you're owed 10 percent more on bills, a High tariff costs relationship half as often, bonds cost 20 percent less, your investments earn a point more, and booms and slumps swing you harder.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SYSTEM_RELIGIOUS_LINE" Language="zh_Hant_HK"><Text>Interest is forbidden: what you lend comes back as a share that follows the borrower's income, and your aid buys twice the goodwill.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_SYSTEM_CORPORATIST_LINE" Language="zh_Hant_HK"><Text>Capital goes to industry and war: War Levy pays its full wartime amount in peace too, a war booms your own economy and peace brings it down, your credit limit is half again as large and bonds cost 25 percent less, idle Gold erodes twice as fast, your factories count twice for demand, and you take development loans only.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SYSTEM_CORPORATIST_LINE" Language="zh_Hant_HK"><Text>Capital goes to industry and war: War Levy pays its full wartime amount in peace too, a war booms your own economy and peace brings it down, your credit limit is half again as large and bonds cost 25 percent less, your prices climb twice as fast with inflation, your factories count twice for demand, and you take development loans only.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_SYSTEM_PLANNED_LINE" Language="zh_Hant_HK"><Text>The treasury becomes production: a fifth of your Gold income goes into your cities' builds each turn, you buy at fixed prices, the world's booms and slumps pass you by, you borrow only from other civilizations and you take development loans only.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PHASE_DEPRESSION" Language="zh_Hant_HK"><Text>Depression</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_PHASE_SLUMP" Language="zh_Hant_HK"><Text>Slump</Text></Replace>
@@ -699,7 +716,7 @@
         <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_MONEY" Language="zh_Hant_HK"><Text>Gold the members hold</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_CAUSE" Language="zh_Hant_HK"><Text>Bond debt is {1_Ratio} times the Gold the bond market's members hold, mostly {2_Civ}'s.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_NONE" Language="zh_Hant_HK"><Text>Nobody owes the bond market, so Gold keeps its value.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_NOTE" Language="zh_Hant_HK"><Text>Only civilizations with Public debt take part. Gold above twenty turns of income loses this much each turn, and bond rates rise with it. Paying bond debt down brings it back.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_WORLD_INFLATION_NOTE" Language="zh_Hant_HK"><Text>Only civilizations with Public debt take part. Their prices rise by this much each turn, and bond rates rise with it. Paying bond debt down slows it; prices start over with each age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_DEBT" Language="zh_Hant_HK"><Text>World debt</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_OUTSTANDING" Language="zh_Hant_HK"><Text>All loans outstanding</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_WORLD_DEBT_LEVERAGE" Language="zh_Hant_HK"><Text>As turns of the world's income</Text></Replace>
@@ -718,8 +735,8 @@
         <Replace Tag="LOC_ECONOMICS_FISCAL_PLAN" Language="zh_Hant_HK"><Text>The plan this turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_PLAN_NOTE" Language="zh_Hant_HK"><Text>A fifth of your Gold income goes into your cities' builds, split by population, at what buying each build would cost you. Gold that doesn't make a whole point stays in your treasury.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FISCAL_SYSTEM_TAX_NOTE" Language="zh_Hant_HK"><Text>Your government's changes to the tax cards show on each city's yields while the card is slotted.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TREASURY_RESERVE" Language="zh_Hant_HK"><Text>Safe from inflation up to</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_TREASURY_EROSION" Language="zh_Hant_HK"><Text>Lost to inflation next turn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_PRICES" Language="zh_Hant_HK"><Text>Your prices, from inflation</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_PRICES_NEXT" Language="zh_Hant_HK"><Text>Rise next turn</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OLD" Language="zh_Hant_HK"><Text>Old buildings</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_NONE" Language="zh_Hant_HK"><Text>Your economic buildings all belong to this age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_TREASURY_OLD_ROW" Language="zh_Hant_HK"><Text>{1_Building}: {2_Weight}</Text></Replace>
@@ -747,7 +764,7 @@
         <Replace Tag="LOC_ECONOMICS_CRISIS_DEBT_NAME" Language="zh_Hant_HK"><Text>Debt crisis</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_DEBT_LINE" Language="zh_Hant_HK"><Text>Your payments have passed your income for three turns running, or you've defaulted on a civilization's loan.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_INFLATION_NAME" Language="zh_Hant_HK"><Text>Runaway inflation</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_CRISIS_INFLATION_LINE" Language="zh_Hant_HK"><Text>The rate has sat at its cap for five turns, or you've been off the gold standard for ten: the Gold you hold above your reserve melts away.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_CRISIS_INFLATION_LINE" Language="zh_Hant_HK"><Text>The rate has sat at its cap for five turns, or you've been off the gold standard for ten: your prices climb every turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_TRADE_COLLAPSE_NAME" Language="zh_Hant_HK"><Text>Trade collapse</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_TRADE_COLLAPSE_LINE" Language="zh_Hant_HK"><Text>A third of your routes ended within five turns, to war, piracy or tariffs, and the bills and income went with them.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_CRISIS_SECTION" Language="zh_Hant_HK"><Text>Crisis</Text></Replace>
@@ -830,7 +847,7 @@
         <Replace Tag="LOC_ECONOMICS_RESPONSE_RECOINAGE_HISTORY" Language="zh_Hant_HK"><Text>The Great Recoinage, England, 1696</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_RECOINAGE_NOW" Language="zh_Hant_HK"><Text>Your own inflation ends: the debasement, the bullion and the gold standard stop counting against you.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_RECOINAGE_PRICE" Language="zh_Hant_HK"><Text>2 turns of income.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_RESPONSE_RECOINAGE_LEGACY" Language="zh_Hant_HK"><Text>a steadied coin for the age: erosion can take half as much of your Gold. Once per age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_RESPONSE_RECOINAGE_LEGACY" Language="zh_Hant_HK"><Text>a steadied coin for the age: your prices climb half as fast. Once per age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_CHARTER_NAME" Language="zh_Hant_HK"><Text>Charter a company</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_CHARTER_HISTORY" Language="zh_Hant_HK"><Text>The East India companies, 1600 and 1602</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESPONSE_CHARTER_NOW" Language="zh_Hant_HK"><Text>Your credit cap gains 2 turns of income and the bills on your routes fall by a fifth, for 20 turns.</Text></Replace>
@@ -885,7 +902,7 @@
         <Replace Tag="LOC_ECONOMICS_LEGACY_SUSPEND_NAME" Language="zh_Hant_HK"><Text>Payments suspended</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_SUSPEND_LINE" Language="zh_Hant_HK"><Text>The bond market charges you 1.5x.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_RECOINAGE_NAME" Language="zh_Hant_HK"><Text>A steadied coin</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_LEGACY_RECOINAGE_LINE" Language="zh_Hant_HK"><Text>Erosion takes half as much of your Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LEGACY_RECOINAGE_LINE" Language="zh_Hant_HK"><Text>Your prices climb half as fast with inflation.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_NAVIGATION_ACTS_NAME" Language="zh_Hant_HK"><Text>The navigation acts</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_NAVIGATION_ACTS_LINE" Language="zh_Hant_HK"><Text>The trade war counts you double.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LEGACY_BULLION_NAME" Language="zh_Hant_HK"><Text>Bullion</Text></Replace>
@@ -1246,5 +1263,73 @@
         <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_128_NAME" Language="zh_Hant_HK"><Text>Trade bills paid to you: +128 Gold</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_256_NAME" Language="zh_Hant_HK"><Text>Trade bills paid to you: +256 Gold</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_LINE_BILLIN_512_NAME" Language="zh_Hant_HK"><Text>Trade bills paid to you: +512 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLD_DESCRIPTION" Language="zh_Hant_HK"><Text>Part of what Economics takes from you each turn besides your loans and trade bills: the business cycle in a slump, a planned economy's share for its builds, and the running costs of your crisis measures. Economics puts it in your capital so the game counts it in your Gold per turn, and settles the rest itself at the start of the turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLD_1_NAME" Language="zh_Hant_HK"><Text>Economy costs: -1 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLD_2_NAME" Language="zh_Hant_HK"><Text>Economy costs: -2 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLD_4_NAME" Language="zh_Hant_HK"><Text>Economy costs: -4 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLD_8_NAME" Language="zh_Hant_HK"><Text>Economy costs: -8 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLD_16_NAME" Language="zh_Hant_HK"><Text>Economy costs: -16 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLD_32_NAME" Language="zh_Hant_HK"><Text>Economy costs: -32 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLD_64_NAME" Language="zh_Hant_HK"><Text>Economy costs: -64 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLD_128_NAME" Language="zh_Hant_HK"><Text>Economy costs: -128 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLD_256_NAME" Language="zh_Hant_HK"><Text>Economy costs: -256 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLD_512_NAME" Language="zh_Hant_HK"><Text>Economy costs: -512 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLDIN_DESCRIPTION" Language="zh_Hant_HK"><Text>Part of what Economics pays you each turn besides loans and trade bills: the business cycle in a boom, tax receipts, and your army's upkeep while a mobilisation borrows it. Economics puts it in your capital so the game counts it in your Gold per turn, and settles the rest itself at the start of the turn. Your capital's Income percentage scales it, so it stands at the size that pays the right Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLDIN_1_NAME" Language="zh_Hant_HK"><Text>Economy receipts: +1 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLDIN_2_NAME" Language="zh_Hant_HK"><Text>Economy receipts: +2 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLDIN_4_NAME" Language="zh_Hant_HK"><Text>Economy receipts: +4 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLDIN_8_NAME" Language="zh_Hant_HK"><Text>Economy receipts: +8 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLDIN_16_NAME" Language="zh_Hant_HK"><Text>Economy receipts: +16 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLDIN_32_NAME" Language="zh_Hant_HK"><Text>Economy receipts: +32 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLDIN_64_NAME" Language="zh_Hant_HK"><Text>Economy receipts: +64 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLDIN_128_NAME" Language="zh_Hant_HK"><Text>Economy receipts: +128 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLDIN_256_NAME" Language="zh_Hant_HK"><Text>Economy receipts: +256 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_LINE_WORLDIN_512_NAME" Language="zh_Hant_HK"><Text>Economy receipts: +512 Gold</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PRICE_DESCRIPTION" Language="zh_Hant_HK"><Text>Prices: while it stands, everything you buy with Gold costs this much more. It's your inflation level from the Treasury tab, plus a premium while your treasury is below zero. Inflation starts over with each age.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PRICE_1_NAME" Language="zh_Hant_HK"><Text>Prices +1%</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PRICE_2_NAME" Language="zh_Hant_HK"><Text>Prices +2%</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PRICE_4_NAME" Language="zh_Hant_HK"><Text>Prices +4%</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PRICE_8_NAME" Language="zh_Hant_HK"><Text>Prices +8%</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PRICE_16_NAME" Language="zh_Hant_HK"><Text>Prices +16%</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PRICE_32_NAME" Language="zh_Hant_HK"><Text>Prices +32%</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_PRICE_64_NAME" Language="zh_Hant_HK"><Text>Prices +64%</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTE_REPUDIATED_DESCRIPTION" Language="zh_Hant_HK"><Text>A repudiated loan, noted abroad: when it lands every other civilization takes grievances against you, shown as "They repudiated a loan" in its relationship with you. Economics takes it down the next turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTE_REPUDIATED_1_NAME" Language="zh_Hant_HK"><Text>Repudiation noted abroad: 1</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTE_REPUDIATED_2_NAME" Language="zh_Hant_HK"><Text>Repudiation noted abroad: 2</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTE_REPUDIATED_4_NAME" Language="zh_Hant_HK"><Text>Repudiation noted abroad: 4</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTE_REPUDIATED_8_NAME" Language="zh_Hant_HK"><Text>Repudiation noted abroad: 8</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GRIEVANCE_REPUDIATION" Language="zh_Hant_HK"><Text>You repudiated a loan</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GRIEVANCE_REPUDIATION_ALT" Language="zh_Hant_HK"><Text>They repudiated a loan</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FAVOR_REPAID" Language="zh_Hant_HK"><Text>You repaid a loan in full</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_FAVOR_REPAID_ALT" Language="zh_Hant_HK"><Text>They repaid a loan in full</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTE_REPAID_DESCRIPTION" Language="zh_Hant_HK"><Text>Amends made: a loan from a lender you once repudiated, repaid in full. When it lands every other civilization takes favors toward you, shown as "They repaid a loan in full" in its relationship with you. Economics takes it down the next turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTE_REPAID_1_NAME" Language="zh_Hant_HK"><Text>Amends noted abroad: 1</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTE_REPAID_2_NAME" Language="zh_Hant_HK"><Text>Amends noted abroad: 2</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTE_REPAID_4_NAME" Language="zh_Hant_HK"><Text>Amends noted abroad: 4</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTE_REPAID_8_NAME" Language="zh_Hant_HK"><Text>Amends noted abroad: 8</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GLOOM_DESCRIPTION" Language="zh_Hant_HK"><Text>Your treasury is below zero: while it stands, this settlement has this much less Happiness. Economics takes it down once your Gold is back above zero.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GLOOM_1_NAME" Language="zh_Hant_HK"><Text>Treasury below zero: -1 Happiness</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GLOOM_2_NAME" Language="zh_Hant_HK"><Text>Treasury below zero: -2 Happiness</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GLOOM_4_NAME" Language="zh_Hant_HK"><Text>Treasury below zero: -4 Happiness</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_GLOOM_8_NAME" Language="zh_Hant_HK"><Text>Treasury below zero: -8 Happiness</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OVERDRAWN" Language="zh_Hant_HK"><Text>Your treasury is {1_Amount} Gold below zero, inside your overdraft of {2_Limit} Gold. Until it's back above zero, every settlement has {3_Gloom} less Happiness, everything you buy costs {4_Premium}% more, and your credit rating drops each turn. If it's still below zero in {5_Turns} turns, your costliest unit is disbanded, then one every other turn, and a few turns after that your settlements' buildings start shutting down.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OVERDRAWN_DISBAND" Language="zh_Hant_HK"><Text>Your treasury is {1_Amount} Gold below zero, inside your overdraft of {2_Limit} Gold. Until it's back above zero, every settlement has {3_Gloom} less Happiness, everything you buy costs {4_Premium}% more, your credit rating drops each turn, and your costliest unit is disbanded each turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OVERDRAWN_PAST" Language="zh_Hant_HK"><Text>Your treasury is {1_Amount} Gold below zero, past your overdraft of {2_Limit} Gold. Payments you can't cover go unpaid now, every settlement has {3_Gloom} less Happiness, everything you buy costs {4_Premium}% more, and your credit rating drops each turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OVERDRAWN_PAST_DISBAND" Language="zh_Hant_HK"><Text>Your treasury is {1_Amount} Gold below zero, past your overdraft of {2_Limit} Gold. Payments you can't cover go unpaid now, every settlement has {3_Gloom} less Happiness, everything you buy costs {4_Premium}% more, your credit rating drops each turn, and your costliest unit is disbanded each turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OVERDRAWN_OVER" Language="zh_Hant_HK"><Text>Your treasury is back above zero. Your settlements' Happiness, your prices and any shut buildings are back to normal.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OVERDRAWN_UNITS_SOON" Language="zh_Hant_HK"><Text>Your treasury is still below zero. Next turn your costliest unit is disbanded, and another goes every other turn, then every turn, until you're back above zero.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OVERDRAWN_BUILDINGS_SOON" Language="zh_Hant_HK"><Text>Your treasury has been below zero for {1_Turns} turns. Next turn the buildings of your settlement with the highest upkeep shut down: they cost nothing and produce nothing until you're back above zero. Another settlement follows every other turn.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OVERDRAWN_SHUT" Language="zh_Hant_HK"><Text>The buildings of {1_Settlement} have shut down: no upkeep and no output until your treasury is back above zero.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SHUT_1_NAME" Language="zh_Hant_HK"><Text>Buildings shut down</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_SHUT_DESCRIPTION" Language="zh_Hant_HK"><Text>This settlement's buildings are shut down while its owner's treasury is below zero: they cost no Gold upkeep and produce nothing.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_OVERDRAWN_DISBANDED" Language="zh_Hant_HK"><Text>Your {1_Unit} was disbanded: your treasury is below zero and can't pay its upkeep.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAWN_PILL" Language="zh_Hant_HK"><Text>Overdrawn</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAWN" Language="zh_Hant_HK"><Text>Your treasury is below zero. Economics covers your payments from an overdraft, and while you're in it every settlement loses Happiness, everything you buy costs more and your credit rating drops each turn. The deeper you go, the worse it gets.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAWN_DISBAND" Language="zh_Hant_HK"><Text>Your costliest units are being disbanded until your treasury is back above zero.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAWN_SHUT" Language="zh_Hant_HK"><Text>Settlements with their buildings shut down</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAFT" Language="zh_Hant_HK"><Text>Overdraft</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAFT_USED" Language="zh_Hant_HK"><Text>Overdraft used</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAWN_GLOOM" Language="zh_Hant_HK"><Text>Happiness in each settlement</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_TREASURY_OVERDRAWN_PREMIUM" Language="zh_Hant_HK"><Text>Prices, from the overdraft</Text></Replace>
     </LocalizedText>
 </Database>

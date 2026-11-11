@@ -1,6 +1,6 @@
 // The 1.2 screens against a fake DOM and a fake screen api (DESIGN 9): the World tab's index, phase, events, history,
-// inflation, debt and legacy; the Fiscal tab's system section with its blend and the plan; the Treasury tab's reserve,
-// erosion and old buildings. Text is LOC keys joined with their arguments.
+// inflation, debt and legacy; the Fiscal tab's system section with its blend and the plan; the Treasury tab's price
+// level and old buildings. Text is LOC keys joined with their arguments.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { byClass, installFakeDom, textOf } from "./_fake-dom.mjs";
@@ -123,10 +123,14 @@ test("the Fiscal tab's system: its name, where it comes from, the blend after a 
   assert.equal(systemView(input({ civs: [], options: { systems: true } }), ME).source, "none");
 });
 
-test("the Treasury tab's reserve and erosion for a Public debt member, and its old buildings with their triggers", () => {
+test("the Treasury tab's price level and next rise for a Public debt member, and its old buildings with triggers", () => {
   const planInput = input({ civs: [civ(ME, { human: true, balanceCents: 300000, incomeCents: 5000, stages: OPEN_ALL })],
-    options: { inflation: true }, macro: macro({}, { inflation: { piPpm: 5000, bondCents: 1, moneyCents: 1, top: null } }) });
-  assert.deepEqual(inflationLines(planInput, ME), { on: true, member: true, reserveCents: 100000, erosionCents: 1000 });
+    options: { inflation: true }, macro: macro({}, { inflation: { piPpm: 5000, bondCents: 1, moneyCents: 1, top: null,
+      levels: { [String(ME)]: 100000 }, levelAge: "AGE_EXPLORATION" } }) });
+  const lines = inflationLines(planInput, ME);
+  assert.deepEqual([lines.on, lines.member], [true, true]);
+  assert.equal(lines.levelPct, 9.55, "a 10% level stands as 10% of markers, which charge 9.55% (the lab's table)");
+  assert.ok(Math.abs(lines.nextPct - 1.06) < 1e-9, "next turn 10.55%: 11% of markers, charging 10.61%");
   assert.equal(inflationLines(input({ civs: [civ(ME)] }), ME).on, false);
   const market = (over) => ({ type: "BUILDING_MARKET", city: "2:1", old: true, ages: 1, ageIndex: 0,
     roles: { commerce: true, trade: true }, weights: { commerce: 1, trade: 1, banking: 1 }, replaced: [],
@@ -138,7 +142,7 @@ test("the Treasury tab's reserve and erosion for a Public debt member, and its o
   const host = document.createElement("div");
   renderTreasury(host, makeApi(planInput, { buildings }));
   const text = textOf(host);
-  for (const key of ["LOC_ECONOMICS_TREASURY_RESERVE", "LOC_ECONOMICS_TREASURY_EROSION",
+  for (const key of ["LOC_ECONOMICS_TREASURY_PRICES", "LOC_ECONOMICS_TREASURY_PRICES_NEXT", "+1.1%",
     "LOC_ECONOMICS_TREASURY_OLD_ROW|build:BUILDING_MARKET, city:2:1|1.00",
     "LOC_ECONOMICS_TREASURY_OLD_WAITING|LOC_CIVIC_ECONOMICS_NAME", "LOC_ECONOMICS_TREASURY_OLD_ROW|build:BUILDING_MARKET, city:2:1|0.88",
     "LOC_ECONOMICS_TREASURY_OLD_FADING", "LOC_ECONOMICS_TREASURY_OLD_FLOOR", "LOC_ECONOMICS_TREASURY_OLD_REPLACED"]) {
@@ -147,5 +151,5 @@ test("the Treasury tab's reserve and erosion for a Public debt member, and its o
   const none = document.createElement("div");
   renderTreasury(none, makeApi(input({ civs: [civ(ME, { human: true })] })));
   assert.ok(textOf(none).includes("LOC_ECONOMICS_TREASURY_OLD_NONE"));
-  assert.equal(textOf(none).includes("LOC_ECONOMICS_TREASURY_RESERVE"), false);
+  assert.equal(textOf(none).includes("LOC_ECONOMICS_TREASURY_PRICES"), false);
 });

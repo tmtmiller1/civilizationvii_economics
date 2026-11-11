@@ -39,10 +39,31 @@ export function witnessDelta({ worldLender, atWar }) {
 }
 
 /**
+ * The named note for every other major and the lender's own share: its grudge less the note it already takes, and
+ * its relationship hit sized on the whole grudge.
+ * @param {{ borrower: number, lender: Party, worldLender: boolean, atWar: boolean, witnesses: number[],
+ *   grudge: number }} q
+ */
+function repudiationRows({ borrower, lender, worldLender, atWar, witnesses, grudge }) {
+  const others = witnesses.filter((witness) => witness !== borrower && witness !== lender);
+  const note = others.length || !worldLender ? -witnessDelta({ worldLender, atWar }) : 0;
+  /** @type {RelationshipRow[]} */
+  const relationships = [];
+  /** @type {GrievanceRow[]} */
+  const grievances = [];
+  if (!worldLender) {
+    grievances.push({ from: borrower, against: lender, amount: Math.max(0, grudge - note) });
+    relationships.push({ a: borrower, b: /** @type {number} */ (lender), delta: lenderHit(grudge) });
+  }
+  return { note, grievances, relationships };
+}
+
+/**
  * Closes every open record between the pair as `repudiated`, the investments the repudiator hosts from that lender
  * included (DESIGN 4.12), and sizes the reputation cost.
- * witnesses: the other major civs the repudiator has met (the lender is left out; it gets the grudge).
- * Returns null when nothing is owed.
+ * witnesses: the other major civs the repudiator has met. They take a named grievance through the game's own
+ * all-players effect (`note`: every other major, the lender included, books "They repudiated a loan" against the
+ * repudiator), so the lender's own grudge is the rest of its share. Returns null when nothing is owed.
  * @param {{ ledger: Ledger, turn: number, borrower: number, lender: Party, lenderIncomeCents?: number,
  *   atWar?: boolean, witnesses?: number[] }} q
  */
@@ -56,20 +77,14 @@ export function repudiate({ ledger, turn, borrower, lender, lenderIncomeCents = 
   const loans = ledger.loans.map((loan) => (ids.has(loan.id)
     ? { ...loan, state: "repudiated", closedTurn: turn, writtenOff: loan.outstanding, outstanding: 0 } : loan));
   const worldLender = isWorldAccount(lender);
+  const grudge = worldLender ? 0 : grudgeFor(writtenOff, lenderIncomeCents);
+  const { note, grievances, relationships } = repudiationRows({ borrower, lender, worldLender, atWar: atWar === true,
+    witnesses, grudge });
   /** @type {RepudiationRow} */
-  const record = { pid: borrower, lender, turn, cents: writtenOff, atWar: atWar === true };
-  const delta = witnessDelta({ worldLender, atWar: record.atWar });
-  /** @type {RelationshipRow[]} */
-  const relationships = witnesses.filter((witness) => witness !== borrower && witness !== lender)
-    .map((witness) => ({ a: borrower, b: witness, delta }));
-  /** @type {GrievanceRow[]} */
-  const grievances = worldLender ? [] : [{ from: borrower, against: lender,
-    amount: grudgeFor(writtenOff, lenderIncomeCents) }];
-  if (!worldLender) {
-    relationships.push({ a: borrower, b: /** @type {number} */ (lender), delta: lenderHit(grievances[0].amount) });
-  }
+  const record = { pid: borrower, lender, turn, cents: writtenOff, atWar: atWar === true, grudge, note,
+    madeGood: null };
   const blocks = withBlock(ledger.blocks, blockFor({ lender, borrower, reason: "repudiation", turn }));
   /** @type {Ledger} */
   const next = { ...ledger, loans, blocks, repudiations: [...ledger.repudiations, record], investments: held.records };
-  return { ledger: next, writtenOff, loanIds: [...ids, ...held.ids], grievances, relationships, record };
+  return { ledger: next, writtenOff, loanIds: [...ids, ...held.ids], grievances, relationships, record, note };
 }

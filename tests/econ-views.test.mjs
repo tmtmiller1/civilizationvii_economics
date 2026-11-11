@@ -554,3 +554,15 @@ test("the Spoil Guard: a hidden civ is left off the Trade tab and the lending li
   const chips = byClass(loans, "econ-chip").map((node) => node.textContent);
   assert.ok(chips.includes("Civ 6") && !chips.includes("Civ 8"), `lend chips: ${chips}`);
 });
+
+test("a lender the player repudiated shows on the borrow form as an amends loan at its penalty rate", () => {
+  resetConfirmForTests();
+  resetFormForTests();
+  const ledger = { ...emptyLedger(), repudiations: [{ pid: ME, lender: 6, turn: 30, cents: 5000, atWar: false,
+    grudge: 20, note: 3, madeGood: null }] };
+  const api = makeApi({ planInput: { civs: [civ(ME, { human: true, balanceCents: 20000, incomeCents: 8000 }),
+    civ(6, { balanceCents: 1e6 })], ledger, relations: [{ a: ME, b: 6, level: "neutral" }] } });
+  const host = document.createElement("div");
+  renderLoans(host, api);
+  assert.ok(textOf(host).includes("LOC_ECONOMICS_BORROW_AMENDS"), "the card says it's an amends loan and what repaying does");
+});

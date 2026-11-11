@@ -104,6 +104,23 @@ export function readInfluence(pid) {
   return Number.isFinite(v) ? Math.floor(v) : null;
 }
 
+/** How many units the civ has that cost upkeep; 0 when the read fails. @param {number} pid */
+export function readUpkeepUnits(pid) {
+  return safe(() => {
+    let count = 0;
+    for (const id of Players.get(pid).Units.getUnitIds() || []) {
+      const unit = Units.get(id);
+      if (unit && Number(GameInfo.Units.lookup(unit.type)?.Maintenance) > 0) count += 1;
+    }
+    return count;
+  }, 0) || 0;
+}
+
+/** How many settlements the civ holds; 0 when the read fails. @param {number} pid */
+export function readSettlements(pid) {
+  return safe(() => Players.get(pid).Cities.getCities().length, 0) || 0;
+}
+
 /** The civ's net production a turn, the cities' sum (phase 0: the two agree). @param {number} pid */
 export function readProduction(pid) {
   const v = safe(() => Number(Players.get(pid).Stats.getNetYield(YieldTypes.YIELD_PRODUCTION)), Number.NaN);
@@ -431,7 +448,7 @@ export function readRelationshipRows() {
   }, []);
 }
 
-/** The GlobalParameters rows as { Name: Value }, for engineLines. */
+/** The GlobalParameters rows as { Name: Value }. */
 export function readGlobalParameters() {
   return safe(() => {
     /** @type {Record<string, string>} */

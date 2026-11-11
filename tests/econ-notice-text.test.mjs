@@ -16,15 +16,20 @@ test("every notice kind the plan emits has a line, with the loan's figures looke
     { key: "LOC_ECONOMICS_NOTICE_OPEN", args: ["300", "the bond", "4.0%", 10] });
   assert.deepEqual(describeNotice({ pid: 2, kind: "guard", cents: 2500, lender: "temple", insolvent: 1 }, ctx),
     { key: "LOC_ECONOMICS_NOTICE_GUARD_INSOLVENT", args: ["25", "the temple"] });
-  assert.deepEqual(describeNotice({ pid: 2, kind: "guard-cap", cap: 10000, deficit: 3500, disbandLineCents: -1000 }, ctx),
-    { key: "LOC_ECONOMICS_NOTICE_GUARD_CAP", args: ["100", "35", "-10"] });
+  assert.deepEqual(describeNotice({ pid: 2, kind: "guard-cap", cap: 10000, deficit: 3500, overdraftCents: 20000 }, ctx),
+    { key: "LOC_ECONOMICS_NOTICE_GUARD_CAP", args: ["100", "35", "200"] });
   assert.deepEqual(describeNotice({ pid: 2, kind: "repudiated-by", borrower: 4, cents: 1234 }, ctx),
     { key: "LOC_ECONOMICS_NOTICE_REPUDIATED_BY", args: ["Civ 4", "12.3"] });
+  assert.deepEqual(describeNotice({ pid: 2, kind: "amends-ask", borrower: 4, cents: 6000, term: 10 }, ctx),
+    { key: "LOC_ECONOMICS_NOTICE_AMENDS_ASK", args: ["Civ 4", "60", 10] });
+  assert.deepEqual(describeNotice({ pid: 2, kind: "made-good", lender: 4 }, ctx),
+    { key: "LOC_ECONOMICS_NOTICE_MADE_GOOD", args: ["Civ 4"] });
   assert.equal(describeNotice({ pid: 2, kind: "open", loanId: "L9" }, ctx), null, "an unknown loan says nothing");
   assert.equal(describeNotice({ pid: 2, kind: "something-new" }, ctx), null);
   for (const kind of ["open", "lent", "miss", "default", "defaulted-on", "guard", "guard-cap", "insolvent", "restructure",
     "restructure-ask", "repudiated", "repudiated-by", "trade", "tariff-cost", "invested", "invested-in", "invest-miss",
-    "invest-default", "invest-defaulted-on", "invest-writeoff", "offer", "refinance"]) {
+    "invest-default", "invest-defaulted-on", "invest-writeoff", "offer", "refinance", "made-good", "made-good-by",
+    "amends-ask"]) {
     for (const form of [{ form: "project" }, { form: "general" }, { form: "general", aid: 1 }, { waived: 3 },
       { form: "general", aid: 1, cleared: 5 }, { paid: 0 }]) {
       const line = describeNotice({ pid: 2, kind, loanId: "L1", borrower: 4, lender: "bond", cents: 1, missed: 1, turns: 5,
@@ -101,7 +106,8 @@ test("ledger events give history lines for the kinds a player cares about, and n
   assert.deepEqual(line, { key: "LOC_ECONOMICS_EVENT_REPUDIATION", args: ["Civ 2", "50", "Civ 4", 12] });
   assert.equal(describeEvent({ turn: 3, kind: "refused", request: "borrow" }, ctx), null);
   for (const kind of ["open", "miss", "default", "closed", "restructure", "repudiation", "writeoff", "guard", "guard-cap",
-    "invest", "invest-miss", "invest-default", "invest-closed", "invest-writeoff", "offer", "offer-declined", "tariff"]) {
+    "invest", "invest-miss", "invest-default", "invest-closed", "invest-writeoff", "offer", "offer-declined", "tariff",
+    "made-good"]) {
     for (const extra of [{ level: "high", form: "project" }, { level: "low", form: "general" }, { level: "none", aid: 1 }]) {
       const row = describeEvent({ turn: 1, kind, loanId: "L1", cents: 1, lender: "bond", borrower: 2, cap: 1, pid: 2,
         ...extra }, ctx);

@@ -7,6 +7,30 @@ release is generated from the matching section below by `scripts/steam-changelog
 ## [Unreleased]
 
 ### Added
+- Your treasury can go below zero. Loan payments, trade bills, dividends, taxes and the other charges you owe keep
+  being paid when your Gold runs out, from an overdraft that reaches 100 Gold or 10 turns of your income below zero,
+  whichever is more. Past that a payment is missed as before. Lending, aid, investing and buying production still
+  need Gold in hand. While you're below zero you pay interest on what you're overdrawn, at twice the bond market's
+  rate, and it shows as an Economy cost in your Gold per turn. Debt service and other standing costs can now take
+  your Gold per turn below zero too. The computer players run on the same overdraft.
+- A treasury below zero now costs you. Every settlement loses Happiness, everything you buy with Gold costs more and
+  your credit rating drops each turn, and the deeper into your overdraft you go the worse it gets: 2 Happiness and 5%
+  just under zero, up to 10 and 25% at the bottom of the overdraft, 15 and 30% past it. After two turns of warning
+  your costliest unit is disbanded, one every other turn and then every turn until you're back above zero, and the
+  notification names each one. From the eighth turn the buildings of your settlement with the highest upkeep shut
+  down, costing nothing and producing nothing, and another settlement follows every other turn; they all open again
+  once you're above zero. A shut settlement's buildings lose their Happiness too, the Palace's included, and so does
+  the treasury's own Happiness penalty there. The computer players pay the same. The Treasury tab shows the overdraft, how much of it you've used and what it's costing you.
+- You can always get out of a treasury below zero. The overdraft's interest never takes more than half your income,
+  so as long as you're earning Gold you pay the debt down. Or you can declare bankruptcy from the Treasury tab: your
+  treasury goes back to 0 and every loan you have is repudiated, the civilizations you've met think less of you, and
+  the bond market won't lend to you for 30 turns. You can do it once every 30 turns. A computer player below zero
+  weighs it too: what staying in debt would cost it (interest, unhappy settlements, dearer purchases, the units and
+  buildings it would lose) against what bankruptcy would (its credit, the grievances, a friend or a stronger civ it
+  owes). A deep debt it declares early; one it can pay off in a few turns it carries. You're told when one declares.
+- A debt stays a debt. The game used to wipe a negative treasury back to 0 at the end of the turn whenever your
+  income was positive; now what you owe carries over until you've paid it off, for you and the computer players
+  alike, from the first turn after you load a save. The game's own bankruptcy disbanding is off, so Economics' disbanding is the only one.
 - Each government and ideology has its own answers to a crisis, beside the shared ones: Liturgies, Land reform and
   The assembly speaks for a Classical Republic; Merchant charter, Debt into shares and Lottery loan for a Plutocracy;
   New Deal programmes, Bank regulation and Lend-lease for a Democracy; Diversionary war, Self-sufficiency and Off-book
@@ -24,8 +48,22 @@ release is generated from the matching section below by `scripts/steam-changelog
 - Loan payments and trade bills stand in your capital as named lines the game counts in your Gold per turn: "Debt
   service: -16 Gold", "Loan repayments: +8 Gold", "Trade bills" and "Trade bills paid to you". They show in City
   Details and in the capital's Gold breakdown, and the computer players see them in their income and plan around
-  them. Your treasury ends each turn where it did before; Economics settles whatever a line doesn't carry. A line
-  stops at nine tenths of your income, so it can't push your Gold per turn below zero.
+  them. Your treasury ends each turn where it did before; Economics settles whatever a line doesn't carry. The lines
+  stand as far as you can pay, overdraft included, so they can take your Gold per turn below zero.
+- The business cycle in a slump, a planned economy's take and the running costs of your crisis measures stand the
+  same way, as "Economy costs: -N Gold", and what the world pays you each turn (a boom, tax receipts) as "Economy
+  receipts: +N Gold", so the computer players plan around those too. A line that pays you is sized by your capital's
+  Income percentage (difficulty, Unhappiness, bonuses), so it pays the right Gold.
+- Inflation raises prices instead of eating into idle Gold: everything a civilization with Public debt buys with Gold
+  costs more as bond debt builds, shown on the Treasury tab and in the capital as "Inflation: prices +N%", and the
+  computer players pay the same prices. The Treasury tab shows the rise the game actually charges. Prices start over
+  with each age.
+- A repudiated loan is noted abroad: every other civilization books "They repudiated a loan" in its relationship with
+  you, which the computer players count as a grievance.
+- You can make amends after repudiating a loan. Ten turns later the civilization you wronged lends to you again at
+  half again its rate; repay that loan in full and it thinks better of you, every other civilization books "They
+  repaid a loan in full", and the repudiation stops counting against your credit. The computer players make amends the
+  same way, and ask you when you're the lender they wronged.
 - Each resource on the Markets tab opens on press to show where its price comes from ("Target 8.7 Gold = 5 base ×
   1.73 scarce (6 civilizations, 2 copies)"), what it adds to your bills or earns you with each partner, and what moves
   it. The chart draws the price the market is heading for beside the price, with a mark on each turn something moved
@@ -225,6 +263,11 @@ release is generated from the matching section below by `scripts/steam-changelog
   start with a capital too.
 
 ### Fixed
+- A charge larger than what you held at the start of your turn could show your treasury below zero for a moment, or
+  leave it there when standing lines came out of the same turn's income. Economics now takes only what you hold
+  and the rest once your income for the turn has landed, and counts your standing lines against that income.
+- A civilization short of Gold could have part of its debt payments quietly forgiven by the game at the start of its
+  turn while its lender was still paid in full. What stands in its capital for next turn now fits in what it has.
 - A tribute's doubled bills now show on the Trade tab, and the legacy row for Tribute lasts one turn longer so the
   levy turn's bills settle first.
 - Economics' own marker buildings are left out of every count of your buildings it makes.

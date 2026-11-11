@@ -38,7 +38,7 @@ export const crisesOn = (ctx) => ctx.options.crises === true;
 /**
  * @typedef {{ spreadFloor: boolean, noFreeze: boolean, panicPct: number, capTurns: number, capDepthPct: number,
  *   ownRatePct: number, bondPct: number, templePct: number, holiday: boolean, lendingClosed: boolean,
- *   piExtraPpm: number, erosionCapPct: number, billPct: number, tradeWarDouble: boolean, navigationActs: boolean,
+ *   piExtraPpm: number, priceCapPct: number, billPct: number, tradeWarDouble: boolean, navigationActs: boolean,
  *   collapseHalf: boolean, pricePct: number, armyFactor: number, austerity: boolean, dole: boolean,
  *   billsToPct: Record<string, number>, citizensCapPct: number, citizensRatePct: number, tariffCeilingLow: boolean,
  *   aidGoodwillPct: number, aidBondHalf: boolean, tradeBuildingPctOf: number }} CrisisTerms
@@ -47,7 +47,7 @@ export const crisesOn = (ctx) => ctx.options.crises === true;
 /** @returns {CrisisTerms} */
 function plainTerms() {
   return { spreadFloor: false, noFreeze: false, panicPct: 100, capTurns: 0, capDepthPct: 100, ownRatePct: 100,
-    bondPct: 100, templePct: 100, holiday: false, lendingClosed: false, piExtraPpm: 0, erosionCapPct: 100,
+    bondPct: 100, templePct: 100, holiday: false, lendingClosed: false, piExtraPpm: 0, priceCapPct: 100,
     billPct: 100, tradeWarDouble: false, navigationActs: false, collapseHalf: false, pricePct: 0, armyFactor: 1,
     austerity: false, dole: false, billsToPct: {}, citizensCapPct: 100, citizensRatePct: 100, tariffCeilingLow: false,
     aidGoodwillPct: 100, aidBondHalf: false, tradeBuildingPctOf: 100 };
@@ -80,7 +80,7 @@ const LEGACY_TERMS = {
   debase: (t) => { t.ownRatePct = pct(t.ownRatePct, RR.debase.ownRatePct); },
   "temple-lends": (t) => { t.templePct = pct(t.templePct, RR.templeLends.worldTemplePct); },
   suspend: (t) => { t.bondPct = pct(t.bondPct, RR.suspend.bondPct); },
-  recoinage: (t) => { t.erosionCapPct = RR.recoinage.erosionCapPct; },
+  recoinage: (t) => { t.priceCapPct = RR.recoinage.priceCapPct; },
   "navigation-acts": (t) => { t.tradeWarDouble = true; },
   bullion: (t) => { t.piExtraPpm += RR.bullion.piExtraPpm; },
   "bullion-pirates": (t) => { t.collapseHalf = true; },

@@ -32,11 +32,13 @@ test("repudiating a civ closes every open record with it, writes the debt off, b
   assert.deepEqual(r.loanIds.sort(), ["L1", "L2"]);
   assert.deepEqual(r.ledger.loans.map((l) => [l.id, l.state, l.outstanding, l.writtenOff]),
     [["L1", "repudiated", 0, 7000], ["L2", "repudiated", 0, 3000], ["L3", "active", 10000, 0], ["L4", "closed", 0, 0]]);
-  assert.deepEqual(r.grievances, [{ from: 2, against: 6, amount: 25 }]);
-  assert.deepEqual(r.relationships, [{ a: 2, b: 9, delta: -3 }, { a: 2, b: 11, delta: -3 }, { a: 2, b: 6, delta: -19 }],
-    "the lender and the repudiator are never witnesses");
-  assert.deepEqual(r.ledger.blocks, [{ lender: 6, borrower: 2, reason: "repudiation", agesLeft: 1, untilTurn: null }]);
-  assert.deepEqual(r.ledger.repudiations, [{ pid: 2, lender: 6, turn: 30, cents: 10000, atWar: false }]);
+  assert.equal(r.note, 3, "every other major books 3 under \"They repudiated a loan\", the lender included");
+  assert.deepEqual(r.grievances, [{ from: 2, against: 6, amount: 22 }], "the lender's grudge of 25, less the 3 noted");
+  assert.deepEqual(r.relationships, [{ a: 2, b: 6, delta: -19 }], "the lender's hit, sized on the whole grudge");
+  assert.deepEqual(r.ledger.blocks, [{ lender: 6, borrower: 2, reason: "repudiation", agesLeft: null, untilTurn: 40 }],
+    "10 turns of cooling-off, then amends loans at a penalty");
+  assert.deepEqual(r.ledger.repudiations, [{ pid: 2, lender: 6, turn: 30, cents: 10000, atWar: false, grudge: 25,
+    note: 3, madeGood: null }], "the record keeps the grudge and the note for making amends");
   assert.equal(ledger.loans[0].state, "active", "the input ledger is left alone");
 });
 
@@ -44,17 +46,20 @@ test("repudiating the bond market: no grudge, witnesses doubled, closed for 30 t
   const ledger = { ...emptyLedger(), loans: [loan("L1", { lender: "bond" })] };
   const r = repudiate({ ledger, turn: 30, borrower: 2, lender: "bond", witnesses: [9] });
   assert.deepEqual(r.grievances, []);
-  assert.deepEqual(r.relationships, [{ a: 2, b: 9, delta: -6 }]);
+  assert.deepEqual(r.relationships, []);
+  assert.equal(r.note, 6, "the witnesses' cost doubled with no lender to hold a grudge");
+  const alone = repudiate({ ledger, turn: 30, borrower: 2, lender: "bond", witnesses: [] });
+  assert.equal(alone.note, 0, "nobody to notice it");
   assert.equal(r.ledger.blocks[0].untilTurn, 60);
 });
 
 test("repudiating an enemy at war: half the witnesses' cost, the standing record marked", () => {
   const ledger = { ...emptyLedger(), loans: [loan("L1")] };
   const r = repudiate({ ledger, turn: 30, borrower: 2, lender: 6, atWar: true, witnesses: [9] });
-  assert.deepEqual(r.relationships, [{ a: 2, b: 9, delta: -2 }, { a: 2, b: 6, delta: -30 }],
-    "the witness halved; the lender's own hit isn't, sized like its grudge (40 is 30)");
+  assert.equal(r.note, 2, "the witnesses' cost halved");
+  assert.deepEqual(r.relationships, [{ a: 2, b: 6, delta: -30 }], "the lender's own hit isn't, sized like its grudge");
   assert.equal(r.ledger.repudiations[0].atWar, true);
-  assert.equal(r.grievances[0].amount, 40, "10000 cents over 10 Gold a turn is 10 turns");
+  assert.equal(r.grievances[0].amount, 38, "10000 cents over 10 Gold a turn is a grudge of 40, less the 2 noted");
 });
 
 test("the lender's relationship hit is sized like the grudge: 10 to 30 for a grudge of 10 to 40 (AI-PLAN 4.4)", () => {

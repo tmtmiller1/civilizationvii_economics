@@ -17,14 +17,15 @@ export const MACRO_MAX_BYTES = 32768;
 /**
  * @typedef {import("./econ-cycle.js").CycleState} CycleState
  * @typedef {import("./econ-systems.js").SystemRow} SystemRow
- * @typedef {{ piPpm: number, bondCents: number, moneyCents: number, top: number | null }} InflationRead
+ * @typedef {{ piPpm: number, bondCents: number, moneyCents: number, top: number | null,
+ *   levels: Record<string, number>, levelAge: string | null }} InflationRead
  * @typedef {{ lastTurn: number | null, cycle: CycleState, systems: Record<string, SystemRow>,
  *   inflation: InflationRead }} MacroState
  */
 
 /** @returns {InflationRead} */
 export function emptyInflation() {
-  return { piPpm: 0, bondCents: 0, moneyCents: 0, top: null };
+  return { piPpm: 0, bondCents: 0, moneyCents: 0, top: null, levels: {}, levelAge: null };
 }
 
 /** @returns {MacroState} */
@@ -129,6 +130,21 @@ function cleanInflation(raw) {
   out.bondCents = count(value.bondCents);
   out.moneyCents = count(value.moneyCents);
   out.top = isInt(value.top) && /** @type {number} */ (value.top) >= 0 ? /** @type {number} */ (value.top) : null;
+  out.levels = cleanLevels(value.levels);
+  out.levelAge = typeof value.levelAge === "string" ? value.levelAge : null;
+  return out;
+}
+
+/** Each civ's price level in ppm, 1 to the +127% cap (econ-inflation.js). @param {unknown} raw */
+function cleanLevels(raw) {
+  /** @type {Record<string, number>} */
+  const out = {};
+  if (!isRecord(raw)) return out;
+  for (const [key, ppm] of Object.entries(/** @type {Record<string, unknown>} */ (raw))) {
+    if (isPidKey(key) && isInt(ppm) && /** @type {number} */ (ppm) > 0 && /** @type {number} */ (ppm) <= 1270000) {
+      out[key] = /** @type {number} */ (ppm);
+    }
+  }
   return out;
 }
 

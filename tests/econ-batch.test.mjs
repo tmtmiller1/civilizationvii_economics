@@ -83,3 +83,13 @@ test("on load, a balance at snapshot + income + net landed; at snapshot + income
   assert.equal(batchStatus(batch, new Map([[2, 1234]]), incomes)[0].status, "unknown");
   assert.deepEqual(batchStatus(null, balances), []);
 });
+
+test("the seat's lines still to roll come out of its funds; an AI's already rolled", () => {
+  // Lab 2026-11-10: the seat held 2 Gold, its standing lines (10) were counted back into its snapshot (12) but go up
+  // after its own roll, so they come out of the 12 its roll is about to pay. It has 14 to spend, not 24.
+  const seat = civ(0, { human: true, balanceCents: 1200, incomeCents: 1200, engineCents: -1000, rollPendingCents: -1000 });
+  const ai = civ(6, { balanceCents: 1200, incomeCents: 1200, engineCents: -1000 });
+  const b = createBatch([seat, ai]);
+  assert.equal(funds(b, 0), 1400);
+  assert.equal(funds(b, 6), 2400, "an AI's lines stood through its roll before the batch");
+});

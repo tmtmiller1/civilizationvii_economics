@@ -156,6 +156,19 @@ export function causeItems(kinds) {
     ? { key: `${cycleEventKey(kind)}_MANY`, args: [n] } : cycleEventKey(kind)));
 }
 
+/**
+ * An overdrawn notice: how far below zero, the overdraft, the Happiness a settlement and the price premium, with the
+ * disbanding sentence while income is below zero too.
+ * @param {string} key
+ * @param {Record<string, unknown>} notice
+ * @returns {Line}
+ */
+function overdrawnLine(key, notice) {
+  return { key: `${PREFIX}${key}${Number(notice.disband) > 0 ? "_DISBAND" : ""}`, args: [gold(notice.cents),
+    gold(notice.limit), Number(notice.gloom) || 0, Math.round((Number(notice.premiumBp) || 0) / 100),
+    Number(notice.turnsLeft) || 0] };
+}
+
 /** @type {Record<string, (notice: Record<string, unknown>, ctx: TextContext) => Line | null>} */
 const NOTICES = {
   open(notice, ctx) {
@@ -186,14 +199,28 @@ const NOTICES = {
   guard: (notice, ctx) => ({ key: `${PREFIX}NOTICE_GUARD${notice.insolvent ? "_INSOLVENT" : ""}`,
     args: [gold(notice.cents), name(ctx, notice.lender)] }),
   "guard-cap": (notice) => ({ key: `${PREFIX}NOTICE_GUARD_CAP`,
-    args: [gold(notice.cap), gold(notice.deficit), gold(notice.disbandLineCents ?? 0)] }),
+    args: [gold(notice.cap), gold(notice.deficit), gold(notice.overdraftCents ?? 0)] }),
   insolvent: (notice) => ({ key: `${PREFIX}NOTICE_INSOLVENT`, args: [Number(notice.turns) || 0] }),
   restructure: (notice) => ({ key: `${PREFIX}NOTICE_RESTRUCTURE`, args: [String(notice.loanId)] }),
   "restructure-ask": (notice, ctx) => ({ key: `${PREFIX}NOTICE_RESTRUCTURE_ASK`,
     args: [name(ctx, notice.borrower), String(notice.loanId)] }),
   repudiated: (notice, ctx) => ({ key: `${PREFIX}NOTICE_REPUDIATED`, args: [gold(notice.cents), name(ctx, notice.lender)] }),
+  bankrupt: (notice) => ({ key: `${PREFIX}NOTICE_BANKRUPT`, args: [gold(notice.cents)] }),
+  "bankrupt-other": (notice, ctx) => ({ key: `${PREFIX}NOTICE_BANKRUPT_OTHER`, args: [name(ctx, notice.civ),
+    gold(notice.cents)] }),
   "repudiated-by": (notice, ctx) => ({ key: `${PREFIX}NOTICE_REPUDIATED_BY`,
     args: [name(ctx, notice.borrower), gold(notice.cents)] }),
+  "made-good": (notice, ctx) => ({ key: `${PREFIX}NOTICE_MADE_GOOD`, args: [name(ctx, notice.lender)] }),
+  "made-good-by": (notice, ctx) => ({ key: `${PREFIX}NOTICE_MADE_GOOD_BY`, args: [name(ctx, notice.borrower)] }),
+  "amends-ask": (notice, ctx) => ({ key: `${PREFIX}NOTICE_AMENDS_ASK`,
+    args: [name(ctx, notice.borrower), gold(notice.cents), Number(notice.term) || 10] }),
+  // DESIGN 4.18: the treasury went below zero (or past its overdraft), and what that costs now; then back above zero.
+  overdrawn: (notice) => overdrawnLine("NOTICE_OVERDRAWN", notice),
+  "overdrawn-past": (notice) => overdrawnLine("NOTICE_OVERDRAWN_PAST", notice),
+  "overdrawn-over": () => ({ key: `${PREFIX}NOTICE_OVERDRAWN_OVER`, args: [] }),
+  "overdrawn-units-soon": () => ({ key: `${PREFIX}NOTICE_OVERDRAWN_UNITS_SOON`, args: [] }),
+  "overdrawn-buildings-soon": (notice) => ({ key: `${PREFIX}NOTICE_OVERDRAWN_BUILDINGS_SOON`,
+    args: [Number(notice.turns) || 0] }),
   trade: (notice) => ({ key: `${PREFIX}NOTICE_TRADE${Number(notice.waived) > 0 ? "_WAIVED" : ""}`,
     args: [gold(notice.paid), gold(notice.received), gold(notice.waived)] }),
   "tariff-cost": (notice) => ({ key: `${PREFIX}NOTICE_TARIFF_COST`, args: [Number(notice.partners) || 1] }),
@@ -311,7 +338,8 @@ const FLOW_OF = { principal: "LOANS", payment: "LOANS", garnish: "LOANS", trade:
   dividend: "INVESTMENT", cycle: "CYCLE", erosion: "INFLATION", plan: "PLAN", tax: "TAX", escrow: "ESCROW",
   response: "CRISIS", relief: "CRISIS", works: "CRISIS", company: "CRISIS", "price-supports": "CRISIS",
   tribute: "CRISIS", debase: "CRISIS", bullion: "CRISIS", policy: "CRISIS", administration: "CRISIS", arrears: "CRISIS",
-  mobilisation: "CRISIS", claim: "CRISIS", "policy-legacy": "CRISIS" };
+  mobilisation: "CRISIS", claim: "CRISIS", "policy-legacy": "CRISIS", overdraft: "LOANS",
+  bankruptcy: "BANKRUPTCY" };
 
 /**
  * The kinds of flow that moved a civ's Gold this turn, as name keys in a fixed order (loans, trade, ...).
@@ -445,6 +473,9 @@ const EVENTS = {
   restructure: (event) => ({ key: `${PREFIX}EVENT_RESTRUCTURE`, args: [String(event.loanId), gold(event.cents)] }),
   repudiation: (event, who) => ({ key: `${PREFIX}EVENT_REPUDIATION`, args: [who(event.borrower), gold(event.cents),
     who(event.lender), Number(event.grievances) || 0] }),
+  bankruptcy: (event, who) => ({ key: `${PREFIX}EVENT_BANKRUPTCY`, args: [who(event.pid), gold(event.cents),
+    Number(event.loans) || 0] }),
+  "made-good": (event, who) => ({ key: `${PREFIX}EVENT_MADE_GOOD`, args: [who(event.borrower), who(event.lender)] }),
   writeoff: (event) => ({ key: `${PREFIX}EVENT_WRITEOFF`, args: [String(event.loanId), gold(event.cents)] }),
   guard: (event, who) => ({ key: `${PREFIX}EVENT_GUARD`, args: [gold(event.cents), who(event.lender)] }),
   "guard-cap": (event) => ({ key: `${PREFIX}EVENT_GUARD_CAP`, args: [gold(event.cap)] }),

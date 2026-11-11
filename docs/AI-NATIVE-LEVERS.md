@@ -295,3 +295,62 @@ result below is a read.
 - For Economics' markers that means the `AGELESS` tag. An `Age` row also kept the centre closed, but it names one
   age, so in Antiquity or Exploration the marker would become an older building at the age change; that case wasn't
   run.
+
+## Where each row stands (2026-11-09)
+
+- Row 2, debt service: built as the Debt service and Loan repayments lines (`ui/econ-standing.js`), watched in run
+  `2026-11-04T18-23-11` (`verification-runs.md`).
+- Row 7, trade bills: the Trade bills lines, built the same day; no bill reached a whole Gold in that game, so they're
+  still owed (WATCH_LIST 24d).
+- Row 9, world-account Gold: the recurring charges stand as an Economy costs line (watched 2026-11-09, run
+  `2026-11-09T23-18-22`) and the recurring payments as an Economy receipts line (built 2026-11-09). A paying line sits
+  in the city's Income, which the game scales by its whole percentage, so the glue stands face / (1 + percentage)
+  and counts back what landed; under a quarter kept, the Gold goes as a grant (built 2026-11-09, the Loan repayments
+  and Trade bills paid to you lines too).
+- Row 10, prices: built 2026-11-09. Inflation's erosion is gone; each member's price level stands in its capital as
+  purchase-price markers, a game modifier over all cities gated on the city holding each (DESIGN 4.8). That route was
+  watched raising and restoring a player's prices on 2026-11-10; the first two routes tried didn't work
+  (engine-closed.md).
+- Row 11, the celebration meter: a Happiness marker works (M2), but an AI under it only marks the city and keeps
+  building as before, so it doesn't buy what the native lever is for. Not built.
+- Rows 13 and 15, favors and grievances: a repudiation's witnesses take a named grievance through the all-players
+  effect on a one-turn marker (built 2026-11-09, DESIGN 4.5). The lender's remainder, tribute, the gold-standard
+  lenders, card costs and the repaid-loan favor stay script bookings: the AI counts them the same, and they still show
+  as an unnamed row, since no route names a booking between one pair.
+- Row 6, the Planned take as a conversion: closed. The Gold-to-Production conversion crashes the game the first time
+  anything reads that city's yields (M3).
+
+## Lab runs 2026-11-09
+
+Modern seed 4242, Settler, the Economics working copy alone plus probe rows in the deployed copy only
+(`mod_ideas_tested/economics/devtools/w1-probe/`). Markers placed by `CREATE_ELEMENT` at turn 9; every major had met.
+
+- The script calls take no event type. `changeNumGrievances` and `changeNumFavors` with a third argument (the
+  `DiplomacyFavorGrievanceEventType` hash, the row's `$index`, the type's name, group then type, an object) all
+  filed type -1 and landed a moment after the call. The binary carries the four-argument signature; the engine
+  doesn't use the type.
+- W2 (run `23-29-29`): four markers with `EFFECT_PLAYER_GRANT_FAVORS_GRIEVANCES` using `GrievancesAmount`,
+  `FavorsAmount` and `EventType` booked nothing, through three attachments. The text `<Replace>` of
+  `LOC_HISTORICAL_EVENT_FROM_FIRE_TUNER` worked: a `changeRelationshipLevel` row read the new text.
+- W3 (run `23-32-34`): both attachments fire once when the marker lands. Controls with
+  `EFFECT_ADJUST_MULTIPLY_TREASURY` moved the Ottoman treasury 249.76 to 262.25 (5%, `ConstructibleModifiers`,
+  `COLLECTION_OWNER`) and on to 270.11 (3%, `TraitModifiers` on `TRAIT_LEADER_MAJOR_CIV` gated on
+  `REQUIREMENT_PLAYER_HAS_CONSTRUCTIBLE`). `EFFECT_PLAYER_GRANT_FAVORS_GRIEVANCES` with `Amount` -3, -4 and -6 and
+  `TargetCivilization` Persia booked 13 grievances between the Ottomans and Persia, each filed as "From a Narrative
+  Event" whether or not `EventType` was given. `EFFECT_GRANT_ALL_PLAYERS_FAVORS_GRIEVANCES` with `GrievancesAmount` 7
+  booked every other major against the Ottomans, filed as `GRIEVANCE_FROM_PROJECT`. Nothing fired again over two
+  rolls. The binary's own notes give the arguments: the all-players effect reads `GrievancesEventType` and
+  `FavorsEventType` (default the Project types); the player effect reads `Amount` and a target only.
+- W4 (run `23-36-49`), watched with captures: `EFFECT_GRANT_ALL_PLAYERS_FAVORS_GRIEVANCES` with `GrievancesAmount` 7 and
+  `GrievancesEventType` `GRIEVANCE_FROM_ECON_REPUDIATION` in the seat's capital showed "You repudiated their loans -7"
+  in the seat's history with each AI and "They repudiated your loans -7" in theirs; `FavorsAmount` 5 and
+  `FavorsEventType` `FAVOR_FROM_ECON_LOAN_REPAID` in Hawaii's capital showed "You repaid their loan in full" and "They
+  repaid your loan in full". Persia's breakdown on the seat's diplomacy hub: "From a Narrative Event -4 / Shared
+  Government +10 / You repudiated their loans -7" (`w4-relationship-persia.png`); Hawaii's: "They repaid your loan in
+  full +5 / Shared Government +10 / You repudiated their loans -7" (`w4-relationship-hawaii.png`).
+
+What this gives Economics: repudiation's witnesses (every civ against the repudiator) can carry a named row from a
+one-turn marker ladder, and a repaid loan could carry a named favor from everyone, which is broader than today's
+lender-only favor. The lender's own grievance and other single-pair bookings can be named only "From a Narrative
+Event" (one modifier per civilization type, selected through `Civilizations` so a missing DLC civ drops its row) or
+stay as they are. Nothing is built.

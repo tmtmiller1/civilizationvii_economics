@@ -99,7 +99,8 @@ test("sanitize: blocks, misses, repudiations, counters, taxes and the batch keep
   assert.deepEqual(l.blocks, [{ lender: "bond", borrower: 2, reason: "repudiation", agesLeft: null, untilTurn: 40 },
     { lender: 5, borrower: 2, reason: "repudiation", agesLeft: 1, untilTurn: null }]);
   assert.deepEqual(l.misses, [{ pid: 2, turn: 3, n: 3 }]);
-  assert.deepEqual(l.repudiations, [{ pid: 2, lender: 5, turn: 3, cents: 10, atWar: false }]);
+  assert.deepEqual(l.repudiations, [{ pid: 2, lender: 5, turn: 3, cents: 10, atWar: false, grudge: 0, note: 0,
+    madeGood: null }]);
   assert.deepEqual(l.guardTurns, [{ pid: 2, turn: 3 }]);
   assert.deepEqual(l.capHits, [{ pid: 2, turn: 3 }]);
   assert.deepEqual(l.lowIncome, [{ pid: 2, turns: 4 }]);

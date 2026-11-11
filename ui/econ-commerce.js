@@ -16,7 +16,7 @@ import { addMiss, activeDefaults } from "./econ-credit.js";
 import { blockFor, relationLevel } from "./econ-lenders.js";
 import { withBlock } from "./econ-payments.js";
 import { hasStage } from "./econ-stages.js";
-import { addInfluence, funds } from "./econ-batch.js";
+import { addInfluence, funds, payable } from "./econ-batch.js";
 import { emit, event, incomeOf, isAlive, notice, repChange, termsFor } from "./econ-turn.js";
 import { basePriceCents } from "./econ-prices.js";
 import { takesCapitalism } from "./econ-systems.js";
@@ -135,14 +135,15 @@ export function tradeStep(ctx) {
 }
 
 /**
- * One payer's settlements (step 6), each paid in full from its funds or waived; nothing is carried.
+ * One payer's settlements (step 6), each paid in full from its funds and overdraft (DESIGN 4.18) or waived; nothing
+ * is carried.
  * @param {TurnContext} ctx
  * @param {number} pid
  */
 export function settleTradeFor(ctx, pid) {
   for (const row of ctx.trade) {
     if (row.payer !== pid || row.cents <= 0) continue;
-    if (funds(ctx.batch, pid) < row.cents) { row.waived += row.cents; continue; }
+    if (payable(ctx.batch, pid) < row.cents) { row.waived += row.cents; continue; }
     emit(ctx, { id: `B${row.payer}-${row.payee}` }, { from: row.payer, to: row.payee, cents: row.cents,
       reason: "trade", parts: { owed: row.owed, waived: row.waived } });
     row.paid = row.cents;
@@ -194,7 +195,7 @@ function replaceInvestment(ctx, record) {
  * @param {Investment} record
  */
 function payDividend(ctx, record) {
-  const result = settleDividend(record, { funds: funds(ctx.batch, record.host),
+  const result = settleDividend(record, { funds: payable(ctx.batch, record.host),
     hostIncomeCents: incomeOf(ctx, record.host), wide: hasEquity(ctx, record.host) });
   const closedTurn = result.closed ? ctx.turn : null;
   replaceInvestment(ctx, { ...result.record, closedTurn });
@@ -236,7 +237,7 @@ function recordInvestMiss(ctx, record, result) {
 function garnishInvestment(ctx, record) {
   const civ = /** @type {Civ} */ (ctx.civ.get(record.host));
   const result = settleInvestmentDefault(record, { incomeCents: civ.incomeCents, balanceCents: civ.balanceCents,
-    cashCents: Math.max(0, funds(ctx.batch, record.host)) });
+    cashCents: Math.max(0, payable(ctx.batch, record.host)) });
   replaceInvestment(ctx, { ...result.record, closedTurn: result.closed ? ctx.turn : null });
   emit(ctx, record, { from: record.host, to: record.investor, cents: result.cents, reason: "garnish" });
   if (result.closed) event(ctx, { kind: "invest-closed", loanId: record.id, lender: record.investor, borrower: record.host });
@@ -346,7 +347,7 @@ function spareCents(ctx, civ) {
  */
 function hasRepudiated(ctx, host, investor) {
   return ctx.ledger.repudiations.some((row) => row.pid === host && row.lender === investor
-    && ctx.turn - row.turn < STANDING.repudiationWindowTurns);
+    && ctx.turn - row.turn < STANDING.repudiationWindowTurns && !Number.isInteger(row.madeGood));
 }
 
 /**

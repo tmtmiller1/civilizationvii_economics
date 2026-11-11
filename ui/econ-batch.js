@@ -1,11 +1,12 @@
-// econ-batch.js - Economics: the turn's Gold bookkeeping (DESIGN 4.14). Each payer is resolved on its own funds:
-// its snapshot balance plus its income plus what world accounts put in this turn, plus the principal of any loan
-// that lands this turn. Other Gold coming in from civs (payments, dividends, bills) counts from the next turn,
-// which is what keeps one civ's result from depending on another's; a lender's offer is judged on its snapshot, so
-// principal can count at once and a refinancing loan can meet the dues it was taken for (NOTES choice 120). The
-// commit records each civ's snapshot balance and net, so a reload can tell a landed batch from a lost one.
+// econ-batch.js - Economics: the turn's Gold bookkeeping (DESIGN 4.14, 4.18). Each payer is resolved on its own funds:
+// its snapshot balance plus its income plus what world accounts put in this turn, plus the principal of any loan that
+// lands this turn. Other Gold coming in from civs (payments, dividends, bills) counts from the next turn, which is what
+// keeps one civ's result from depending on another's; a lender's offer is judged on its snapshot, so principal can
+// count at once and a refinancing loan can meet the dues it was taken for (NOTES choice 120). Dues are paid from the
+// funds plus the civ's overdraft (`payable`), so they can take it below 0. The commit records each civ's snapshot
+// balance and net, so a reload can tell a landed batch from a lost one.
 
-import { isWorldAccount } from "./econ-params.js";
+import { isWorldAccount, overdraftOf } from "./econ-params.js";
 
 /**
  * @param {Civ[]} civs
@@ -14,10 +15,15 @@ import { isWorldAccount } from "./econ-params.js";
 export function createBatch(civs) {
   /** @type {Batch} */
   const batch = { snapshot: new Map(), income: new Map(), worldIn: new Map(), civIn: new Map(), principalIn: new Map(),
-    out: new Map(), committed: new Map(), influence: new Map(), celebration: new Map() };
+    out: new Map(), committed: new Map(), influence: new Map(), celebration: new Map(), overdraft: new Map(),
+    below: new Map() };
   for (const civ of civs) {
     batch.snapshot.set(civ.id, civ.balanceCents);
-    batch.income.set(civ.id, civ.alive === true ? civ.incomeCents : 0);
+    // The seat's markers stand from a moment into its own turn, so the ones counted back into its snapshot haven't
+    // been charged yet: they come out of the income its roll is about to pay (lab 2026-11-10, the seat at 2 Gold).
+    const pending = Number.isInteger(civ.rollPendingCents) ? /** @type {number} */ (civ.rollPendingCents) : 0;
+    batch.income.set(civ.id, civ.alive === true ? civ.incomeCents + pending : 0);
+    batch.overdraft.set(civ.id, overdraftOf(civ));
   }
   return batch;
 }
@@ -43,6 +49,17 @@ const add = (map, key, value) => map.set(key, get(map, key) + value);
 export function funds(batch, pid) {
   return get(batch.snapshot, pid) + get(batch.income, pid) + get(batch.worldIn, pid) + get(batch.principalIn, pid)
     - get(batch.out, pid);
+}
+
+/**
+ * What the payer can pay an obligation with this turn: its funds plus its overdraft (DESIGN 4.18), so a loan
+ * payment, a bill, a tax or a standing line can take the treasury below zero, down to the overdraft's limit.
+ * Discretionary spending (lending, aid, investing) still reads `funds`.
+ * @param {Batch} batch
+ * @param {number} pid
+ */
+export function payable(batch, pid) {
+  return funds(batch, pid) + get(batch.overdraft || new Map(), pid);
 }
 
 /**
@@ -150,7 +167,11 @@ function batchRow(batch, civ, last) {
   const celebration = get(batch.celebration, civ.id);
   const goldDue = net + (last?.carry ?? 0);
   const celebrationDue = celebration + (last?.celebrationCarry ?? 0);
-  const paid = wholeGold(goldDue);
+  // The grant (paid less what the lines moved at the roll) is what grantYield sends, in whole Gold; a paying line
+  // scaled by the city's Income percentage moves the treasury by a part of a Gold, so the part carries instead of
+  // being lost (lab 2026-11-10: Persia at +115% came up 0.70 short).
+  const atRoll = Number.isInteger(civ.engineCents) ? /** @type {number} */ (civ.engineCents) : 0;
+  const paid = wholeGold(goldDue - atRoll) + atRoll;
   const celebrationPaid = wholeGold(celebrationDue);
   /** @type {BatchRow} */
   const row = { pid: civ.id, snapshot: get(batch.snapshot, civ.id), net, paid, carry: goldDue - paid,
@@ -158,7 +179,13 @@ function batchRow(batch, civ, last) {
     celebrationCarry: celebrationDue - celebrationPaid };
   // What the standing lines moved the treasury by at the roll (econ-standing.js): the snapshot counts it back, so
   // the grant takes it off again.
-  if (Number.isInteger(civ.engineCents) && civ.engineCents !== 0) row.engine = civ.engineCents;
+  if (atRoll !== 0) row.engine = atRoll;
+  // The overdraft this turn, which a civ still below zero next turn keeps at least (econ-turn.js holdOverdrafts).
+  const overdraft = get(batch.overdraft, civ.id);
+  if (overdraft > 0) row.overdraft = overdraft;
+  // Turns below zero in a row, which the overdrawn ramp counts from (econ-overdrawn.js).
+  const below = get(batch.below || new Map(), civ.id);
+  if (below > 0) row.below = below;
   return row;
 }
 

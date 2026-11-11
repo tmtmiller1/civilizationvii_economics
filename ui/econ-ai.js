@@ -6,7 +6,7 @@
 import { AI } from "./econ-params.js";
 
 /**
- * The amount an AI is short of the guard line (the engine's amenity line, 0 on 1.5.0); 0 when it isn't.
+ * The amount an AI is short of the guard line (0 Gold, DESIGN 4.6); 0 when it isn't.
  * @param {number} projectedCents
  * @param {number | null | undefined} [lineCents]
  */

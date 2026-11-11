@@ -1,10 +1,11 @@
 // econ-lenders.js - Economics: who will lend, and at what rate (DESIGN 4.3). Relations are plain { a, b, level } rows;
 // an unknown pair is neutral, which is also the fallback if the relationship level proves unreadable (probe P5).
-// Blocks carry how long they last: a default blocks for the rest of the age, a repudiation of a civ for this age and
-// the next, a repudiation of the bond market or temple treasuries for 30 turns (DESIGN 4.5).
+// Blocks carry how long they last: a default blocks for the rest of the age, a repudiation of a civ for 10 turns (then
+// that lender lends again at a penalty, as amends), a repudiation of the bond market or temple treasuries for 30 turns
+// (DESIGN 4.5).
 
 import { BASE_RATE_PPM, BOND, BOND_FACTOR, CITIZENS, LENDER_BALANCE_MULTIPLE, MID_TERM, RATE_CAP_MULTIPLE,
-  RELATION_PCT, REPUDIATION, SHORT_TERM, TEMPLE, isWorldAccount } from "./econ-params.js";
+  RELATION_PCT, REPUDIATION, SHORT_TERM, STANDING, TEMPLE, isWorldAccount } from "./econ-params.js";
 import { divRound } from "./econ-money.js";
 import { recentRepudiations } from "./econ-credit.js";
 import { hasStage } from "./econ-stages.js";
@@ -48,7 +49,8 @@ export function hasDefaultAgainst(ledger, lender, borrower) {
 }
 
 /**
- * A block row. A default lasts the age; a civ repudiation this age and the next; a world one 30 turns.
+ * A block row. A default lasts the age; a civ repudiation 10 turns, after which that lender offers amends loans at a
+ * penalty; a world one 30 turns.
  * @param {{ lender: Party, borrower: number, reason: BlockReason, turn: number }} q
  * @returns {Block}
  */
@@ -57,7 +59,7 @@ export function blockFor({ lender, borrower, reason, turn }) {
     if (isWorldAccount(lender)) {
       return { lender, borrower, reason, agesLeft: null, untilTurn: turn + REPUDIATION.worldBlockTurns };
     }
-    return { lender, borrower, reason, agesLeft: REPUDIATION.lenderBlockAges, untilTurn: null };
+    return { lender, borrower, reason, agesLeft: null, untilTurn: turn + REPUDIATION.amendsCoolTurns };
   }
   return { lender, borrower, reason: "default", agesLeft: 0, untilTurn: null };
 }
@@ -127,6 +129,30 @@ export function civLenderRefusal({ ledger, lender, borrower, principal, balanceC
 }
 
 /**
+ * The borrower's repudiation of this civ lender that it hasn't made good yet and that still counts (40 turns), or null:
+ * a loan from that lender now is an amends loan (DESIGN 4.5).
+ * @param {Ledger} ledger
+ * @param {number} borrower
+ * @param {Party} lender
+ * @param {number} turn
+ * @returns {RepudiationRow | null}
+ */
+export function amendsRecord(ledger, borrower, lender, turn) {
+  if (isWorldAccount(lender)) return null;
+  const rows = ledger.repudiations.filter((row) => row.pid === borrower && row.lender === lender
+    && !Number.isInteger(row.madeGood) && turn - row.turn < STANDING.repudiationWindowTurns);
+  return rows.sort((a, b) => b.turn - a.turn)[0] || null;
+}
+
+/**
+ * An amends loan's rate: the lender's own rate times 1.5, past the usual cap (DESIGN 4.5).
+ * @param {number} ratePpm
+ */
+export function amendsRatePpm(ratePpm) {
+  return divRound(ratePpm * REPUDIATION.amendsRatePct, 100);
+}
+
+/**
  * DESIGN 4.5: while a repudiation counts against standing, terms are 10 turns at most.
  * @param {Ledger} ledger
  * @param {number} borrower
@@ -168,12 +194,28 @@ function civOffers(query) {
     if (civLenderRefusal({ ledger, lender: lender.id, borrower, principal, balanceCents: lender.balanceCents, level,
       turn })) continue;
     if (termRefusal({ ledger, borrower, borrowerCiv, lenderCiv: lender, term, turn, options })) continue;
-    const ratePpm = civRatePpm({ age, standing, level, rates, depthFactorPct: query.depthFactorPct,
-      systemPct: query.civPct ? query.civPct(lender.id) : 100 });
-    out.push({ lender: lender.id, ratePpm: /** @type {number} */ (ratePpm) });
+    const offer = civOffer(query, lender.id, level, { age, standing, rates, term });
+    if (offer) out.push(offer);
   }
   out.sort((x, y) => x.ratePpm - y.ratePpm || Number(x.lender) - Number(y.lender));
   return out;
+}
+
+/**
+ * One civ lender's offer at its rate; from a lender the borrower repudiated (before it's made good) an amends loan at
+ * 1.5 times that rate, 10 turns at most, so none for a longer term (DESIGN 4.5).
+ * @param {OfferQuery} query
+ * @param {number} lender
+ * @param {string} level
+ * @param {{ age: string, standing: number, rates: number, term: number }} q
+ * @returns {Offer | null}
+ */
+function civOffer(query, lender, level, { age, standing, rates, term }) {
+  const amends = amendsRecord(query.ledger, query.borrower, lender, query.turn) !== null;
+  if (amends && term > REPUDIATION.amendsTerm) return null;
+  const ratePpm = /** @type {number} */ (civRatePpm({ age, standing, level, rates,
+    depthFactorPct: query.depthFactorPct, systemPct: query.civPct ? query.civPct(lender) : 100 }));
+  return amends ? { lender, ratePpm: amendsRatePpm(ratePpm), amends: true } : { lender, ratePpm };
 }
 
 /**

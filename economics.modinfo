@@ -171,6 +171,7 @@
                     <Item>data/econ-civilopedia.xml</Item>
                     <!-- The standing Gold lines' marker buildings (docs/AI-NATIVE-LEVERS.md "Marker rules"). -->
                     <Item>data/econ-standing-lines.sql</Item>
+                    <Item>data/econ-bankruptcy.sql</Item>
                 </UpdateDatabase>
                 <UpdateText>
                     <Item>text/en_us/ModText.xml</Item>
@@ -249,10 +250,14 @@
                     <Item>ui/econ-notify.js</Item>
                     <Item>ui/econ-params.js</Item>
                     <Item>ui/econ-payments.js</Item>
+                    <Item>ui/econ-overdraft.js</Item>
+                    <Item>ui/econ-restore.js</Item>
+                    <Item>ui/econ-overdrawn.js</Item>
                     <Item>ui/econ-plan.js</Item>
                     <Item>ui/econ-planned.js</Item>
                     <Item>ui/econ-prices.js</Item>
                     <Item>ui/econ-repudiation.js</Item>
+                    <Item>ui/econ-bankruptcy.js</Item>
                     <Item>ui/econ-requests.js</Item>
                     <Item>ui/econ-screen-api.js</Item>
                     <Item>ui/econ-screen.css</Item>
@@ -264,7 +269,9 @@
                     <Item>ui/econ-distress.js</Item>
                     <Item>ui/econ-escrow.js</Item>
                     <Item>ui/econ-standing.js</Item>
+                    <Item>ui/econ-price-read.js</Item>
                     <Item>ui/econ-standing-read.js</Item>
+                    <Item>ui/econ-disband.js</Item>
                     <Item>ui/econ-stake.js</Item>
                     <Item>ui/econ-spoil.js</Item>
                     <Item>ui/econ-stage-read.js</Item>

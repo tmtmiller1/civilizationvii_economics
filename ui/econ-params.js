@@ -75,9 +75,14 @@ export const AI_PREFERENCE = { serviceSharePct: 10, goldPerShare: 10, goldMax: 5
   budgetItems: ["AI_BUDGET_STANDING_ARMY", "AI_BUDGET_EXPANSION"] };
 // DESIGN 4.5: the grudge is 5 grievances per turn of the lender's income lost, 10 to 40; witnesses lose 3
 // relationship, doubled for the bond market and temple treasuries, halved against an enemy at war.
+// Making amends (DESIGN 4.5): the wronged civ lender is closed for 10 turns, then lends again at 1.5 times its rate
+// for 10 turns at most; repaying such a loan in full books favors worth half the grudge and a named favor from every
+// other major, and the repudiation stops counting against the borrower's credit. An AI asks for about 3 turns of its
+// income.
 export const REPUDIATION = { grudgePerTurn: 5, grudgeMin: 10, grudgeMax: 40, witness: 3, worldWitnessMultiple: 2,
   worldBlockTurns: 30, lenderBlockAges: 1, minLenderIncomeCents: 1000, maxTermWhileCounting: 10, lenderHitMin: 10,
-  lenderHitMax: 30 };
+  lenderHitMax: 30, amendsCoolTurns: 10, amendsRatePct: 150, amendsTerm: 10, amendsFavorPct: 50,
+  amendsIncomeTurns: 3 };
 // DESIGN 4.6: emergency_cap = max(100 Gold, 10 * |income|); insolvent after 5 turns at or below 0 income.
 export const EMERGENCY = { minCapCents: 10000, incomeMultiple: 10, term: 10, insolventTurns: 5 };
 export const TERMS = [10, 20, 30];
@@ -92,7 +97,7 @@ export const MID_TERM = 20;
 // timer: the reasons decide.
 // AI-PLAN 4.4: an AI weighs a repudiation when the Gold it would keep is above 4 turns of income (10 Gold at the
 // least) and the lender is at war with it, or Unfriendly and weaker, or it's insolvent and the lender isn't Friendly.
-export const AI = { lendIncomeMultiple: 20, acceptRatePct: 120, repudiateEveryTurns: 20,
+export const AI = { lendIncomeMultiple: 20, amendsLendIncomeMultiple: 5, acceptRatePct: 120, repudiateEveryTurns: 20,
   repudiateKeepTurns: 4, minIncomeCents: 1000, buildSizeTurns: 5, buildTerm: 10, buildSlowTurns: 8,
   buildServiceMaxPct: 30 };
 // openPerBorrower and closedLoans are not in DESIGN: they bound the saved envelope (debt-5) with the event log DESIGN
@@ -243,27 +248,91 @@ export function purchasePointCents(rows) {
 }
 
 /**
- * The negative-balance lines in cents from GlobalParameters rows, given as { Name: Value } or [{ Name, Value }].
- * A missing or unreadable line is null, and the guard then stays off rather than guess.
- * @param {unknown} rows
- * @returns {{ disbandLineCents: number | null, amenityLineCents: number | null }}
+ * The guard's line (DESIGN 4.6): 0 Gold, where the penalties of a treasury below zero start (DESIGN 4.18). The game's
+ * GOLD_NEGATIVE_BALANCE_* lines were read here once; lab W10 (2026-11-10) found the game never acts on them.
  */
-export function engineLines(rows) {
-  /** @type {Map<string, unknown>} */
-  const byName = new Map();
-  if (Array.isArray(rows)) {
-    for (const row of rows) if (row && typeof row.Name === "string") byName.set(row.Name, row.Value);
-  } else if (rows && typeof rows === "object") {
-    for (const [name, value] of Object.entries(rows)) byName.set(name, value);
-  }
-  /** @param {string} name */
-  const line = (name) => {
-    if (!byName.has(name)) return null;
-    const value = Number(byName.get(name));
-    return Number.isFinite(value) ? Math.round(value * 100) : null;
-  };
-  return {
-    disbandLineCents: line("GOLD_NEGATIVE_BALANCE_DISBAND_UNIT_LINE"),
-    amenityLineCents: line("GOLD_NEGATIVE_BALANCE_AMENITY_LOSS_LINE"),
-  };
+export const GUARD_LINE_CENTS = 0;
+
+// DESIGN 4.18, below zero (the owner's call 2026-11-10: the game's own handling of a negative treasury is thin).
+// Obligations (loan payments, garnish, bills, dividends, taxes, the plan's take, cycle charges, standing lines) are
+// paid into an overdraft down to max(100 Gold, 10 turns of |income|); past it they miss as before. Discretionary
+// spending (lending, aid, investing, crisis responses, escrow) still needs Gold in hand. A balance below zero at the
+// batch pays interest at twice the bond rate and loses reputation each turn.
+// The interest never takes more than half the civ's income while that income is above 0, so a civ earning Gold always
+// pays its debt down (lab W15: the Ottomans at -6,000 with +190 a turn sank 2,000 deeper in 22 turns).
+export const OVERDRAFT = { minCents: 10000, incomeTurns: 10, bondRateMultiple: 2, repPerTurn: 2,
+  interestIncomePct: 50 };
+// Bankruptcy (DESIGN 4.18): a civ below zero writes its treasury back to 0 and repudiates every loan it has, at most
+// once in `everyTurns`. An AI weighs it each turn it's below zero (econ-bankruptcy.js bankruptcyWeighing), in Gold:
+// staying costs every turn until it's back above zero, at most `horizonTurns`, of interest, Happiness in every
+// settlement (`goldPerHappiness` a point), the price premium on the share of its income it spends on purchases,
+// credit rating, units disbanded (`unitIncomeTurns` of income each) and the output of shut settlements (their share
+// of income and production, times `shutOutputShare` since the costliest shuts first); bankruptcy costs the credit
+// rating (`repPointIncomeTurns` of income a point), the witnesses' note and each civ lender's grudge
+// (`grievanceIncomeTurns` a point, the lender's weighted by `lenderWeight` and by `strongerLender` when it's stronger),
+// and the bond market for 30 turns (`bondAccessIncomeTurns`, half without a loan open). It declares when staying
+// costs more than `prudence` times bankruptcy: a last resort, so with the Ottomans' and Persia's numbers (lab W18) a
+// debt of up to 7 turns of income is carried and paid off, 9 or more declared at the first weighing.
+export const BANKRUPTCY = { everyTurns: 30, horizonTurns: 30, goldPerHappiness: 1, purchaseSharePct: 50,
+  unitIncomeTurns: 1, shutOutputShare: 1.5, repPointIncomeTurns: 0.1, grievanceIncomeTurns: 0.25,
+  lenderWeight: { friendly: 2, neutral: 1, unfriendly: 0.5, war: 0 }, strongerLender: 1.5, bondAccessIncomeTurns: 3,
+  prudence: 2 };
+// What a treasury below zero at the batch costs, by depth (the share of the overdraft used, in quarters): Happiness
+// in every settlement, a premium on purchase prices, and one unit disbanded a turn until it's back above zero,
+// the highest upkeep first (the Civilopedia's rule).
+// The harsher steps ramp up after warnings, by turns spent below zero in a row (owner 2026-11-10: units first, then
+// buildings, slowly, after warnings): two turns of warning, then a unit every other turn, a unit every turn from turn
+// 7, and from turn 8 the buildings of one more settlement shut down every other turn, the costliest first.
+export const OVERDRAWN = { gloomBase: 2, gloomPerQuarter: 2, gloomPastLimit: 15, priceBaseBp: 500,
+  pricePerQuarterBp: 500, pricePastLimitBp: 3000, disbandPerTurn: 1, warnTurns: 2, everyTurnFrom: 7, shutFrom: 8,
+  shutEvery: 2 };
+
+/**
+ * The ramp for a civ `turns` turns below zero in a row: units to disband this turn and settlements shut down.
+ * @param {number} turns 1 on the first turn below zero
+ */
+export function overdrawnRamp(turns) {
+  const t = Math.max(0, Math.floor(turns || 0));
+  const unitsFrom = OVERDRAWN.warnTurns + 1;
+  const disband = t < unitsFrom ? 0 : t >= OVERDRAWN.everyTurnFrom || (t - unitsFrom) % 2 === 0
+    ? OVERDRAWN.disbandPerTurn : 0;
+  const shut = t < OVERDRAWN.shutFrom ? 0 : 1 + Math.floor((t - OVERDRAWN.shutFrom) / OVERDRAWN.shutEvery);
+  return { disband, shut };
+}
+
+/**
+ * How far below zero a civ's obligations can take it this turn, in cents.
+ * @param {number} incomeCents the civ's net Gold a turn
+ */
+export function overdraftLimitCents(incomeCents) {
+  return Math.max(OVERDRAFT.minCents, OVERDRAFT.incomeTurns * Math.abs(Math.round(incomeCents || 0)));
+}
+
+/**
+ * A living civ's overdraft this turn: the limit a rule set on it, else overdraftLimitCents; 0 for a dead civ.
+ * @param {{ alive?: boolean, incomeCents: number, overdraftCents?: number }} civ
+ */
+export function overdraftOf(civ) {
+  if (civ.alive !== true) return 0;
+  return Number.isInteger(civ.overdraftCents) ? Math.max(0, /** @type {number} */ (civ.overdraftCents))
+    : overdraftLimitCents(civ.incomeCents);
+}
+
+/**
+ * The treasury a civ actually holds at the batch: its snapshot less the standing lines' Gold the snapshot counts back
+ * (`engineCents`, what the lines moved at the update). Below zero is judged on this (lab W14: an AI at -130 with 160 of
+ * debt lines read +30 on the snapshot and paid no penalty).
+ * @param {{ balanceCents: number, engineCents?: number }} civ
+ */
+export function heldCents(civ) {
+  const atUpdate = Number.isInteger(civ.engineCents) ? /** @type {number} */ (civ.engineCents) : 0;
+  return Math.round(Number(civ.balanceCents) || 0) + atUpdate;
+}
+
+/**
+ * The same for a batch row: its snapshot plus what the lines moved (`engine`).
+ * @param {{ snapshot: number, engine?: number }} row
+ */
+export function rowHeldCents(row) {
+  return row.snapshot + (Number.isInteger(row.engine) ? /** @type {number} */ (row.engine) : 0);
 }
