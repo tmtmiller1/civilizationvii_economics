@@ -1,16 +1,16 @@
 # What has been watched, and the runs behind it
 
-The first in-game checks are under "Watched 2026-10-30". Version 0.2.0 (2026-10-29) was built and checked offline
+The first in-game checks are under "Watched 2026-10-30". The Finance build (2026-10-29, `a1855ad`) was built and checked offline
 only: `npm run release:gate` (248 tests, tsc, ESLint, check-esm, coverage), Stryker on the rule modules, and the tax
 SQL applied to a copy of the compiled 1.5.0 Exploration database (`tests/econ-data.test.mjs` with `CIV7_GAMEPLAY_DB`
 set). The reader-facing account is the [README](../README.md); this file is the evidence behind it, in the form
 Canals' `docs/verification-runs.md` uses.
 
-## The load check (owed from 0.1.0)
+## The load check (owed from the first build)
 
 The first lab run has to show, with every other mod off: the mod registers and loads (`Modding.log`), the setup SQL
 compiles without an error (`Database.log`), the six options show on the setup screen with their defaults, the boot
-line `[Economics] v0.2.0 loaded; turn N, ...` appears in `UI.log`, the tax data groups load in each age without a
+line `[Economics] v<version> loaded; turn N, ...` appears in `UI.log`, the tax data groups load in each age without a
 database error, and `tower-bench check tower_mods_in_dev/economics` passes. Then the same with the usual set.
 
 ## Owed
@@ -75,12 +75,12 @@ Exploration seed 9001 are the probe run's seeds.
 | --- | --- | --- | --- |
 | S.1 | The screen opens from the dock button and from a click on the turn notification, draws framed with its own styles at 720p without horizontal scroll (the CSS and HTML load from `fs://game/tower-economics/`), `tower-bench lint` on the live screen passes (no dropped declarations), the tab bar keeps its selection across re-renders (2026-10-30, A: opens full window with its CSS from `fs://game/tower-economics/`, five tabs, no horizontal scroll at 2880 by 1800, `lint` clean for the screen; 720p and the notification click owed) | any, vanilla | `ui/econ-screen.js`, `ui/econ-screen.css` |
 | S.2 | The Treasury tab's flows list reads right against the ledger once Economics moves Gold, and the buildings block counts a Bank (2026-11-11: "Balance in 20 turns" 586 matched the balance 926 plus 20 turns of -17, and the block counted the capital's Market as its one Commerce building) | any | `ui/econ-view-treasury.js` |
-| S.3 | The turn notification shows once per turn in the game's language, and its click opens the screen. The wording and the tenth-of-a-Gold floor were watched 2026-10-30 (0.4.0, below); a notice naming loans needs a player loan open | any | `ui/econ-notify.js` |
+| S.3 | The turn notification shows once per turn in the game's language, and its click opens the screen. The wording and the tenth-of-a-Gold floor were watched 2026-10-30 (the Macro build, below); a notice naming loans needs a player loan open | any | `ui/econ-notify.js` |
 | S.4 | The pill's text follows the debt and turns red in default (2026-10-30: reads "No debt" (A, D); the default state owed) (2026-10-31, tenth run: the pill read "In default · Slump" in red on the human seat's default; capture `working_screenshots/econ-watch-2026-10-31/r1-loans-t40.png`) | any | `ui/econ-dock.js` `refreshPill` |
 
 ## Watched 2026-10-30
 
-Economics 0.3.0, a clean release build of commit `41e5239`, in lab games driven by script through
+The Economics Commerce build, a clean release build of commit `41e5239`, in lab games driven by script through
 `globalThis.__towerEconomics` and the screen's view model, every reading in
 `mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-build-checks.md`. Games: A vanilla, Antiquity 4242, 129 turns
 into Exploration; B, B2, B3 vanilla, Exploration 9001 with the Economics civic bought at turn 1 (B no loan, the
@@ -88,7 +88,7 @@ control; B2 a 50 Gold bond loan; B3 a 50 Gold loan from Japan); C vanilla, Antiq
 D2, D3 the usual set, Exploration 9001. The load check above was watched in A and D: the groups load
 (`economics-game`, `economics-tax-effects`, `economics-investment`, `economics-ai-lists`, the age's tax cards),
 `Database.log` has no error, the options read their defaults in game, `[settings-keeper] ready` and
-`[Economics] v0.3.0 loaded; turn 1, ...` are in `UI.log`, `tower-bench check` is clean. The setup screen's text is
+`[Economics] v<version> loaded; turn 1, ...` are in `UI.log`, `tower-bench check` is clean. The setup screen's text is
 still for a person.
 
 | # | What the player sees when it works | Setup | Reading |
@@ -114,9 +114,9 @@ still for a person.
 | C.9 | The bill never passes a tenth of the payer's income; at income 0 or below nothing is paid; anything over the cap shows as waived and isn't owed next turn | same, the player's income pushed low | B at turn 24: Japan owed the player 14.37, paid 5.01, 9.36 waived; the Pirate Republic owed Silla 7.98, paid 3.83 |
 | C.10 | The imports read for AI pairs: an AI importing from another AI shows a bill between them in `__towerEconomics.session().lastPlan.trade`. The 1.1 probes settled the reads underneath (C8: per-route imports for AIs add up; C14: copies count once at the origin); the bill itself is unwatched | same | B: `lastPlan.trade` holds AI pairs (Silla to France paid in full, the Pirate Republic to Silla and to France) |
 
-## Watched 2026-10-30 (0.4.0)
+## Watched 2026-10-30 (Macro build)
 
-Economics 0.4.0 (`217638b`, the installed `Mods/economics`), two lab games read by script, every reading in
+The Economics Macro build (`217638b`, the installed `Mods/economics`), two lab games read by script, every reading in
 `mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-watch-040.md`. Runs: `2026-10-30-watch-040-vanilla`
 (Economics alone, Antiquity 4242, 119 turns, the age change, Exploration turns 1 and 2) and
 `2026-10-30-watch-040-usualset` (the owner's usual set, the same seed, 116 turns and the change). Both `--setup fast`
@@ -163,16 +163,16 @@ Found: the World tab's event rows and the Loans tab's Lend row show civ names as
 ("LOC_CIVILIZATION_PERSIA_NAME"), since `civName` returns `civilizationName` without `Locale.compose`; the Borrow rows
 show names. Not fixed.
 
-## Watched 2026-10-30 (0.5.1)
+## Watched 2026-10-30 (`006c1a8` build)
 
-The `006c1a8` build (0.5.1) from `dist/economics`, in one lab game: Economics alone, seed 4242, `--setup fast --quick`,
+The `006c1a8` build from `dist/economics`, in one lab game: Economics alone, seed 4242, `--setup fast --quick`,
 started straight in Exploration (no Antiquity), `lab drive` through Exploration (117 turns), `lab age-change`, then 51
 Modern turns. Every reading is in `mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-check-051.md`. The boot
-line read `[Economics] v0.5.1 loaded` in both ages.
+line read `[Economics] v<version> loaded` in both ages.
 
 | # | What the player sees when it works | Setup | Reading |
 | --- | --- | --- | --- |
-| LA.1 (Exploration, Modern) | "Light Taxation" 1 off Gold and +4 Happiness in Exploration, +3 in Modern; the rows read 6, 4 and 3 | the 0.5.1 game | the database rows `_AQ` 6, `_EX` 4, `_MO` 3 read in game; every holder's first settlement +4 in Exploration, +3 in Modern; the card keys `_EX` and `_MO` |
+| LA.1 (Exploration, Modern) | "Light Taxation" 1 off Gold and +4 Happiness in Exploration, +3 in Modern; the rows read 6, 4 and 3 | the `006c1a8` game | the database rows `_AQ` 6, `_EX` 4, `_MO` 3 read in game; every holder's first settlement +4 in Exploration, +3 in Modern; the card keys `_EX` and `_MO` |
 | LA.2 (count) | How many AIs slot Light at +4 and +3 | same | Exploration 5 of 5, first picks t21 to t39 at 23 to 50 Happiness a turn; Modern 3 of 5 by t51 (Ottomans t16, Russia t27, Mughal t29, at 93 to 177 Happiness). The owner judges |
 | LA.3 | The Fiscal tab's Light card and forecast by age | same, the screen's DOM | Exploration t10 "Gold -1, Happiness +4", "about -3 Gold and +12 Happiness a turn" (3 settlements); Modern t6 "Gold -1, Happiness +3", "about -4 Gold and +12 Happiness a turn" (4) |
 | LA.4 (text) | The Light card's description by age | same | `Locale.compose` of the card keys: "-1 Gold and +6 / +4 / +3 Happiness in each settlement." The policy menu wasn't opened |
@@ -183,7 +183,7 @@ line read `[Economics] v0.5.1 loaded` in both ages.
 
 Not reached: LA.1 and LA.2 for Antiquity (this game had none), the policy menu for LA.4, the "Manorial economy" line
 (LA.5), TD.4 (no war between AIs that had eased off each other), TD.5 for the player (the seat never set a tariff) and
-TD.6 (no 0.5.0 save loaded).
+TD.6 (no `90e22f4` save loaded).
 
 ## The model (offline)
 
@@ -207,7 +207,7 @@ TD.6 (no 0.5.0 save loaded).
 
 ## 2026-10-29 evening: first loads, inside another session's usual-set games
 
-Economics 0.2.0 (the release build, installed by the owner's request) loaded in two Partisans lab games with the
+The Economics Finance build (the release build, installed by the owner's request) loaded in two Partisans lab games with the
 owner's usual mod set, Exploration and Modern, seed 4242, turns 1 to 6. Lines in
 `mod_ideas_tested/economics/devtools/probe-runs/2026-10-29-partisans-usual-set/`. Watched:
 
@@ -220,7 +220,7 @@ owner's usual mod set, Exploration and Modern, seed 4242, turns 1 to 6. Lines in
   `[Economics]` lines, no dock error (`modern-seed4242-turns1-8-dockfix.log`). The pill drawing beside the button is
   still to see on screen.
 
-## Owed: 1.1 Commerce and the flat tax cards (0.3.0)
+## Owed: 1.1 Commerce and the flat tax cards (Commerce build)
 
 Built 2026-10-29 and checked offline only (`npm run release:gate`, Stryker on the 1.1 modules, the 1.1 balance rows).
 Each line says what the player sees when it works, the setup it needs, and where the code is. The 1.1 probe run
@@ -282,7 +282,7 @@ All watched 2026-11-04; see "Watched 2026-11-04" below.
 | The 1.1 balance rows | `tests/econ-balance-commerce.test.mjs`, `reports/balance-1.1.json` | bills sum to zero, no payer past 10% of income, markets envelope about 10 KB, a turn in about 0.1 ms; the cap binds on most settlement rows (NOTES finding K) |
 | Military Aid's initiator charge against the compiled database | `tests/econ-data.test.mjs` with `CIV7_GAMEPLAY_DB` | the stage row lands once on 1.5.0 Exploration and Modern copies, foreign keys clean; a copy without Military Aid's stage skips the row |
 
-## Owed: 1.2 Macro (0.4.0)
+## Owed: 1.2 Macro (Macro build)
 
 Built 2026-10-30, offline only, against the M-probe results of the same night
 (`mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-macro-results.md`). Nothing below has been watched in a
@@ -293,7 +293,7 @@ M3 and M4 run did. Each line says what the player sees when it works, the setup 
 
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
-| M.5 | A save made after a change in 0.3.0, loaded in 0.4.0, runs its next batch | a 0.3.0 save past an age change, if one exists | `ui/econ-turn-count.js` `countTurn` |
+| M.5 | A save made after a change in the Commerce build, loaded in the Macro build, runs its next batch | a Commerce-build save past an age change, if one exists | `ui/econ-turn-count.js` `countTurn` |
 
 ### The business cycle
 
@@ -357,11 +357,11 @@ built mod on the same day (L.2 to L.7 under "Watched 2026-10-30 (merged build)")
 
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
-| L.1 | Some AIs but not all slot Light, each once grown and short of Happiness (arm 10: Hawaii t69, Persia t92, Dai Viet t107); Goryeo and Hawaii still take Heavy at their second slot, and the AIs take War Levy (merged run 2026-10-30: Antiquity watched, 2 of 5; in Exploration and Modern all five AIs slot Light and keep it, at high Happiness: see "Watched 2026-10-30 (merged build)"; Light by age answers it in 0.5.1, LA.2 below) (2026-10-31, eleventh run: Hawai'i and Goryeo slotted Light at turn 29, Persia and Dai Viet War Levy at 37, Goryeo swapped to War Levy at 40) | Antiquity 4242, `--setup fast --quick`, Economics alone, 110 turns of `lab drive` with a per-turn card reading | `ui/econ-tax-cards.js` `CARD_LEVELS`, `data/econ-tax-gameeffects.xml` |
+| L.1 | Some AIs but not all slot Light, each once grown and short of Happiness (arm 10: Hawaii t69, Persia t92, Dai Viet t107); Goryeo and Hawaii still take Heavy at their second slot, and the AIs take War Levy (merged run 2026-10-30: Antiquity watched, 2 of 5; in Exploration and Modern all five AIs slot Light and keep it, at high Happiness: see "Watched 2026-10-30 (merged build)"; Light by age answers it in the `006c1a8` build, LA.2 below) (2026-10-31, eleventh run: Hawai'i and Goryeo slotted Light at turn 29, Persia and Dai Viet War Levy at 37, Goryeo swapped to War Levy at 40) | Antiquity 4242, `--setup fast --quick`, Economics alone, 110 turns of `lab drive` with a per-turn card reading | `ui/econ-tax-cards.js` `CARD_LEVELS`, `data/econ-tax-gameeffects.xml` |
 
-## Owed: Light by age and tariffs coming down (0.5.1)
+## Owed: Light by age and tariffs coming down (`006c1a8` build)
 
-Watched 2026-10-30 in an Exploration-start game (see "Watched 2026-10-30 (0.5.1)"): LA.1 to LA.3 for Exploration
+Watched 2026-10-30 in an Exploration-start game (see "Watched 2026-10-30 (`006c1a8` build)"): LA.1 to LA.3 for Exploration
 and Modern, LA.4's text, LA.5's age starts, TD.1 to TD.3. Still owed: the Antiquity half of LA.1 and LA.2, the policy
 menu (LA.4), the "Manorial economy" line (LA.5), TD.4, TD.5 and TD.6.
 
@@ -370,7 +370,7 @@ Built 2026-10-30, offline only (NOTES choices 114 and 115, finding Z). Light Tax
 peace with it, or at once when they're Friendly. One three-age game in the merged watch's setup reaches every line
 here: Economics alone, Antiquity seed 4242, `--setup fast --quick`, `lab drive` through all three ages with
 `mod_ideas_tested/economics/devtools/econ-watch-merged-sample.js` read every turn and each age's dump tallied by
-`tally-watch-merged.py` (both updated for these lines). The boot line reads `[Economics] v0.5.1 loaded`.
+`tally-watch-merged.py` (both updated for these lines). The boot line reads `[Economics] v<version> loaded`.
 
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
@@ -378,12 +378,12 @@ here: Economics alone, Antiquity seed 4242, `--setup fast --quick`, `lab drive` 
 | TD.2 | After easing off, the AI stays down while the other side still holds High: no raise in the 5 turns after any `tariff-eased` event (the tally prints `RE-RAISE` if one happens), and pairs that stood at High on both sides both end at None | same | `ui/econ-trade.js` `stillEased` |
 | TD.3 | At the end of Modern most AIs are at None (the merged watch had all five at High from t11 to t143); `session().markets.tariffPeace` and `tariffEased` hold the counts and easings by "ai-other" | same | `ui/econ-markets.js` |
 
-## Owed: Heavy after Priesthood and the bar pill (0.5.2)
+## Owed: Heavy after Priesthood and the bar pill (`a6fab13` build)
 
 - BP.1 The debt pill sits in the top resource bar after the settlement limit, in the world view and the city view,
   and redraws after a turn and after a borrow; the dock button still opens the screen.
 
-## Owed: Economic swings (0.5.3)
+## Owed: Economic swings (`5f4f26a` build)
 
 Built 2026-10-30, offline only (NOTES 118). Nothing here has been seen in a game.
 
@@ -419,7 +419,7 @@ been seen in a game.
 
 Four lab games on 2026-10-30, every other mod off, the `ui-pass` build installed over Mods/economics and put back
 after (`mod_ideas_tested/economics/devtools/restore-ui-pass-2026-10-30.sh`, its log in `devtools/probe-runs/`: 0 rows
-differ, option files the same, Mods/economics the installed 0.5.2). Antiquity seed 4242 with the stage nodes unlocked
+differ, option files the same, Mods/economics the installed `a6fab13` build). Antiquity seed 4242 with the stage nodes unlocked
 one a turn by `tower-bench do unlock`, and Exploration seed 9001 with Economics, Mercantilism, Colonialism,
 Cartography and Guilds unlocked the same way. Captures in `working_screenshots/econ-ui-pass/`.
 
@@ -435,14 +435,14 @@ Cartography and Guilds unlocked the same way. Captures in `working_screenshots/e
 | The bar pill reads "Debt 22 · Steady" after a loan landed | `exploration/09-next-turn-pill-crop.png` |
 | What Economics moved last turn opens to its parts ("Loans -8.3") | `exploration/11-*` |
 
-## Watched 2026-10-31 (0.5.4: whole-Gold payments, Spoil Guard, UI polish)
+## Watched 2026-10-31 (the `d1245a8` build: whole-Gold payments, Spoil Guard, UI polish)
 
 One lab game, seed 4242, Antiquity, the usual mod set, full screen on the Retina display (3024x1890). Captures in
 `working_screenshots/econ-0.5.4/antiquity/` (t01, t55 and t101 for each tab the player could see).
 
 - WG.1: turns 2 to 15, each AI's cycle share carried (player 3: -51, -92, then paid -1 Gold with -28 carried), and
   every balance moved by what its row paid, to the cent.
-- WG.2: a UI reload on turn 15 logged `0 re-sent`; the same reload on 0.5.3 that morning logged 5.
+- WG.2: a UI reload on turn 15 logged `0 re-sent`; the same reload on the `5f4f26a` build that morning logged 5.
 - WG.3: `glue.landed` named the civs paid on turns 11 and 14 (player 3; players 1 and 3), and nobody on turns with
   nothing paid.
 - SG.2: turn 1 the pill read "Unmet civilizations hidden: 5", turn 55 "2" (the owner dropped the pill afterwards: it
@@ -537,7 +537,7 @@ Lab stopped and restored after each game; registry unchanged. Readings in `~/.to
 ## Watched 2026-10-31, fifth run (AI plan stage A: the distress read, refinancing, short payments, the garnish floor)
 
 Two lab games, seed 4242, Modern, `--setup fast,ECONOMICS_STAGES=ECONOMICS_STAGES_OFF --quick`, the usual mod set,
-the stage A build (commit `2b99755`, then the dues fix below) copied into `Mods/economics` for the runs (the 0.5.4
+the stage A build (commit `2b99755`, then the dues fix below) copied into `Mods/economics` for the runs (the 2026-10-31
 copy is kept in `_backups/econ-stage-a-2026-10-31/`). A per-turn script
 (`mod_ideas_tested/economics/devtools/econ-stage-a-sample.js`) wrote four situations into the live ledger at turn 2
 and then emptied the treasuries each turn: Persia and the human seat with a 3-turn bond loan whose slice is 1.5
@@ -664,7 +664,7 @@ took, `isAtWarWith` read true the next turn). No invariant line and no failed bo
   `getNumFavors(5)` on Goryeo read 0 before and 5 after (the engine keeps favors in thousandths, as grievances, so
   the call books `5 * 1000`), then 15 as the game added its own.
 - Not seen: the Loans tab's reputation figure and the repudiation preview's lender line as drawn; what the booked
-  favors do to the relationship over time (the fourth run read the favor events, not their weight); a 0.5.4 save
+  favors do to the relationship over time (the fourth run read the favor events, not their weight); a 2026-10-31 save
   loading its standing as the opening reputation in a game (unit-tested).
 
 ## Watched 2026-10-31, ninth run (AI plan stage E: stakes behind investment, aid and lending)
@@ -745,7 +745,7 @@ failed four times in six).
   form opening on it, M.14's Panic (turn 23, from the injected loans), the pill reading "In default · Slump" in red
   (S.4), WG.2's `0 re-sent` on the UI reload at turn 17, and the World tab's leverage in red at 5.4 turns (F.7).
 - Not reached: A.3 (the seat's credit cap was used up by its repudiation and default; folded into the Antiquity
-  run), B.3 (two games), C.7 (the Modern market read lists no strategic class), D.3 (needs a 0.5.4 save).
+  run), B.3 (two games), C.7 (the Modern market read lists no strategic class), D.3 (needs a 2026-10-31 save).
 - For the owner: when the world entered a Depression at turn 12, every AI pair with a stake of 10 or more aided
   each other within two turns (nine aids, about 2,800 Gold), since "a host in its own Depression" holds for all of
   them at once. The rule reads as designed; whether a world Depression should open aid everywhere is a design call.
@@ -931,7 +931,7 @@ The panel's Choose it and End it buttons go through the same queue, so they fail
 One lab game, seed 4242, Modern, the usual mod set, stages Off, crises On, 27 turns (`2026-11-01T00-43-17`; the
 sample script, the drive log and `UI.log` under `mod_ideas_tested/economics/devtools/probe-runs/2026-10-31-watch-r7/`,
 the captures `working_screenshots/econ-watch-2026-10-31/r7-*.png`). The tree at `ff68140` was copied into the game's
-`Mods/economics` for the run and the 0.5.4 copy put back after. The world index was set to 0.70 by script at turn
+`Mods/economics` for the run and the 2026-10-31 copy put back after. The world index was set to 0.70 by script at turn
 1 and to 0.60 at turn 12 with the 30-turn spacing rows cleared, for two Depressions; a Credit panic came on its
 own at turn 24. Every seat request went through the queue this time (`-> true` at turns 5, 8, 9, 11, 14 and 17).
 
@@ -1169,17 +1169,17 @@ apart). Run `2026-11-04T07-19-38` is its control: the same script with `ECONOMIC
   Fiscal tab then read "Next celebration you're celebrating now". The "next turn" line is in Antiquity below.
 
 Runs `2026-11-04T07-38-07`, `07-39-35` and `07-42-17` built the old saves, each with its commit installed from a
-temporary worktree (`d1245a8` 0.5.4, `90e22f4` 0.5.0, `a6fab13` 0.5.2) and the C.31 test mod in `Mods/`: the 0.5.4 save
+temporary worktree (`d1245a8`, `90e22f4`, `a6fab13`) and the C.31 test mod in `Mods/`: the `d1245a8` save
 with Goryeo in default to the Ottomans and the seat repudiating a Persian loan, with a 3% bond loan of its own; the
-0.5.0 save with the five AIs' tariffs written at High; the 0.5.2 save in Antiquity with the seat's Moneylending and
-Public debt stages set. Run `07-44-22` (the working copy and the test mod) loaded each one.
+`90e22f4` save with the five AIs' tariffs written at High; the `a6fab13` save in Antiquity with the seat's
+Moneylending and Public debt stages set. Run `07-44-22` (the working copy and the test mod) loaded each one.
 
-- D.3: the 0.5.4 save loaded with `creditRep` rows the seat at 7000 (the repudiation, 0.70) and Goryeo at 8000 (the
+- D.3: the `d1245a8` save loaded with `creditRep` rows the seat at 7000 (the repudiation, 0.70) and Goryeo at 8000 (the
   default, 0.80); the seat's bond loan kept 3% and the other loans their rates.
-- U.5: the 0.5.2 save loaded with the Loans tab and both loan sections taken as told, and no notice about them on the
+- U.5: the `a6fab13` save loaded with the Loans tab and both loan sections taken as told, and no notice about them on the
   load turn or the next. With Trade and Coinage set at 7, turn 8's notice read "Economics: the Markets and Trade tabs
   are open. ... | Economics: the World tab is open. ..."
-- TD.6: the 0.5.0 save's five High tariffs stood at the load (turn 4). The next turn four AIs eased off (`tariff-eased`,
+- TD.6: the `90e22f4` save's five High tariffs stood at the load (turn 4). The next turn four AIs eased off (`tariff-eased`,
   they were Friendly); at 7, the first change the 5-turn limit allowed, three went to None and one to Low, and Goryeo to
   None at 8. None went back to High in the 26 turns after the load (Low at most). They drop well before 20 turns.
 - C.31: the test mod (`econ-c31-test`: a Counting House copied from the Stock Exchange with the Gold tag and 6 Gold, the
@@ -1779,7 +1779,7 @@ and Partisans working copies, the index pushed under 0.80 by the samples in
 ## Watched 2026-11-02 (the WATCH_LIST sweep: aid rescale, Antiquity into Exploration, Exploration, Modern, options off)
 
 Five lab games on the working tree of 2026-11-02 (the aid rescale, uncommitted at the time), copied into
-`Mods/economics` for the runs and the 0.5.4 copy put back after. The scripts, drive logs and `UI.log` of each game
+`Mods/economics` for the runs and the 2026-10-31 copy put back after. The scripts, drive logs and `UI.log` of each game
 are under `mod_ideas_tested/economics/devtools/probe-runs/2026-11-02-watch/` (`notes-a.md` holds the turn-by-turn
 notes), the captures under `working_screenshots/econ-watch-2026-11-02/`. Run A: Antiquity 4242, every other mod
 off, Inflation On, 112 turns, `lab age-change`, 17 Exploration turns (`2026-11-02T23-36-57`), with two script
@@ -1963,7 +1963,7 @@ the Owed tables: C.6, X.11, SG.1, TN.1, G.2, G.3, M.25, SG.3; trimmed: M.25, UP.
 - S.2 (part): Exploration 9001, turn 6: the Treasury's "Balance in 20 turns" read 586, the balance 926 plus 20 turns of
   -17; the buildings block read Commerce 1 (the capital's Market), Banking 0 (no Bank), Trade 1, Warehouse 3.
 
-## Watched 2026-11-11 (pre-release): 0.5.4 at cb07c94 deployed, lab games, every other mod off unless named
+## Watched 2026-11-11 (pre-release): cb07c94 deployed, lab games, every other mod off unless named
 
 Commit cb07c94 deployed to Mods/economics the way `release.sh` builds the package (DBG off). Runs and probes are in
 `tools/plans/night-2026-11-10/` (RESULTS.md, "Pre-release watch").
@@ -1990,7 +1990,7 @@ Commit cb07c94 deployed to Mods/economics the way `release.sh` builds the packag
   they come, so a save asked after the batch holds its grants. Nothing was lost or paid twice; the re-send path itself
   wasn't reached, and a script can't reach it.
 - 8.1 (evening, `tools/crash-soak/run-soak.sh` with `HOTSEAT=1`, `econ-mp-game.js`): a two-seat hotseat game logs
-  "v0.5.4 loaded; multiplayer game, the mod is off" once and no batch line; the console reads multiplayer with no
+  "v<version> loaded; multiplayer game, the mod is off" once and no batch line; the console reads multiplayer with no
   session or ledger and there's no dock button, through two game turns of both seats (6 of 6 checks). The first try
   crashed at the main menu because the harness copied the mod without its `config` folder (Modding.log: "Unable to
   open .../config/econ-setup.sql"); with `config` copied the game ran clean.
@@ -2004,3 +2004,15 @@ Commit cb07c94 deployed to Mods/economics the way `release.sh` builds the packag
   reads "Trade bills: the 1 Gold you owed was over your trade bill cap and was forgiven."), and the short-payment,
   refinance, tariff, crisis-end and insolvency notices were reworded. 759 tests pass; the new wording hasn't been
   seen in a game yet (WATCH_LIST.md).
+
+## Watched 2026-11-12: War Levy in a surprise war
+
+Lab game rel-warlevy (`tools/plans/night-2026-11-10/probes/rel-warlevy.probe.js`), Modern, seed 4242, Economics alone,
+War Levy slotted. War Levy's extra used to ask for a formal war, so a surprise war paid +2 Gold and -1 Happiness while
+the card and the Fiscal tab promised +8 and -4. The data now counts any war (`data/econ-tax-gameeffects.xml`,
+`data/econ-systems-gameeffects.xml`).
+
+- At peace: the capital's breakdown reads War Levy +2 Gold and -1 Happiness.
+- In a surprise war (`DIPLOMACY_ACTION_DECLARE_WAR`; a formal war wasn't on offer): War Levy +2 and +6 Gold, -1 and -3
+  Happiness, 8 and 4 in all, as the Fiscal tab's card says.
+- Peace after the war wasn't reached: the AI refused every offer.

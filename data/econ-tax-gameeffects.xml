@@ -65,11 +65,11 @@
         <Argument name="Amount">-1</Argument>
         <Argument name="Tooltip">LOC_ECONOMICS_CARD_WAR_LEVY_NAME</Argument>
     </Modifier>
-    <!-- War Levy at war: while the owner has a formal war, Gold +6, Happiness -3 more in each settlement -->
+    <!-- War Levy at war: while the owner is at war (any war, as the card says and the Fiscal tab reads it), Gold +6,
+         Happiness -3 more in each settlement -->
     <Modifier id="MOD_ECONOMICS_WAR_LEVY_AT_WAR_GOLD" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
         <OwnerRequirements>
             <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
-                <Argument name="WarType">FORMAL_WAR</Argument>
                 <Argument name="Amount">1</Argument>
             </Requirement>
         </OwnerRequirements>
@@ -80,7 +80,6 @@
     <Modifier id="MOD_ECONOMICS_WAR_LEVY_AT_WAR_HAPPINESS" collection="COLLECTION_PLAYER_CITIES" effect="EFFECT_CITY_ADJUST_YIELD">
         <OwnerRequirements>
             <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
-                <Argument name="WarType">FORMAL_WAR</Argument>
                 <Argument name="Amount">1</Argument>
             </Requirement>
         </OwnerRequirements>

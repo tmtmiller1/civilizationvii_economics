@@ -81,6 +81,16 @@ test("the effects file: flat yield modifiers on every settlement, War Levy's sec
   }
 });
 
+test("War Levy's war requirement counts any war, as the card text and the Fiscal tab's forecast do", () => {
+  // econ-3 (2026-11-12): a script-declared surprise war read as at war, while a FORMAL_WAR requirement paid the
+  // peacetime amounts only, so the Fiscal tab promised +8 / -4 and the settlements got +2 / -1.
+  for (const file of ["data/econ-tax-gameeffects.xml", "data/econ-systems-gameeffects.xml"]) {
+    const xml = read(file);
+    assert.ok(/REQUIREMENT_PLAYER_HAS_X_WARS/.test(xml), `${file} has war-gated rows`);
+    assert.equal(/name="WarType"/.test(xml), false, `${file}: no war type, so a surprise war counts too`);
+  }
+});
+
 test("the card numbers live in CARD_LEVELS: the modifiers and every description row are in step with it", () => {
   assert.deepEqual(outOfStep().map((row) => row.file), [], "run node scripts/sync-tax-cards.mjs");
   const light = CARD_LEVELS.LIGHT;

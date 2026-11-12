@@ -38,7 +38,6 @@
                 <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_AQ</Argument>
             </Requirement>
             <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
-                <Argument name="WarType">FORMAL_WAR</Argument>
                 <Argument name="Amount">1</Argument>
             </Requirement>
         </OwnerRequirements>
@@ -57,7 +56,6 @@
                 <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_AQ</Argument>
             </Requirement>
             <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
-                <Argument name="WarType">FORMAL_WAR</Argument>
                 <Argument name="Amount">1</Argument>
             </Requirement>
         </OwnerRequirements>
@@ -107,7 +105,6 @@
                 <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_AQ</Argument>
             </Requirement>
             <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
-                <Argument name="WarType">FORMAL_WAR</Argument>
                 <Argument name="Amount">1</Argument>
             </Requirement>
         </OwnerRequirements>
@@ -172,7 +169,6 @@
                 <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_EX</Argument>
             </Requirement>
             <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
-                <Argument name="WarType">FORMAL_WAR</Argument>
                 <Argument name="Amount">1</Argument>
             </Requirement>
         </OwnerRequirements>
@@ -191,7 +187,6 @@
                 <Argument name="TraditionType">TRADITION_ECONOMICS_WAR_LEVY_EX</Argument>
             </Requirement>
             <Requirement type="REQUIREMENT_PLAYER_HAS_X_WARS">
-                <Argument name="WarType">FORMAL_WAR</Argument>
                 <Argument name="Amount">1</Argument>
             </Requirement>
         </OwnerRequirements>
