@@ -356,24 +356,24 @@
         <Replace Tag="LOC_ECONOMICS_FLOW_TAX" Language="ru_RU"><Text>taxes</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_FLOW_BANKRUPTCY" Language="ru_RU"><Text>your bankruptcy</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INFLUENCE" Language="ru_RU"><Text>Missed payments cost you {1_Amount} Influence.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_CELEBRATION" Language="ru_RU"><Text>Your celebration meter moved by {1_Amount}.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_CELEBRATION" Language="ru_RU"><Text>Economics moved your celebration meter by {1_Amount}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_OPEN" Language="ru_RU"><Text>A loan of {1_Amount} Gold from {2_Lender} has landed, at {3_Rate} a turn over {4_Turns} turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_LENT" Language="ru_RU"><Text>Your loan of {1_Amount} Gold to {2_Borrower} has gone out.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_MISS" Language="ru_RU"><Text>You couldn't pay anything on loan {1_Loan} ({2_Count} missed in a row). The {4_Due} Gold due joins the debt and the rate rises; three in a row is default.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_MISS_PART" Language="ru_RU"><Text>Paid {3_Paid} of {4_Due} Gold on loan {1_Loan}. {5_Short} Gold was added to the loan ({2_Count} missed in a row); the rate rises, and three in a row is default. You can restructure the loan or borrow on the Loans tab.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_AHEAD" Language="ru_RU"><Text>Next turn's payments of {1_Dues} Gold won't fit the {2_Funds} Gold you're on course to have, {3_Gap} short. Restructure a loan, borrow, or let it miss, on the Loans tab.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_GUARD_OFF" Language="ru_RU"><Text>Your payments of {1_Dues} Gold pass the {2_Funds} Gold you have by {3_Gap}, and the guard is off. You can restructure a loan, borrow, or switch the guard on, on the Loans tab.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_CREDIT_CAP" Language="ru_RU"><Text>Your payments of {1_Dues} Gold pass the {2_Funds} Gold you have by {3_Gap}, and the guard couldn't borrow the difference: it's over your credit limit. Restructure a loan on the Loans tab, or pay what you can.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_NO_OFFER" Language="ru_RU"><Text>Your payments of {1_Dues} Gold pass the {2_Funds} Gold you have by {3_Gap}, and no lender would cover the difference. Restructure a loan on the Loans tab, or pay what you can.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_INCOME" Language="ru_RU"><Text>Your payments of {1_Dues} Gold pass the {2_Funds} Gold you have by {3_Gap}, and with income at or below 0 nobody refinances. The emergency loan covers a dip; cut upkeep or raise Gold.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_LOAN_LIMIT" Language="ru_RU"><Text>Your payments of {1_Dues} Gold pass the {2_Funds} Gold you have by {3_Gap}, and six loans are open already. Restructure one on the Loans tab, or pay what you can.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_REFINANCE" Language="ru_RU"><Text>Your payments of {3_Dues} Gold passed what you had, so the guard borrowed the {1_Amount} Gold missing from {2_Lender} over 10 turns.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_AHEAD" Language="ru_RU"><Text>Next turn's payments come to {1_Dues} Gold, {3_Gap} more than the {2_Funds} Gold you're on course to have. On the Loans tab you can restructure a loan or borrow; otherwise the payment is missed.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_GUARD_OFF" Language="ru_RU"><Text>Your payments come to {1_Dues} Gold, {3_Gap} more than the {2_Funds} Gold you have, and the guard is off. You can restructure a loan, borrow, or switch the guard on, on the Loans tab.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_CREDIT_CAP" Language="ru_RU"><Text>Your payments come to {1_Dues} Gold, {3_Gap} more than the {2_Funds} Gold you have, and the guard couldn't borrow the difference: it's over your credit limit. Restructure a loan on the Loans tab, or pay what you can.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_NO_OFFER" Language="ru_RU"><Text>Your payments come to {1_Dues} Gold, {3_Gap} more than the {2_Funds} Gold you have, and no lender would cover the difference. Restructure a loan on the Loans tab, or pay what you can.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_INCOME" Language="ru_RU"><Text>Your payments come to {1_Dues} Gold, {3_Gap} more than the {2_Funds} Gold you have, and with your income at or below 0 no lender will refinance you. An emergency loan only covers a short dip, so cut upkeep or raise Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_SHORT_LOAN_LIMIT" Language="ru_RU"><Text>Your payments come to {1_Dues} Gold, {3_Gap} more than the {2_Funds} Gold you have, and six loans are open already. Restructure one on the Loans tab, or pay what you can.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_REFINANCE" Language="ru_RU"><Text>Your payments came to {3_Dues} Gold, more than you had, so the guard borrowed the missing {1_Amount} Gold from {2_Lender} over 10 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_DEFAULT" Language="ru_RU"><Text>Loan {1_Loan} is in default. The lender takes what it can each turn and won't lend to you again this age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_DEFAULTED_ON" Language="ru_RU"><Text>{1_Borrower} has defaulted on your loan {2_Loan}. You collect what you can each turn.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD" Language="ru_RU"><Text>The guard borrowed {1_Amount} Gold from {2_Lender} to keep you above 0.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD_INSOLVENT" Language="ru_RU"><Text>The guard borrowed {1_Amount} Gold from {2_Lender}. Your income has been at or below 0 for five turns: this covers a spell, not a deficit.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD_INSOLVENT" Language="ru_RU"><Text>The guard borrowed {1_Amount} Gold from {2_Lender}. Your income has been at or below 0 for five turns, so this only buys time; cut upkeep or raise Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_GUARD_CAP" Language="ru_RU"><Text>The guard has reached its cap of {1_Cap} Gold and stops. You're {2_Deficit} Gold short this turn, so your treasury goes into its overdraft, which reaches {3_Limit} Gold below 0. While you're below 0 you pay interest on it, your settlements lose Happiness, your prices rise and your credit suffers; with your income below 0 as well, a unit disbands each turn.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_INSOLVENT" Language="ru_RU"><Text>Your income has been at or below 0 for {1_Turns} turns. Emergency loans cover a short spell only; cut upkeep or raise Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_INSOLVENT" Language="ru_RU"><Text>Your income has been at or below 0 for {1_Turns} turns. Emergency loans only cover a short spell, so cut upkeep or raise Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_RESTRUCTURE" Language="ru_RU"><Text>Loan {1_Loan} was restructured over 10 new turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_RESTRUCTURE_ASK" Language="ru_RU"><Text>{1_Borrower} asks to restructure loan {2_Loan}. You can allow it on the Loans tab.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REPUDIATED" Language="ru_RU"><Text>You repudiated {1_Amount} Gold owed to {2_Lender}.</Text></Replace>
@@ -383,7 +383,7 @@
         <Replace Tag="LOC_ECONOMICS_NOTICE_AMENDS_ASK" Language="ru_RU"><Text>{1_Borrower} wants to make amends for the loans it repudiated: it asks to borrow {2_Amount} Gold from you over {3_Turns} turns at your penalty rate. You can lend it the Gold from the Loans tab.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED" Language="ru_RU"><Text>Your {1_Request} was refused: {2_Reason}</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED_MOST" Language="ru_RU"><Text>The most you can borrow from {1_Lender} over {2_Turns} turns is {3_Amount} Gold. The Loans tab can borrow that instead.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED_NONE" Language="ru_RU"><Text>Your payments already take all your limits allow, so you can't borrow from {1_Lender} over {2_Turns} turns right now.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_REFUSED_NONE" Language="ru_RU"><Text>Your loan payments are already at your limit, so you can't borrow from {1_Lender} over {2_Turns} turns right now.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_BORROW" Language="ru_RU"><Text>borrow request</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_LEND" Language="ru_RU"><Text>loan offer</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_REQUEST_REPAY" Language="ru_RU"><Text>early repayment</Text></Replace>
@@ -542,8 +542,13 @@
         <Replace Tag="LOC_ECONOMICS_TARIFF_NOTE" Language="ru_RU"><Text>A tariff holds back that share of what you owe the civilizations you import from, so they earn less selling to you. It's a trade-war lever, and a High tariff costs 1 relationship with each of them every five turns. The game's own Tariffs policy card raises your Trade Income instead; the two are separate.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_RESOURCE_DISTANT_LANDS" Language="ru_RU"><Text>{1_Name} ({2_Where})</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE" Language="ru_RU"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_WAIVED" Language="ru_RU"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold; {3_Waived} Gold over your cap was forgiven.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_TARIFF_COST" Language="ru_RU"><Text>Your High tariff cost 1 relationship with each civilization you import from ({1_Count}).</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_PAID" Language="ru_RU"><Text>Trade bills: you paid {1_Paid} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_RECEIVED" Language="ru_RU"><Text>Trade bills: you received {2_Received} Gold.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_WAIVED" Language="ru_RU"><Text>Trade bills: you paid {1_Paid} Gold and received {2_Received} Gold. Another {3_Waived} Gold you owed was over your trade bill cap and was forgiven.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_PAID_WAIVED" Language="ru_RU"><Text>Trade bills: you paid {1_Paid} Gold. Another {3_Waived} Gold you owed was over your trade bill cap and was forgiven.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_RECEIVED_WAIVED" Language="ru_RU"><Text>Trade bills: you received {2_Received} Gold. The {3_Waived} Gold you owed was over your trade bill cap and was forgiven.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_TRADE_FORGIVEN" Language="ru_RU"><Text>Trade bills: the {3_Waived} Gold you owed was over your trade bill cap and was forgiven.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_TARIFF_COST" Language="ru_RU"><Text>Your High tariff cost you 1 relationship point with each civilization you import from ({1_Count} in all).</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_PROJECT" Language="ru_RU"><Text>Your development loan of {1_Amount} Gold to {2_Host} added {3_Progress} production to its build.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_GENERAL" Language="ru_RU"><Text>You invested {1_Amount} Gold in {2_Host}.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_INVESTED_AID" Language="ru_RU"><Text>You sent {1_Amount} Gold of aid to {2_Host}.</Text></Replace>
@@ -949,12 +954,12 @@
         <Replace Tag="LOC_ECONOMICS_CYCLE_EVENT_DUST_BOWL" Language="ru_RU"><Text>a disaster in hard times</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_CRISIS_START" Language="ru_RU"><Text>{1_Crisis} has begun, after {2_Causes}. The World tab shows what you can do.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_CRISIS_START_QUIET" Language="ru_RU"><Text>{1_Crisis} has begun. The World tab shows what you can do.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_CRISIS_END" Language="ru_RU"><Text>{1_Crisis} is over after {2_Turns} turns, with {3_By} behind you.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_CRISIS_END" Language="ru_RU"><Text>{1_Crisis} is over after {2_Turns} turns. {3_By} helped end it.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_CRISIS_END_QUIET" Language="ru_RU"><Text>{1_Crisis} is over after {2_Turns} turns; the world recovered on its own.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_RESPONSE" Language="ru_RU"><Text>{1_Response} is in force.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_RESPONSE_COST" Language="ru_RU"><Text>{1_Response} is in force; it cost {2_Gold} Gold.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_RESPONSE_ENDED" Language="ru_RU"><Text>{1_Response} has run its course.</Text></Replace>
-        <Replace Tag="LOC_ECONOMICS_NOTICE_LEGACY_ENDED" Language="ru_RU"><Text>{1_Legacy} is behind you.</Text></Replace>
+        <Replace Tag="LOC_ECONOMICS_NOTICE_LEGACY_ENDED" Language="ru_RU"><Text>{1_Legacy} has ended.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_BANK_RUN" Language="ru_RU"><Text>A run on your banks: {1_Count} borrowers are in default to you. You lend to nobody for 5 turns.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_BANK_FAILURES" Language="ru_RU"><Text>Bank failures: defaults have passed a fifth of the world's loans. The bond market is closed for 5 turns to everyone without deposit insurance, and credit caps lose 2 turns of income for the rest of the age.</Text></Replace>
         <Replace Tag="LOC_ECONOMICS_NOTICE_BUBBLE" Language="ru_RU"><Text>A bubble: credit has grown fast five turns running in a Boom. When the index turns, it bursts into a credit panic.</Text></Replace>

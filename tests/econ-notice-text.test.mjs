@@ -40,7 +40,7 @@ test("every notice kind the plan emits has a line, with the loan's figures looke
   assert.deepEqual(describeNotice({ pid: 2, kind: "invested-in", lender: 4, cents: 30000, form: "project", progress: 100 },
     ctx), { key: "LOC_ECONOMICS_NOTICE_INVESTED_IN_PROJECT", args: ["Civ 4", "300", 100, "0"] });
   assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 500, received: 0, waived: 0 }, ctx),
-    { key: "LOC_ECONOMICS_NOTICE_TRADE", args: ["5", "0", "0"] });
+    { key: "LOC_ECONOMICS_NOTICE_TRADE_PAID", args: ["5", "0", "0"] });
   assert.deepEqual(describeNotice({ pid: 2, kind: "miss", loanId: "L1", missed: 1, paid: 8000, due: 10000, short: 2000 },
     ctx), { key: "LOC_ECONOMICS_NOTICE_MISS_PART", args: ["L1", 1, "80", "100", "20"] }, "Paid 80 of 100, 20 added");
   assert.equal(describeNotice({ pid: 2, kind: "miss", loanId: "L1", missed: 2, paid: 0, due: 10000, short: 10000 },
@@ -192,7 +192,16 @@ test("the trade bill line reads in whole Gold, the way the game lands it, and a 
   assert.equal(describeNotice({ pid: 2, kind: "trade", paid: 0, received: 60, waived: 0 }, ctx2), null, "received 0.6: no line");
   assert.equal(describeNotice({ pid: 2, kind: "trade", paid: 99, received: 99, waived: 0 }, ctx2), null);
   assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 0, received: 120, waived: 0 }, ctx2),
-    { key: "LOC_ECONOMICS_NOTICE_TRADE", args: ["0", "1", "0"] }, "1.2 lands as 1");
+    { key: "LOC_ECONOMICS_NOTICE_TRADE_RECEIVED", args: ["0", "1", "0"] }, "1.2 lands as 1, and only what moved is named");
   assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 1290, received: 0, waived: 250 }, ctx2),
-    { key: "LOC_ECONOMICS_NOTICE_TRADE_WAIVED", args: ["12", "0", "2"] });
+    { key: "LOC_ECONOMICS_NOTICE_TRADE_PAID_WAIVED", args: ["12", "0", "2"] });
+  assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 300, received: 400, waived: 0 }, ctx2),
+    { key: "LOC_ECONOMICS_NOTICE_TRADE", args: ["3", "4", "0"] });
+  assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 300, received: 400, waived: 100 }, ctx2),
+    { key: "LOC_ECONOMICS_NOTICE_TRADE_WAIVED", args: ["3", "4", "1"] });
+  assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 0, received: 400, waived: 100 }, ctx2),
+    { key: "LOC_ECONOMICS_NOTICE_TRADE_RECEIVED_WAIVED", args: ["0", "4", "1"] });
+  // The lab line of 2026-11-11, "you paid 0 Gold and received 0 Gold; 1 Gold over your cap was forgiven".
+  assert.deepEqual(describeNotice({ pid: 2, kind: "trade", paid: 40, received: 60, waived: 130 }, ctx2),
+    { key: "LOC_ECONOMICS_NOTICE_TRADE_FORGIVEN", args: ["0", "0", "1"] });
 });

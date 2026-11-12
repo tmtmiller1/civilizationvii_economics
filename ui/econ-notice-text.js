@@ -406,6 +406,19 @@ export function flowBreakdown(transfers, pid) {
 }
 
 /**
+ * Which trade bill line: only the amounts that came to a whole Gold are named ("you paid 0 Gold and received 0 Gold"
+ * says nothing).
+ * @param {boolean} paid
+ * @param {boolean} received
+ * @param {boolean} waived
+ */
+function tradeKey(paid, received, waived) {
+  if (!paid && !received) return "_FORGIVEN";
+  const side = paid && received ? "" : paid ? "_PAID" : "_RECEIVED";
+  return `${side}${waived ? "_WAIVED" : ""}`;
+}
+
+/**
  * The trade bill line in whole Gold, as the game lands it (`wholeGold`: toward zero, so 0.6 is nothing); a turn whose
  * bills come to under a whole Gold each way has no line.
  * @param {{ paid?: number, received?: number, waived?: number }} notice
@@ -416,7 +429,8 @@ function tradeLine(notice) {
   const received = whole(notice.received);
   const waived = whole(notice.waived);
   if (!paid && !received && !waived) return null;
-  return { key: `${PREFIX}NOTICE_TRADE${waived > 0 ? "_WAIVED" : ""}`, args: [gold(paid), gold(received), gold(waived)] };
+  return { key: `${PREFIX}NOTICE_TRADE${tradeKey(paid > 0, received > 0, waived > 0)}`,
+    args: [gold(paid), gold(received), gold(waived)] };
 }
 
 /** The least Gold the mod has to move in a turn for the net line to show, in cents. */

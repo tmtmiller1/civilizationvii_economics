@@ -26,10 +26,8 @@ Exploration seed 9001 are the probe run's seeds.
 
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
-| 1.3 | Save and reload mid-turn: the Loans tab shows the same loans and payments (a seat loan open; the 2026-11-11 morning run had none, the seat had no borrowing room); the next turn's batch running once after a reload was watched 2026-11-11 | same | `ui/econ-session.js` `loadSession`, `ui/econ-plan.js` `skipReason` |
-| 1.4 | The reload check: a save forced in the second after `TurnBegin` (before the grants land, P15's window) reloads with `[Economics] batch Bn re-sent for player 0` and the balance ends where the ledger says | same | `ui/econ-session.js` `resendLostBatch`, `ui/econ-batch.js` `batchStatus` |
 | 1.6 | The order-free resolve holds in game: the same seed and loans give the same transfers whatever order `Players.getAliveMajorIds()` lists civs in (compare `UI.log` of two runs) | same | `ui/econ-turn.js` `turnContext` |
-| 1.9 | Load a save made before its turn's batch ran (a save request that beat the batch, or one copied from the turn before the mod's first batch): `UI.log` has `turn N (load catch-up from turn N-1)` once, the payments land, and the next `TurnBegin` runs the next turn as usual; if the local turn was already active, the notification shows at load (2026-10-30, A: the age change's reload logged `load catch-up from turn 120` once; a save from the turn before isn't tested) | same | `ui/econ-bootstrap.js` `catchUp` |
+| 1.9 | Load a save made before its turn's batch ran (a save request that beat the batch, or one copied from the turn before the mod's first batch): `UI.log` has `turn N (load catch-up from turn N-1)` once, the payments land, and the next `TurnBegin` runs the next turn as usual; if the local turn was already active, the notification shows at load (2026-10-30, A: the age change's reload logged `load catch-up from turn 120` once; a save from the turn before isn't tested; 2026-11-11 pre-release: a script in the same session can't make such a save, since a save asked at `TurnEnd` is written at the old turn and its reload runs the next `TurnBegin` once, and a 10 ms poll saw the batch done on the first read of the new turn) | same | `ui/econ-bootstrap.js` `catchUp` |
 
 ### Phase 2: player loans
 
@@ -70,8 +68,6 @@ Exploration seed 9001 are the probe run's seeds.
 
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
-| 8.1 | In a hotseat game `UI.log` has `[Economics] v0.2.0 loaded; multiplayer game, the mod is off` once, no batch line, no grant, the dock button absent | a hotseat start, vanilla | `ui/econ-bootstrap.js` `boot`, `ui/econ-engine.js` `isMultiplayer` |
-| 8.2 | The same in a LAN-hosted game | a LAN host | same |
 
 ### Screens
 
@@ -297,7 +293,6 @@ M3 and M4 run did. Each line says what the player sees when it works, the setup 
 
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
-| M.3 | Against a database with every DLC row removed, `PRAGMA foreign_key_check` lists the same rows before and after the systems SQL | the release check, all three ages | same |
 | M.5 | A save made after a change in 0.3.0, loaded in 0.4.0, runs its next batch | a 0.3.0 save past an age change, if one exists | `ui/econ-turn-count.js` `countTurn` |
 
 ### The business cycle
@@ -351,7 +346,6 @@ probe logs, and the human seat under Autoplay counts like an AI.
 
 | # | What the player sees when it works | Setup | Source |
 | --- | --- | --- | --- |
-| G.5 | The game starts and the rows load without the DLC civs' parents: `Modding.log` and `Database.log` show the file loaded with no error | a game with a DLC switched off, or the lab's compiled database with a DLC disabled | same |
 | G.6 | A shared `GovernmentBiases` row at 50 on `TRAIT_LEADER_MAJOR_CIV` (the probe's `gov bias` arm) no longer moves any civ off its own pick | Antiquity 4242 with the probe overlay | same |
 
 ## Owed: Light and War Levy (arms)
@@ -1969,3 +1963,44 @@ the Owed tables: C.6, X.11, SG.1, TN.1, G.2, G.3, M.25, SG.3; trimmed: M.25, UP.
 - S.2 (part): Exploration 9001, turn 6: the Treasury's "Balance in 20 turns" read 586, the balance 926 plus 20 turns of
   -17; the buildings block read Commerce 1 (the capital's Market), Banking 0 (no Bank), Trade 1, Warehouse 3.
 
+## Watched 2026-11-11 (pre-release): 0.5.4 at cb07c94 deployed, lab games, every other mod off unless named
+
+Commit cb07c94 deployed to Mods/economics the way `release.sh` builds the package (DBG off). Runs and probes are in
+`tools/plans/night-2026-11-10/` (RESULTS.md, "Pre-release watch").
+
+- M.3, G.5: every DLC switched off in the registry (46 official rows to 5: core, base-standard and the three ages), with
+  Economics and Re-dealable on, one game in each age. Each game started and ran two turns, no DLC civ was in the
+  loaded database (34 civilizations, 30 leaders), the boot line and three batches ran, `PRAGMA foreign_key_check` on the
+  compiled gameplay database gave 0 rows in every table it can read (it can't read the game's own
+  `CultureSlotAllowances`, which neither mod writes), and `Database.log` and `Modding.log` had no error.
+- Distant Lands names (WATCH_LIST 24): Exploration 9001, turn 11: the Markets tab lists "Gold (Distant Lands)" and
+  "Silver (Distant Lands)" beside plain Gold and Silver, with no raw key (`econ-distant/01-markets-tab.png`).
+- Trade bill line (WATCH_LIST 24, half): in the same 11 turns no "Trade bills:" line appeared, where the old code wrote
+  one under 2 Gold each turn in tenths. The bills never reached a whole Gold, so the whole-Gold wording is still owed.
+- Reloads (1.3's batch half again): after three quick loads in Antiquity the next `TurnBegin` ran its batch once each
+  time, with no payment doubled.
+- 1.3 (evening, `econ-loan`, Exploration 4242 with the seat's military units removed after the advanced start, which
+  took its income from -15 to +13 a turn): the bond market lent 30 Gold (loan L3). Quick save and quick load: the
+  ledger read the same loan, the same balance (1,079 Gold) and the same batch, and the top bar read "Debt 27" as the
+  Loans tab had before the save ("Debt 27, 3.5 due next turn"). The Loans tab itself wasn't reopened after the load (the
+  probe asked before the screen was ready).
+- 1.4 (evening, two games): a quick save asked from a `TurnBegin` handler registered after the mod's, with the seat
+  paying its loan that turn, reloads with the payments already landed: the balance read 1,079 at the request, 1,093
+  three seconds on, and 1,093 after the load, with "0 re-sent" in UI.log. The game carries out requests in the order
+  they come, so a save asked after the batch holds its grants. Nothing was lost or paid twice; the re-send path itself
+  wasn't reached, and a script can't reach it.
+- 8.1 (evening, `tools/crash-soak/run-soak.sh` with `HOTSEAT=1`, `econ-mp-game.js`): a two-seat hotseat game logs
+  "v0.5.4 loaded; multiplayer game, the mod is off" once and no batch line; the console reads multiplayer with no
+  session or ledger and there's no dock button, through two game turns of both seats (6 of 6 checks). The first try
+  crashed at the main menu because the harness copied the mod without its `config` folder (Modding.log: "Unable to
+  open .../config/econ-setup.sql"); with `config` copied the game ran clean.
+- 8.2 by the same flag: the boot reads `isAnyMultiplayer`, which earlier LAN games here read as true (3 readings) as
+  hotseat games do (14), so a LAN host takes the same branch. No LAN game was started for it.
+- Trade bill line (WATCH_LIST 24, rest): Exploration 4242 with routes to three met AIs, the notice read "Trade bills:
+  you paid 0 Gold and received 0 Gold; 1 Gold over your cap was forgiven", whole Gold. Owner call: "paid 0 and received
+  0" reads oddly on a turn where only the forgiven amount reached a Gold.
+
+- After that game the trade bill line was reworded to name only the amounts that reached a Gold (the line above now
+  reads "Trade bills: the 1 Gold you owed was over your trade bill cap and was forgiven."), and the short-payment,
+  refinance, tariff, crisis-end and insolvency notices were reworded. 759 tests pass; the new wording hasn't been
+  seen in a game yet (WATCH_LIST.md).
