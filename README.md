@@ -274,6 +274,7 @@ changes a building's tags or moves a civic is followed. [docs/compatibility.md](
 ![The Trade tab: trade bills, routes you could make and investing abroad](docs/screenshots/05-trade.jpg)
 ![The World tab: the world economy, inflation and world debt](docs/screenshots/06-world.jpg)
 ![The Debt and economy pills on the top bar](docs/screenshots/07-top-bar-pill.jpg)
+![Economics' options in Advanced Options](docs/screenshots/08-game-options.jpg)
 
 `docs/screenshots/` (1280x800, for here and the GitHub release) and `docs/steam-screenshots/` (1920x1200, for the
 Workshop page) are built by `python3 scripts/build-screenshots.py <raw folder>` from window captures of a lab game with
