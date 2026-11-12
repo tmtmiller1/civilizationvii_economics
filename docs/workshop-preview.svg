@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Workshop / identity emblem for Economics. The Tower-mods family look (dark ground, gold frame, parchment art,
+     serif wordmark) and the shared hex tile of Canals, Dams, National Parks and Partisans. Motif: a loan note and stacks of coins
+     on a counting table, with the business cycle drawn behind them as a candle chart that climbs, dips and climbs again.
+     Built to PNG by scripts/build-preview.sh. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#243042"/>
+      <stop offset="100%" stop-color="#121821"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1b3a50"/>
+      <stop offset="100%" stop-color="#2f5d7a"/>
+    </linearGradient>
+    <linearGradient id="table" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e7d4a3"/>
+      <stop offset="100%" stop-color="#c9a878"/>
+    </linearGradient>
+    <linearGradient id="coin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f1d98a"/>
+      <stop offset="100%" stop-color="#c9a24c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e7d4a3" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#e7d4a3" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="hexclip">
+      <polygon points="812,430 662,689.8 362,689.8 212,430 362,170.2 662,170.2"/>
+    </clipPath>
+    <!-- One coin seen from the side, centred on its origin -->
+    <g id="disc">
+      <ellipse cx="0" cy="12" rx="62" ry="17" fill="#a8842f" stroke="#7a5a3a" stroke-width="4"/>
+      <rect x="-62" y="0" width="124" height="12" fill="#a8842f"/>
+      <path d="M-62,0 L-62,12 M62,0 L62,12" stroke="#7a5a3a" stroke-width="4"/>
+      <ellipse cx="0" cy="0" rx="62" ry="17" fill="url(#coin)" stroke="#7a5a3a" stroke-width="4"/>
+    </g>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect x="26" y="26" width="972" height="972" rx="30" fill="none" stroke="#c9a24c" stroke-width="4" opacity="0.5"/>
+
+  <!-- Light over the tile -->
+  <circle cx="512" cy="430" r="340" fill="url(#glow)"/>
+
+  <g clip-path="url(#hexclip)">
+    <rect x="200" y="150" width="624" height="560" fill="url(#sky)"/>
+
+    <!-- Faint ruled lines, a chart's grid -->
+    <g stroke="#f7eed1" stroke-width="2" opacity="0.14">
+      <path d="M200,250 L824,250 M200,330 L824,330 M200,410 L824,410 M200,490 L824,490"/>
+    </g>
+
+    <!-- The business cycle as a candle chart: a run up, a slide, a recovery. Gold candles closed higher,
+         red ones lower; the pale line is the trend through them. -->
+    <path d="M262,440 C330,410 350,290 400,292 C450,296 490,416 540,416 C590,416 620,300 690,252"
+          fill="none" stroke="#f7eed1" stroke-width="5" stroke-linecap="round" opacity="0.4"/>
+    <g stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M286,392 L286,456" stroke="#e3c36c" stroke-width="6"/><rect x="269" y="405" width="34" height="40" rx="3" fill="url(#coin)" stroke="#7a5a3a"/>
+      <path d="M334,322 L334,414" stroke="#e3c36c" stroke-width="6"/><rect x="317" y="340" width="34" height="65" rx="3" fill="url(#coin)" stroke="#7a5a3a"/>
+      <path d="M382,266 L382,350" stroke="#e3c36c" stroke-width="6"/><rect x="365" y="285" width="34" height="55" rx="3" fill="url(#coin)" stroke="#7a5a3a"/>
+      <path d="M430,270 L430,332" stroke="#b5533c" stroke-width="6"/><rect x="413" y="285" width="34" height="33" rx="3" fill="#b5533c" stroke="#6e2f22"/>
+      <path d="M478,308 L478,400" stroke="#b5533c" stroke-width="6"/><rect x="461" y="318" width="34" height="67" rx="3" fill="#b5533c" stroke="#6e2f22"/>
+      <path d="M526,376 L526,442" stroke="#b5533c" stroke-width="6"/><rect x="509" y="385" width="34" height="40" rx="3" fill="#b5533c" stroke="#6e2f22"/>
+      <path d="M574,356 L574,436" stroke="#e3c36c" stroke-width="6"/><rect x="557" y="370" width="34" height="55" rx="3" fill="url(#coin)" stroke="#7a5a3a"/>
+      <path d="M622,284 L622,380" stroke="#e3c36c" stroke-width="6"/><rect x="605" y="300" width="34" height="70" rx="3" fill="url(#coin)" stroke="#7a5a3a"/>
+      <path d="M670,222 L670,310" stroke="#e3c36c" stroke-width="6"/><rect x="653" y="240" width="34" height="60" rx="3" fill="url(#coin)" stroke="#7a5a3a"/>
+    </g>
+
+    <!-- The counting table -->
+    <path d="M200,600 C340,580 684,580 824,600 L824,710 L200,710 Z" fill="url(#table)"/>
+    <path d="M200,600 C340,580 684,580 824,600" fill="none" stroke="#c9a24c" stroke-width="4"/>
+    <ellipse cx="512" cy="622" rx="230" ry="16" fill="#7a5a3a" opacity="0.28"/>
+
+    <!-- A loan note at interest: parchment sheet, the rate, two ruled lines, a signature and a wax seal -->
+    <g transform="translate(392 545) rotate(-7)">
+      <rect x="-56" y="-70" width="112" height="140" rx="5" fill="#f3e6c0" stroke="#7a5a3a" stroke-width="4"/>
+      <text x="0" y="-12" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="60"
+            font-weight="bold" fill="#7a5a3a">%</text>
+      <path d="M-38,10 L38,10 M-38,26 L38,26" stroke="#7a5a3a" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+      <path d="M-38,50 C-30,38 -24,58 -16,46 C-10,38 -4,54 4,46" fill="none" stroke="#7a5a3a" stroke-width="3"
+            stroke-linecap="round"/>
+      <circle cx="32" cy="48" r="15" fill="#b5533c" stroke="#6e2f22" stroke-width="3"/>
+      <circle cx="32" cy="48" r="7" fill="none" stroke="#6e2f22" stroke-width="2" opacity="0.7"/>
+    </g>
+
+    <!-- Two stacks of coins beside it -->
+    <g transform="translate(652 600)">
+      <use href="#disc" y="0"/><use href="#disc" y="-22"/><use href="#disc" y="-44"/><use href="#disc" y="-66"/>
+    </g>
+    <g transform="translate(512 612)">
+      <use href="#disc" y="0"/><use href="#disc" y="-22"/><use href="#disc" y="-44"/><use href="#disc" y="-66"/>
+      <use href="#disc" y="-88"/><use href="#disc" y="-110"/>
+    </g>
+  </g>
+
+  <!-- The tile's edge, over the art -->
+  <polygon points="812,430 662,689.8 362,689.8 212,430 362,170.2 662,170.2"
+           fill="none" stroke="#c9a24c" stroke-width="6" stroke-linejoin="round"/>
+
+  <!-- Wordmark -->
+  <text x="512" y="832" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif" font-size="112"
+        font-weight="bold" fill="#e7d4a3" letter-spacing="5">ECONOMICS</text>
+  <!-- Tagline -->
+  <text x="512" y="916" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif" font-size="38"
+        fill="#c9a24c" opacity="0.92">Loans, markets, taxes, and the business cycle</text>
+</svg>

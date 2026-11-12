@@ -265,6 +265,20 @@ Single-player. In a hotseat or network game the mod says once in the log that it
 Building roles, stages and the cards are read from the game's compiled data with other mods applied, so a mod that
 changes a building's tags or moves a civic is followed. [docs/compatibility.md](docs/compatibility.md) has the details.
 
+## Screenshots
+
+![The Treasury tab: balance, income, the next 20 turns and what moved it](docs/screenshots/01-treasury.jpg)
+![The Loans tab: lenders, the bond market, your loans and the auto-loan guard](docs/screenshots/02-loans.jpg)
+![The Fiscal tab: tax cards and your economic system](docs/screenshots/03-fiscal.jpg)
+![The Markets tab: world prices for each resource](docs/screenshots/04-markets.jpg)
+![The Trade tab: trade bills, routes you could make and investing abroad](docs/screenshots/05-trade.jpg)
+![The World tab: the world economy, inflation and world debt](docs/screenshots/06-world.jpg)
+![The Debt and economy pills on the top bar](docs/screenshots/07-top-bar-pill.jpg)
+
+`docs/screenshots/` (1280x800, for here and the GitHub release) and `docs/steam-screenshots/` (1920x1200, for the
+Workshop page) are built by `python3 scripts/build-screenshots.py <raw folder>` from window captures of a lab game with
+every other mod off. The JPEGs carry no EXIF, XMP, colour profile or date; `--check` confirms it.
+
 ## Installing
 
 Copy the `economics` folder into your `Mods` folder (on macOS,
