@@ -3,9 +3,10 @@
 Status: sections 1 to 11 cover the loans (DESIGN 4.1 to 4.6 and 4.14), designed 2026-10-06 and revised 2026-10-24;
 their unit tier is built to the revised rules ([NOTES.md](NOTES.md), 2026-10-29), and the 1.0 rows of the
 balance ladder have run in the simulation (DESIGN 10, dated note). Section 12 covers the parts added 2026-10-24
-(DESIGN 4.7 to 4.17): the 1.0 and 1.1 parts are built (0.2.0 and 0.3.0, 2026-10-29) and the 1.2 parts (0.4.0,
-2026-10-30), each 12.1 row with its module's tests (`econ-cycle`, `econ-inflation`, `econ-legacy`, `econ-systems`,
-`econ-citizens`, `econ-macro`, `econ-macro-state`, `econ-macro-read`, `econ-view-macro`, `econ-turn-count`) and the
+(DESIGN 4.7 to 4.17): the 1.0 and 1.1 parts are built (the Finance and Commerce builds, 2026-10-29) and the 1.2
+parts (the Macro build, 2026-10-30), each 12.1 row with its module's tests (`econ-cycle`, `econ-inflation`,
+`econ-legacy`, `econ-systems`, `econ-citizens`, `econ-macro`, `econ-macro-state`, `econ-macro-read`, `econ-view-macro`,
+`econ-turn-count`) and the
 1.2 balance rows in `econ-balance-macro`; the tax fallback (12.1) is built as `econ-tax.js`, off by default. The 1.0,
 1.1 and 1.2 probes ran 2026-10-29 and 10-30 (DESIGN 10); every T3 scenario is owed in a game. Each table carries
 the release that ships the part (DESIGN 11). Common tiers:

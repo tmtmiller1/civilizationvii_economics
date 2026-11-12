@@ -4,286 +4,70 @@ All notable changes to the Economics mod for Civilization VII. The format follow
 [Keep a Changelog](https://keepachangelog.com/) and Semantic Versioning. The Steam Workshop change note for each
 release is generated from the matching section below by `scripts/steam-changelog.mjs`.
 
-## [Unreleased]
+## [1.0.0] - Unreleased
 
-### Added
-- Your treasury can go below zero. Loan payments, trade bills, dividends, taxes and the other charges you owe keep
-  being paid when your Gold runs out, from an overdraft that reaches 100 Gold or 10 turns of your income below zero,
-  whichever is more. Past that a payment is missed as before. Lending, aid, investing and buying production still
-  need Gold in hand. While you're below zero you pay interest on what you're overdrawn, at twice the bond market's
-  rate, and it shows as an Economy cost in your Gold per turn. Debt service and other standing costs can now take
-  your Gold per turn below zero too. The computer players run on the same overdraft.
-- A treasury below zero now costs you. Every settlement loses Happiness, everything you buy with Gold costs more and
-  your credit rating drops each turn, and the deeper into your overdraft you go the worse it gets: 2 Happiness and 5%
-  just under zero, up to 10 and 25% at the bottom of the overdraft, 15 and 30% past it. After two turns of warning
-  your costliest unit is disbanded, one every other turn and then every turn until you're back above zero, and the
-  notification names each one. From the eighth turn the buildings of your settlement with the highest upkeep shut
-  down, costing nothing and producing nothing, and another settlement follows every other turn; they all open again
-  once you're above zero. A shut settlement's buildings lose their Happiness too, the Palace's included, and so does
-  the treasury's own Happiness penalty there. The computer players pay the same. The Treasury tab shows the overdraft, how much of it you've used and what it's costing you.
-- You can always get out of a treasury below zero. The overdraft's interest never takes more than half your income,
-  so as long as you're earning Gold you pay the debt down. Or you can declare bankruptcy from the Treasury tab: your
-  treasury goes back to 0 and every loan you have is repudiated, the civilizations you've met think less of you, and
-  the bond market won't lend to you for 30 turns. You can do it once every 30 turns. A computer player below zero
-  weighs it too: what staying in debt would cost it (interest, unhappy settlements, dearer purchases, the units and
-  buildings it would lose) against what bankruptcy would (its credit, the grievances, a friend or a stronger civ it
-  owes). A deep debt it declares early; one it can pay off in a few turns it carries. You're told when one declares.
-- A debt stays a debt. The game used to wipe a negative treasury back to 0 at the end of the turn whenever your
-  income was positive; now what you owe carries over until you've paid it off, for you and the computer players
-  alike, from the first turn after you load a save. The game's own bankruptcy disbanding is off, so Economics' disbanding is the only one.
-- Each government and ideology has its own answers to a crisis, beside the shared ones: Liturgies, Land reform and
-  The assembly speaks for a Classical Republic; Merchant charter, Debt into shares and Lottery loan for a Plutocracy;
-  New Deal programmes, Bank regulation and Lend-lease for a Democracy; Diversionary war, Self-sufficiency and Off-book
-  bills for a Fascist state. They cost Influence. A Programme runs at least five turns and is judged on its own goal
-  when the crisis is over: it leaves a lasting institution if it met it, and a mark of a different kind if it didn't
-  or you ended it early. Each institution makes that path cheaper next time and the others dearer, up to 15%. The
-  computer players weigh the same cards by what they can afford and what their crisis needs.
-- The shared crisis responses show whether your economic system favours them ("Institutional advantage", a quarter
-  less Gold) or resists them ("Political opposition", 10 more Influence).
-- The top-bar pill and the screen's header name the response you're running, and the turn notice says when a
-  Programme is taken, sustained and settled.
-- With Partisans, hard times count toward partisan risings: up to 6 Happiness a settlement for the rising check in a
-  deep Depression, halved under Relief or New Deal programmes, and 3 more while you run Austerity in any crisis. Your
-  settlements' own Happiness doesn't change.
-- Loan payments and trade bills stand in your capital as named lines the game counts in your Gold per turn: "Debt
-  service: -16 Gold", "Loan repayments: +8 Gold", "Trade bills" and "Trade bills paid to you". They show in City
-  Details and in the capital's Gold breakdown, and the computer players see them in their income and plan around
-  them. Your treasury ends each turn where it did before; Economics settles whatever a line doesn't carry. The lines
-  stand as far as you can pay, overdraft included, so they can take your Gold per turn below zero.
-- The business cycle in a slump, a planned economy's take and the running costs of your crisis measures stand the
-  same way, as "Economy costs: -N Gold", and what the world pays you each turn (a boom, tax receipts) as "Economy
-  receipts: +N Gold", so the computer players plan around those too. A line that pays you is sized by your capital's
-  Income percentage (difficulty, Unhappiness, bonuses), so it pays the right Gold.
-- Inflation raises prices instead of eating into idle Gold: everything a civilization with Public debt buys with Gold
-  costs more as bond debt builds, shown on the Treasury tab and in the capital as "Inflation: prices +N%", and the
-  computer players pay the same prices. The Treasury tab shows the rise the game actually charges. Prices start over
-  with each age.
-- A repudiated loan is noted abroad: every other civilization books "They repudiated a loan" in its relationship with
-  you, which the computer players count as a grievance.
-- You can make amends after repudiating a loan. Ten turns later the civilization you wronged lends to you again at
-  half again its rate; repay that loan in full and it thinks better of you, every other civilization books "They
-  repaid a loan in full", and the repudiation stops counting against your credit. The computer players make amends the
-  same way, and ask you when you're the lender they wronged.
-- Each resource on the Markets tab opens on press to show where its price comes from ("Target 8.7 Gold = 5 base ×
-  1.73 scarce (6 civilizations, 2 copies)"), what it adds to your bills or earns you with each partner, and what moves
-  it. The chart draws the price the market is heading for beside the price, with a mark on each turn something moved
-  it. The tab says the prices are Economics' own, since the game doesn't price resources.
-- A Programme you can't pay for in a turn keeps running for up to three turns short. Gold covers the shortfall at a
-  premium that rises with each lapse and costs Public support; the fourth turn short in a row, or the sixth lapse,
-  ends it. The Treasury tab shows it as "Arrears: <card>".
-- A Civilopedia page, "Crises: own answers", tells the history behind each government's cards and what the game
-  leaves out.
-- The top-bar pills open the screen where the matter is: the debt pill on the Loans tab, in default on the loan in
-  trouble; the phase pill on the World tab's cycle, or on the Crisis section while you're in one; the inflation pill
-  on the World tab's inflation. Each pill's tooltip says where it goes.
-- The cycle dial's tooltip tells the whole story: what the index is and what moves it, the phase bands, what the
-  needle reads for you against the world, and what the reading pays or charges you this turn, in your own Gold.
-- The turn batch: every living civilization's balance, income, upkeep, buildings, stages and relationships are read
-  once at the start of each turn, the loan model plans the turn, the ledger is written to the save, and each
-  civilization gets one Gold, Influence and celebration grant. A save that falls before the grants land is caught on
-  reload and the grants are sent again, and a save from before the turn's batch runs it once when you load it.
-- The tax policy cards: Light Taxation, Heavy Taxation and War Levy in each age, in the game's own policy slots, with
-  one extra slot granted by each age's first civic, unlocked through the civics tree, and two AI strategies that
-  steer the computer players toward them. The game's AI picks them like any card.
-- The Economics screen (Treasury, Loans and Fiscal tabs) from its own dock button, with a debt pill in the
-  resource bar after the settlement limit. Borrow, repay, restructure, repudiate and lend from the Loans tab. Each loan offer shows its payment, the
-  interest in all and how much of your income your payments would take with it, and a repudiation or a restructure
-  shows what it costs before you confirm. Slot or clear a tax card from the Fiscal tab, which shows each card's
-  change to your Gold and Happiness and when your next celebration would come.
-- One notification per turn with the mod's changes to your Gold, Influence and celebration meter, the loans that
-  opened, missed or defaulted, and any request that was refused and why. A click opens the screen.
-- Economic stages: loans between civilizations open with Moneylending, the bond market and longer terms with Public
-  debt, War Levy with Coinage; each closed part is greyed with the civic or tech that opens it.
-- World prices: every resource gets a price from its class, how many copies the civilizations hold and who needs
-  it, and the Markets tab lists them with the last 30 turns.
-- Trade bills: each pair of civilizations settles the net value of what they import from each other every turn. The
-  side that owes more pays, never more than a tenth of its income, and anything over that is waived. Trade buildings
-  at either end move the bill. The Trade tab shows each partner's bill, the cap and what a new route would add.
-- Tariffs, from Imperialism: Low or High holds back 10 or 25 percent of what you owe the civilizations you import
-  from. A High tariff costs 1 relationship with each of them every five turns, and the computer players answer one
-  in kind. Set it on the Fiscal tab, once every five turns.
-- With Foreign investment on, a civilization that sends Military Aid pays the 2 Gold a turn its target gets (scaled
-  by age), so the computer players' own aid moves Gold between them instead of making it.
-- Foreign investment and aid from the Trade tab: a development loan puts Gold into the build a city is working on now
-  (from Guilds) and is repaid with interest over 25 turns, more on an economic building; general investment (from
-  Colonialism) goes into the treasury and its return follows the host's income; aid of either kind is a gift.
-  Each raises the relationship. Computer players invest in and aid their friends, and offer to invest in you; you
-  accept or decline on the Trade tab.
-- The Trade, Warehouse and Industry building roles beside Commerce and Banking, read from the game's data with other
-  mods applied; the Treasury tab counts them.
-- Three setup options for these: Markets and trade bills, Tariffs, and Foreign investment, all on by default.
-- The project: the engine-free loan model (loans, credit, lenders and rates, payments and misses, default and
-  garnish, repudiation, the auto-loan guard, AI rules, the saved ledger) with its tests, the six 1.0 setup options,
-  the 12 text folders, the gates and the release script.
-- The business cycle: a world economic index that wars, captures, razes, disasters, the age's crisis, defaults,
-  repudiations, peace, trade routes and the world's income move, and drifts back between them, with each
-  civilization's own economy on top. A boom pays a little Gold each turn and makes bonds cheaper; a slump takes a
-  little and makes them dearer. Warehouses and old economic buildings soften a slump. From Banking, a boom built on
-  too much borrowing can turn into a five-turn Panic. The turn notification names what changed your phase.
-- Inflation, off by default: civilizations with Public debt lose a little of the Gold they hold above twenty turns
-  of income when they owe the bond market a lot beside it, and bond loans cost more.
-- Economic systems: each civilization's government, or its ideology in the Modern age, sets its system (palace
-  economy, civic market, merchant oligarchy, manorial, mercantile, usury law, corporatist, market, planned or mixed),
-  which changes its rates, credit, trade bills, investment and how hard booms and slumps swing it. The tax-card
-  changes are policy-card yields the game shows on each city's breakdown. A new system blends in over ten turns.
-- With Economic systems on, each civilization leans toward one government in its own age, so the computer players
-  spread across the systems instead of most of them taking the same two or three. The game reads these leanings when
-  a game is created, so they reach new games only. `docs/government-biases.md` lists each civilization's pick.
-- Citizen loans for a Classical Republic: borrow from your own citizens from the start of the game, and the
-  interest comes back as celebration. The computer players take them too.
-- The plan for a Communist civilization: a fifth of its Gold income goes into its cities' builds each turn.
-- A Theocracy lends as a partnership: what it's paid follows the borrower's income.
-- Old buildings fade across the ages instead of switching off, role by role, and what they lose becomes a slump
-  cushion. The Treasury tab lists each with its weight and what moves it.
-- The Banking stage (Urban Planning) and the Capitalism stage, with a deeper credit market, Panics, wider returns on
-  investment and computer players investing in each other.
-- The World tab: the index, your phase, what moved it, its last 30 turns, inflation and its cause, world debt and your
-  legacy. The Fiscal tab names your economic system and what it changes.
-- Three setup options for these: Inflation (Off), Business cycle (Off, Mild, Standard, Strong; Standard) and
-  Economic systems (On).
-- The Spoil Guard, under Options, Mods, Economics, on by default: civilizations you haven't met are left off the
-  Trade tab, the aid list and the list you can lend to, and a line that would name one says "an unmet
-  civilization". With Demographics installed, the stricter of the two guards wins.
+The first release. Economics gives Gold an economy, and the computer players use it too.
 
-### Changed
-- Plainer words across the screen: "credit rating" for the 0 to 100 figure lenders read (its full rules in a
-  tooltip), "set aside for payments" for escrow, "forgiven" for bills over the cap, "Public support" for what Relief
-  and Cancel the debts put on your celebration meter, and the buildings block says what your economic buildings do
-  for your credit limit and rates. The Trade tab drops the Offers and Investments sections while they're empty.
-- Aid buys goodwill you can see. A gift now raises the relationship by 1 for each half a turn of the receiver's
-  income, up to 20 from one gift, where before it took two and a half turns' worth for a single point and the Trade
-  tab's 300 Gold showed "+0" against most civilizations. A gift too small to be noticed is greyed, with the least Gold
-  that would be noticed beside it. Development loans and general investment are investments and their lines now say
-  only what comes back; the relationship they also raise, more slowly, no longer shows as a stray "+0".
-- A section's subtitle wraps under its heading instead of running off the panel's edge.
-- Booms and slumps can be big. A new setup option, Economic swings, sets how far they run: on Volatile, the default, a
-  downturn feeds on itself and a boom overshoots when it turns, so a depression can take a third to half of your
-  income for a few turns, about what an age's crisis takes, and a boom can add a quarter. Each game finds its own highs
-  and lows. Gentle keeps the old cycle, where a slump cost a few percent; Extreme runs wilder still. A Panic now hits
-  half as hard on Mild and half again as hard on Strong.
-- The Economics screen grows with your economy. In Antiquity it opens with the Treasury and Fiscal tabs; Markets and
-  World appear with Currency, Trade with Code of Laws, and Loans with Commerce, or sooner if you take an emergency or
-  temple loan or your citizens would lend to you. Until the Loans tab appears, the auto-loan guard and your loans sit
-  on the Treasury tab, along with this turn's business cycle Gold until the World tab opens. Parts you haven't reached
-  are left out instead of greyed, and each tab ends with one line naming what opens next and the civic or tech that
-  opens it. The turn a tab or part opens, the turn notification says so, and the dock button shows a small gold dot
-  until you look. With Economic stages off, every tab is there from the start.
-- The Economics screen has a new look. A strip above the tabs shows your treasury, income, what Economics moved last
-  turn, your debt with this turn's payments, your economy's phase and anything waiting for next turn, and your
-  economic system and phase sit under the title. Gold and Happiness show with the game's icons and their signs. The
-  business cycle reads on a dial, and loan payments and inflation on slim scales with the lenders' limit and the
-  inflation cap marked. The 20-turn projection, the world index and each resource's prices are line charts with a
-  scale, turn labels and a readout for the turn you point at. What Economics moved last turn opens to its parts, and
-  the Treasury tab says what changed since last turn.
-- Borrowing, repaying, restructuring, repudiating, lending and investing open a confirmation right under the button,
-  with your treasury, debt and payments now and after, and the line saying it was sent appears beside it. The borrow
-  form starts at the most your limits allow over the shortest term. A button you can't use says why beside it.
-- Buttons, choices and steppers are the game's own activatable controls, so a controller's accept presses them, and
-  Escape closes the screen.
-- The turn notice shows Gold in whole numbers, like the top bar, and only speaks up when Economics moved 2 Gold or
-  more that turn.
-- The debt pill sits in the top resource bar, after the settlement limit.
-- Heavy Taxation opens in Antiquity at Code of Laws, after Priesthood's civic, so Priesthood is the first Gold card
-  you can pick. Light still opens at Chiefdom.
-- The Rates setup option is now called Base Interest Rate, and its tooltip says what it sets: the rate every loan
-  starts from in each age, which each loan's payment record, relationship, banking buildings and the world economy
-  then move.
-- The business cycle no longer leans to Boom. A trade route that stands and income that grows at its usual pace don't
-  move the world any more; only growth faster or slower than usual does, and a long boom wears itself out, so a
-  growing world still has slumps.
-- At an age change the turn notice says how much of your Gold the game let you keep ("the age change kept 6,000 of
-  your 11,432 Gold"), and the Treasury history records it for every civilization.
-- The turn notice reads as a sentence: "from trade bills and the business cycle", and two wars declared in one turn
-  read "after 2 wars declared" instead of the same cause twice. The Fiscal tab says "next turn" instead of "in 1
-  turns".
-- Trade bills follow what's traded: 2.5 percent of each copy's price a turn instead of half, so the tenth-of-income
-  cap only bites on the biggest deficits and a tariff changes what you pay.
-- The computer players set tariffs of their own: Low against a big partner they pay more than they're paid and aren't
-  friends with, High against a big partner they're Unfriendly with. They answer your Low with Low and your High with
-  High two turns later, and drop back when you do.
-- The computer players' tariffs come back down. After 20 turns at peace with a civilization, or straight away once
-  they're friends, a computer player lets go of its tariff against it, and the other side still holding one isn't
-  enough to raise it again. A war, or a new raise from the other side, starts it up again. In a test game five
-  computer players answered each other's High tariffs for 130 turns, each waiting for the other to lower first.
-- General investment turned down because the other civilization is in default now says a development loan on one of
-  its builds is still open, and the Trade tab shows the refusal before you ask, with a button that opens that loan
-  with the same Gold. Nothing is sent until you pick a build.
-- Citizen loans' interest comes back as 6 celebration for each Gold, up from 2, the same as Light Taxation now buys.
-- The computer players borrow to build: while their credit is cheap, each takes a loan now and then and puts it
-  straight into the building it's working on, within the same limits you have. Easy credit in a boom now leads to
-  more borrowing, and from Banking a boom carried on too much debt can end in a Panic. World leverage is now counted in
-  turns of the world's income, and the World tab shows it against the line where a Panic can start.
-- Interest rates are half what they were: 1.5 percent a turn in Antiquity, 1 in Exploration and 0.75 in Modern, so a
-  Market, Bazaar or Bank bought with a loan pays its own interest within ten turns. Your payments can take up to half
-  your income instead of 35 percent, and 20-turn loans from other civilizations open with Moneylending; 30-turn loans
-  and the bond market still wait for Public debt.
-- A loan refused for your limits tells you the most that lender will lend over that term, and the Loans tab has a
-  "Borrow that instead" button.
-- The plan buys its production at what buying that build would cost you in Gold, read for each build (about 3.5 Gold
-  a point for a Modern building), instead of 3. What's left after whole points stays in your treasury.
-- An old building with no age tags counts as a Commerce building in later ages when it earns Gold and the game files
-  it as economic, so Markets and Banks keep counting toward your credit limit after the age changes.
-- Misery from a crisis holds while Partisans' cooling-off runs, instead of building up for the next rising.
-- The mod's description in Additional Content covers the whole mod: loans, taxes and the guard, markets, trade bills,
-  tariffs and investment, and the business cycle, inflation, old buildings and economic systems. The Fiscal tab's
-  line for a mixed economy says what it gets, and the Economic systems option says the computer players lean toward a
-  government that suits their civilization.
-- The tax cards add flat amounts in each settlement instead of percentages: Light Taxation -1 Gold and +6 Happiness,
-  Heavy Taxation +4 Gold and -2 Happiness, War Levy +2 Gold and -1 Happiness in peace and +8 Gold and -4 Happiness
-  while you're at war. The computer players took flat cards in test games where they passed over the percentage ones.
-  The two AI strategies that steer them are stronger.
-- Light Taxation is cheaper and calms more: -1 Gold and +6 Happiness in each settlement, up from -2 and +4. In test
-  games the computer players never took the old one; now a grown civilization whose cities are getting unhappy takes
-  it, while young ones still go for Heavy Taxation. Under a Civic market Light gives +2 Happiness more, up from +1.
-- Light Taxation gives less Happiness in the later ages: +6 in Antiquity, +4 in Exploration and +3 in Modern, still
-  for 1 Gold in each settlement. In a test game every computer player slotted the +6 card early in Exploration and
-  Modern and kept it all age, with Happiness to spare. The card's text and the Fiscal tab show the age's amount.
-- War Levy pays a little in peace: +2 Gold and -1 Happiness in each settlement, rising to +8 Gold and -4 Happiness
-  while you're at war. The computer players often keep it slotted in peacetime, and before this it gave them nothing
-  there. The Fiscal tab shows both amounts. Under Corporatist it still pays the full wartime amount in peace.
-- Loans Off now turns off the loans alone; trade bills and investment keep their own options.
-- The auto-loan guard only borrows while your income is at or below 0: with positive income the game wipes a
-  negative balance to 0 at the turn roll without charging you, so a loan there would be Gold the game gives for free.
-- The Treasury tab keeps loans out of sight until they're a thing for you: what you owe (and the Debt figure at the
-  top of the screen), the payments due, the debt-service scale and the projection with and without loans appear when
-  the Loans tab does (Moneylending, an open loan, or your citizens offering to lend). Until then the 20-turn chart
-  shows your balance alone. With Economic stages Off everything shows from the start, as before.
-- The Loans tab gives one answer to how much you can borrow: the most you can actually take over the term you've
-  picked, the same figure the borrow form opens on. When your loan payments are what holds it back, it says a bigger
-  loan would push them past half your income.
-- The Economics screen's text is larger, in step with the game's own panels, and the screen is only as tall as the
-  open tab needs, up to nearly the whole screen, so an early-game tab isn't a tall empty frame. In a 720p window the
-  figures across the top take less room, and in a 4:3 window the two columns stack in full instead of squeezing
-  together.
-- When there's nothing you can borrow over a term, the borrow form says why without offering an amount, and before
-  you have any income it says your credit limit opens once you're earning Gold.
-- Aid is on the Treasury tab until the Trade tab opens, since it needs no stage; then it lives on the Trade tab.
-  Civilizations you haven't met are left out there too.
-- The citizens' loan offer reads "Your citizens" as its title, and the bond market's and temple treasuries' titles
-  start with a capital too.
+### Loans and debt
+- Borrow from other civilizations or the bond market over 10, 20 or 30 turns, at 1.5 percent a turn in Antiquity, 1
+  in Exploration and 0.75 in Modern. Your payments can take up to half your income.
+- Miss three payments in a row and a loan is in default. An overdue loan can be restructured once.
+- Repudiate a loan to keep the Gold; every civilization holds it against you and credit costs more for 40 turns. Ten
+  turns later you can make amends.
+- Lend to a computer player that's short. If it defaults, the loss is yours.
+- A Classical Republic can borrow from its own citizens, and the interest comes back as celebration.
+- The auto-loan guard takes an emergency loan when your treasury would go below zero while your income is zero or less.
 
-### Fixed
-- A charge larger than what you held at the start of your turn could show your treasury below zero for a moment, or
-  leave it there when standing lines came out of the same turn's income. Economics now takes only what you hold
-  and the rest once your income for the turn has landed, and counts your standing lines against that income.
-- A civilization short of Gold could have part of its debt payments quietly forgiven by the game at the start of its
-  turn while its lender was still paid in full. What stands in its capital for next turn now fits in what it has.
-- A tribute's doubled bills now show on the Trade tab, and the legacy row for Tribute lasts one turn longer so the
-  levy turn's bills settle first.
-- Economics' own marker buildings are left out of every count of your buildings it makes.
-- The repudiation preview's note showed its raw text key; it reads again, naming the lender's own relationship
-  hit.
-- "Payments left 1 turn", "in 1 turn" and "1 turn" on the loan cards and the Fiscal tab, where "1 turns" showed.
-- With the Loans option off, the Loans tab stays away and the Treasury tab doesn't offer the guard switch or promise
-  loans to come; before, the tab drew a borrow form that led nowhere.
-- The batch reads each civilization's strength from its combat units and skips `getMilitaryStrength`, which answered
-  nothing and wrote two conversion warnings per civilization per turn into UI.log.
-- Payments under one Gold never reached anyone's treasury, because the game pays grants in whole Gold. That was most
-  of the business cycle's effect in a steady economy. Each civilization is now paid in whole Gold and the rest carries
-  to its next turn, so a few tenths a turn add up to a Gold every few turns. Reloading in the middle of a turn no
-  longer re-sends those payments, and a payment that has landed is never sent twice.
-- War Levy's yields: the card had kept its old +30 Gold and -40 Happiness and asked for eight wars at once before it
-  paid, so slotting it cost Happiness in every settlement and didn't pay any Gold. It now pays +8 Gold and -4 Happiness
-  while you're at war with anyone.
-- From the first turn of a new age the mod stopped working until that age's turn count passed the old age's last
-  turn. Turns now count on across the ages.
+### Below zero and bankruptcy
+- When your Gold runs out, payments come from an overdraft of 100 Gold or 10 turns of income, whichever is more.
+- Its interest is capped at half your income, so while you're earning Gold you pay it down.
+- Below zero, settlements lose Happiness, purchases cost more and your credit rating drops each turn.
+- After two turns of warning your costliest unit is disbanded, and from the eighth turn a settlement's buildings shut.
+- Bankruptcy, from the Treasury tab, puts your treasury back to 0 and repudiates every loan, once every 30 turns.
+
+### Taxes
+- Light Taxation, Heavy Taxation and War Levy are policy cards in each age, with an extra slot to hold them.
+- Light Taxation: -1 Gold and +6 Happiness a settlement in Antiquity, +4 in Exploration, +3 in Modern.
+- Heavy Taxation: +4 Gold and -2 Happiness a settlement.
+- War Levy: +2 Gold and -1 Happiness in peace, +8 Gold and -4 Happiness at war.
+
+### Markets and trade
+- Each resource has a world price from its class, how many copies exist and who needs it.
+- Trade partners settle the difference in what they import from each other, capped at a tenth of income.
+- Tariffs from Imperialism hold back 10 or 25 percent of what you owe, at a relationship cost.
+- Loan payments, trade bills and the business cycle show as named lines in your capital's Gold per turn.
+
+### Investment and aid
+- A development loan funds a city's build and is repaid over 25 turns; general investment follows the host's income.
+- Aid is a gift that raises the relationship, up to 20 from one gift.
+
+### The world's economy
+- Wars, disasters and defaults pull the world into slumps; peace and growing income lift it into booms.
+- Economic swings sets how far: on Volatile, the default, a depression can take a third to half of your income.
+- From Banking, a boom built on too much borrowing can turn into a Panic.
+- A crisis opens shared responses and answers only some governments can take, such as a Democracy's New Deal.
+- Inflation, off by default, raises the prices of civilizations deep in bond debt.
+- With Partisans, hard times add to the risk of a rising.
+
+### Economic systems
+- Your government sets your economic system, from a palace economy to a planned one.
+- Each system changes rates, credit, trade bills, investment and how hard booms and slumps swing you.
+- Old buildings fade across the ages, and what they lose cushions a slump.
+- Each civilization leans toward a government that suits it, so the computer players spread across the systems.
+
+### The computer players
+- They borrow, lend, repay, restructure, repudiate, invest, aid, set tariffs and take crisis responses.
+- They pay the same overdraft, prices and penalties you do.
+
+### The Economics screen
+- Opens from its dock button. Tabs appear as you reach the civics and techs that bring them in.
+- A strip shows your treasury, income, debt and phase, with a dial for the cycle and charts for prices.
+- Each action shows your treasury and payments before and after, and a button you can't use says why.
+- One notification a turn sums up what Economics changed.
+
+### Options
+- A setup option for each part, and a Spoil Guard under Options, Mods, Economics that hides unmet civilizations.
+
+### Limits
+- Single-player only; in hotseat and network games it switches itself off.
+- A save made with the mod needs it to load.

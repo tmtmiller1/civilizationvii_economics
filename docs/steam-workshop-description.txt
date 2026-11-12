@@ -1,11 +1,12 @@
 [h1]Economics[/h1]
+[b]Version 1.0.0. Compatible with Civilization VII 1.5.1. Single-player only.[/b]
 
-Gold gets an economy: loans, debt that can run below zero, tax cards, world prices and trade bills, investment and aid, a business cycle with crises, inflation, and an economic system for each government. The computer players use these systems the same way you do. Open the Economics screen from its dock button. It grows with your economy, from the Treasury and Fiscal tabs in Antiquity to Loans, Markets, Trade and World as you reach the civics and techs that bring them in.
+Economics builds an economy around Gold: loans, debt that can run below zero, tax cards, world prices and trade bills, investment and aid, a business cycle with crises, inflation, and an economic system for each government. The computer players use them too. Open the Economics screen from its dock button. It grows with your economy, from the Treasury and Fiscal tabs in Antiquity to Loans, Markets, Trade and World as you reach the civics and techs that bring them in.
 
 [h2]Loans and debt[/h2]
 [list]
-[*][b]Borrow[/b] from other civilizations or the bond market over 10, 20 or 30 turns. Your income sets your credit limit, and the payments on all your loans can't pass half of it. Miss a payment and the rate rises; miss three in a row and the loan is in default.
-[*][b]Restructure or repudiate.[/b] An overdue loan can be spread over ten new turns once. Repudiate it and you keep the Gold, the lender books a grudge, each other civilization holds it against you, and credit is dearer for 40 turns. Ten turns later you can make amends.
+[*][b]Borrow[/b] from other civilizations or the bond market over 10, 20 or 30 turns. Your income sets your credit limit, and the payments on all your loans can't come to more than half of it. Miss a payment and the rate rises; miss three in a row and the loan is in default.
+[*][b]Restructure or repudiate.[/b] An overdue loan can be spread over ten new turns once. Repudiate it and you keep the Gold, the lender holds a grievance against you, so does every other civilization, and loans cost you more for 40 turns. Ten turns later you can make amends.
 [*][b]Lend[/b] to a computer player that's short, at your rate. If it defaults, the loss is yours.
 [*][b]The auto-loan guard[/b] takes an emergency loan when your treasury would go below zero while your income is at or below zero, up to ten turns of your income.
 [/list]
@@ -20,7 +21,7 @@ When your Gold runs out, what you owe keeps being paid from an overdraft of 100 
 Back above zero, your Happiness, prices and buildings return to normal. Or declare bankruptcy from the Treasury tab: your treasury goes back to 0, each of your loans is repudiated, the civilizations you've met think less of you, and the bond market won't lend to you for 30 turns. You can do it once every 30 turns.
 
 [h2]Taxes and your Gold per turn[/h2]
-Light Taxation, Heavy Taxation and War Levy are policy cards in each age, with an extra slot so they don't push out a card you hold. Loan payments, trade bills and the business cycle stand in your capital as named lines in your Gold per turn, so the top bar shows what you'll get.
+Light Taxation, Heavy Taxation and War Levy are policy cards in each age, with an extra slot so they don't push out a card you hold. Loan payments, trade bills and the business cycle show as named lines in your capital's Gold per turn, so the top bar shows what you'll get.
 
 [h2]Markets, trade and investment[/h2]
 [list]
@@ -34,7 +35,7 @@ Light Taxation, Heavy Taxation and War Levy are policy cards in each age, with a
 Wars, captured and razed settlements, disasters and defaults pull the world's economy into slumps, and peace and growing income lift it into booms. From Banking, a boom built on too much borrowing can turn into a Panic. A deep slump or debts that can't be met open a crisis, with shared responses for each civilization and answers only some governments can take: borrowing from citizens for a Classical Republic, chartered companies for a Plutocracy, a New Deal for a Democracy, a diversionary war for a Fascist state. Your government sets your economic system, from a palace economy to a planned one, and the markets and banks of an earlier age fade as newer ones take over. Inflation, off by default, raises the prices of civilizations deep in bond debt.
 
 [h2]The computer players[/h2]
-They borrow when they're short and to fund a build, lend when they're flush, repay early, restructure, repudiate a debt to an enemy, make amends, invest in and aid their partners, set tariffs and answer yours, take crisis responses, and weigh bankruptcy against the units and buildings they'd lose staying in debt. Their debt payments stand in their Gold per turn, so the game's AI plans around them.
+They borrow when they're short and to fund a build, lend when they're flush, repay early, restructure, repudiate a debt to an enemy, make amends, invest in and aid their partners, set tariffs and answer yours, take crisis responses, and weigh bankruptcy against the units and buildings they'd lose staying in debt. Their debt payments come out of their Gold per turn, so the game's AI plans around them.
 
 Where they differ from you, and why:
 [list]
@@ -46,9 +47,9 @@ Where they differ from you, and why:
 A setup option switches their Economics rules off.
 
 [h2]Options[/h2]
-Each part has a setup option: loans, the guard, the AI's rules, the base interest rate, taxes, economic stages, markets and trade bills, tariffs, foreign investment, inflation, the business cycle, how far booms and slumps swing, and economic systems. Under Options, Mods, Economics, the Spoil Guard keeps civilizations you haven't met off the screen.
+Each part has a setup option: loans, the guard, the AI's rules, the base interest rate, taxes, economic stages, markets and trade bills, tariffs, foreign investment, inflation, the business cycle, how far booms and slumps swing, and economic systems. Under Options, Mods, Economics, the Spoil Guard hides civilizations you haven't met.
 
 [h2]Limits[/h2]
-Single-player; in a hotseat or network game it stays off. It reads buildings, stages and cards from the game's data with other mods applied. A save made with the mod needs it to load.
+Single-player only; in hotseat and network games it switches itself off. It reads buildings, stages and cards from the game's data with other mods applied. A save made with the mod needs it to load.
 
 Source and issues on GitHub: [url=https://github.com/tmtmiller1/civilizationvii_economics]github.com/tmtmiller1/civilizationvii_economics[/url]

@@ -154,7 +154,7 @@ export function sanitizeMarkets(input) {
   out.aidAge = cleanAidAges(raw.aidAge);
   out.investTurn = cleanTurns(raw.investTurn);
   out.tariffPeace = cleanPairTurns(raw.tariffPeace);
-  // A save from before stage E (0.5.4) has no aid turns: every host is open to aid at once.
+  // With no aid turns recorded, every host is open to aid at once.
   out.aidTurns = cleanPairTurns(raw.aidTurns);
   out.offerTurns = cleanPairTurns(raw.offerTurns);
   out.tariffEased = cleanPairLevels(raw.tariffEased);

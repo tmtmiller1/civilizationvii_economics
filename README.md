@@ -2,7 +2,7 @@
 
 A Civilization VII mod that gives Gold an economy: loans, debt that can run below zero, tax cards, world prices and
 trade bills, investment and aid, a business cycle with crises, inflation, and an economic system for each government.
-The computer players use these systems the same way you do. In development; what has been seen working in test games
+The computer players use them too. In development; what has been seen working in test games
 is in [docs/verification-runs.md](docs/verification-runs.md), and the design is in [docs/DESIGN.md](docs/DESIGN.md).
 
 ## What it does

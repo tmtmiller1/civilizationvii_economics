@@ -2,7 +2,7 @@
 
 Status 2026-10-30. 1.0 Finance (loans, the guard, taxes, the 1.0 stages), 1.1 Commerce (prices, trade bills,
 tariffs, investment, the other roles and stages) and 1.2 Macro (inflation, the business cycle, old buildings, economic
-systems, the Banking and Capitalism stages) are built and gated offline, versions 0.2.0, 0.3.0 and 0.4.0
+systems, the Banking and Capitalism stages) are built and gated offline, in the 2026-10-29 and 10-30 builds
 ([NOTES.md](NOTES.md)); none of it has been watched in a game. The 1.0, 1.1 and 1.2 probes ran 2026-10-29 and 10-30
 (section 10 and `mod_ideas_tested/economics/devtools/probe-runs/`). Engine claims are watched (`engine-closed.md`) or
 unverified and listed in section 10. Corpus: none of 1249 reference mods
@@ -388,7 +388,7 @@ lets anyone change it, player or AI (section 3), so taxes use the game's own slo
   A script can't change an AI's cards for it: an operation sent for another player is accepted and ignored
   (section 3). So the AI side has no mod rule, only native steering:
   - War Levy pays a small part in peace and the rest only at war with a major civ. The AI's card pass ignores the
-    war requirement and slots it in peace too (P17, the 0.4.0 watch), so the peacetime part gives those turns a return.
+    war requirement and slots it in peace too (P17, the Macro build's watch), so the peacetime part gives those turns a return.
   - Two AI strategy rows, in the shape Emigration ships (`emigration-ai-strategy.sql`), gated on the Taxes setup
     parameter: "short of Gold" switches on through the game's `YieldIncome` condition on `YIELD_GOLD` below a
     threshold and raises the AI's Gold priority; "flush" switches on above a higher one and raises Happiness instead.
@@ -418,7 +418,7 @@ being a share of income: a wide civ gets more from Heavy than a rich one with fe
 `ui/econ-tax-cards.js` (`CARD_LEVELS`) and `scripts/sync-tax-cards.mjs` writes them into the modifiers and the card
 text.
 
-Light arms, 2026-10-30. The 0.4.0 watch had no AI take Light in 119 turns, four of five take Heavy at their second
+Light arms, 2026-10-30. The Macro build's watch had no AI take Light in 119 turns, four of five take Heavy at their second
 slot, and all five hold War Levy, at peace for nothing on 139 civ-turns. The owner asked for a Light the AI takes in
 some situations but not all. Five lab games (Antiquity 4242, 110 turns, every other mod off; results in
 `mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-light-arms.md`) ran all three cards head to head, Heavy at
@@ -502,7 +502,7 @@ bond     = r_bond rises by 50 * pi, at most 25% (4.3)
 - The Treasury tab shows the civ's price level and next turn's rise, and the World tab the cause in one sentence
   ("bond debt is 1.4 times the Gold the bond market's members hold, mostly Persia's").
 
-Built 2026-10-30 (version 0.4.0, offline only). Members are the living civs past Public debt; `B` is what they owe the
+Built 2026-10-30 (the Macro build, offline only). Members are the living civs past Public debt; `B` is what they owe the
 bond market, `M` the Gold they hold. The premium enters the bond rate with the system's share and the cycle spread.
 Until 2026-11-09 erosion went to the world account `inflation` at step 3 of each member's pass; the price level takes
 that step now, and the account stays for a recoinage's price. The game caps the Gold a civ carries into a new
@@ -571,7 +571,7 @@ paid      = min(net, 0.10 * max(0, payer's income))            0 when the payer'
 - A High tariff costs the importer 1 relationship with each exporter it bills, every 5 turns. The mod tells the player
   why, because a script change shows in the diplomacy breakdown as a bare number.
 
-Built 2026-10-29 (version 0.3.0, offline only), with the 1.1 probe results of the same night folded in
+Built 2026-10-29 (the Commerce build, offline only), with the 1.1 probe results of the same night folded in
 (`mod_ideas_tested/economics/devtools/probe-runs/2026-10-30-commerce-results.md`, Exploration seed 9001). The bill is
 made from the importer's resources whose origin city a major owns (`Resources.getResources` with
 `Game.Resources.getOriginCity`), grouped by that city; C8 settled P7 (an AI's per-route imports read from the UI context
@@ -672,7 +672,7 @@ drop is carried the same way, which is why it scales with `k`.
 The turn notification names the events behind a phase change ("Slump: the war between Rome and Persia, a flood at
 Thebes").
 
-Built 2026-10-30 (version 0.4.0, offline only), with the M9 and M6 readings folded in. `E` and `L` are held in basis
+Built 2026-10-30 (the Macro build, offline only), with the M9 and M6 readings folded in. `E` and `L` are held in basis
 points (10000 is 1.0) in the macro envelope. Wars and peace are read from the relations between majors against last
 turn's (M9: declared wars between majors match the polled war state a turn later, and the declared-war event also
 names Independents); routes from the plan's own routes; captures by combat (`CityTransfered`), razes
@@ -712,8 +712,8 @@ What the model does once the world is under 0.80, read from the code and the run
 
 - How it gets there. Only events and the world's own income move `E`; the tenth run's Depression came "after credit
   growing fast and the world's income growing slower than usual" on top of three defaults (-0.03 each) from the
-  loans the probe wrote, with Volatile's momentum (0.8) carrying each fall into the next turn. The 0.5.3 balance run
-  put the world in Depression 5% of turns on Volatile with floors of 0.51 to 0.69; Gentle never got there.
+  loans the probe wrote, with Volatile's momentum (0.8) carrying each fall into the next turn. The `5f4f26a`
+  build's balance run put the world in Depression 5% of turns on Volatile with floors of 0.51 to 0.69; Gentle never got there.
 - How it gets out. Reversion alone: 10% of the gap a turn, so 0.77 is 0.79 next turn and 0.81 the turn after unless
   momentum and new events hold it down. The only positive events are peace (+0.01), a new route (+0.005), income above
   its trend (up to +0.01) and credit growing fast (+0.015). Nothing a civ chooses lifts the index.
@@ -816,7 +816,7 @@ the card's yields on its own; the rest is the mod's rule.
 one stage on from Public debt, so Antiquity's Depressions have Relief, Public works and the Bank holiday only.
 
 **Balance targets.** With responses, a Depression on Volatile should last two thirds of what it does without (the
-0.5.3 run's floors of 0.51 to 0.69 should rise to 0.6 to 0.75); the Hoover trap should make it a quarter longer;
+`5f4f26a` run's floors of 0.51 to 0.69 should rise to 0.6 to 0.75); the Hoover trap should make it a quarter longer;
 no response should turn a Depression into a Boom within 10 turns; and the AI should take at least one response in
 four of five Depressions.
 
@@ -1025,7 +1025,7 @@ Other rules:
 - Keep the city component id and re-resolve each turn, never the city object (engine-closed: a stale city object
   crashed the game, 2026-10-23).
 
-Built 2026-10-29 (version 0.3.0, offline only), with the 1.1 probe results folded in. C3 settled P8: `addProgress` on an
+Built 2026-10-29 (the Commerce build, offline only), with the 1.1 probe results folded in. C3 settled P8: `addProgress` on an
 AI city's current build lands within 3 s and the AI keeps the build for the next 3 turns, as a control city does, so a
 development loan backs the build at the head of the queue as written. A development loan's Gold goes to a world account,
 `progress`, and only the Gold its progress uses leaves the investor (3 Gold a point then; the build's purchase price a point since 2026-11-04), so "the rest is returned" is the
@@ -1176,7 +1176,7 @@ Economic stages option Off every tab is there from the start.
   debt, 0.6 from Public debt, 1.0 from Capitalism.
 - New loans and investments need both parties to have the stage. Running ones continue.
 
-Built 2026-10-30 (version 0.4.0, offline only) for Banking and Capitalism. Banking raises `depth_factor`'s cap to 0.4
+Built 2026-10-30 (the Macro build, offline only) for Banking and Capitalism. Banking raises `depth_factor`'s cap to 0.4
 for the civ and opens Panics once any living civ has it. Capitalism's effects go to Market and Mixed civs: general
 investment's growth clamp widens to 0.25 to 3.0 on such a host, prices smooth at 0.5 once such a civ has the stage,
 and an AI investor of either system past it also invests in Neutral hosts that are too. M4 found every old-age node
@@ -1235,7 +1235,7 @@ cushion  = min(0.10, 0.01 * legacy)        cut on a negative L; with the Warehou
   Guilds"; "Bank, Exploration: 0.65, fading, Stock Exchange built here"). The turn notification reports supersessions.
   The World tab shows legacy and the cushion.
 
-Built 2026-10-30 (version 0.4.0, offline only), with M4 folded in: old buildings keep their base Gold and upkeep across
+Built 2026-10-30 (the Macro build, offline only), with M4 folded in: old buildings keep their base Gold and upkeep across
 both changes (61 and 211 kept, none lost), so the engine doesn't fade them and this section's fade is the mod's own.
 Nothing is stored per building: each weight is worked out every turn from the building's age, the current age, the
 turn its role's successor stage opened, the age's first turn and whether its city has a current-age building of the
@@ -1345,7 +1345,7 @@ Each row lists only the changes from Mixed. Mixed is sections 4.1 to 4.16 as wri
 - The Capitalism stage's effects apply only to Market and Mixed civs. Other systems keep the civic and its game
   effects.
 
-Built 2026-10-30 (version 0.4.0, offline only), with the M-probes folded in. M2: the AI's government pick didn't move
+Built 2026-10-30 (the Macro build, offline only), with the M-probes folded in. M2: the AI's government pick didn't move
 for +10 Gold, +5 Production and +5 Science a settlement on Oligarchy, and moved for a `GovernmentBiases` row; so the
 modifiers carry what a system pays, and only bias rows steer the pick. The owner decided on 2026-10-30 to give each civ
 its own: 50 civs, one row each at 75, spread Antiquity Classical Republic 6, Despotism 5, Oligarchy 6; Exploration
@@ -1799,7 +1799,7 @@ figures in `../reports/balance-1.2.json`). No game was launched.
 | Cycle shape | World phase Steady on 55 to 71% of turns and Boom on the rest in every game; `E` never below 0.95 (lowest 0.952), highest 1.15; the peaceful game Boom on 63% of turns; civ Slumps on 0 to 2 civ-turns a game; no Depression; no Panic (leverage peaked at 5%, against the 150% a Panic needs) | Missed: a peaceful game never slumps, and the world leans to Boom. Two terms rise with ordinary growth: each standing route's +0.001 a turn (the world's +0.01 cap is reached with ten routes) and world income against 10 turns ago (incomes grow every turn). Without them the same games slump on 7 to 20% of turns with no Boom, and the peaceful game holds Steady with 24 civ-turns of Slump. Constants: `CYCLE_WEIGHTS.routeStanding`, `incomePer5Pct`, or measuring income against its own trend. A Panic needs borrowing the AI rules don't do |
 | Inflation | `pi` on 60 to 150 turns a game, median 0.01 to 0.04%, worst 0.1% a turn; 30 to 75 Gold eroded a game | Met: never at its cap |
 | System diversity | Ten civs, one per system, the same world for 100 Exploration turns: Corporatist +7.7 Gold of cycle Gold against Mixed's +4.2, credit 630 against 420, swing (sd of `E + L`) 0.028 against 0.036, production level; Merchant oligarchy credit 540, swing 0.037; Manorial credit 300, swing 0.034; Planned 300 Gold into 100 points of production, outside the cycle; the rest within a few Gold of Mixed | Missed for Corporatist (ahead on three of four, level on the fourth): its war boom paid while the others took the war's hit, and its 1.5x credit is the biggest single number. Constants: `SYSTEM_CHANGES.corporatist.creditPct`, `CYCLE_WEIGHTS.corporatistWar` |
-| Citizen loans | A Classical Republic AI holding 5 turns of income: 563 Gold borrowed in 100 Antiquity turns, 61 Gold of interest, 122 celebration, no default; the other Antiquity AI borrowed nothing | Met at 0.4.0's Light (2 a Gold); missed since the Light arms (2026-10-30): Light's +6 Happiness for -1 Gold is 6 a Gold, three times the citizens' 2. The owner's call whether the citizens' return should rise to match |
+| Citizen loans | A Classical Republic AI holding 5 turns of income: 563 Gold borrowed in 100 Antiquity turns, 61 Gold of interest, 122 celebration, no default; the other Antiquity AI borrowed nothing | Met at the Macro build's Light (2 a Gold); missed since the Light arms (2026-10-30): Light's +6 Happiness for -1 Gold is 6 a Gold, three times the citizens' 2. The owner's call whether the citizens' return should rise to match |
 | The plan | A Planned civ at 50 Gold a turn: 450 Gold into 150 points in 50 turns, worth 600 Gold at the game's purchase price (4 Gold a point) before production bonuses scale `addProgress` up (NOTES finding L) | Missed: worth 1.33 times the Gold it took, and a Planned civ gives up no tax level here. Constant: `PLANNED.goldPerProgress` (3, the development loan's ratio) to 4 or more |
 | Envelope growth | The macro envelope at most 3.2 KB | Met |
 | Turn time | 12 civs, 60 settlements, 40 routes, every part on: median 0.16 ms, worst 2 ms | Met |
@@ -1863,7 +1863,7 @@ what play showed. Stages (4.15) and building roles (4.13) ship with the parts th
 | 1.1 Commerce | markets (4.9); trade settlement and tariffs (4.10); development loans, general investment and aid (4.12); the other roles in 4.13; the Trade, Guild patronage, Chartered companies and Tariffs stages | Markets, Trade |
 | 1.2 Macro | inflation (4.8); business cycle (4.11); old buildings (4.16); economic systems (4.17); the Banking and Capitalism stages | World |
 
-1.0, 1.1 and 1.2 are built and gated offline (versions 0.2.0 and 0.3.0, 2026-10-29, and 0.4.0, 2026-10-30); every
+1.0, 1.1 and 1.2 are built and gated offline (the Finance and Commerce builds, 2026-10-29, and the Macro build, 2026-10-30); every
 in-game check is owed
 (`verification-runs.md`). The list below is what 1.0 changed in the 2026-10-06 loan model, kept for the record:
 

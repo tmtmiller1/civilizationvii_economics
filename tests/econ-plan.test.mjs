@@ -719,7 +719,7 @@ test("credit reputation in the turn (AI-PLAN 4.4): a miss -5, a default -20 more
     [[6, "lent", 3]], "a loan made earns the lender 3 (nothing to mend here, so it stays at 100)");
 });
 
-test("a 0.5.4 save's standing becomes its credit reputation on load (AI-PLAN 4.4)", () => {
+test("a ledger without credit reputation rows starts from its standing on load (AI-PLAN 4.4)", () => {
   const old = JSON.parse(save(ledgerWith([loan("L1", { state: "default", missed: 3 })], { lastTurn: 40,
     misses: [{ pid: ME, turn: 35, n: 1 }], repudiations: [{ pid: 7, lender: 9, turn: 20, cents: 5, atWar: false }] })));
   delete old.ledger.creditRep;

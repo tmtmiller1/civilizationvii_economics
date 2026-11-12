@@ -190,7 +190,7 @@ function batchRow(batch, civ, last) {
 }
 
 /**
- * The Gold a batch row pays; a row saved before 0.5.4 has no paid field, and the game paid its net in whole Gold.
+ * The Gold a batch row pays; when a row has no paid field, the game paid its net in whole Gold.
  * @param {BatchRow} row
  */
 export function paidOf(row) {

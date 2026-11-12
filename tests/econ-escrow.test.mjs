@@ -1,7 +1,7 @@
 // The escrow account and the AI's preference rows (AI-PLAN 4.2): next turn's dues held outside the treasury after
 // the payments and released into the funds at the start of the next turn, two turns' worth for a civ in distress,
 // within what the civ has; the account nets to zero over a loan's life (debt-8); a civ that dies loses what it held;
-// a 0.5.4 save holds nothing. The preference rows: every AI's every turn, the Gold bias up with its debt service,
+// a ledger without the account holds nothing. The preference rows: every AI's every turn, the Gold bias up with its debt service,
 // the budgets down in distress.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -87,7 +87,7 @@ test("a civ in distress (short this turn or last) has two turns' dues held, with
   assert.deepEqual(checkPlan({ plan: poor, civs: [me()] }), []);
 });
 
-test("a civ that dies loses what it held; Loans off releases and holds nothing; a 0.5.4 save holds nothing", () => {
+test("a civ that dies loses what it held; Loans off releases and holds nothing; a ledger without the account holds nothing", () => {
   const held = ledgerWith([loan("L1")], { escrow: [{ pid: ME, cents: 2070 }] });
   const gone = planTurn(input({ ledger: held, civs: [me({ alive: false })] }));
   assert.deepEqual(gone.ledger.escrow, []);

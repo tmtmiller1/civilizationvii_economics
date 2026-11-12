@@ -188,7 +188,7 @@ export const CYCLE_RULES = { one: 10000, reversionPct: 10, worldClamp: 1000, lMa
 // The Swings setup option: how far the cycle runs. Momentum carries that share of last turn's move into this one, so
 // a fall feeds on itself and a boom overshoots when it turns; goldPct is the share of E + L - 1 paid or charged on
 // income; E stays within eMin to eMax; scaleEarlyPct is s before Public debt; Panics come at most once in
-// panicEveryTurns. Gentle is the cycle before 0.5.3. Volatile's worst turns cost about half a civ's income in the
+// panicEveryTurns. Gentle is the mildest cycle. Volatile's worst turns cost about half a civ's income in the
 // Node simulation, about what an age's crisis takes (NOTES 118).
 /** @type {Record<string, { momentumPct: number, goldPct: number, eMin: number, eMax: number, scaleEarlyPct: number,
  *   panicEveryTurns: number }>} */

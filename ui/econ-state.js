@@ -254,8 +254,8 @@ function cleanBatchRow(row) {
 }
 
 /**
- * A batch row's whole-Gold payment and its carries (0.5.4), kept only when they're whole cents and a carry is under
- * one Gold; a row from an older save has none, and econ-batch.js paidOf reads its net instead.
+ * A batch row's whole-Gold payment and its carries, kept only when they're whole cents and a carry is under
+ * one Gold; when a row has none, econ-batch.js paidOf reads its net instead.
  * @param {Raw} row
  */
 function paidFields(row) {
@@ -361,7 +361,7 @@ function cleanCounters(ledger, raw) {
   ledger.buildTurns = /** @type {TurnRow[]} */ (cleanPidRows(raw.buildTurns, "turn", true));
   ledger.capHits = /** @type {TurnRow[]} */ (cleanPidRows(raw.capHits, "turn", true));
   ledger.lowIncome = /** @type {LowIncomeRow[]} */ (cleanPidRows(raw.lowIncome, "turns", true));
-  // A save from before the escrow account (0.5.4) holds nothing in it, and knows no distress.
+  // A ledger without an escrow account holds nothing in it, and knows no distress.
   ledger.escrow = /** @type {EscrowRow[]} */ (cleanPidRows(raw.escrow, "cents", true)).filter((row) => row.cents > 0);
   ledger.distress = /** @type {TurnRow[]} */ (cleanPidRows(raw.distress, "turn", true));
 }
@@ -378,8 +378,8 @@ function creditRepRows(raw) {
 }
 
 /**
- * The credit reputation rows (AI-PLAN 4.4), one per civ at 0 to 10000 as of a turn. A save from before them (0.5.4)
- * has none: each civ with a row in the misses, repudiations or defaulted loans starts at the standing those rows
+ * The credit reputation rows (AI-PLAN 4.4), one per civ at 0 to 10000 as of a turn. When a ledger has
+ * none, each civ with a row in the misses, repudiations or defaulted loans starts at the standing those rows
  * gave it at the save's last turn (DESIGN 4.2 as it was), and everyone else at 100 (no row).
  * @param {Ledger} ledger
  * @param {Raw} raw

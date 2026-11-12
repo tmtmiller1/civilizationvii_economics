@@ -26,7 +26,7 @@ import { outstandingOf } from "./econ-credit.js";
 import { readCityName, readPossibleRoutes, readTypeName, resourceLabel } from "./econ-commerce-read.js";
 import { civHidden } from "./econ-spoil.js";
 
-const VERSION = "0.5.4";
+const VERSION = "1.0.0";
 const KEY = "__towerEconomics";
 /** @type {Record<string, any>} */
 const G = globalThis;

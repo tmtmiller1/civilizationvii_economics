@@ -257,7 +257,7 @@ test("easing off one civ leaves the others' reasons; a gone civ's entries go; an
   const gone = easeTariffs({ pid: 5, mine: "high", turn: 41, reasons: new Map(), tariffs: [],
     relationOf: () => "neutral", alive: () => false, easing: { peace: { "5-3": 30, "6-3": 30 }, eased: { "5-1": "low" } } });
   assert.deepEqual(gone.easing, { peace: { "6-3": 30 }, eased: {} }, "only this AI's entries, and only the gone civs'");
-  // A save from 0.5.0: a standing High from turn 11 and no count. The count starts at the first turn after loading.
+  // A ledger with a standing High from turn 11 and no count. The count starts at the first turn after loading.
   const old = fresh([{ pid: 2, level: "high", changedTurn: 11 }, { pid: 5, level: "high", changedTurn: 13 }]);
   let dropped = null;
   for (let turn = 140; turn <= 200 && dropped === null; turn += 1) {

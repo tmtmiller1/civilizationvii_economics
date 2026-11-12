@@ -68,7 +68,7 @@ test("on load, a batch row is judged by what it paid: a part of a Gold that neve
   const balances = new Map([[1, 18458], [2, 11100], [3, 3500]]);
   assert.deepEqual(batchStatus(batch, balances), [{ pid: 1, status: "landed", cents: 0 },
     { pid: 2, status: "lost", cents: -100 }, { pid: 3, status: "landed", cents: 0 }],
-    "a row saved before 0.5.4 is read as the game paid it: -0.46 is nothing");
+    "a row with no paid field is read as the game paid it: -0.46 is nothing");
   assert.deepEqual(paidGrants(batch), [{ pid: 1, cents: 0 }, { pid: 2, cents: -100 }, { pid: 3, cents: 0 }]);
   assert.equal(celebrationPaidOf({ pid: 1, snapshot: 0, net: 0, influence: 0, celebration: 250 }), 200);
 });

@@ -1,4 +1,4 @@
-Economics gives Gold in Civilization VII an economy, and the computer players use it the same way you do.
+Economics gives Gold in Civilization VII an economy, and the computer players use it too.
 
 - Borrow from other civilizations or a bond market, lend to a neighbour who's short, restructure an overdue loan, or repudiate it and pay in credit and goodwill.
 - Debt can run below zero. The longer you stay there, the more it costs: unhappy settlements, dearer purchases, units disbanded and buildings shut down. Pay your way out or declare bankruptcy.

@@ -1,6 +1,6 @@
 # Compatibility with other mods
 
-Last reviewed 2026-10-29 against Economics 0.3.0 on Civilization VII 1.5.0. Nothing has run in a game yet, so every
+Last reviewed 2026-10-29 against the Economics Commerce build of 2026-10-29 on Civilization VII 1.5.0. Nothing has run in a game yet, so every
 line below is read from code. "Read from code, not run" means it hasn't been tried in a game: treat it as a prediction
 with its reasoning laid out, and the cheapest test that would settle it is named beside it.
 

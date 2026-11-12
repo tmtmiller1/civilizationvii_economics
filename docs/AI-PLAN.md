@@ -168,7 +168,7 @@ witness, standing -0.3 for 40 turns, and blocks the lender this age and the next
   loan repaid in full books `changeNumFavors` on the lender, so the engine's relationship remembers good conduct too.
 Built 2026-10-31 (stage D, NOTES choices 129 to 132): the reputation rows with the half-life, the costs and the
 climb-backs, the lender's own hit, favors on a loan repaid in full, the weighing with a strength read, and the
-0.5.4 save's standing carried over as its opening reputation.
+standing in a save from the 2026-10-31 build carried over as its opening reputation.
 
 - The AI's repudiation becomes a weighing: what it keeps (outstanding to that lender, in turns of income) against what
   it pays (the grievance, war risk read from `getMilitaryStrength` of lender against borrower and whether the lender
